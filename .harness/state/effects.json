@@ -277,6 +277,14 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/fonts.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/hitArea.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Glyph.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -289,7 +297,7 @@
       "severity": "high",
       "guard": "gate:contrast (verify-contrast.mjs + generate-design-tokens.mjs --check)",
       "memory": "memory/effects/a-token-change-is-a-contrast-change-in-both-themes.md",
-      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green. AS OF F-017 THE MANIFEST REACHES COMPONENTS, and that adds a break the import graph cannot show: a token RENAME now breaks @irodora/ui and apps/mobile with no import edge moving, because components index the generated theme object by string key. The parser also now reads typography, elevation, motion and defaultTheme, which it ignored entirely before — so a manifest edit changes five build outputs rather than four. THE RENDERED HALF OF GATE 9 IS THE NEW GUARD: the conformance suite resolves every colour a component actually paints back to a token and reports an unresolvable one as a FAILURE rather than skipping it, and it caught the home screen rendering light tokens when asked for dark on its first run. The checks read LARGE_TEXT_TOKENS and statusPairing from the generated exports rather than naming tokens, so a newly-classified token is covered without anyone editing them. F-019 CLOSED A HOLE IN THIS LINK THAT HAD BEEN OPEN SINCE F-017. `typography.numeric.fontFeature` was emitted to `nativeNumericFeature`, asserted against the manifest by `packages/design-tokens/test/typography.test.ts`, and CONSUMED BY NOTHING — so a change to it reached a generated constant, satisfied its own test, and stopped. The link was true of every other token and false of that one, which is worse than a missing link because the graph looked complete. `Text` now takes a `numeric` prop that reads the token, the conformance suite asserts the variant reaches the rendered NODE, and a decoy asserts a Text without the prop carries none — so the manifest value is now checkable at the pixel rather than only at the constant. THE PATTERN IS WORTH THE NAME: a generated value with no consumer passes every test it has, and the test that would catch it is the one nobody writes. F-094 CLOSED THE ONE DESTINATION THIS LINK NAMED AND NOTHING COMPARED. Of the five artefacts the generator writes, packages/design-tokens/test/emit.test.ts already byte-compares FOUR — tokens.css, tokens.tailwind.css, tokens.ts and native.ts — and carries its own \"checks all four targets\" assertion, so a manifest edited without regenerating already failed gate 5. THE FIFTH IS apps/mobile/global.css, WHICH IS THE ONE THAT SHIPS, and it was compared by nothing: hand-editing a hex in it leaves all 172 design-tokens tests green. Measured, not inferred — the first draft of F-094 claimed all five were unguarded and the measurement corrected it. That artefact is E-019’s own subject, and E-019’s guard names heroui.test.ts and emitHeroui throwing, neither of which compares the committed file against what the manifest would emit now. `generate-design-tokens.mjs --check` now runs FIRST in gate 9, which closes that hole and moves the other four ahead of the suites that would otherwise agree with stale values. Watched failing in both directions — an edited MANIFEST reports the derived srgb field plus four files at once, an edited ARTEFACT reports exactly one — with the baseline asserted green either side of each. F-175 ADDED A DESTINATION AND A FACT THIS LINK DID NOT CARRY. The destination is apps/mobile/app/(tabs)/_layout.tsx, which now paints `accent` — a route file, so the token graph reaches into `app/` and not only into `src/`. THE FACT IS THAT A GROUND IS NOT A FOREGROUND, and this link had never distinguished them: every earlier token change moved something that SITS ON a surface, where a lift raises contrast. F-175 moved the surfaces themselves, and lifting `swatch.well` by the same 0.040 as the rest of the ramp put `border.strong` at 2.88:1 and `status.ok` at 4.39:1 AGAINST IT — because a ground does not lift what sits on it, it eats the headroom of everything that does. The plan asserted the opposite in as many words ('every ground moves by exactly +0.040 L, so every existing relationship is preserved') and gate 9 refused it on the first run. The well has a hard ceiling at L 0.310, found by measuring rather than chosen. THE SECOND THING THE GUARD CAUGHT was scripts/verify-contrast-proof.mjs: its ADR-0043 case anchors on a literal hex, that hex was the dark ground, and the ramp moved it — so the case reported MUTATION DID NOT APPLY rather than passing. A mutation proof anchored on a value the feature under test can move is a proof that stops proving silently, and the no-op guard is the only reason it was visible. F-176 CONCENTRATED A MEANING THAT WAS SPREAD ACROSS THREE COMPONENTS. `Swatch`, `Chip` and `Tabs` each expressed 'chosen' differently and all three passed gate 9, because each drew a DECLARED pairing — the defect was that they disagreed, and no per-component check can see that. The treatment now lives in packages/ui/src/selection.tsx, which means a change to it repaints every chooser in the product at once; the guard is the conformance rule `selection-treatment`, which reads the treatment out of the RENDERED TREE rather than out of an import, so a component that calls selectionTone and discards the result still fails. F-226 (2026-09-28): the manifest's typography now carries `faces` (the bundled fonts, one native family each, with the weight each is cut at and the steps a mockup draws it at) and a REPLACED scale — display1 72, title 22, body 16, label 14, caption 10.3 (ADR-0113). A deleted step is a type error at every caller; a renamed literal behind `Extract<>` or `@ts-expect-error` is not, and three were found by hand (lesson: a-type-that-filters-or-expects-an-error-hides-a-rename).",
+      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green. AS OF F-017 THE MANIFEST REACHES COMPONENTS, and that adds a break the import graph cannot show: a token RENAME now breaks @irodora/ui and apps/mobile with no import edge moving, because components index the generated theme object by string key. The parser also now reads typography, elevation, motion and defaultTheme, which it ignored entirely before — so a manifest edit changes five build outputs rather than four. THE RENDERED HALF OF GATE 9 IS THE NEW GUARD: the conformance suite resolves every colour a component actually paints back to a token and reports an unresolvable one as a FAILURE rather than skipping it, and it caught the home screen rendering light tokens when asked for dark on its first run. The checks read LARGE_TEXT_TOKENS and statusPairing from the generated exports rather than naming tokens, so a newly-classified token is covered without anyone editing them. F-019 CLOSED A HOLE IN THIS LINK THAT HAD BEEN OPEN SINCE F-017. `typography.numeric.fontFeature` was emitted to `nativeNumericFeature`, asserted against the manifest by `packages/design-tokens/test/typography.test.ts`, and CONSUMED BY NOTHING — so a change to it reached a generated constant, satisfied its own test, and stopped. The link was true of every other token and false of that one, which is worse than a missing link because the graph looked complete. `Text` now takes a `numeric` prop that reads the token, the conformance suite asserts the variant reaches the rendered NODE, and a decoy asserts a Text without the prop carries none — so the manifest value is now checkable at the pixel rather than only at the constant. THE PATTERN IS WORTH THE NAME: a generated value with no consumer passes every test it has, and the test that would catch it is the one nobody writes. F-094 CLOSED THE ONE DESTINATION THIS LINK NAMED AND NOTHING COMPARED. Of the five artefacts the generator writes, packages/design-tokens/test/emit.test.ts already byte-compares FOUR — tokens.css, tokens.tailwind.css, tokens.ts and native.ts — and carries its own \"checks all four targets\" assertion, so a manifest edited without regenerating already failed gate 5. THE FIFTH IS apps/mobile/global.css, WHICH IS THE ONE THAT SHIPS, and it was compared by nothing: hand-editing a hex in it leaves all 172 design-tokens tests green. Measured, not inferred — the first draft of F-094 claimed all five were unguarded and the measurement corrected it. That artefact is E-019’s own subject, and E-019’s guard names heroui.test.ts and emitHeroui throwing, neither of which compares the committed file against what the manifest would emit now. `generate-design-tokens.mjs --check` now runs FIRST in gate 9, which closes that hole and moves the other four ahead of the suites that would otherwise agree with stale values. Watched failing in both directions — an edited MANIFEST reports the derived srgb field plus four files at once, an edited ARTEFACT reports exactly one — with the baseline asserted green either side of each. F-175 ADDED A DESTINATION AND A FACT THIS LINK DID NOT CARRY. The destination is apps/mobile/app/(tabs)/_layout.tsx, which now paints `accent` — a route file, so the token graph reaches into `app/` and not only into `src/`. THE FACT IS THAT A GROUND IS NOT A FOREGROUND, and this link had never distinguished them: every earlier token change moved something that SITS ON a surface, where a lift raises contrast. F-175 moved the surfaces themselves, and lifting `swatch.well` by the same 0.040 as the rest of the ramp put `border.strong` at 2.88:1 and `status.ok` at 4.39:1 AGAINST IT — because a ground does not lift what sits on it, it eats the headroom of everything that does. The plan asserted the opposite in as many words ('every ground moves by exactly +0.040 L, so every existing relationship is preserved') and gate 9 refused it on the first run. The well has a hard ceiling at L 0.310, found by measuring rather than chosen. THE SECOND THING THE GUARD CAUGHT was scripts/verify-contrast-proof.mjs: its ADR-0043 case anchors on a literal hex, that hex was the dark ground, and the ramp moved it — so the case reported MUTATION DID NOT APPLY rather than passing. A mutation proof anchored on a value the feature under test can move is a proof that stops proving silently, and the no-op guard is the only reason it was visible. F-176 CONCENTRATED A MEANING THAT WAS SPREAD ACROSS THREE COMPONENTS. `Swatch`, `Chip` and `Tabs` each expressed 'chosen' differently and all three passed gate 9, because each drew a DECLARED pairing — the defect was that they disagreed, and no per-component check can see that. The treatment now lives in packages/ui/src/selection.tsx, which means a change to it repaints every chooser in the product at once; the guard is the conformance rule `selection-treatment`, which reads the treatment out of the RENDERED TREE rather than out of an import, so a component that calls selectionTone and discards the result still fails. F-226 (2026-09-28): the manifest's typography now carries `faces` (the bundled fonts, one native family each, with the weight each is cut at and the steps a mockup draws it at) and a REPLACED scale — display1 72, title 22, body 16, label 14, caption 10.3 (ADR-0113). A deleted step is a type error at every caller; a renamed literal behind `Extract<>` or `@ts-expect-error` is not, and three were found by hand (lesson: a-type-that-filters-or-expects-an-error-hides-a-rename). F-232 (2026-09-28): the manifest gains `size.tapTargetAndroid` (48, refused below `tapTarget`, emitted as `nativeTapTargetAndroid`) and sixteen glyph colour tokens (`glyph.wheel.1–8`, `glyph.palette.1–8`) with their token-group exceptions. Both flow to every target; `generate-design-tokens.mjs --check` and emit.test hold them.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -716,7 +724,7 @@
       "severity": "critical",
       "guard": "lint:no-restricted-syntax + script:verify-guards.mjs + test:conformance colour-invisible + script:verify-motion.mjs",
       "memory": "memory/effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md",
-      "rationale": "@irodora/ui is now built on heroui-native, which styles through className, and Uniwind resolves className in its METRO plugin. Jest never runs Metro. So a component that routes colour through a class renders in the a11y harness with NO COLOURS IN ITS TREE, and every colour check in the conformance suite iterates over an empty list — reporting nothing, printing as a pass, indistinguishable from a component whose every colour resolved. Measured, not feared: a real heroui-native Button came back with className, a transform, and backgroundColor: \"invalid\". THE GENERAL SHAPE, which is the reusable part: build-time style resolution buys runtime performance by moving work to where the test runner is not, and the second half of that trade is never in the library's documentation. THE GUARDS ARE REAL AND PROVEN: lint rejects a colour utility class or an arbitrary colour value inside a className in packages/ui, with two decoys in verify-guards.mjs; the conformance suite fails a registered subject whose tree carries no resolved colour at all, with a fixture that is the exact HeroUI tree plus a control that passes; and verify-motion rejects a component that allows HeroUI's highlight or ripple, which animate backgroundColor inside a dependency the style scan cannot read. NOT COVERED: a component that paints SOME colours through style and routes others through a class — lint is the only defence there — and a class name assembled at runtime.",
+      "rationale": "@irodora/ui is now built on heroui-native, which styles through className, and Uniwind resolves className in its METRO plugin. Jest never runs Metro. So a component that routes colour through a class renders in the a11y harness with NO COLOURS IN ITS TREE, and every colour check in the conformance suite iterates over an empty list — reporting nothing, printing as a pass, indistinguishable from a component whose every colour resolved. Measured, not feared: a real heroui-native Button came back with className, a transform, and backgroundColor: \"invalid\". THE GENERAL SHAPE, which is the reusable part: build-time style resolution buys runtime performance by moving work to where the test runner is not, and the second half of that trade is never in the library's documentation. THE GUARDS ARE REAL AND PROVEN: lint rejects a colour utility class or an arbitrary colour value inside a className in packages/ui, with two decoys in verify-guards.mjs; the conformance suite fails a registered subject whose tree carries no resolved colour at all, with a fixture that is the exact HeroUI tree plus a control that passes; and verify-motion rejects a component that allows HeroUI's highlight or ripple, which animate backgroundColor inside a dependency the style scan cannot read. NOT COVERED: a component that paints SOME colours through style and routes others through a class — lint is the only defence there — and a class name assembled at runtime. F-232 (2026-09-28): every control it rebuilt — Button forms, Chip pill and badge, the segmented ChoiceGroup, Switch, Slider and its readout, the Status pill, the spectrum glyphs — paints through `style` and svg props, and each form is a conformance subject in every theme and palette, so `colour-invisible` and `colour-literal` read all of it. A gradient's stops and a clip path needed the tree to learn them (see E-097).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -2964,6 +2972,14 @@
         {
           "kind": "gate",
           "ref": "a11y"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/pill-selection.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/segmented-choice.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2974,7 +2990,7 @@
       "severity": "medium",
       "guard": "gate:a11y — the rule fires only where a subject declares `selectable: true`, and three cases prove it discriminates: a highlight-only component is reported, the same component passes once it announces, and a non-selectable one is left alone. That third case is the one the first draft failed.",
       "memory": "memory/effects/active-means-two-different-things.md",
-      "rationale": "THE SUITE CHECKED `disabled` AND `loading` AND SAID NOTHING ABOUT `active`, so a component could render a selected state that a screen reader could not tell from the default. The tree-difference assertion did not help: it requires SOME difference between states, and a changed background satisfies it while telling a non-sighted user nothing. THE FIRST DRAFT OF THE RULE WAS WRONG AND THE SUITE CAUGHT IT IMMEDIATELY — requiring `accessibilityState.selected` for every active subject flagged `Button`, `SearchField` and `TextField`, because `active` means \"being pressed or typed into\" there rather than \"chosen\". Three false positives on components doing nothing wrong, which is exactly how a rule gets deleted rather than fixed. `active` IS OVERLOADED AND NO TREE CAN DISAMBIGUATE IT, so the registry declares which subjects it means selection for — one word, beside the component, the same shape as `sampleValues` and `forbiddenNames`, both of which are also facts a rendered tree cannot report. A SECOND CORRECTION IN THE SAME FEATURE: I first marked the wardrobe gallery cell as selected, and that state can NEVER BE SEEN — tapping a cell renders the editor, which replaces the grid. It would have been unreachable code with a passing test. What the cell was actually missing was press feedback, which is a different report entirely.",
+      "rationale": "THE SUITE CHECKED `disabled` AND `loading` AND SAID NOTHING ABOUT `active`, so a component could render a selected state that a screen reader could not tell from the default. The tree-difference assertion did not help: it requires SOME difference between states, and a changed background satisfies it while telling a non-sighted user nothing. THE FIRST DRAFT OF THE RULE WAS WRONG AND THE SUITE CAUGHT IT IMMEDIATELY — requiring `accessibilityState.selected` for every active subject flagged `Button`, `SearchField` and `TextField`, because `active` means \"being pressed or typed into\" there rather than \"chosen\". Three false positives on components doing nothing wrong, which is exactly how a rule gets deleted rather than fixed. `active` IS OVERLOADED AND NO TREE CAN DISAMBIGUATE IT, so the registry declares which subjects it means selection for — one word, beside the component, the same shape as `sampleValues` and `forbiddenNames`, both of which are also facts a rendered tree cannot report. A SECOND CORRECTION IN THE SAME FEATURE: I first marked the wardrobe gallery cell as selected, and that state can NEVER BE SEEN — tapping a cell renders the editor, which replaces the grid. It would have been unreachable code with a passing test. What the cell was actually missing was press feedback, which is a different report entirely. F-232 (2026-09-28): `selection-treatment` now has three pictures, each read off the tree: `chooser` (00's accent.muted + accent edge), `pill` (a chosen pill is filled or edged in foreground AND draws a leading dot; a fill alone is reported — 05's open case, OQ-43), and `segment` (a chosen segment is filled; an unchosen segment draws no shape, so the fill is a shape appearing). A dot painted in a declared sample does not count. Decoys: pill-selection.test, segmented-choice.test, badges.test.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -3202,7 +3218,7 @@
       "severity": "high",
       "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared.",
       "memory": "memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md",
-      "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro.",
+      "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro. F-232 (2026-09-28): new painted pairs — a selection dot in foreground or accent.foreground on its fill, thumbs on tracks — all resolve to tokens and pass `pair-undeclared`. Text ON A SAMPLE (24's tinted ΔE00 badge) is invisible to that rule, so its ink is chosen by `inkOnSample`, which has its own tests and reports \"neither\" on a mid-tone (E-158).",
       "confidence": 0.94,
       "origin": "manual",
       "status": "active"
@@ -3674,6 +3690,14 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/hit-area.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/slider.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3684,7 +3708,7 @@
       "severity": "high",
       "guard": "THE ROLE READER NOW TAKES BOTH PROPS, and `controls.test.tsx` holds the widening to what makes it safe: a pressable with NEITHER `role` nor `accessibilityRole` is still reported, and `role`/`accessibilityRole` are carried as separate fields so \"declared as a slider\" stays distinguishable from \"declared as an adjustable\". A pressable declaring `none` or `presentation` is now a finding in its own right, because a declared non-role satisfied the old check while removing the control from the accessibility tree. THE RESPONDS DETECTOR takes `accessibilityValue`, with a decoy that a plain View carrying a number is still not a control. THE MOTION TABLE takes a third entry — a colour named inside an `animation={{…}}` config — with three proof cases: the interpolation left on must fail, turning it off must pass, and a config moving the thumb must pass. WHAT IS NOT GUARDED: that `Popover` renders its panel. Its portal still waits on a measured trigger, so its subject still checks a trigger; F-156 chose the `dialog` presentation for `Select` rather than fixing `Popover`, and the gap is recorded here rather than closed.",
       "memory": "memory/effects/a-check-that-reads-one-of-two-spellings.md",
-      "rationale": "THREE CHECKS, EACH THOROUGH ABOUT A VOCABULARY THAT WAS COMPLETE WHEN IT WAS WRITTEN. (1) `pressableNodes` read `accessibilityRole` and every HeroUI primitive sets `role` — React Native accepts both and routes them to the same platform attribute — so four correct components would have been reported as `no-role`, and the obvious correction compiles and announces nothing: `AccessibilityRole` ends in `| string`, its member for a draggable value is `adjustable`, and `Role`’s is `slider`. (2) The same function defined \"responds\" as `onPress`/`onClick`/`onResponderRelease`/`onChangeText`/`accessible` — F-018 had already widened it once for the text field, with the note \"a text field is not pressable\" — and a slider thumb is dragged through a `GestureDetector`, so every accessibility rule skipped it while the suite reported a pass over the rest. (3) `verify-motion.mjs` named `highlightAnimation` and `rippleAnimation`, and HeroUI’s Switch interpolates its track colour through a third prop the table did not know. AND A FOURTH, FOUND WHILE PROBING: an anchored overlay’s portal returns null until `triggerPosition` is set from a `measure()` callback that react-test-renderer never fires, so the `Popover` subject — registered OPEN precisely so its panel and scrim would be checked — renders four nodes, none of them the panel. Dialog and Sheet mount; Popover and an anchored Select do not. That is why this Select is a `dialog` presentation: a list whose accessibility no check in this repository can see is a list nobody has looked at.",
+      "rationale": "THREE CHECKS, EACH THOROUGH ABOUT A VOCABULARY THAT WAS COMPLETE WHEN IT WAS WRITTEN. (1) `pressableNodes` read `accessibilityRole` and every HeroUI primitive sets `role` — React Native accepts both and routes them to the same platform attribute — so four correct components would have been reported as `no-role`, and the obvious correction compiles and announces nothing: `AccessibilityRole` ends in `| string`, its member for a draggable value is `adjustable`, and `Role`’s is `slider`. (2) The same function defined \"responds\" as `onPress`/`onClick`/`onResponderRelease`/`onChangeText`/`accessible` — F-018 had already widened it once for the text field, with the note \"a text field is not pressable\" — and a slider thumb is dragged through a `GestureDetector`, so every accessibility rule skipped it while the suite reported a pass over the rest. (3) `verify-motion.mjs` named `highlightAnimation` and `rippleAnimation`, and HeroUI’s Switch interpolates its track colour through a third prop the table did not know. AND A FOURTH, FOUND WHILE PROBING: an anchored overlay’s portal returns null until `triggerPosition` is set from a `measure()` callback that react-test-renderer never fires, so the `Popover` subject — registered OPEN precisely so its panel and scrim would be checked — renders four nodes, none of them the panel. Dialog and Sheet mount; Popover and an anchored Select do not. That is why this Select is a `dialog` presentation: a list whose accessibility no check in this repository can see is a list nobody has looked at. F-232 (2026-09-28): the tree now carries each pressable's `hitSlop` (read by `tapTargetReach`, ADR-0114), reads a LinearGradient's packed `[offset, argb]` stops as painted `stopColor`s so a literal stop is reported, and skips `RNSVGClipPath` subtrees, whose injected black fill paints nothing. Guards: hit-area.test (the rule end to end, three decoys), slider.test (a literal stop reported, token stops passing; mutation-checked).",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -5040,6 +5064,10 @@
         {
           "kind": "gate",
           "ref": "lint"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/icon-control-forms.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5050,7 +5078,7 @@
       "severity": "high",
       "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed.",
       "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
-      "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it.",
+      "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it. F-232 (2026-09-28): 00, 05, 09, 12, 15, 17 and 23 re-recorded from measurement (control tokens, plate radii, dots, the switch's true track, 12's level3 fills, 05's filled chips, 17's options as ui:Chip); the schema gains `raw.trackPx`/`thumbPx`/`glyphPx` and ADR-0115's plate rule in the `component` description, held by icon-control-forms.test (30 icon-only controls, 15 plated, 15 bare, with an ambiguous decoy). Control defaults are now DERIVED from these records (E-157).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -5293,6 +5321,10 @@
         {
           "kind": "gate",
           "ref": "a11y"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/spectrum.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5304,7 +5336,7 @@
       "guard": "packages/ui/test/glyphs.test.tsx reads mockups/inventory/*.json and asserts both directions — every bound icon name has a glyph, every glyph is bound — with a decoy each way (calendar, drawn nowhere; share, dropped), plus no two glyphs one shape, only the given ink, every shape declaring its fill, filled drawings solid, other glyphs unchanged by a fill, and the glyph hidden from a screen reader. Five faults planted in Glyph.tsx failed exactly the nine tests aimed at them. The set is also held to being SOLID where its element is: a table of the thirteen glyphs drawn with no line, checked in both directions. mockups/inventory/** is a turbo global dependency so an inventory edit reruns the test; verify-cache-scope was watched failing without it. components.test.tsx asserts icon.check and icon.cross render the registry paths for check and close, with a decoy. icon-button.test.tsx holds three @ts-expect-error refusals with compiling decoys and the rendered name, state, target, glyph and ink; the conformance suite registers IconButton. NOT GUARDED, and this is what the F-228 review found: that a glyph looks like the element it was drawn against. Nine did not — the first draft drew every glyph as an outline where 00, 02, 03, 11 and 13 draw solids — and no check here could see it. The plan's Evidence table names each source element; F-281 is a check that measures a drawing against its crop; F-221's device captures are the other half.",
       "feature": "F-228",
       "memory": "memory/effects/the-icon-registry-is-keyed-by-the-inventories.md",
-      "rationale": "Every icon a mockup draws is one entry in Glyph, named as F-220's inventory binds it, so a surface writes the name its inventory records and nothing translates it. That makes the inventories an input to @irodora/ui, and makes NavIcon, Icon (check and cross) and IconButton draw through one drawing. High because it reaches every icon in the product at once and in both directions: a renamed inventory icon leaves a surface asking for a glyph that does not exist, and a glyph nobody bound is a design nobody made — and neither shows as a colour, contrast or layout failure. The review also showed the second direction is not enough on its own: a name can be bound by two elements that draw DIFFERENT things, and the registry then has to split the name rather than pick one — eight did (close-circle, hue-ring, image-solid, palette-solid, lock-solid, seal-star, seal-check, filter-lines), and two more are tint-dependent shapes recorded in OQ-37.",
+      "rationale": "Every icon a mockup draws is one entry in Glyph, named as F-220's inventory binds it, so a surface writes the name its inventory records and nothing translates it. That makes the inventories an input to @irodora/ui, and makes NavIcon, Icon (check and cross) and IconButton draw through one drawing. High because it reaches every icon in the product at once and in both directions: a renamed inventory icon leaves a surface asking for a glyph that does not exist, and a glyph nobody bound is a design nobody made — and neither shows as a colour, contrast or layout failure. The review also showed the second direction is not enough on its own: a name can be bound by two elements that draw DIFFERENT things, and the registry then has to split the name rather than pick one — eight did (close-circle, hue-ring, image-solid, palette-solid, lock-solid, seal-star, seal-check, filter-lines), and two more are tint-dependent shapes recorded in OQ-37. F-232 (2026-09-28): two glyphs draw a colour layer — `colour-wheel` and `palette-solid`, a hue sweep clipped to the silhouette's own area — only when a caller passes resolved stops; the one-ink rendering glyphs.test holds is unchanged (spectrum.test's decoy asserts it).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -5950,7 +5982,7 @@
       "severity": "medium",
       "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen.",
       "memory": "memory/effects/chroma-a-mockup-draws-before-a-token-exists-is-declared-by-element.md",
-      "rationale": "C10 and ADR-0110 follow chroma the mockups draw on elements no token holds yet: gold HUDs, green verdicts, coloured icons. The feature that builds each surface mints its token. Until then, the chroma-ceiling count would have been blind to exactly the chroma the product is about to ship. So the manifest declares it by inventory element, and the inventories and the manifest are held together. When an inventory adds or renames a C10 element, the manifest must follow. When a feature mints the token, it replaces the element exception with a token exception or with nothing.",
+      "rationale": "C10 and ADR-0110 follow chroma the mockups draw on elements no token holds yet: gold HUDs, green verdicts, coloured icons. The feature that builds each surface mints its token. Until then, the chroma-ceiling count would have been blind to exactly the chroma the product is about to ship. So the manifest declares it by inventory element, and the inventories and the manifest are held together. When an inventory adds or renames a C10 element, the manifest must follow. When a feature mints the token, it replaces the element exception with a token exception or with nothing. F-232 (2026-09-28): the first two exceptions RETIRED by a mint — 00.controls.icon-wheel and 00.buttons.icon-palette — replaced by token-group exceptions that carry the elements forward, so coverage stays exactly once (E-159).",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -6030,6 +6062,10 @@
         {
           "kind": "test",
           "ref": "packages/design-tokens/test/inventory-pairings.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/selection.tsx#FocusRing"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6040,7 +6076,7 @@
       "severity": "medium",
       "guard": "`selection.test.tsx` renders TextField and SearchField focused and not, in all four palettes. It requires the focus edge to be `ring` and not `border.strong`, and requires no edge without focus. Mutation-checked: painting focus in `border.strong` fails four cases. The selection tone's own tests hold `ring` for focus in every state. Gate 9 checks `ring` at 3:1 on the ground and levels 1–3 in every palette. Gate 10's `[ring, border.strong]` pair keeps them distinguishable, which is what moved Washi's ring off the drawn `#1A1B1E`. AND `inventory-pairings.test.ts` now checks the premise per element instead of assuming it. Every element outlined in `border.strong` must carry a label, its own or a child's, and a decoy with none is named. The strong border drawn as a FOREGROUND, the sheet handle, maps to `border.indicator`, whose pairings must be declared in both themes.",
       "memory": "memory/effects/a-token-that-changes-meaning-keeps-its-name-and-loses-its-readers.md",
-      "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi).",
+      "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi). F-232 (2026-09-28): focus on a control drawn at its mockup's size is `FocusRing`, a `ring` overlay OUTSIDE the box that costs no layout — Button, Chip, the segmented ChoiceGroup, Switch and the Slider thumb. The Switch drew focus as a border inside its track; that is gone. Rendered in button-forms, switch, slider and segmented-choice tests, each with an unfocused decoy.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -6194,6 +6230,170 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-156",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/hitArea.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Button.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/IconButton.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Chip.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ChoiceGroup.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/controls.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/conformance.ts#tapTargetReach"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "packages/ui",
+        "packages/design-tokens"
+      ],
+      "severity": "critical",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms.",
+      "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
+      "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
+    },
+    {
+      "id": "E-157",
+      "from": {
+        "kind": "content",
+        "ref": "mockups/inventory"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Button.tsx#BUTTON_HEIGHT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Chip.tsx#CHIP_HEIGHT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/selection.tsx#SELECTION_DOT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ChoiceGroup.tsx#SEGMENTED_HEIGHT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/controls.tsx#SWITCH_TRACK"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/controls.tsx#SLIDER_TRACK"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "mockups",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy.",
+      "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
+      "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
+    },
+    {
+      "id": "E-158",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/inkOnSample.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Chip.tsx#Badge"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-233"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-259"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "packages/ui/test/badges.test.tsx: inkOnSample reports NEITHER on 24's mid-tones (#87795D, #827252), picks the dark ink on #4495A3 (the decoy), and swaps inks with the theme's polarity. `pair-undeclared` cannot see text on a sample, which is why this has its own tests.",
+      "memory": "memory/effects/text-on-a-sample-chooses-its-ink-and-says-when-neither-passes.md",
+      "rationale": "C8: text drawn ON a colour sample takes whichever of foreground / inverse.foreground has the higher WCAG contrast against the sample, and the result says whether it clears 4.5:1. A mid-tone clears it with neither ink — 24's tinted ΔE00 badges do — and that is F-259's to settle, not something the helper hides. F-233 (any text on a sample) should reuse it rather than choose an ink by eye."
+    },
+    {
+      "id": "E-159",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json#glyph.*"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Glyph.tsx#SPECTRUM_GLYPHS"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/check.ts#checkChromaCeiling"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/emit/runtime.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/c10-exceptions.test.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "docs/design",
+        "packages/design-tokens",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "c10-exceptions.test's group block (eight stops per group in every theme, the two element exceptions retired, a wrong element leaves the drawn one uncovered, a group without elements or beside a token refused, a stale group reported, one runtime exception per stop); spectrum.test (the stops in order, laid over the silhouette, the one-ink decoy); the conformance colour-literal rule over both spectrum buttons in every palette; verify-token-reach (every stop named literally).",
+      "memory": "memory/effects/a-minted-group-carries-its-elements-forward.md",
+      "rationale": "ADR-0110's amendment: a colour a mockup draws is minted as tokens and declared as a token GROUP exception that carries the elements drawing it, retiring the element exception in the same change. Rename or add a stop and four readers move: Glyph's literal list (the reach check cannot see a constructed name), the chroma check, the runtime's per-token expansion, and coverage. F-244, F-257 and F-262 mint the same way."
     }
   ]
 }

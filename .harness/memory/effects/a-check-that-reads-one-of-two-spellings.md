@@ -84,3 +84,16 @@ decisions about what the suite is allowed to invent.
 Related: [[a-table-driven-check-is-only-as-complete-as-its-table]] ·
 [[a-component-reached-through-another-is-only-tested-in-its-parents-shape]] ·
 [[a-decoy-that-is-not-broken-proves-nothing]]
+
+## F-232 (2026-09-28): three more things the tree had to learn to read
+
+- **`hitSlop` on each pressable.** The tap-target rule adds it to the drawn size (ADR-0114, E-156).
+- **A LinearGradient's stops.** They render as one node whose `gradient` prop packs
+  `[offset, argb, …]`, and the `Stop` elements are gone. They are now painted `stopColor`s, so a
+  literal stop is reported.
+- **`RNSVGClipPath`, now skipped.** react-native-svg injects a black fill there that reaches no
+  pixel.
+
+Each is the same failure this note is about: the thing is expressed in a way the reader did not
+yet speak. `slider.test` was mutation-checked, and with the stop reading removed both of its
+gradient tests fail.

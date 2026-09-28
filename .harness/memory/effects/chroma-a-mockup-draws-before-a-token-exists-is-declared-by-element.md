@@ -39,3 +39,10 @@ ceiling.
 When an inventory adds or renames a C10 element, the manifest follows in the same change. When a
 feature mints the token (its `mintedBy`), it replaces the element exception with a token
 exception, or with nothing if the token sits under the ceiling. It must not leave both.
+
+## F-232 (2026-09-28): the first two retired by a mint
+
+`00.controls.icon-wheel` and `00.buttons.icon-palette` were the first element exceptions whose
+tokens were minted. They are replaced by **token group** exceptions that carry the elements
+forward, so coverage stays exactly once, and the element exceptions are gone in the same change.
+That is the pattern for every later mint: [[a-minted-group-carries-its-elements-forward]].

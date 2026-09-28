@@ -476,7 +476,9 @@ Each element C10 and ADR-0110 name is declared once in the manifest's `exception
 inventory elements that draw it, with the tints read off the image and the feature that mints its
 token. `c10-exceptions.test.ts` holds the two lists together, and `checkChromaCeiling` reports an
 exception whose every measured tint falls under the ceiling (0.026). A spectrum, a gradient or a
-sample-coloured element has nothing single to measure.
+sample-coloured element has nothing single to measure. When a feature mints a row's tokens it
+retires the element exception and declares a **token group** that carries the elements forward, so
+each stays covered once (`F-232`, ADR-0110's amendment).
 
 | elements | kind | measured | minted by |
 |---|---|---|---|
@@ -488,8 +490,8 @@ sample-coloured element has nothing single to measure.
 | `23.profile.label`: the brown pill (C12) | tint | `#69523A` | `F-260` |
 | `24.rows.row-1…4.distance`: ΔE00 badges tinted by their row | sample | — (row 1 `#87795D`, row 2 `#4495A3`) | `F-259` |
 | `27.wardrobe-empty.art`, `27.lens-working.mark`, `27.lens-refused.icon`, `27.lens-permission.icon` | tints | `#BFA184` `#926C9A` `#634E32` `#B7A07F` | `F-236` |
-| `00.controls.icon-wheel` (ADR-0110) | spectrum | — | `F-232` |
-| `00.buttons.icon-palette` (ADR-0110) | multi | — | `F-232` |
+| `00.controls.icon-wheel` (ADR-0110) | spectrum | **minted** as `glyph.wheel.1–8` (eight sector means, `#D68164` … `#C25E62`), declared as a token group that carries this element | `F-232` ✓ |
+| `00.buttons.icon-palette` (ADR-0110) | multi | **minted** as `glyph.palette.1–8` (a hue sweep over the palette, `#BC8073` … `#B66380`), declared as a token group that carries this element | `F-232` ✓ |
 | `03.chips.gamut` (ADR-0110) | spectrum | — | `F-244` |
 | `06.provenance.review`: the green seal (ADR-0110) | tint | `#4B9D61` | `F-247` |
 | `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked`: the padlock (ADR-0110) | tint | `#C8A145` (read on `07`, where it is largest) | `F-248` |
@@ -625,6 +627,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 | **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
+| **OQ-43** | `05` draws its selected season chip as a fill swap with no mark; ACCESSIBILITY §4 asks for a highlight + checkmark, and `12 15 17` mark a chosen pill with a leading dot. Does golden rule 13 force the dot onto `05`'s chip? A segmented row is a different case — an unchosen segment draws no shape, so its fill is a shape appearing (F-232) | `F-246` |
 | **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
 | **OQ-40** | `13` draws *Save Outfit to Lookbook*, and no mockup draws the lookbook — nothing in any inventory reads a saved outfit back (see `OQ-39`, the same gap for colours) | `F-238` |

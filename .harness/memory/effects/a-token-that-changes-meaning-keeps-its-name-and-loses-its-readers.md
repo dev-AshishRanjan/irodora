@@ -50,3 +50,11 @@ It is now `border.indicator`: the strong border's E3 move where nothing else ide
 component. Washi keeps the drawn ink, which passes. The test checks the premise element by
 element: every outline in `border.strong` needs a label, and a decoy with none is named. **A reason
 that names a category is a claim about every member of it, and it has to be checked per member.**
+
+## F-232 (2026-09-28): focus on a control drawn at its size is a ring OUTSIDE it
+
+A chooser reserves its state edge. A control drawn with an edge, or with none, cannot, because a
+reserved edge would redraw it. So focus on Button, Chip, the segmented ChoiceGroup, the Switch and
+the Slider thumb is `FocusRing`: a `ring` overlay just outside the box, which costs no layout.
+The Switch used to draw focus as a border inside its track, and that is gone. Each form is
+rendered focused and not, in button-forms, switch, slider and segmented-choice tests.

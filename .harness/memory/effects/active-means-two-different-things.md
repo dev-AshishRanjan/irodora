@@ -48,3 +48,16 @@ the same sentence. The first needs state; the second needs feedback. Building th
 something that is not selectable produces code nobody can reach.
 
 Related: [[a-component-can-satisfy-the-letter-of-its-own-proof]]
+
+## F-232 (2026-09-28): three pictures of "chosen", each read off the tree
+
+`selection-treatment` no longer knows only board 00's chooser. A subject declares which picture it
+draws, and the rule checks that picture in the rendered tree:
+- **`chooser`:** `accent.muted` with an `accent` edge.
+- **`pill`:** filled or edged in `foreground`, AND led by a dot.
+- **`segment`:** filled. An unchosen segment draws no shape at all, so the fill is a shape
+  appearing, not a fill swap.
+
+A pill with a fill alone is reported: that is `05`'s season chip, left open as OQ-43. A dot painted
+in a declared sample (`05`'s family colour) does not count as the mark. Decoys:
+`pill-selection.test`, `segmented-choice.test` and `badges.test`.

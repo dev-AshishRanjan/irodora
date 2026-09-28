@@ -42,3 +42,16 @@ screen matches is `F-221`'s capture and a person's attestation.
 
 The null-inventory proof case relied on an image the set had not reached yet. The day the 28th
 inventory was written it stopped discriminating — the full gate run caught it before F-220 closed.
+
+## F-232 (2026-09-28): re-recorded from measurement, and now read for sizes
+
+- **Re-recorded from measurement:** 00, 05, 09, 12, 15, 17 and 23. That covers the control tokens,
+  plate radii, dots, the switch's true track (34.5 × 18, not the padded 35.5 × 22.5), 12's
+  selected fills (`level3`, not `level2`), 05's filled family chips, and 17's options as
+  `ui:Chip`.
+- **The schema gained:**
+  - `raw.trackPx`, `raw.thumbPx` and `raw.glyphPx`;
+  - ADR-0115's plate rule in the `component` description, which `icon-control-forms.test`
+    holds: 30 icon-only controls, 15 plated and 15 bare.
+- **Control defaults are now derived from these records** (E-157), so an edit here can move a
+  default, and a test will say which.

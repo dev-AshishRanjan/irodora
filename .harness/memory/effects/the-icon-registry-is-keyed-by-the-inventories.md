@@ -44,3 +44,10 @@ throughout, because a name having a drawing says nothing about WHICH drawing. Th
 person reading a contact sheet, so it does not survive the session that made it: **F-281** is the gap,
 and F-221's device captures are the other half. Nor does it decide how an icon-only control's plate is drawn — that
 is F-232's, and the inventories record it as `ui:Button` with no copy.
+
+## F-232 (2026-09-28): two glyphs gained a colour layer, and the one-ink drawing is untouched
+
+`colour-wheel` and `palette-solid` draw a hue sweep clipped to their own area, but only when a
+caller passes resolved stops (`glyphSpectrum`). What this note's test holds, the one-ink
+silhouette, is exactly what they draw without stops, and `spectrum.test`'s decoy asserts that.
+The stops are minted tokens (E-159).
