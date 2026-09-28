@@ -116,7 +116,7 @@ reported in the tool's output as part of the error.
 ## Consequences
 
 **Good.**
-- One Latin file (about 100 KB) and one small Japanese subset. Every role the mockups draw in a
+- One Latin file (about 38 KB) and one small Japanese subset. Every role the mockups draw in a
   serif is served, with nothing variable on a device.
 - The weight is a measurement with a stated error, reproduced by two committed tools and a
   calibration anyone can re-run. It is not a reading of mask scores the previous record already

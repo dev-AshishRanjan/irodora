@@ -127,6 +127,38 @@ cover it, naming the entry and the codepoint.
 The 9.6 MB source is **not committed** — it is a downloaded build input, cached under
 `.cache/`. What is committed is the subset, and the gate checks the subset.
 
+### Gelasio
+
+| | |
+|---|---|
+| **Licence** | SIL Open Font License, Version 1.1 — no Reserved Font Name |
+| **Copyright** | © 2022 The Gelasio Project Authors (https://github.com/SorkinType/Gelasio) |
+| **Version** | `Version 1.008` |
+| **Source** | `google/fonts` at `1ac2012c…`, `ofl/gelasio/Gelasio[wght].ttf`, pinned by sha256 in [`scripts/font-sources.json`](scripts/font-sources.json) |
+| **Shipped as** | `apps/mobile/assets/fonts/Gelasio-Regular.ttf` — about 38 KB |
+
+The serif ([ADR-0106](docs/adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md)).
+**We ship a static cut, which the OFL permits** (§2: modification and redistribution, the licence
+travelling with the font). The cut pins the variable source at `wght` 400 and keeps Latin and the
+general punctuation English copy uses. Its name table is rebuilt so the file says what it is
+(`Gelasio-Regular`), and it keeps the licence in name records 13 and 14, which is the OFL's
+"machine-readable metadata" form. Why this weight is recorded in
+[ADR-0112](docs/adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md).
+
+### Noto Serif JP
+
+| | |
+|---|---|
+| **Licence** | SIL Open Font License, Version 1.1 — no Reserved Font Name at this source |
+| **Copyright** | © 2012 Google Inc.; © 2017–2024 Adobe (http://www.adobe.com/) |
+| **Version** | `Version 2.003-H1;hotconv 1.1.1;makeotfexe 2.6.0` |
+| **Source** | `google/fonts` at `1ac2012c…`, `ofl/notoserifjp/NotoSerifJP[wght].ttf`, pinned by sha256 in [`scripts/font-sources.json`](scripts/font-sources.json) |
+| **Shipped as** | `apps/mobile/assets/fonts/NotoSerifJP-Subset.ttf` — about 50 KB; it grows as the corpus adds kanji |
+
+The mincho the shareable card draws (`20`, C6). It is a static cut at `wght` 400, subset to exactly
+the kanji of every published corpus entry's name — the one field a mincho element binds — and
+checked by the same `content` gate as Noto Sans JP. Its name table is rebuilt the same way.
+
 ---
 
 ## 5. Harness methodology

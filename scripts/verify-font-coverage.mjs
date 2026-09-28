@@ -31,7 +31,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cmapCodepoints } from './sfnt-read.mjs';
+import { cmapCodepoints, hasTable, names, weightClass } from './sfnt-read.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -207,6 +207,140 @@ function syntheticFont(codepoints) {
   return Buffer.concat([dir, cmap]);
 }
 
+// ---------------------------------------------------------------------------------------
+// F-226 (ADR-0112): the serif and the mincho. Their requirements are collected HERE, again,
+// rather than imported from the generator — the check must not agree with the generator by
+// construction. IN STEP WITH generate-font-subset.mjs.
+// ---------------------------------------------------------------------------------------
+
+const FONTS = join(ROOT, 'apps', 'mobile', 'assets', 'fonts');
+const EN_CATALOGUE = join(ROOT, 'apps', 'mobile', 'src', 'i18n', 'en.ts');
+const INVENTORY = join(ROOT, 'mockups', 'inventory');
+
+/** The Latin the serif is cut to. IN STEP WITH the generator's SERIF_RANGES. */
+const SERIF_RANGES = [
+  [0x0020, 0x007e],
+  [0x00a0, 0x00ff],
+  [0x2010, 0x2027],
+  [0x2030, 0x203a],
+];
+const inSerifRanges = (cp) => SERIF_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi);
+
+/**
+ * What the serif must carry: all of printable ASCII, and every character of the English
+ * catalogue inside the ranges it is cut to — any English string may be set at a serif step.
+ */
+function serifRequired() {
+  const required = new Map();
+  for (let c = 0x20; c <= 0x7e; c += 1) required.set(c, 'printable ASCII');
+  if (existsSync(EN_CATALOGUE))
+    for (const cp of codepointsOf(readFileSync(EN_CATALOGUE, 'utf8')))
+      if (inSerifRanges(cp) && !required.has(cp)) required.set(cp, 'en catalogue');
+  return required;
+}
+
+/** Where each binding a mincho element may carry reads its text from. */
+const MINCHO_BINDINGS = {
+  'corpus:entry.kanji': () => {
+    const out = new Map();
+    if (existsSync(CORPUS))
+      for (const file of readdirSync(CORPUS)) {
+        if (!file.endsWith('.json')) continue;
+        const kanji = JSON.parse(readFileSync(join(CORPUS, file), 'utf8'))?.name?.kanji;
+        if (typeof kanji === 'string')
+          for (const cp of codepointsOf(kanji)) out.set(cp, `corpus/${file}`);
+      }
+    return out;
+  },
+};
+
+/** Every inventory element drawn in the mincho. */
+function minchoElements() {
+  const out = [];
+  if (!existsSync(INVENTORY)) return out;
+  for (const file of readdirSync(INVENTORY)) {
+    if (!file.endsWith('.json')) continue;
+    const walk = (els) => {
+      for (const e of els ?? []) {
+        if (e.type?.face === 'mincho') out.push({ id: e.id, binding: e.binding });
+        walk(e.children);
+      }
+    };
+    walk(JSON.parse(readFileSync(join(INVENTORY, file), 'utf8')).elements);
+  }
+  return out;
+}
+
+/**
+ * The mincho's requirement, DERIVED FROM WHAT THE MOCKUPS BIND: an element whose binding this
+ * check cannot read is a problem, never a skip — a face subset to text nobody collected is tofu
+ * with every gate green (the E-145 failure, a third time).
+ */
+function minchoRequirement(elements) {
+  const required = new Map();
+  const problems = [];
+  for (const e of elements) {
+    const collect = MINCHO_BINDINGS[e.binding];
+    if (collect === undefined) {
+      problems.push(
+        `${e.id} is drawn in the mincho and binds "${String(e.binding)}", which this check cannot read`,
+      );
+      continue;
+    }
+    for (const [cp, from] of collect()) required.set(cp, from);
+  }
+  return { required, problems };
+}
+
+/** What a STATIC bundled face must be (ADR-0112): no axes, its weight declared, its licence carried. */
+function structuralProblems(label, buf, weight) {
+  const problems = [];
+  if (hasTable(buf, 'fvar')) problems.push(`${label} is still variable (it carries fvar)`);
+  try {
+    if (weightClass(buf) !== weight)
+      problems.push(
+        `${label} declares weight ${String(weightClass(buf))}, not the ${String(weight)} it is cut at`,
+      );
+  } catch (e) {
+    problems.push(`${label}: ${e.message}`);
+  }
+  try {
+    if (!(names(buf).get(13) ?? '').includes('Open Font License'))
+      problems.push(`${label} carries no licence record (name ID 13)`);
+  } catch (e) {
+    problems.push(`${label}: ${e.message}`);
+  }
+  return problems;
+}
+
+/**
+ * Two bundled faces with one PostScript name: iOS refuses the second registration, `useFonts`
+ * reports an error the root layout does not read, and the app never leaves its splash (F-302).
+ */
+function duplicatePostscriptNames(faces) {
+  const seen = new Map();
+  const out = [];
+  for (const { label, postscript } of faces) {
+    if (seen.has(postscript))
+      out.push(`${label} and ${seen.get(postscript)} share the PostScript name ${postscript}`);
+    else seen.set(postscript, label);
+  }
+  return out;
+}
+
+/** A font that is only a table directory, for the structural decoys. */
+function syntheticTables(tags) {
+  const dir = Buffer.alloc(12 + tags.length * 16);
+  dir.writeUInt32BE(0x00010000, 0);
+  dir.writeUInt16BE(tags.length, 4);
+  tags.forEach((tag, i) => {
+    dir.write(tag, 12 + i * 16, 'ascii');
+    dir.writeUInt32BE(dir.length, 12 + i * 16 + 8);
+    dir.writeUInt32BE(0, 12 + i * 16 + 12);
+  });
+  return dir;
+}
+
 function prove() {
   console.log(`\n${BOLD}Font coverage — proving the check${OFF}\n`);
   const present = [0x85cd, 0x9f20]; // 藍 鼠
@@ -236,6 +370,31 @@ function prove() {
     `  ${GREEN}✓${OFF} detected  U+${absent.toString(16).toUpperCase()} ` +
       `${String.fromCodePoint(absent)} ${DIM}absent, and reported absent${OFF}`,
   );
+
+  // F-226's three decoys: each problem the static faces can have is SEEN, on data built for it.
+  const dup = duplicatePostscriptNames([
+    { label: 'a.ttf', postscript: 'Same-Regular' },
+    { label: 'b.ttf', postscript: 'Same-Regular' },
+    { label: 'c.ttf', postscript: 'Other-Regular' },
+  ]);
+  if (dup.length !== 1)
+    failures.push(
+      `decoy: two faces sharing a PostScript name were reported ${String(dup.length)} times, not once`,
+    );
+  else console.log(`  ${GREEN}✓${OFF} detected  a duplicate PostScript name ${DIM}${dup[0]}${OFF}`);
+
+  const unknown = minchoRequirement([{ id: 'decoy.kanji', binding: 'static:nothing.reads.this' }]);
+  if (unknown.problems.length !== 1)
+    failures.push('decoy: a mincho element with an unreadable binding was not reported');
+  else
+    console.log(
+      `  ${GREEN}✓${OFF} detected  a mincho binding nothing collects ${DIM}${unknown.problems[0]}${OFF}`,
+    );
+
+  const variable = structuralProblems('decoy.ttf', syntheticTables(['cmap', 'fvar']), 400);
+  if (!variable.some((m) => m.includes('still variable')))
+    failures.push('decoy: a face that still carries fvar was not reported as variable');
+  else console.log(`  ${GREEN}✓${OFF} detected  a variable face shipped as static`);
 
   if (failures.length > 0) {
     for (const f of failures) console.log(`  ${RED}✗${OFF} ${f}`);
@@ -295,6 +454,61 @@ if (missing.length > 0) {
 }
 
 console.log(
-  `\n${GREEN}${BOLD}Font coverage verified.${OFF} ` +
-    `${DIM}${String(required.size)} required, ${String(covered.size)} in the face.${OFF}\n`,
+  `  ${GREEN}✓${OFF} Noto Sans JP  ${DIM}${String(required.size)} required, ${String(covered.size)} in the face.${OFF}`,
+);
+
+// F-226: the serif and the mincho, and what every bundled face must be.
+const problems = [];
+const checkFace = (label, file, requirement, weight) => {
+  const path = join(FONTS, file);
+  if (!existsSync(path)) {
+    problems.push(`${label}: no asset at ${path.replace(ROOT, '.')}`);
+    return;
+  }
+  const buf = readFileSync(path);
+  const has = cmapCodepoints(buf);
+  const lacking = [...requirement.entries()].filter(([cp]) => !has.has(cp));
+  for (const [cp, from] of lacking.slice(0, 20))
+    problems.push(
+      `${label} lacks U+${cp.toString(16).toUpperCase().padStart(4, '0')} ${String.fromCodePoint(cp)} (${from})`,
+    );
+  problems.push(...structuralProblems(label, buf, weight));
+  if (lacking.length === 0)
+    console.log(
+      `  ${GREEN}✓${OFF} ${label}  ${DIM}${String(requirement.size)} required, ${String(has.size)} in the face.${OFF}`,
+    );
+};
+checkFace('Gelasio (the serif)', 'Gelasio-Regular.ttf', serifRequired(), 400);
+const minchoBound = minchoElements();
+const mincho = minchoRequirement(minchoBound);
+problems.push(...mincho.problems);
+if (minchoBound.length === 0)
+  problems.push(
+    'no inventory element is drawn in the mincho — an empty requirement agrees with anything',
+  );
+checkFace(
+  `Noto Serif JP (the mincho; ${String(minchoBound.length)} element(s) bind it)`,
+  'NotoSerifJP-Subset.ttf',
+  mincho.required,
+  400,
+);
+problems.push(
+  ...duplicatePostscriptNames(
+    readdirSync(FONTS)
+      .filter((f) => f.endsWith('.ttf'))
+      .map((f) => ({ label: f, postscript: names(readFileSync(join(FONTS, f))).get(6) ?? '' })),
+  ),
+);
+
+if (problems.length > 0) {
+  console.log(`\n${RED}${BOLD}${String(problems.length)} problem(s) with the bundled faces${OFF}`);
+  for (const m of problems) console.log(`  ${RED}✗${OFF} ${m}`);
+  console.log(
+    `\n${DIM}  Regenerate with node scripts/generate-font-subset.mjs. Never relax the check.${OFF}`,
+  );
+  process.exit(1);
+}
+
+console.log(
+  `\n${GREEN}${BOLD}Font coverage verified.${OFF} ${DIM}Every bundled face carries what it must render.${OFF}\n`,
 );
