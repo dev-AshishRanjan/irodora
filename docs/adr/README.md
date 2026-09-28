@@ -80,7 +80,7 @@ Two rules that matter more than the format:
 | [0054](0054-react-native-core-primitives-and-ui-stays-a-package.md) | Component behaviour comes from React Native’s own primitives; `@irodora/ui` stays a package | Accepted |
 | [0055](0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md) | The `a11y` gate renders under jest-expo, and proves the accessibility tree rather than the pixels | Accepted |
 | [0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md) | The message catalogue is enumerated TypeScript; a missing key is a typecheck error | Accepted |
-| [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Accepted |
+| [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Amended by ADR-0112 |
 | [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
 | [0059](0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md) | A blocking advisory with no fix is accepted with an expiry, not ignored and not left red | Accepted |
 | [0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) | Irodora ships with one editor, and self-review is declared rather than assumed | Accepted |
@@ -121,12 +121,14 @@ Two rules that matter more than the format:
 | [0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md) | The radius and spacing scales are the mockups', a swatch corner is a step under the ratio ceiling, and a shadow exists only where a mockup draws one | Accepted |
 | [0104](0104-the-mockup-draws-a-haptics-preference-so-the-port-gains-its-second-verb.md) | Mockup 15 draws a haptics preference on swatch selection, so the app keeps one and the port gains its second verb | Accepted |
 | [0105](0105-a-face-stays-out-of-the-plaintext-archive.md) | A face stays out of the plaintext archive, and the export list stops being the sync list | Accepted |
-| [0106](0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) | The serif is Gelasio, because the type the mockups draw is Georgia’s, and Gelasio is Georgia’s open-licence counterpart | Accepted |
+| [0106](0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) | The serif is Gelasio, because the type the mockups draw is Georgia’s, and Gelasio is Georgia’s open-licence counterpart | Accepted; d.2 and d.4 settled by ADR-0112 |
 | [0107](0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md) | Slate Graphite and Obsidian Noir are Sumi Charcoal’s drawn steps re-anchored at their own drawn grounds, and a pairing that fails moves the E3 way | Accepted |
 | [0108](0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) | The family chips are the six mockup 05 draws, in its order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge | Accepted |
 | [0109](0109-a-kasane-in-the-corpus-is-our-own-composition-and-its-edges-must-show.md) | A kasane in the corpus is our own composition, layered outermost first, and its edges must show | Accepted |
 | [0110](0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) | The multicoloured icons are followed as drawn, over a silhouette that still reads in one ink | Accepted |
 | [0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md) | The palette is the mockups', the themes are the four mockup 15 draws, and a sample is judged against the surface it sits on | Accepted |
+| [0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md) | The serif ships as one cut, Gelasio Regular at no tracking, and the mincho as Noto Serif JP at 400, because that is where the drawings measure | Accepted |
+| [0113](0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) | The type scale is board 00's four steps and a measured caption, and type drawn off the scale snaps to it | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

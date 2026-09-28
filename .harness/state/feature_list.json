@@ -10029,6 +10029,80 @@
         "content"
       ],
       "notes": "FROM F-224’s REVIEW (2026-09-24, finding M8). The eight kasane are composed two per season, and that season exists only in each derivation’s prose (\"for autumn: …\"). F-260 recommends kasane for a profile (mockup 23); if it wants to weigh the season, the only way today is to parse text. Recorded rather than built: F-224’s criteria do not ask for it, and whether F-260 needs it is F-260’s call."
+    },
+    {
+      "id": "F-301",
+      "title": "The large-text floor is WCAG's bold one, so regular text at 18.66 px is judged as large",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Text counts as large only at 24 px regular or 18.66 px bold (WCAG 2.2 SC 1.4.3), and the rendered check applies the weight the node actually carries",
+        "A person has approved the change, because it moves a gate threshold"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "contrast"
+      ],
+      "notes": "FOUND BY F-226'S PLANNER (2026-09-28). The manifest's `largeTextMinPx` is 18.66, which is WCAG's floor for BOLD text; regular text is large only from 24 px. So a regular-weight 22 px title is treated as large text, and a large-text-only token would pass at 3:1 where 4.5:1 is owed. NOTHING DEPENDS ON IT TODAY: since F-225 no token is large-text-only. It is still wrong, and a gate threshold is a person's decision (AGENTS.md; a threshold may not be moved by an agent), so it is recorded here rather than changed in F-226."
+    },
+    {
+      "id": "F-302",
+      "title": "A font that fails to load is a state the launch handles, not a splash that never hides",
+      "requirements": [
+        "NFR-11"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "When `useFonts` reports an error, the app still reaches its first frame — in the platform face, with the failure recorded — rather than holding the native splash for ever",
+        "What the app shows while a font has failed is drawn by a mockup or decided by a person (OQ-42)"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y"
+      ],
+      "notes": "FOUND BY F-226'S PLANNER (2026-09-28). `_layout.tsx` holds rendering until `useFonts` reports loaded and ignores its `error`; the native splash stays up until the first frame is shown. A face that fails to register — a duplicate PostScript name on iOS is one known cause — would therefore hang the app on its splash. F-226 adds two faces, which widens the exposure, and removes the known cause (the coverage check refuses duplicate PostScript names). What the app should SHOW when a font fails is undrawn (golden rule 14), so it waits on a mockup or a person.",
+      "mockups": [],
+      "openQuestions": [
+        "OQ-42"
+      ]
+    },
+    {
+      "id": "F-303",
+      "title": "The bundled Japanese sans is still variable, and its default instance is Thin",
+      "requirements": [
+        "NFR-11"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Every bundled face is static at the weight the mockups draw, with a unique PostScript name and an OS/2 weight class equal to it, and the content gate refuses a variable face",
+        "Japanese text renders at the drawn weight on an Android and an iOS device, attested with a capture"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "content"
+      ],
+      "notes": "FOUND WHILE BUILDING F-226 (2026-09-28). `apps/mobile/assets/fonts/NotoSansJP-Subset.ttf` keeps its `fvar` table, and its default instance is Thin: nameID 4 reads \"Noto Sans JP Thin\" and `OS/2.usWeightClass` is 100 (read with scripts/sfnt-read.mjs). ADR-0057's generator subsets without pinning the axis. React Native on Android picks a bundled face's DEFAULT instance, so Japanese text may render in the Thin master on Android; iOS may differ. Nobody has reported it and no capture shows it, so it is recorded rather than assumed. F-226 cuts its own two faces static (ADR-0112) and adds the structural checks for them; extending them to Noto Sans JP changes a face every Japanese string uses and needs a device to confirm, which is this feature.",
+      "mockups": [
+        "all"
+      ]
     }
   ]
 }

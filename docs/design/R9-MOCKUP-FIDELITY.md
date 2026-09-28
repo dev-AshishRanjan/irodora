@@ -301,7 +301,12 @@ Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's
 
 **Radius**: `sm 6 · md 10 · lg 16 · pill`. **Spacing**: `4 · 8 · 16 · 24 · 32 · 48` — still a
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and
-*Label* 14 in the sans; tabular figures for every number. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
+*Label* 14 in the sans; tabular figures for every number. **Adopted by `F-226`**
+([ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)): the scale is those four steps plus a **`caption` at 10.3**, the
+measured median of every em the mockups draw below 12 dp (OQ-12), and type drawn off the scale snaps
+to it by §2 (OQ-13). **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
+Noto Serif JP at 400** ([ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)). Both weights are measured against the drawn
+stems with a blur-invariant instrument, and calibrated. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
 (20 faces, each rendered as the drawn word and scored by mask overlap after scaling to it): `01`'s
 wordmark matches **Georgia Pro** best (0.83; Georgia 0.77, Times New Roman 0.70), and so does `01`'s
 tagline (0.66; next 0.52). `00`, `14` and `25` do not separate the candidates — best 0.66–0.68 with
@@ -602,8 +607,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
-| **OQ-12** | Type below 14 dp (`01`'s tab labels ≈ 10 dp, its card note ≈ 12 dp). A caption step, or 14 as the floor? | `F-226` |
-| **OQ-13** | Measured type runs off the scale (`01`'s tagline ≈ 18.5 dp, `17`'s slider labels ≈ 9 dp, `22`'s figures ≈ 46 dp). The screens' sizes (P3), or §5's steps? | `F-226` |
 | **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
 | **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
@@ -621,6 +624,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 | **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
+| **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
 | **OQ-40** | `13` draws *Save Outfit to Lookbook*, and no mockup draws the lookbook — nothing in any inventory reads a saved outfit back (see `OQ-39`, the same gap for colours) | `F-238` |
 | **OQ-39** | `06` draws a bookmark toggle, and no mockup draws where the bookmarks are read back — no saved list, no filter, no route | `F-237` |
@@ -632,6 +636,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | | answer | ADR |
 |---|---|---|
 | **OQ-15**, **OQ-20**, **OQ-21**, **OQ-37** | The multicoloured icons are followed as drawn, each colour a declared exception, over the one-ink silhouette F-228 registered; each already reads by shape and by the text beside it | [ADR-0110](../adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) |
+| **OQ-12** | A `caption` step at 10.3 dp: the median of the 92 ems the mockups draw below 12 dp, recomputed by a test. 14 as a floor would enlarge 121 drawn elements and nothing forces it | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
+| **OQ-13** | §5's steps, by §2's snap rule, the definition of strict the person approved. The seven elements it moves by more than 4 dp are listed for F-267; P3 would amend §2 | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
 | **OQ-29** | The serif is **Gelasio** (OFL), Georgia’s metric-compatible counterpart: first of 109 over the eight serif crops the mockups draw (§5) | [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) |
 | **OQ-35** | Nine chips: the six `05` draws, in its order, then Ki 黄, Shiro 白, Nezumi 鼠 past the drawn edge | [ADR-0108](../adr/0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) |
 | **OQ-36** | Each tile draws its theme’s ground; Slate and Obsidian are Sumi’s drawn steps re-anchored there; a failing pairing moves the E3 way, per theme | [ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md) |

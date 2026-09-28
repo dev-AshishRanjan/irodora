@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Accepted |
+| **Status** | Accepted — d.2 (the weight per role) and d.4 (the Japanese serif) are settled by [ADR-0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md): Gelasio Regular for every serif role, and Noto Serif JP at 400. d.4's "`20` and `26` draw a Mincho" is corrected there: only `20` does |
 | **Date** | 2026-09-24 |
 | **Closes** | OQ-29 |
 | **Feature** | F-226 (ships it); the measurement extends F-275's |

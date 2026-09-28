@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. **Amended by [ADR-0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)** (F-226): §6's "Latin is the platform's face" no longer holds where a mockup draws a serif — that is Gelasio, bundled; the sans stays the platform's.
 
 ## Date
 
