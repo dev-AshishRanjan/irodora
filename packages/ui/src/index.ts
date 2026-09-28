@@ -180,6 +180,8 @@ export {
   Select,
   Slider,
   Switch,
+  SWITCH_THUMB,
+  SWITCH_TRACK,
   percentOf,
   type AccordionItem,
   type AccordionProps,

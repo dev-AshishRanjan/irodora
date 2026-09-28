@@ -52,22 +52,25 @@ import {
   Switch as HeroSwitch,
 } from 'heroui-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { hitArea } from './hitArea.js';
 import { overlayKeyframes } from './motion.js';
+import { FocusRing } from './selection.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 import type { Script } from './layout.js';
 
 /**
- * The switch track, sized so the TARGET is the target.
- *
- * WCAG 2.2 asks for 44 on the thing a finger lands on, and HeroUI's default track is 32 tall.
- * Raising the track rather than adding `hitSlop` is deliberate: the conformance rule reads
- * `minWidth`/`minHeight` off the rendered node because a JS render tree has no Yoga pass
- * (ADR-0055), so a hit area declared any other way is invisible to it — and, more to the point,
- * invisible to a reviewer.
+ * The switch track, at the size `15` draws it (F-232, F-285): 69 × 36 px at 2 px/dp. It was
+ * 68 × 44, raised so the drawn size WAS the target, because the tap-target rule could not see a hit
+ * area. Since ADR-0114 the rule adds the `hitSlop` back, so the track is drawn as drawn and the rest
+ * of the target is in the hit area. Recomputed from the inventory by `switch.test`.
  */
-const SWITCH_WIDTH = 68;
-const SWITCH_THUMB = 34;
+export const SWITCH_TRACK = { width: 34.5, height: 18 } as const;
+/**
+ * The thumb: 28.3 px across on `15` (14.15 dp), snapped to half a dp, inset from the track's
+ * edges by what is left over. Recomputed from the inventory by `switch.test`.
+ */
+export const SWITCH_THUMB = 14;
 /**
  * The dot `15` draws in the gutter, at the size it draws it (F-239).
  *
@@ -77,8 +80,8 @@ const SWITCH_THUMB = 34;
  * spacing step.
  */
 const SWITCH_MARKER = 5;
-/** Centres a 34px thumb in a 44px track. HeroUI's `left` is the offset from the near edge. */
-const SWITCH_THUMB_INSET = (nativeTapTarget - SWITCH_THUMB) / 2;
+/** Centres the thumb in the track. HeroUI's `left` is the offset from the near edge. */
+const SWITCH_THUMB_INSET = (SWITCH_TRACK.height - SWITCH_THUMB) / 2;
 
 export interface SwitchProps {
   /**
@@ -177,10 +180,15 @@ export function Switch({
   const { colors } = useTheme();
   const inert = disabled || loading;
 
-  // `inverse` pairs with `inverse.foreground`; `surface.3` pairs with `foreground`. Both are
-  // declared in the manifest, which is what makes the thumb-on-track choice below not free.
-  const track = checked ? colors.inverse : colors['surface.3'];
-  const thumb = checked ? colors['inverse.foreground'] : colors['surface.1'];
+  /*
+   * AS THE MOCKUPS DRAW IT (F-232). On, `15` draws a white track (README `action.primary`, the
+   * manifest's `accent`) under a thumb in its card's `surface.1`. `00` draws its on-thumb nearer
+   * `border`, and the screen beats the board on its own surface (P3). Off, which only `00` draws, is
+   * a `surface.3` track under a white thumb. The thumb's position still says which, whatever the
+   * colours (golden rule 13).
+   */
+  const track = checked ? colors.accent : colors['surface.3'];
+  const thumb = checked ? colors['surface.1'] : colors.accent;
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: nativeSpacing.sm }}>
@@ -249,21 +257,22 @@ export function Switch({
         animation={{ state: 'disabled' }}
         // `null` removes the theme-decided layer. One of the theme's choices is a blur.
         background={null}
+        // The drawn track; the rest of the target is in the hit area (ADR-0114).
+        hitSlop={hitArea(SWITCH_TRACK.width, SWITCH_TRACK.height)}
         style={{
-          minWidth: nativeTapTarget,
-          minHeight: nativeTapTarget,
-          width: SWITCH_WIDTH,
-          height: nativeTapTarget,
+          width: SWITCH_TRACK.width,
+          height: SWITCH_TRACK.height,
           borderRadius: nativeRadius.pill,
           justifyContent: 'center',
           backgroundColor: track,
-          // A ring, not a fill: focus has to be visible on a switch that is already on, and a
-          // changed fill would be indistinguishable from being on.
-          borderWidth: focused ? 2 : 0,
-          ...(focused ? { borderColor: colors.ring } : {}),
           opacity: inert ? 0.5 : 1,
         }}
       >
+        {/*
+          FOCUS IS A RING OUTSIDE THE TRACK (E-151), not a border on it: a border would draw inside
+          the drawn size, and focus has to be visible on a switch that is already on.
+        */}
+        <FocusRing visible={focused} radius={nativeRadius.pill} />
         <HeroSwitch.Thumb
           animation={{ left: { value: SWITCH_THUMB_INSET } }}
           style={{
