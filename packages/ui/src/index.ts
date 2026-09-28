@@ -24,7 +24,14 @@ export {
   type ThemeProviderProps,
   type ThemeValue,
 } from './theme.js';
-export { Text, type ColorFor, type LargeTypeSize, type TextProps, type TypeSize } from './Text.js';
+export {
+  Text,
+  type ColorFor,
+  type LargeTypeSize,
+  type TextProps,
+  type TextWeight,
+  type TypeSize,
+} from './Text.js';
 export { Avatar, AVATAR_SIZE, type AvatarProps } from './Avatar.js';
 export {
   Glyph,
@@ -58,7 +65,15 @@ export {
 } from './displaySettings.js';
 export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
-export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
+export {
+  Button,
+  BUTTON_HEIGHT,
+  GLYPH_IN_PLATE,
+  ICON_PLATE,
+  type ButtonProps,
+  type ButtonRadius,
+  type ButtonVariant,
+} from './Button.js';
 export { IconButton, type IconButtonProps } from './IconButton.js';
 export { hitArea, platformTapTarget } from './hitArea.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
@@ -68,6 +83,8 @@ export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './ChoiceGroup.js';
 export {
   currentTone,
+  FocusRing,
+  FOCUS_RING,
   SelectionMark,
   selectionStyle,
   selectionTone,

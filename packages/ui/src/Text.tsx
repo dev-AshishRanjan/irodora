@@ -107,11 +107,28 @@ type FaceProps<S extends TypeSize> =
       /** The platform sans for Latin, the bundled gothic for Japanese — the default. */
       readonly face?: 'sans' | 'gothic';
       readonly numeric?: boolean;
+      /**
+       * The weight an element's inventory records, where it is not its step's (F-232): board 00
+       * sets its primary pill's label in body at 500, where the step is 400. The sans only: the
+       * serif and the mincho ship one cut each (ADR-0112), and asking a single cut for another
+       * weight makes a platform fake it.
+       */
+      readonly weight?: TextWeight;
     }
-  | (S extends SerifStep ? { readonly face: 'serif'; readonly numeric?: false } : never)
+  | (S extends SerifStep
+      ? { readonly face: 'serif'; readonly numeric?: false; readonly weight?: never }
+      : never)
   | (S extends MinchoStep
-      ? { readonly face: 'mincho'; readonly numeric?: false; readonly script: 'japanese' }
+      ? {
+          readonly face: 'mincho';
+          readonly numeric?: false;
+          readonly script: 'japanese';
+          readonly weight?: never;
+        }
       : never);
+
+/** The weights the inventories record on sans text. */
+export type TextWeight = 400 | 500 | 600;
 
 export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
   FaceProps<S> & {
@@ -152,6 +169,10 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
      */
     readonly numeric?: boolean;
   };
+
+/** A weight as the string React Native's `fontWeight` takes. */
+const weightOf = (weight: TextWeight): '400' | '500' | '600' =>
+  weight === 400 ? '400' : weight === 500 ? '500' : '600';
 
 /** An em tracking from the manifest, in the points React Native takes, at one font size. */
 const trackingAt = (tracking: string, fontSize: number): number =>
@@ -194,6 +215,7 @@ export function Text<S extends TypeSize>({
   heading = false,
   numeric = false,
   face = 'sans',
+  weight,
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
@@ -234,6 +256,7 @@ export function Text<S extends TypeSize>({
         ...step,
         color: colors[color],
         ...faceStyle(face, japanese, step.fontSize),
+        ...(weight === undefined ? {} : { fontWeight: weightOf(weight) }),
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:
         // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
         // absent one, and the conformance suite reads what the NODE carries.

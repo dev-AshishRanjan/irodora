@@ -190,3 +190,49 @@ export function SelectionMark({
     </View>
   );
 }
+
+/** The focus ring's width, in dp: the same as the chooser's state edge. */
+export const FOCUS_RING = SELECTION_EDGE;
+
+/** How far outside the drawn box the ring sits, so it never covers the control's own edge. */
+export const FOCUS_RING_GAP = 1;
+
+export interface FocusRingProps {
+  /** Draw nothing when this is false, so a call site can render it unconditionally. */
+  readonly visible: boolean;
+  /** The drawn box's corner radius in dp. The ring follows it, grown by its own offset. */
+  readonly radius: number;
+  readonly testID?: string;
+}
+
+/**
+ * Focus on a control drawn at its mockup's size (F-232, E-151): a `ring` OUTSIDE the box.
+ *
+ * A chooser reserves its state edge (decision 1 above) because its resting edge is transparent.
+ * A control the mockups draw WITH an edge, or with none, cannot reserve one without changing what
+ * is drawn: board 00's secondary pill is outlined 1 px, and a reserved 2 dp edge would redraw it.
+ * So focus is an overlay that sits just outside the box and costs no layout, in `ring`, the token
+ * that exists for exactly this (ADR-0111). Decorative to a screen reader: focus is where the cursor
+ * is, and the platform already says so.
+ */
+export function FocusRing({ visible, radius, testID }: FocusRingProps): React.JSX.Element | null {
+  const { colors } = useTheme();
+  if (!visible) return null;
+  const offset = FOCUS_RING + FOCUS_RING_GAP;
+  return (
+    <View
+      testID={testID}
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: -offset,
+        right: -offset,
+        bottom: -offset,
+        left: -offset,
+        borderRadius: radius >= nativeRadius.pill ? nativeRadius.pill : radius + offset,
+        borderWidth: FOCUS_RING,
+        borderColor: colors.ring,
+      }}
+    />
+  );
+}

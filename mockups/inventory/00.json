@@ -852,7 +852,8 @@
       "binding": null,
       "action": null,
       "raw": {
-        "cornerPx": 5.5
+        "cornerPx": 5.5,
+        "glyphPx": 18
       },
       "copy": null
     },
@@ -1135,7 +1136,8 @@
       "binding": null,
       "action": null,
       "raw": {
-        "cornerPx": 4
+        "cornerPx": 4,
+        "glyphPx": 17
       },
       "copy": null
     },
@@ -1269,7 +1271,8 @@
       "binding": null,
       "action": null,
       "raw": {
-        "cornerPx": 14.5
+        "cornerPx": 14.5,
+        "glyphPx": 16
       },
       "copy": null
     },

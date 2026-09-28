@@ -36,7 +36,8 @@ Two further gaps:
    - The slop is split evenly on each side, so the target stays centred on the drawing.
    - It is never negative.
 3. **A control sets its drawn size in `style` and passes `hitArea(…)` as `hitSlop`.** It does not
-   raise its drawn size to the target.
+   raise its drawn size to the target. **The hit area is the control's own:** its props refuse
+   `hitSlop`, because a caller that shrank it would take the target away.
 4. **The `tap-target` rule adds them back together.**
    - `tapTargetReach` takes the larger of `width` and `minWidth` (and of `height` and `minHeight`)
      and adds the slop on each side.

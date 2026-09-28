@@ -571,12 +571,43 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           label="Save this palette"
           disabled={state === 'disabled'}
           loading={state === 'loading'}
-          variant={state === 'focus' ? 'secondary' : 'primary'}
+          focused={state === 'focus'}
           testID={state}
         />,
         theme,
       ),
   },
+  /*
+   * BOARD 00'S OTHER BUTTON FORMS (F-232): the outlined secondary, and the icon-only forms on a
+   * plate (ADR-0115), square, round and outlined. Each is drawn at its own size and reaches the
+   * target through its hit area (ADR-0114), which is what the tap-target rule now reads.
+   */
+  ...(
+    [
+      ['Button (secondary)', { label: 'Hold as target', variant: 'secondary' }],
+      ['Button (icon, square)', { icon: 'camera', label: 'Measure a colour' }],
+      ['Button (icon, round)', { icon: 'palette', label: 'Open palettes', shape: 'circle' }],
+      [
+        'Button (icon, outlined)',
+        { icon: 'lock', label: 'Lock this slot', plate: 'outlined', size: 21 },
+      ],
+    ] as const
+  ).map(([name, form]): ConformanceSubject => ({
+    name,
+    kind: 'interactive',
+    forbiddenNames: ['icon', 'glyph'],
+    render: (state, theme) =>
+      draw(
+        <Button
+          {...form}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          focused={state === 'focus'}
+          testID={state}
+        />,
+        theme,
+      ),
+  })),
   {
     /*
      * A GLYPH AS THE WHOLE CONTROL (F-228). The name is required by type; this checks the one

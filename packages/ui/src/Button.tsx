@@ -1,5 +1,6 @@
 /**
- * A button, with every state a pressable can be in actually rendering differently.
+ * A button, drawn as the mockups draw it, with every state a pressable can be in rendering
+ * differently.
  *
  * ## What changed in F-087, and what deliberately did not
  *
@@ -31,11 +32,27 @@
  * and HeroUI sets only `disabled`, so the flag is supplied here. Both come from one prop, so
  * they cannot disagree.
  *
- * ## Tap target
+ * ## The forms board 00 draws (F-232)
  *
- * `minWidth`/`minHeight` come from `nativeTapTarget` (44). The conformance suite asserts the
- * declared value — it cannot assert the *measured* one, because a JS render tree has no Yoga
- * layout pass. That distinction is stated in ADR-0055 and printed by the gate.
+ * - **Primary:** a pill in `accent` with its label in `accent.foreground`, body at 500
+ *   (`00.buttons.primary`).
+ * - **Secondary:** an outline in `border.strong` with **no fill**, and its label in body at 400.
+ *   The edge is decorative, because the label identifies the control (ADR-0111, E-151).
+ * - **Icon-only, on a plate (ADR-0115):** the glyph on a `surface.2` plate, square (`sm`) or round.
+ *   `13`'s locks draw an outlined plate instead. The plate is the pressable. A glyph with no plate
+ *   is `IconButton`.
+ *
+ * Each screen draws its own height and corner, and a screen beats the board on its own surface
+ * (P3), so both are props: a surface passes its element's `dp`. The defaults are computed from the
+ * inventories, and `button-forms.test` recomputes them.
+ *
+ * ## Tap target (ADR-0114)
+ *
+ * The button is drawn at its drawn size and reaches the platform's target (44 iOS, 48 Android)
+ * through its hit area (R9-MOCKUP-FIDELITY §4 E3). A labelled button is never narrower than the
+ * target: every labelled button the mockups draw is wider than that anyway. The conformance suite
+ * adds the declared size and the `hitSlop` back together. That is declared, not measured, because
+ * a JS render tree has no Yoga pass (ADR-0055).
  *
  * ## The accessibility is the button's own (F-232)
  *
@@ -47,68 +64,125 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import {
-  nativeFamilies,
-  nativeRadius,
-  nativeSpacing,
-  nativeTapTarget,
-} from '@irodora/design-tokens';
-import { useTheme } from './theme.js';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { Glyph, type GlyphName } from './Glyph.js';
+import { hitArea, platformTapTarget } from './hitArea.js';
 import type { Script } from './layout.js';
 import {
   withoutOwnedAccessibility,
   type OwnedAccessibility,
   type RefuseOwnedAccessibility,
 } from './ownedAccessibility.js';
+import { FocusRing } from './selection.js';
+import { Text } from './Text.js';
+import { useTheme } from './theme.js';
 
 export type ButtonVariant = 'primary' | 'secondary';
 
-export type ButtonProps = Omit<
+/** The corners the mockups draw on buttons: 00's pill, and the screens' `sm`, `md` and `lg`. */
+export type ButtonRadius = 'sm' | 'md' | 'lg' | 'pill';
+
+/**
+ * A labelled button's default drawn height, in dp: the median of every labelled pill button drawn
+ * on a screen with a scale, snapped to half a dp (31.75 → 32). Recomputed by `button-forms.test`.
+ */
+export const BUTTON_HEIGHT = 32;
+
+/**
+ * An icon-only plate's default size, in dp. No screen draws 00's plates, so it is 00's own ratio:
+ * the median plate height over the primary pill's in the same column (0.943) times
+ * {@link BUTTON_HEIGHT}, snapped to half a dp. Recomputed by `button-forms.test`.
+ */
+export const ICON_PLATE = 30;
+
+/**
+ * A glyph's `size` as a share of its plate: the median over 00's three camera plates of the
+ * camera's drawn width, divided by the 18 of 24 grid units it spans, over the plate. Recomputed by
+ * `button-forms.test` from their `raw.glyphPx`.
+ */
+export const GLYPH_IN_PLATE = 0.65;
+
+/**
+ * `hitSlop` is the button's own (ADR-0114): it is what makes the drawn size reach the target, and a
+ * caller that shrank it would take the target away.
+ */
+type Shared = Omit<
   PressableProps,
-  'style' | 'children' | 'disabled' | OwnedAccessibility
+  'style' | 'children' | 'disabled' | 'hitSlop' | OwnedAccessibility
 > &
   RefuseOwnedAccessibility & {
-    /** The visible label. Also the accessible name — one string, so they cannot diverge. */
-    readonly label: string;
-    readonly variant?: ButtonVariant;
     readonly disabled?: boolean;
     readonly loading?: boolean;
     /**
-     * The script the label is written in.
-     *
-     * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
-     * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
-     * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+     * Focused by an external keyboard or Switch Control, drawn as a `ring` outside the box
+     * (E-151). A distinct state from pressed: focus is where the cursor is.
      */
-    readonly script?: Script;
+    readonly focused?: boolean;
   };
 
-export function Button({
+type LabelledProps = Shared & {
+  /** The visible label. Also the accessible name — one string, so they cannot diverge. */
+  readonly label: string;
+  readonly variant?: ButtonVariant;
+  /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BUTTON_HEIGHT}. */
+  readonly height?: number;
+  /** The drawn corner. Board 00 draws a pill, which is the default. */
+  readonly radius?: ButtonRadius;
+  /**
+   * The script the label is written in.
+   *
+   * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
+   * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
+   * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+   */
+  readonly script?: Script;
+  readonly icon?: never;
+  readonly plate?: never;
+  readonly shape?: never;
+  readonly size?: never;
+};
+
+type IconOnlyProps = Shared & {
+  /** The glyph, by the name its inventory binds. */
+  readonly icon: GlyphName;
+  /**
+   * What the control does, for a screen reader: "Lock this slot", not "Lock icon". It is the ONLY
+   * name, and nothing is shown, so it is required.
+   */
+  readonly label: string;
+  /** 00's filled `surface.2` plate (the default), or `13`'s outline in `border`. */
+  readonly plate?: 'filled' | 'outlined';
+  /** 00's first row is square (`sm`); its second row is round. */
+  readonly shape?: 'square' | 'circle';
+  /** The plate's drawn size in dp: the element's own `dp`. Defaults to {@link ICON_PLATE}. */
+  readonly size?: number;
+  readonly variant?: never;
+  readonly height?: never;
+  readonly radius?: never;
+  readonly script?: never;
+};
+
+export type ButtonProps = LabelledProps | IconOnlyProps;
+
+export function Button(props: ButtonProps): React.JSX.Element {
+  return props.icon === undefined ? <LabelledButton {...props} /> : <IconOnlyButton {...props} />;
+}
+
+function LabelledButton({
   label,
   variant = 'primary',
+  height = BUTTON_HEIGHT,
+  radius = 'pill',
   disabled = false,
   loading = false,
+  focused = false,
   script = 'latin',
   ...rest
-}: ButtonProps): React.JSX.Element {
+}: LabelledProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-
-  /*
-   * Both pairings are DECLARED in the manifest: `accent` pairsWith `accent.foreground`,
-   * `surface.2` pairsWith `foreground`. A component pairing tokens the manifest does not
-   * declare together is a contrast-gate failure, so the choice is not free.
-   *
-   * THE PRIMARY FILL IS THE ACCENT (F-175), where it was `inverse` — a near-white plate on
-   * dark and a near-black one on light. That was the only thing the product had that could
-   * read as "the important one", because there was no accent to spend: `link` is defined as
-   * the same value as `foreground`, so every emphasis in the app was made of weight and grey.
-   *
-   * `accent.foreground` is equal to `background` by construction, so a filled control reads
-   * as a hole cut in the page rather than as a third colour.
-   */
-  const background = variant === 'primary' ? colors.accent : colors['surface.2'];
-  const foreground = variant === 'primary' ? colors['accent.foreground'] : colors.foreground;
+  const target = platformTapTarget();
+  const primary = variant === 'primary';
 
   return (
     <HeroButton
@@ -125,20 +199,23 @@ export function Button({
       // Scale is a transform. The default, `scale-highlight`, cross-fades a background colour
       // — see the note above; verify-motion.mjs rejects a component that allows it.
       feedbackVariant="scale"
+      // The drawn height, and the rest of the target in the hit area (ADR-0114).
+      hitSlop={hitArea(target, height)}
       style={{
-        minWidth: nativeTapTarget,
-        minHeight: nativeTapTarget,
-        borderRadius: nativeRadius.pill,
+        height,
+        minWidth: target,
+        borderRadius: nativeRadius[radius],
         paddingHorizontal: nativeSpacing.md,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: background,
-        // The border belongs to the OUTLINED variant only. A filled control's boundary is its
-        // FILL against the page, not a line — and `border.strong` deliberately does not pair
-        // with `inverse` (F-070), because no single colour clears 3:1 against both a
-        // near-white and a near-black ground.
-        borderWidth: variant === 'secondary' ? 1 : 0,
-        ...(variant === 'secondary' ? { borderColor: colors['border.strong'] } : {}),
+        /*
+         * Both drawn pairings are DECLARED in the manifest: `accent.foreground` on `accent`, and
+         * `foreground` on whatever surface the outline sits on. The secondary has NO FILL: board
+         * 00 draws an outline and nothing inside it (F-232), where this used to paint `surface.2`.
+         */
+        backgroundColor: primary ? colors.accent : 'transparent',
+        borderWidth: primary ? 0 : 1,
+        ...(primary ? {} : { borderColor: colors['border.strong'] }),
         // Every declared state renders DIFFERENTLY. A component that returns the same tree for
         // default and disabled has defined the state in name only, and the conformance suite
         // rejects exactly that. Press feedback is HeroUI's scale, which the tree shows as a
@@ -147,22 +224,65 @@ export function Button({
       }}
     >
       {/*
-        THE BUNDLED FACE, AND ONLY THE FACE (F-152).
-
-        This label is HeroUI's, not our `Text`, so it never went through the type scale — and
-        a Japanese button therefore drew with the platform font, which is the one thing
-        ADR-0057 §6 bundles a subset to prevent. The SIZE stays HeroUI's: a button's metrics
-        are its own, the tap target is asserted against them, and changing the step here would
-        move a measurement two gates depend on to fix a glyph problem.
+        THE LABEL GOES THROUGH `Text` (F-232), where it was HeroUI's own label: so it takes the
+        type scale, the bundled face for Japanese (F-152), Dynamic Type, and the weight board 00
+        draws — body at 500 on the primary, 400 on the secondary.
       */}
-      <HeroButton.Label
-        style={{
-          color: foreground,
-          ...(script === 'japanese' ? { fontFamily: nativeFamilies.jp } : {}),
-        }}
+      <Text
+        size="body"
+        weight={primary ? 500 : 400}
+        color={primary ? 'accent.foreground' : 'foreground'}
+        script={script}
+        numberOfLines={1}
       >
         {loading ? `${label}…` : label}
-      </HeroButton.Label>
+      </Text>
+      <FocusRing visible={focused} radius={nativeRadius[radius]} />
+    </HeroButton>
+  );
+}
+
+function IconOnlyButton({
+  icon,
+  label,
+  plate = 'filled',
+  shape = 'square',
+  size = ICON_PLATE,
+  disabled = false,
+  loading = false,
+  focused = false,
+  ...rest
+}: IconOnlyProps): React.JSX.Element {
+  const { colors } = useTheme();
+  const inert = disabled || loading;
+  const radius = shape === 'circle' ? nativeRadius.pill : nativeRadius.sm;
+  return (
+    <HeroButton
+      // FIRST, and without the owned props (`ownedAccessibility.ts`).
+      {...withoutOwnedAccessibility(rest)}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: inert, busy: loading }}
+      isDisabled={inert}
+      isIconOnly
+      feedbackVariant="scale"
+      // The plate is the pressable (ADR-0115), drawn at its size; the target is in the hit area.
+      hitSlop={hitArea(size, size)}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        justifyContent: 'center',
+        alignItems: 'center',
+        // `foreground` on `surface.2`, and on the surface beneath an outline: both declared.
+        backgroundColor: plate === 'filled' ? colors['surface.2'] : 'transparent',
+        borderWidth: plate === 'outlined' ? 1 : 0,
+        ...(plate === 'outlined' ? { borderColor: colors.border } : {}),
+        opacity: inert ? 0.5 : 1,
+      }}
+    >
+      <Glyph name={icon} color={colors.foreground} size={size * GLYPH_IN_PLATE} />
+      <FocusRing visible={focused} radius={radius} />
     </HeroButton>
   );
 }

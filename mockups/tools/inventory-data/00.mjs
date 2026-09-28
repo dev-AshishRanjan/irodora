@@ -134,7 +134,9 @@ export default {
 
     // ---- column 2: buttons and controls
     // The icon plates (F-232, corner.ps1): each column's first row fits r 3–5.5 px on a 33–37 px plate,
-    // `sm`; column 3's second row fits r 12.5–15.5 px on a 34 px plate, a circle.
+    // `sm`; column 3's second row fits r 12.5–15.5 px on a 34 px plate, a circle. The three cameras
+    // record the glyph's drawn width (glyphPx): the camera spans 18 of the icon grid's 24 units, so
+    // they are what a glyph's size inside its plate is calibrated on.
     el('00.buttons.primary', 'ui:Button', B(487, 476, 194, 42), {
       tokens: { bg: 'action.primary', radius: 'pill' },
       type: sans('body', 500),
@@ -144,7 +146,7 @@ export default {
     el('00.buttons.icon-camera', 'ui:Button', B(710, 478, 36, 37), {
       tokens: { bg: 'level2', radius: 'sm' },
       icon: 'camera',
-      raw: { cornerPx: 5.5 },
+      raw: { cornerPx: 5.5, glyphPx: 18 },
     }),
     el('00.buttons.icon-image', 'ui:Button', B(757, 478, 36, 37), {
       tokens: { bg: 'level2', radius: 'sm' },
@@ -202,7 +204,7 @@ export default {
     el('00.controls.icon-camera', 'ui:Button', B(1153, 91, 33, 33), {
       tokens: { bg: 'level2', radius: 'sm' },
       icon: 'camera',
-      raw: { cornerPx: 4 },
+      raw: { cornerPx: 4, glyphPx: 17 },
     }),
     el('00.controls.icon-edit', 'ui:Button', B(1198, 91, 33, 33), {
       tokens: { bg: 'level2', radius: 'sm' },
@@ -230,7 +232,7 @@ export default {
     el('00.controls.icon-camera-2', 'ui:Button', B(1153, 138, 33, 34), {
       tokens: { bg: 'level2', radius: 'pill' },
       icon: 'camera',
-      raw: { cornerPx: 14.5 },
+      raw: { cornerPx: 14.5, glyphPx: 16 },
     }),
     el('00.controls.icon-palette', 'ui:Button', B(1198, 138, 33, 34), {
       tokens: { bg: 'level2', radius: 'pill' },

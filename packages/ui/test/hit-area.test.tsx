@@ -11,7 +11,7 @@
 import { render, screen } from '@testing-library/react-native';
 import { Platform, Pressable } from 'react-native';
 import { nativeTapTarget, nativeTapTargetAndroid, type Theme } from '@irodora/design-tokens';
-import { Button, hitArea, platformTapTarget, ThemeProvider } from '../src/index.js';
+import { Button, BUTTON_HEIGHT, hitArea, platformTapTarget, ThemeProvider } from '../src/index.js';
 import {
   checkSubject,
   pressableNodes,
@@ -95,14 +95,28 @@ describe('the rule adds the drawn size and the hit area back together', () => {
 
 describe('the hit area arrives where the rule reads it', () => {
   it('HeroUI’s Button forwards hitSlop to the host view (the probe the plan asked for)', () => {
-    const slop = hitArea(DRAWN.width, DRAWN.height, 'ios');
+    // Button sets its own hit area and hands it to HeroUI's Button; the host view is where it lands.
     render(
       <ThemeProvider theme="dark">
-        <Button label="Save" hitSlop={slop} testID="b" />
+        <Button label="Save" testID="b" />
       </ThemeProvider>,
     );
     const hosts = screen.getAllByTestId('b', { includeHiddenElements: true });
-    expect(hosts.some((h) => (h.props as { hitSlop?: unknown }).hitSlop === slop)).toBe(true);
+    expect(
+      hosts.some(
+        (h) =>
+          JSON.stringify((h.props as { hitSlop?: unknown }).hitSlop) ===
+          JSON.stringify(hitArea(nativeTapTarget, BUTTON_HEIGHT, 'ios')),
+      ),
+    ).toBe(true);
+  });
+
+  it('is the button’s own: a caller cannot shrink it', () => {
+    // @ts-expect-error — the hit area is what makes the drawn size reach the target (ADR-0114).
+    const shrunk = <Button label="Save" hitSlop={0} />;
+    // DECOY — without it, the button compiles.
+    const own = <Button label="Save" />;
+    expect([shrunk, own]).toHaveLength(2);
   });
 
   /** A pressable drawn at the switch's size, with the slop given, as a conformance subject. */
