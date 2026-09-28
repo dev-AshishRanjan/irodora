@@ -31,6 +31,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cmapCodepoints } from './sfnt-read.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -45,85 +46,8 @@ const FONT = join(ROOT, 'apps', 'mobile', 'assets', 'fonts', 'NotoSansJP-Subset.
 const CORPUS = join(ROOT, 'content', 'colors');
 const JA_CATALOGUE = join(ROOT, 'apps', 'mobile', 'src', 'i18n', 'ja.ts');
 
-// ---------------------------------------------------------------------------------------
-// TrueType `cmap` parsing.
-//
-// Formats 4 and 12 only, and that is a deliberate limit rather than an oversight: 4 is the
-// BMP mapping every font has, and 12 is what carries anything above U+FFFF. A font whose
-// Unicode mapping is in neither is a font we cannot check, and this REPORTS that rather than
-// treating "I found no subtable I understand" as "I found no missing glyphs".
-// ---------------------------------------------------------------------------------------
-
-const u16 = (b, o) => b.readUInt16BE(o);
-const u32 = (b, o) => b.readUInt32BE(o);
-
-function cmapCodepoints(buf) {
-  if (buf.length < 12) throw new Error('not a font: too short for a table directory');
-  const numTables = u16(buf, 4);
-  let cmapOffset = -1;
-  for (let i = 0; i < numTables; i += 1) {
-    const rec = 12 + i * 16;
-    if (buf.toString('ascii', rec, rec + 4) === 'cmap') cmapOffset = u32(buf, rec + 8);
-  }
-  if (cmapOffset < 0) throw new Error('no cmap table — the font declares no Unicode mapping');
-
-  const covered = new Set();
-  const numSub = u16(buf, cmapOffset + 2);
-  let understood = 0;
-
-  for (let i = 0; i < numSub; i += 1) {
-    const enc = cmapOffset + 4 + i * 8;
-    const sub = cmapOffset + u32(buf, enc + 4);
-    const format = u16(buf, sub);
-
-    if (format === 4) {
-      understood += 1;
-      const segX2 = u16(buf, sub + 6);
-      const ends = sub + 14;
-      const starts = ends + segX2 + 2;
-      const deltas = starts + segX2;
-      const ranges = deltas + segX2;
-      for (let s = 0; s < segX2 / 2; s += 1) {
-        const end = u16(buf, ends + s * 2);
-        const start = u16(buf, starts + s * 2);
-        if (start === 0xffff) continue;
-        const rangeOffset = u16(buf, ranges + s * 2);
-        for (let c = start; c <= end && c !== 0xffff; c += 1) {
-          // A segment maps a codepoint only if the resulting glyph id is non-zero. Treating
-          // presence in a segment as coverage would count every codepoint in a range whose
-          // glyphs were subset AWAY — which is exactly what a subsetter produces.
-          let glyph;
-          if (rangeOffset === 0) glyph = (c + u16(buf, deltas + s * 2)) & 0xffff;
-          else {
-            const gi = ranges + s * 2 + rangeOffset + (c - start) * 2;
-            if (gi + 1 >= buf.length) continue;
-            const raw = u16(buf, gi);
-            glyph = raw === 0 ? 0 : (raw + u16(buf, deltas + s * 2)) & 0xffff;
-          }
-          if (glyph !== 0) covered.add(c);
-        }
-      }
-    } else if (format === 12) {
-      understood += 1;
-      const nGroups = u32(buf, sub + 12);
-      for (let g = 0; g < nGroups; g += 1) {
-        const rec = sub + 16 + g * 12;
-        const start = u32(buf, rec);
-        const end = u32(buf, rec + 4);
-        const startGlyph = u32(buf, rec + 8);
-        if (startGlyph === 0) continue;
-        for (let c = start; c <= end; c += 1) covered.add(c);
-      }
-    }
-  }
-
-  if (understood === 0)
-    throw new Error(
-      `cmap has ${String(numSub)} subtable(s), none in format 4 or 12 — this checker cannot ` +
-        'read its Unicode mapping, and an unreadable mapping is not an empty one',
-    );
-  return covered;
-}
+// The `cmap` reader is shared with the subset generator and the measuring tools
+// (scripts/sfnt-read.mjs), so the three cannot disagree about what a font maps.
 
 // ---------------------------------------------------------------------------------------
 // What must be covered.

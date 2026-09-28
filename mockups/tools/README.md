@@ -17,6 +17,9 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 | `serif-match.ps1` | renders a word in each candidate serif and scores it against a crop by mask overlap; `-fontDir` adds font FILES, loaded without being installed | naming the face a wordmark or tagline is drawn in (§5, OQ-29) |
 | `tint.ps1` | the mean colour of only the saturated pixels in a box — an icon's tint without its ground | reading the drawn icon colours ADR-0110 declares (OQ-15, OQ-37) |
 | `derive-theme.mjs` | whether a derived theme ramp passes gates 9 and 10, using the gate code itself | the two themes `15` draws as one swatch each (OQ-36, `F-289`) |
+| `slate-status-search.mjs` | whether any lightness-only move settles Slate's status triple, exhaustively over a stated grid | ADR-0111 §5 (`F-225`) |
+| `stem.ps1` | how heavy a line of drawn type is: the integral of ink coverage across horizontal bands, over the word's ink height, which blur and JPEG bloom leave alone; `-render` sets a word from a font file and measures that instead | the weight a serif role is drawn at (`F-226`, ADR-0112) |
+| `serif-weight.mjs` | the same number computed exactly from a font's outlines at every `wght`, solved against `stem.ps1`'s reading; `--calibrate` is the known-answer run | the weight and tracking of each serif role, and the mincho (`F-226`) |
 
 ## Naming the serif (§5, OQ-29)
 
@@ -59,6 +62,27 @@ one that scored badly.
 
 **The script is ASCII on purpose.** Windows PowerShell reads a `.ps1` without a BOM as ANSI, so an em
 dash in a string is a parse error rather than a character — which is how F-275 broke it once.
+
+## The weight of each serif role (F-226, ADR-0112)
+
+Mask overlap (`serif-match.ps1`) names the FACE, and it is the wrong instrument for the weight: a
+threshold on a bloomed JPEG thickens every stroke. So the weight is read as a quantity that
+survives the blur: the width of ink a horizontal band crosses, integrated rather than thresholded,
+over the word's ink height. `stem.ps1` reads it off the crop. `serif-weight.mjs` computes it exactly
+from Gelasio's outlines along `wght` 400-700, with no rasteriser involved, and solves for the weight
+and the tracking.
+
+```
+# fetch the two sources first (scripts/font-sources.json pins them), then:
+node mockups/tools/serif-weight.mjs              # every crop, solved
+node mockups/tools/serif-weight.mjs --calibrate  # known weights, set at each crop's size, recovered
+
+# the mincho candidates on 20's card (mincho-candidates.json pins them; -codepoints keeps this ASCII)
+powershell -File mockups/tools/serif-match.ps1 -img mockups/20_colour_card_shareable.jpg -x 143 -y 697 -w 116 -h 58 -codepoints 85CD,9F20 -polarity light -fontDir <dir> -noInstalled -top 20
+```
+
+The calibration is the tool's decoy. A reading counts only where the instrument recovers the known
+weights at that crop's size, and it is read in ENCODED sRGB, the space the calibration recovers.
 
 ## From readings to the record
 

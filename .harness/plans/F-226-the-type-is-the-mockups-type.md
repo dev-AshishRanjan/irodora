@@ -112,7 +112,7 @@ like the mockups, and nothing flashes on launch.
 **New:**
 - `scripts/font-sources.json`: the Gelasio and Japanese-serif sources and their `OFL.txt`, each pinned
   by `google/fonts` commit and sha256. The generator refuses a mismatch.
-- `scripts/lib/sfnt-read.mjs`: cmap, `name`, `OS/2`, `fvar` and GSUB-feature readers, shared by the
+- `scripts/sfnt-read.mjs`: cmap, `name`, `OS/2`, `fvar` and GSUB-feature readers, shared by the
   check and the tools.
 - `mockups/tools/stem.ps1`, `mockups/tools/serif-weight.mjs` and `mockups/tools/mincho-candidates.json`.
 - `apps/mobile/src/fonts.ts`: one map from emitted family name to asset module.
@@ -184,7 +184,7 @@ like the mockups, and nothing flashes on launch.
 ## Files to touch
 
 ```
-scripts/font-sources.json · scripts/lib/sfnt-read.mjs                   — new
+scripts/font-sources.json · scripts/sfnt-read.mjs                   — new
 scripts/generate-font-subset.mjs · scripts/verify-font-coverage.mjs     — faces table, names, structure, --prove
 mockups/tools/{stem.ps1, serif-weight.mjs, mincho-candidates.json}      — new; serif-match.ps1 -codepoints; README
 mockups/tools/inventory-data/*.mjs → mockups/inventory/*.json           — measured serif weights, if changed

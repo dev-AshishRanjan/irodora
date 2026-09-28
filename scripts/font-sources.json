@@ -1,0 +1,34 @@
+{
+  "$comment": "The font SOURCES F-226's generator cuts the bundled faces from (scripts/generate-font-subset.mjs), each pinned by google/fonts commit and sha256, with its licence. The generator refuses a source whose sha256 differs: a font that changed upstream is a different font, and it is re-measured and re-recorded before it ships (ADR-0112). The sources are cached under .cache/fonts/ and NOT committed; the cut faces are. Noto Sans JP predates this file and is fetched as ADR-0057 describes.",
+  "sourceCommit": "1ac2012c34919f5fa2675aacf723fa98edb30b5f",
+  "faces": [
+    {
+      "id": "gelasio",
+      "role": "serif — the wordmark, display1, title and body where the mockups draw a serif (ADR-0106, ADR-0112)",
+      "file": "Gelasio[wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/gelasio/Gelasio%5Bwght%5D.ttf",
+      "bytes": 168556,
+      "sha256": "4daecea457258c9ebeb8bc99ed3fd24353618bfad3ea4b93fa0b5d0468fc04e4",
+      "licence": {
+        "file": "OFL.txt",
+        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/gelasio/OFL.txt",
+        "sha256": "b393cb01867c919b44381512120dc3e4c954c7b47e2035c405f3a324799a4d29"
+      },
+      "cache": ".cache/fonts/gelasio/"
+    },
+    {
+      "id": "notoserifjp",
+      "role": "mincho — the Japanese serif 20's card draws (C6, ADR-0112)",
+      "file": "NotoSerifJP[wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf",
+      "bytes": 13574352,
+      "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+      "licence": {
+        "file": "OFL.txt",
+        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/OFL.txt",
+        "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6"
+      },
+      "cache": ".cache/fonts/mincho/notoserifjp/"
+    }
+  ]
+}

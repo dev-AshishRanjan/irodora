@@ -14,7 +14,13 @@ param(
   [string]$polarity = 'light',
   [string]$fontDir = '',
   # How many rows to print. The default is a shortlist; a record wants the whole field.
-  [int]$top = 12
+  [int]$top = 12,
+  # The word as hex codepoints (F-226), e.g. 85CD,9F20 for the kanji 20's card draws. This file is
+  # ASCII on purpose (see the README), so a word outside ASCII is passed this way instead of -word.
+  [string]$codepoints = '',
+  # Score only the faces loaded from -fontDir: an installed Latin serif has no kanji, and GDI+ would
+  # draw them in a fallback face and score THAT under the Latin name.
+  [switch]$noInstalled
 )
 # FAIL LOUDLY. A wrong -img printed 109 rows of IoU 0 and exited 0; a -fontDir that does not exist
 # printed one line to stderr and exited 0 with an installed-only table, which reads as a complete run
@@ -22,6 +28,8 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path -LiteralPath $img)) { Write-Error "no image at $img"; exit 2 }
 if ($fontDir -ne '' -and -not (Test-Path -LiteralPath $fontDir)) { Write-Error "no font directory at $fontDir"; exit 2 }
+if ($codepoints -ne '') { $word = [string]::Join('', ($codepoints -split ',' | ForEach-Object { [char]::ConvertFromUtf32([Convert]::ToInt32($_.Trim(), 16)) })) }
+if ($word -eq '') { Write-Error 'no -word or -codepoints given'; exit 2 }
 Add-Type -AssemblyName System.Drawing
 function MaskOf([System.Drawing.Bitmap]$b, [bool]$light, [int]$t) {
   $m = New-Object 'bool[,]' $b.Width, $b.Height
@@ -53,7 +61,7 @@ $fams = 'Georgia','Georgia Pro','Georgia Pro Light','Times New Roman','Cambria',
 
 # The candidates: every installed family above, then every face loaded from -fontDir.
 $candidates = @()
-foreach ($f in $fams) { $candidates += [pscustomobject]@{ label = $f; family = $null; source = 'installed' } }
+if (-not $noInstalled) { foreach ($f in $fams) { $candidates += [pscustomobject]@{ label = $f; family = $null; source = 'installed' } } }
 
 # A FACE THAT FAILS TO LOAD IS NAMED, NEVER SKIPPED QUIETLY: a candidate missing from the table
 # would read as a candidate that scored badly, which is the one reading this must not produce.

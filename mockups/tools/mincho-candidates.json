@@ -1,0 +1,73 @@
+{
+  "$comment": "The open-licence Japanese serifs (mincho) F-226 scored against the one mincho the mockups draw: 20's card kanji (20.card.kanji, 藍鼠, C6). Pinned so the run can be reproduced; the files are NOT committed, except the one F-226 ships, as a subset (scripts/font-sources.json). Each family's Regular is taken; Noto Serif JP ships as one variable file, which GDI+ exposes as its named instances. Scores and the choice are in ADR-0112.",
+  "feature": "F-226",
+  "fetchedAt": "2026-09-28",
+  "source": "https://github.com/google/fonts, ofl/ tree",
+  "sourceCommit": "1ac2012c34919f5fa2675aacf723fa98edb30b5f",
+  "$licenceComment": "Every candidate carries an OFL.txt beside it in the source tree, and none declares a Reserved Font Name at this commit.",
+  "candidates": [
+    {
+      "family": "notoserifjp",
+      "file": "NotoSerifJP[wght].ttf",
+      "variable": true,
+      "bytes": 13574352,
+      "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "shipporimincho",
+      "file": "ShipporiMincho-Regular.ttf",
+      "variable": false,
+      "bytes": 8677284,
+      "sha256": "769b5269f0f9bc6534b352c0e6bd856a566e03ff788f107191c2d835863570b2",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/shipporimincho/ShipporiMincho-Regular.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "zenoldmincho",
+      "file": "ZenOldMincho-Regular.ttf",
+      "variable": false,
+      "bytes": 5442512,
+      "sha256": "4c051a78a21c4e8e9dccf1c754776d33f356b8cc6ef95d9b64761b9bae814b84",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/zenoldmincho/ZenOldMincho-Regular.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "bizudpmincho",
+      "file": "BIZUDPMincho-Regular.ttf",
+      "variable": false,
+      "bytes": 6156444,
+      "sha256": "dbcea04578ac1e9d3484525e870ce491bd04361768f4d2ba4b827d96e20f891d",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/bizudpmincho/BIZUDPMincho-Regular.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "sawarabimincho",
+      "file": "SawarabiMincho-Regular.ttf",
+      "variable": false,
+      "bytes": 3662996,
+      "sha256": "1f27e6b0c2543a311c31d2ba3e895e50028069bd24b5e0d20a5b6e0a0b03e9c4",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/sawarabimincho/SawarabiMincho-Regular.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "hinamincho",
+      "file": "HinaMincho-Regular.ttf",
+      "variable": false,
+      "bytes": 6451924,
+      "sha256": "8395fafa0c2721b4b5c274031e1336fea0f703d908b175ee21f8ba2f1ad566a0",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/hinamincho/HinaMincho-Regular.ttf",
+      "licenceFileBesideIt": true
+    },
+    {
+      "family": "kaiseitokumin",
+      "file": "KaiseiTokumin-Regular.ttf",
+      "variable": false,
+      "bytes": 4581732,
+      "sha256": "3fbdbec539369aed11bb1fa0cdda1d19ea246e795107357383dfa561848a427d",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/kaiseitokumin/KaiseiTokumin-Regular.ttf",
+      "licenceFileBesideIt": true
+    }
+  ]
+}
