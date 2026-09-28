@@ -168,7 +168,7 @@ export function Measure({
             <Text size="body" color="foreground.2" script={script}>
               {library.name}
             </Text>
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('measure.pickReference')}
             </Text>
             <Row gap="sm" wrap>
@@ -253,7 +253,7 @@ export function Measure({
                * index precisely so this sentence can sit under the one that is wrong.
                */}
               {problem !== null && problem.field === index ? (
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {t(PROBLEM_KEYS[problem.problem])}
                 </Text>
               ) : null}
@@ -299,13 +299,13 @@ export function Measure({
                * it. That is criterion 1, and FR-61's own sentence: the same quantity in a
                * different space is a different claim.
                */}
-              <Text size="small" color="foreground.2" numeric script={script}>
+              <Text size="label" color="foreground.2" numeric script={script}>
                 {`${t('space.cielab')}: ${row.lab.map((v) => v.toFixed(2)).join('  ')}`}
               </Text>
-              <Text size="small" color="foreground.2" numeric script={script}>
+              <Text size="label" color="foreground.2" numeric script={script}>
                 {`${t('coord.lch')}: ${row.lch.map((v) => v.toFixed(2)).join('  ')}`}
               </Text>
-              <Text size="small" color="foreground.2" script={script}>
+              <Text size="label" color="foreground.2" script={script}>
                 {`${t('measure.arrivedIn')}: ${row.originSpace}`}
               </Text>
             </Stack>

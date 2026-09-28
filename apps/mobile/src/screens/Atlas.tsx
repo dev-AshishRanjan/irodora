@@ -223,20 +223,20 @@ function AtlasEntry({
           size={ENTRY_HEIGHT}
         />
         <Stack gap="xs">
-          <Text size="display.2" color="foreground" script="japanese">
+          <Text size="title" color="foreground" script="japanese">
             {entry.name.kanji}
           </Text>
           <Text size="body" color="foreground.2" script="japanese">
             {entry.name.kana}
           </Text>
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {`${entry.name.romaji} · ${entry.name.en}`}
           </Text>
           <Row gap="sm">
-            <Text size="xs" color="foreground.2" numeric selectable>
+            <Text size="caption" color="foreground.2" numeric selectable>
               {derived.hex}
             </Text>
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {`${familyLabel(entry.taxonomy.family, locale)} · ${t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}`}
             </Text>
           </Row>
@@ -324,7 +324,7 @@ export function Atlas({
         The version is on the root screen rather than buried in a settings page. Which corpus
         the app holds is what makes every value on every detail screen reproducible (FR-25).
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {`${t('atlas.corpus')} ${CORPUS_LABEL} · ${String(CORPUS_ENTRY_COUNT)} ${t('atlas.colours')} · ${String(CORPUS_PALETTE_COUNT)} ${t('atlas.palettes')}`}
       </Text>
 
@@ -345,7 +345,7 @@ export function Atlas({
       onOpenCompare === undefined &&
       onOpenPalettes === undefined ? null : (
         <Stack gap="sm">
-          <Text size="label" color="foreground.2" script={script} heading>
+          <Text size="caption" color="foreground.2" script={script} heading>
             {t('atlas.more')}
           </Text>
           {onOpenFinder === undefined ? null : (
@@ -375,7 +375,7 @@ export function Atlas({
         </Stack>
       )}
 
-      <Text size="label" color="foreground.2" script={script} heading>
+      <Text size="caption" color="foreground.2" script={script} heading>
         {t('atlas.filters')}
       </Text>
 
@@ -437,7 +437,7 @@ export function Atlas({
 
       {active ? (
         <Row gap="sm">
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
           </Text>
           <Pressable
@@ -449,7 +449,7 @@ export function Atlas({
             }}
             style={{ minHeight: 44, justifyContent: 'center' }}
           >
-            <Text size="small" color="link" script={script}>
+            <Text size="label" color="link" script={script}>
               {t('atlas.clear')}
             </Text>
           </Pressable>
@@ -466,7 +466,7 @@ export function Atlas({
             <Text size="body" color="foreground" script={script}>
               {t('atlas.empty')}
             </Text>
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('atlas.emptyHint')}
             </Text>
           </Stack>

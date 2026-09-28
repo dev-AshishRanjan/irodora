@@ -83,7 +83,7 @@ export function TextField({
 
   return (
     <View style={{ gap: nativeSpacing.xs }}>
-      <Text size="label" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {label}
       </Text>
       {/*

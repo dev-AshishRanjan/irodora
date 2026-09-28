@@ -273,7 +273,7 @@ export function Section({
       {eyebrow === undefined && title === undefined ? null : (
         <View style={{ flexDirection: 'column', gap: nativeSpacing.xs }}>
           {eyebrow === undefined ? null : (
-            <Text size="label" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {eyebrow}
             </Text>
           )}
@@ -293,7 +293,8 @@ export function Section({
 
 export type ScreenProps = Omit<ViewProps, 'style'> & {
   /**
-   * The screen's title, rendered at `display.2` — 34px.
+   * The screen's title, rendered at `title` — 22px since F-226 (ADR-0113: board 00's scale has no 34px
+   * step, and `display.2` snapped to `title`). Until then it was `display.2`, 34px, for the reason below.
    *
    * **This is the criterion the feature turns on.** Every screen in the product opened at
    * `title` (22px), so the scale it actually rendered was 22-to-10 while the manifest specified
@@ -374,12 +375,12 @@ export function Screen({
     eyebrow === undefined && title === undefined ? null : (
       <View style={{ flexDirection: 'column', gap: nativeSpacing.sm, flexShrink: 1 }}>
         {eyebrow === undefined ? null : (
-          <Text size="label" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {eyebrow}
           </Text>
         )}
         {title === undefined ? null : (
-          <Text size="display.2" color="foreground" script={script} heading>
+          <Text size="title" color="foreground" script={script} heading>
             {title}
           </Text>
         )}

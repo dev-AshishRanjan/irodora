@@ -197,4 +197,4 @@ export default function TabLayout(): React.JSX.Element {
  * which is the failure `verify-token-reach` exists to prevent one level down.
  */
 export const TAB_BAR_COLORS = nativeColors;
-export const TAB_LABEL_STEP = nativeType.latin.label;
+export const TAB_LABEL_STEP = nativeType.latin.caption;

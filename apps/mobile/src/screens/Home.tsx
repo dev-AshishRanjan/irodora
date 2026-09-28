@@ -155,21 +155,17 @@ export function Home({
           size={size}
         />
         <Stack gap="xs">
-          <Text
-            size={size === LEAD_SAMPLE ? 'display.2' : 'title'}
-            color="foreground"
-            script={script}
-          >
+          <Text size={size === LEAD_SAMPLE ? 'title' : 'title'} color="foreground" script={script}>
             {content.lastReading.name}
           </Text>
-          <Text size="small" color="foreground.2" numeric selectable>
+          <Text size="label" color="foreground.2" numeric selectable>
             {content.lastReading.hex}
           </Text>
           {/*
             The source, always. A reading's origin is what makes it checkable, and hiding it
             behind a tap is what ADR-0005 and FR-24 exist to prevent.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {content.lastReading.source}
           </Text>
         </Stack>
@@ -194,16 +190,16 @@ export function Home({
               entry is a Japanese colour and its name is the Japanese one; the English is a gloss.
             */}
             <Text
-              size={size === LEAD_SAMPLE ? 'display.2' : 'title'}
+              size={size === LEAD_SAMPLE ? 'title' : 'title'}
               color="foreground"
               script="japanese"
             >
               {content.today.entry.name.kanji}
             </Text>
-            <Text size="small" color="foreground.2" script="japanese">
+            <Text size="label" color="foreground.2" script="japanese">
               {content.today.entry.name.kana}
             </Text>
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {content.today.entry.name.en}
             </Text>
           </Stack>
@@ -224,7 +220,7 @@ export function Home({
         least noticed and most damaging, and NFR-21's lint is binding here like everywhere else.
       */}
       <Stack gap="md">
-        <Wordmark size="display.1" script={script} heading />
+        <Wordmark size="display1" script={script} heading />
         <Stack gap="xs">
           <Text size="title" color="foreground" script={script}>
             {t('home.what1')}
@@ -241,7 +237,7 @@ export function Home({
           which is where a technical note goes — and it is not a technical note. Nothing else in
           this category can say it.
         */}
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t('home.onDevice')}
         </Text>
       </Stack>
@@ -266,7 +262,7 @@ export function Home({
           <Card
             level="2"
             header={
-              <Text size="label" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {lead === 'reading' ? t('home.lastReading') : t('home.today')}
               </Text>
             }
@@ -294,7 +290,7 @@ export function Home({
             }
           >
             {lead === 'today' ? (
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('home.todayNote')}
               </Text>
             ) : null}
@@ -324,7 +320,7 @@ export function Home({
         <Card
           level="1"
           header={
-            <Text size="label" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('home.wardrobe')}
             </Text>
           }
@@ -356,7 +352,7 @@ export function Home({
                   />
                 ))}
               </Row>
-              <Text size="label" color="foreground.2" script={script} numeric>
+              <Text size="caption" color="foreground.2" script={script} numeric>
                 {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
               </Text>
             </Stack>
@@ -374,13 +370,13 @@ export function Home({
           <Card
             level="1"
             header={
-              <Text size="label" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('home.today')}
               </Text>
             }
           >
             {todayBlock(QUIET_SAMPLE)}
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('home.todayNote')}
             </Text>
           </Card>
@@ -388,7 +384,7 @@ export function Home({
           <Card
             level="1"
             header={
-              <Text size="label" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('home.lastReading')}
               </Text>
             }

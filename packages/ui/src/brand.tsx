@@ -305,7 +305,7 @@ export function Mark({
 /**
  * The type steps the wordmark may be set at.
  *
- * **`display.1` (72 px) is deliberately absent, and the gate is why.** The first draft listed it
+ * **`display1` (72 px) was once deliberately absent, and the gate is why.** The first draft listed it
  * — a wordmark is the obvious home for the largest step — and `verify-token-reach.mjs` promptly
  * reported `display.1` as reached, because the string appears in this union and the check reads
  * string literals.
@@ -321,10 +321,7 @@ export function Mark({
  * in `unreached-tokens.json` went at the same time, and `verify-token-reach` fails on a
  * declaration that outlived its owner, so the two cannot drift apart.
  */
-export type WordmarkSize = Extract<
-  keyof typeof nativeType.latin,
-  'display.1' | 'display.2' | 'title'
->;
+export type WordmarkSize = Extract<keyof typeof nativeType.latin, 'display1' | 'title'>;
 
 export interface WordmarkProps {
   readonly size?: WordmarkSize;

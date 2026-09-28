@@ -196,7 +196,7 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   // Which steps of the scale clear the WCAG large-text floor.
   //
   // DERIVED, never listed. `@irodora/ui`'s `Text` uses this to make
-  // `<Text size="small" color="foreground.3">` a TYPE ERROR, so the pairing that fails AA
+  // `<Text size="label" color="foreground.3">` a TYPE ERROR, so the pairing that fails AA
   // cannot be written rather than being caught later by a gate. Deriving it means a step
   // whose size changes, or a new step, is classified correctly with nobody remembering to —
   // and a hand-written list is exactly how `foreground.3` went unchecked before F-003.

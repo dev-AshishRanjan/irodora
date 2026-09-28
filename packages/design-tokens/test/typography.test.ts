@@ -116,8 +116,10 @@ describe('letter spacing crosses from em to points', () => {
     // most steps declare "0". The display sizes are the ones carrying real tracking.
     const tracked = Object.values(nativeType.latin).filter((s) => s.letterSpacing !== 0);
     expect(tracked.length).toBeGreaterThan(0);
-    expect(nativeType.latin['display.1'].letterSpacing).toBeLessThan(0);
-    expect(nativeType.latin.label.letterSpacing).toBeGreaterThan(0);
+    expect(nativeType.latin.display1.letterSpacing).toBeLessThan(0);
+    // Since F-226 no step tracks positive — the uppercase 10 px label went with the old scale
+    // (ADR-0113) — so the second case is title's small negative tracking, not a positive one.
+    expect(nativeType.latin.title.letterSpacing).toBeLessThan(0);
   });
 });
 

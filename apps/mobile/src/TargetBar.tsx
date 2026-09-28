@@ -57,10 +57,10 @@ export function TargetBar({ target, onDisarm }: TargetBarProps): React.JSX.Eleme
               is doing there reads as decoration, and the whole point is that a person knows a
               comparison is armed.
             */}
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('target.armed')}
             </Text>
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {target.label}
             </Text>
           </View>

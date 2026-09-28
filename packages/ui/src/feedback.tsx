@@ -201,7 +201,7 @@ export function useConfirm(): { readonly confirm: (c: Confirmation) => void } {
               paddingHorizontal: nativeSpacing.md,
             }}
           >
-            <Text size="small" color="foreground">
+            <Text size="label" color="foreground">
               {message}
             </Text>
           </View>

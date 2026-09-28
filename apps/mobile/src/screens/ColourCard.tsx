@@ -74,7 +74,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
         level="1"
         padding="sm"
         header={
-          <Text size="label" color="foreground.2" script={script} heading>
+          <Text size="caption" color="foreground.2" script={script} heading>
             {t('card.thumbnail')}
           </Text>
         }
@@ -88,14 +88,14 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
         </Stack>
       </Card>
 
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('card.note')}
       </Text>
       {/*
         Said rather than left to be discovered. Getting the card out as a file is FR-51, which
         is R5 — a boundary, not an omission.
       */}
-      <Text size="xs" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {t('card.export')}
       </Text>
     </Screen>

@@ -129,7 +129,7 @@ export function Popover({
         accessibilityLabel={triggerLabel}
         accessibilityState={{ expanded: isOpen }}
       >
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {triggerLabel}
         </Text>
       </HeroPopover.Trigger>
@@ -188,7 +188,7 @@ export function Popover({
             {title}
           </Text>
           {description === undefined ? null : (
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {description}
             </Text>
           )}
@@ -280,7 +280,7 @@ export function Tabs({
               edge, and somebody using a screen reader hears the state.
             */}
             <Text
-              size="small"
+              size="label"
               color={item.value === value ? 'foreground' : 'foreground.2'}
               script={script}
             >

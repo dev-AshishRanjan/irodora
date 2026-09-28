@@ -1069,7 +1069,7 @@
         "weight": 400,
         "tracking": "0",
         "steps": [
-          "display.1",
+          "display1",
           "title",
           "body"
         ]
@@ -1086,16 +1086,10 @@
       }
     },
     "scale": {
-      "display.1": {
+      "display1": {
         "size": 72,
         "lineHeight": 0.98,
         "tracking": "-0.04em",
-        "weight": 500
-      },
-      "display.2": {
-        "size": 34,
-        "lineHeight": 1.05,
-        "tracking": "-0.03em",
         "weight": 500
       },
       "title": {
@@ -1105,29 +1099,22 @@
         "weight": 600
       },
       "body": {
-        "size": 15,
+        "size": 16,
         "lineHeight": 1.65,
         "tracking": "0",
         "weight": 400
       },
-      "small": {
-        "size": 13,
+      "label": {
+        "size": 14,
         "lineHeight": 1.55,
         "tracking": "0",
         "weight": 400
       },
-      "xs": {
-        "size": 11.5,
+      "caption": {
+        "size": 10.3,
         "lineHeight": 1.5,
         "tracking": "0",
         "weight": 400
-      },
-      "label": {
-        "size": 10,
-        "lineHeight": 1.4,
-        "tracking": "0.16em",
-        "weight": 600,
-        "transform": "uppercase"
       }
     },
     "lineHeight": {

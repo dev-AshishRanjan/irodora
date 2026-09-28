@@ -101,7 +101,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
             <Text size="body" color="foreground" script={script}>
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>
-            <Text size="small" color="foreground.2" numeric selectable>
+            <Text size="label" color="foreground.2" numeric selectable>
               {entry.derived.hex}
             </Text>
           </View>
@@ -113,10 +113,10 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
           */}
           {distance === undefined ? null : (
             <View style={{ alignItems: 'flex-end' }}>
-              <Text size="small" color="foreground" numeric selectable>
+              <Text size="label" color="foreground" numeric selectable>
                 {distance.toFixed(2)}
               </Text>
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('unit.deltaE00')}
               </Text>
             </View>
@@ -129,7 +129,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
   return (
     <Screen title={t('finder.title')} script={script}>
       <SearchField label={t('finder.search')} value={query} onChangeText={setQuery} />
-      <Text size="xs" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {t('finder.hint')}
       </Text>
 
@@ -153,10 +153,10 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         <>
           {shown.length === 0 ? (
             <Stack gap="xs">
-              <Text size="small" color="foreground" script={script}>
+              <Text size="label" color="foreground" script={script}>
                 {t('finder.none')}
               </Text>
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t(NOTHING[result.kind])}
               </Text>
             </Stack>
@@ -167,7 +167,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
               padding="sm"
             >
               <View>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
                 </Text>
                 {shown.map((entry, i) => (
@@ -200,7 +200,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
               level="1"
               padding="sm"
               header={
-                <Text size="label" color="foreground.2" script={script} heading>
+                <Text size="caption" color="foreground.2" script={script} heading>
                   {t('finder.region')}
                 </Text>
               }
@@ -211,20 +211,20 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                   if (range === undefined) return null;
                   return (
                     <Row key={axis} gap="sm" align="baseline">
-                      <Text size="small" color="foreground.2" script={script}>
+                      <Text size="label" color="foreground.2" script={script}>
                         {t(AXIS_KEYS[axis])}
                       </Text>
                       <View style={{ flex: 1 }} />
-                      <Text size="small" color="foreground" numeric selectable>
+                      <Text size="label" color="foreground" numeric selectable>
                         {`${range.min.toFixed(axis === 'hue' ? 0 : 3)} – ${range.max.toFixed(axis === 'hue' ? 0 : 3)}`}
                       </Text>
-                      <Text size="xs" color="foreground.2" script={script}>
+                      <Text size="caption" color="foreground.2" script={script}>
                         {t('space.oklch')}
                       </Text>
                     </Row>
                   );
                 })}
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
                 </Text>
               </Stack>

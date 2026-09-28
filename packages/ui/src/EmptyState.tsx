@@ -121,7 +121,7 @@ export function EmptyState(props: EmptyStateProps): React.JSX.Element {
       </Text>
 
       {hint === undefined ? null : (
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {hint}
         </Text>
       )}

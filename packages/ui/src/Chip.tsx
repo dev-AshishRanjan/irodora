@@ -132,7 +132,7 @@ export function Chip({
     >
       <SelectionMark visible={tone.mark} size={SELECTION_MARK_CHIP} />
       <View>
-        <Text size="small" color={foreground} script={script}>
+        <Text size="label" color={foreground} script={script}>
           {loading
             ? `${chipAccessibleName(label, selected)}…`
             : chipAccessibleName(label, selected)}

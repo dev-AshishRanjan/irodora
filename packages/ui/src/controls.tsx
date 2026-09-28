@@ -202,7 +202,7 @@ export function Switch({
           {label}
         </Text>
         {description === undefined ? null : (
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {description}
           </Text>
         )}
@@ -367,7 +367,7 @@ export function Select({
 
   return (
     <View style={{ gap: nativeSpacing.xs }}>
-      <Text size="label" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {label}
       </Text>
       <HeroSelect
@@ -509,7 +509,7 @@ export function Select({
                   {option.value === value ? `${option.label} ✓` : option.label}
                 </Text>
                 {option.description === undefined ? null : (
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {option.description}
                   </Text>
                 )}
@@ -593,7 +593,7 @@ export function Slider({
       <View
         style={{ flexDirection: 'row', justifyContent: 'space-between', gap: nativeSpacing.sm }}
       >
-        <Text size="label" color="foreground.2" script={script}>
+        <Text size="caption" color="foreground.2" script={script}>
           {label}
         </Text>
         {/*
@@ -608,7 +608,7 @@ export function Slider({
           you can copy — `screens.test.tsx` asserts it over every tabular node on Compare, and
           it caught this one the first time the slider rendered there.
         */}
-        <Text size="label" color="foreground" numeric selectable>
+        <Text size="caption" color="foreground" numeric selectable>
           {valueLabel}
         </Text>
       </View>

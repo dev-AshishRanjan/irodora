@@ -278,20 +278,20 @@ export function Preferences({
             one place in this product where a person cannot see the input, so the screen says
             what happened to it: unavailable, refused with the reason, or applied and CHECKED.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t(DEVICE_KEYS[device.kind])}
           </Text>
           {device.kind === 'refused' ? (
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {device.reason}
             </Text>
           ) : null}
           {device.kind === 'applied' && device.corrected > 0 ? (
             <Row gap="sm">
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('appearance.device.corrected')}
               </Text>
-              <Text size="xs" color="foreground.2" numeric>
+              <Text size="caption" color="foreground.2" numeric>
                 {String(device.corrected)}
               </Text>
             </Row>
@@ -302,7 +302,7 @@ export function Preferences({
             cards a colour sits on carry the theme's slight tint, which is what the colour is seen
             against (ADR-0111), and a person choosing a theme in a colour app deserves to know it.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('appearance.hint')}
           </Text>
         </Stack>
@@ -321,7 +321,7 @@ export function Preferences({
         the phone still decides. There is no state in which the two disagree and this app wins,
         which is the failure the paragraph above is about.
       */}
-      <Text size="xs" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {t('settings.platform')}
       </Text>
 
@@ -373,7 +373,7 @@ export function Preferences({
       <Text size="title" color="foreground" script={script} heading>
         {t('preferences.title')}
       </Text>
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('preferences.origin')}
       </Text>
 
@@ -423,7 +423,7 @@ export function Preferences({
           }
         >
           <Stack gap="sm">
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {`${t('preferences.formula')} ${String(PREFERENCE_SATURATION)}`}
             </Text>
 
@@ -455,7 +455,7 @@ export function Preferences({
                   it is derived from what precedes it, so a reader going left to right meets the
                   evidence before the conclusion.
                 */}
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {[
                     `${t('preferences.accepted')} ${String(row.accepted)}`,
                     `${t('preferences.rejected')} ${String(row.rejected)}`,
@@ -488,7 +488,7 @@ export function Preferences({
               <Text size="body" color="foreground" script={script}>
                 {`${t('preferences.resetCount')} ${String(rows.length)}`}
               </Text>
-              <Text size="small" color="foreground" script={script}>
+              <Text size="label" color="foreground" script={script}>
                 {t('preferences.resetIrreversible')}
               </Text>
               <Row gap="sm">
@@ -513,7 +513,7 @@ export function Preferences({
             </Stack>
           ) : (
             <Stack gap="xs">
-              <Text size="small" color="foreground.2" script={script}>
+              <Text size="label" color="foreground.2" script={script}>
                 {t('preferences.resetHint')}
               </Text>
               <Button

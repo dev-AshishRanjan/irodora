@@ -155,14 +155,14 @@ export function Compare({
     return (
       <Row gap="sm" align="baseline" padY="sm">
         <View style={{ flex: 1 }}>
-          <Text size="small" color="foreground" script={script}>
+          <Text size="label" color="foreground" script={script}>
             {label}
           </Text>
           {/*
             The computation space, on every row. FR-48 asks for it explicitly, and it is the
             difference between a number and a claim.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {space}
           </Text>
         </View>
@@ -170,7 +170,7 @@ export function Compare({
           `selectable` is how a value is copyable without a button that would need its own
           label, its own state and its own place in the tap-target budget.
         */}
-        <Text size="small" color="foreground" numeric selectable>
+        <Text size="label" color="foreground" numeric selectable>
           {value}
         </Text>
         {/*
@@ -179,7 +179,7 @@ export function Compare({
           selectable" fail on a node that is a label rather than a value.
         */}
         {unit === undefined ? null : (
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {unit}
           </Text>
         )}
@@ -200,18 +200,18 @@ export function Compare({
   }): React.JSX.Element {
     return (
       <Row gap="sm" align="baseline" padY="xs">
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
         <View style={{ flex: 1 }} />
         {/* Both values and the delta, in one row, so the column reads down. */}
-        <Text size="xs" color="foreground.2" numeric selectable>
+        <Text size="caption" color="foreground.2" numeric selectable>
           {`${axis.a.toFixed(places)}${suffix ?? ''}`}
         </Text>
-        <Text size="xs" color="foreground.2" numeric selectable>
+        <Text size="caption" color="foreground.2" numeric selectable>
           {`${axis.b.toFixed(places)}${suffix ?? ''}`}
         </Text>
-        <Text size="small" color="foreground" numeric selectable>
+        <Text size="label" color="foreground" numeric selectable>
           {`${signed(axis.delta, places)}${suffix ?? ''}`}
         </Text>
       </Row>
@@ -237,7 +237,7 @@ export function Compare({
         level="1"
         padding="sm"
         header={
-          <Text size="label" color="foreground.2" script={script} heading>
+          <Text size="caption" color="foreground.2" script={script} heading>
             {label}
           </Text>
         }
@@ -275,7 +275,7 @@ export function Compare({
                   color={colorFor(m.entry)}
                   size={32}
                 />
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {`${m.entry.name.kanji} ${m.entry.name.en}`}
                 </Text>
               </Row>
@@ -301,7 +301,7 @@ export function Compare({
       />
 
       {same ? (
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t('compare.sameColour')}
         </Text>
       ) : null}
@@ -336,13 +336,13 @@ export function Compare({
         }
       >
         <Stack gap="xs">
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('space.cielab')}
           </Text>
           <AxisRow label={t('axis.labL')} axis={metrics.lab.l} places={2} />
           <AxisRow label={t('axis.labA')} axis={metrics.lab.a} places={2} />
           <AxisRow label={t('axis.labB')} axis={metrics.lab.b} places={2} />
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('space.oklch')}
           </Text>
           <AxisRow label={t('axis.oklchL')} axis={metrics.oklch.l} places={3} />
@@ -393,7 +393,7 @@ export function Compare({
               key={s.deficiency}
               style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}
             >
-              <Text size="small" color="foreground" script={script}>
+              <Text size="label" color="foreground" script={script}>
                 {t(CVD_KEYS[s.deficiency])}
               </Text>
               {/*
@@ -418,10 +418,10 @@ export function Compare({
               />
             </View>
           ))}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('separation.severity')}
           </Text>
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('cvd.note')}
           </Text>
         </Stack>
@@ -458,7 +458,7 @@ export function Compare({
             Said rather than left to be inferred: one of these is symmetric and two are not,
             and a reader who assumed otherwise would draw the wrong conclusion from the pair.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('contrast.apcaNote')}
           </Text>
         </Stack>

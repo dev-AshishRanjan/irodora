@@ -197,10 +197,10 @@ export function Wear({
                 and only one of them is available without a profile.
               */}
               <Row gap="sm">
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {personalKnown ? t('wear.overall') : t('wear.pairing')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {String(shownScore(candidate, personalKnown))}
                 </Text>
               </Row>
@@ -218,7 +218,7 @@ export function Wear({
           {factors.map((f, i) => (
             <Text
               key={`${candidate.id}-${String(i)}`}
-              size="xs"
+              size="caption"
               color="foreground.2"
               script={script}
             >
@@ -273,7 +273,7 @@ export function Wear({
               <Text size="body" color="foreground" script={script} heading>
                 {t(`alt.${alt.axis}` as MessageKey)}
               </Text>
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {entry === null
                   ? alt.candidate.id
                   : `${entry.entry.name.kanji} ${entry.entry.name.en}`}
@@ -305,7 +305,7 @@ export function Wear({
     if (rec.alternatives.length === 0) return null;
     return (
       <Stack gap="xs">
-        <Text size="xs" color="foreground.2" script={script}>
+        <Text size="caption" color="foreground.2" script={script}>
           {t('wear.alternatives')}
         </Text>
         {rec.alternatives.map((a) => (
@@ -338,7 +338,7 @@ export function Wear({
         WHAT THIS IS, AND WHAT IT IS NOT. NFR-21's weight falls here: a ranked list is not an
         instruction. The claims lint holds the wording in both languages.
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('wear.what')}
       </Text>
 
@@ -385,7 +385,7 @@ export function Wear({
       {personalKnown ? null : (
         <Card level="1">
           <Stack gap="sm">
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('wear.noProfile')}
             </Text>
             {onBuildProfile === undefined ? null : (

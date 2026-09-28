@@ -538,7 +538,7 @@ export function Lens({
         `NSCameraUsageDescription` makes at the moment permission is requested, and somebody who
         granted that permission a week ago should not have to remember it.
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('lens.privacy')}
       </Text>
 
@@ -650,7 +650,7 @@ export function Lens({
             <Text size="body" color="foreground" script={script}>
               {t(permission === 'denied' ? 'lens.deniedTitle' : 'lens.askTitle')}
             </Text>
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t(permission === 'denied' ? 'lens.deniedBody' : 'lens.askBody')}
             </Text>
             {permission === 'undetermined' && onRequestPermission !== undefined ? (
@@ -757,7 +757,7 @@ export function Lens({
             WHAT THE CHOSEN MODE DOES, in a sentence. The chips say which one is on; this says
             what that means — including, in live mode, where the stop is.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t(photo === null ? MODE_KEYS[mode].hint : 'lens.photoHint')}
           </Text>
         </Stack>
@@ -774,20 +774,20 @@ export function Lens({
       {capture === null ? (
         <Stack gap="xs">
           {failed !== null ? (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t(FAILURE_KEYS[failed])}
             </Text>
           ) : !granted && photo === null ? (
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('lens.noReading')}
             </Text>
           ) : photo !== null ? null : mode === 'live' && live === null ? (
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('lens.waiting')}
             </Text>
           ) : null}
           {diagnostic === null || (!granted && photo === null) ? null : (
-            <Text size="xs" color="foreground.2" script="latin">
+            <Text size="caption" color="foreground.2" script="latin">
               {diagnostic}
             </Text>
           )}
@@ -810,7 +810,7 @@ export function Lens({
           padding="sm"
         >
           <Stack gap="sm">
-            <Text size="label" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('lens.liveReadout')}
             </Text>
             <Row gap="sm">
@@ -822,10 +822,10 @@ export function Lens({
                 size={40}
               />
               <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-                <Text size="small" color="foreground" numeric selectable>
+                <Text size="label" color="foreground" numeric selectable>
                   {liveDisplay.hex}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {`L ${liveDisplay.oklch[0].toFixed(3)}  C ${liveDisplay.oklch[1].toFixed(3)}  h ${liveDisplay.oklch[2].toFixed(1)}°`}
                 </Text>
                 {/*
@@ -839,7 +839,7 @@ export function Lens({
                   before it changes is not a number they can act on.
                 */}
                 {liveNearest.length === 0 ? null : (
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {liveNearest
                       .map(({ entry }) => `${entry.entry.name.kanji} ${entry.entry.name.en}`)
                       .join(' · ')}
@@ -909,28 +909,28 @@ export function Lens({
                 */}
                 <Stack gap="xs">
                   <Row gap="sm">
-                    <Text size="small" color="foreground.2" script={script}>
+                    <Text size="label" color="foreground.2" script={script}>
                       {t('lens.quality')}
                     </Text>
-                    <Text size="small" color="foreground" script={script}>
+                    <Text size="label" color="foreground" script={script}>
                       {t(QUALITY_KEYS[capture.quality])}
                     </Text>
                   </Row>
 
                   <Row gap="sm">
-                    <Text size="small" color="foreground.2" script={script}>
+                    <Text size="label" color="foreground.2" script={script}>
                       {t('lens.light')}
                     </Text>
-                    <Text size="small" color="foreground" script={script}>
+                    <Text size="label" color="foreground" script={script}>
                       {t(ILLUMINATION_KEYS[capture.illumination])}
                     </Text>
                   </Row>
 
                   <Row gap="sm">
-                    <Text size="small" color="foreground.2" script={script}>
+                    <Text size="label" color="foreground.2" script={script}>
                       {t('lens.space')}
                     </Text>
-                    <Text size="small" color="foreground" script={script}>
+                    <Text size="label" color="foreground" script={script}>
                       {t(SPACE_KEYS[capture.space])}
                     </Text>
                   </Row>
@@ -943,10 +943,10 @@ export function Lens({
                     everyone who has ever seen one.
                   */}
                   <Row gap="sm">
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t('lens.confidence')}
                     </Text>
-                    <Text size="xs" color="foreground.2" numeric selectable>
+                    <Text size="caption" color="foreground.2" numeric selectable>
                       {capture.confidence.toFixed(2)}
                     </Text>
                   </Row>
@@ -958,10 +958,10 @@ export function Lens({
                   */}
                   {capture.instruction === '' ? null : (
                     <Stack gap="xs">
-                      <Text size="xs" color="foreground.2" script={script}>
+                      <Text size="caption" color="foreground.2" script={script}>
                         {t('lens.next')}
                       </Text>
-                      <Text size="small" color="foreground" script={script}>
+                      <Text size="label" color="foreground" script={script}>
                         {capture.instruction}
                       </Text>
                     </Stack>
@@ -986,10 +986,10 @@ export function Lens({
                       published entry can be compared by eye without one looking more precise than
                       the other.
                     */}
-                    <Text size="small" color="foreground.2" numeric selectable>
+                    <Text size="label" color="foreground.2" numeric selectable>
                       {`L ${display.oklch[0].toFixed(3)}  C ${display.oklch[1].toFixed(3)}  h ${display.oklch[2].toFixed(1)}°`}
                     </Text>
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {`${t('lens.samples')} ${String(capture.usableSamples)}`}
                     </Text>
                   </View>
@@ -1007,32 +1007,32 @@ export function Lens({
             */}
             {against === null ? null : (
               <Stack gap="sm">
-                <Text size="label" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('against.title')}
                 </Text>
 
                 {against.poorCapture ? (
-                  <Text size="small" color="foreground" script={script}>
+                  <Text size="label" color="foreground" script={script}>
                     {t('against.poor')}
                   </Text>
                 ) : null}
 
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('against.what')}
                 </Text>
 
                 {/* THE DISTANCE, with its unit and the space it was computed in (criterion 1). */}
                 <Row gap="sm" wrap>
-                  <Text size="small" color="foreground.2" script={script}>
+                  <Text size="label" color="foreground.2" script={script}>
                     {t('against.distance')}
                   </Text>
-                  <Text size="small" color="foreground" numeric selectable>
+                  <Text size="label" color="foreground" numeric selectable>
                     {against.deltaE00.toFixed(2)}
                   </Text>
-                  <Text size="small" color="foreground.2" script={script}>
+                  <Text size="label" color="foreground.2" script={script}>
                     {t('unit.deltaE00')}
                   </Text>
-                  <Text size="small" color="foreground.2" script={script}>
+                  <Text size="label" color="foreground.2" script={script}>
                     {t('space.cielab')}
                   </Text>
                 </Row>
@@ -1050,26 +1050,26 @@ export function Lens({
                   ] as const
                 ).map(([axis, value]) => (
                   <Row key={axis} gap="sm" wrap>
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t(`against.${axis}` as MessageKey)}
                     </Text>
-                    <Text size="xs" color="foreground.2" numeric selectable>
+                    <Text size="caption" color="foreground.2" numeric selectable>
                       {value.delta.toFixed(3)}
                     </Text>
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t(`against.${value.direction}.${axis}` as MessageKey)}
                     </Text>
                   </Row>
                 ))}
 
                 <Row gap="sm" wrap>
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('against.hueArc')}
                   </Text>
-                  <Text size="xs" color="foreground.2" numeric selectable>
+                  <Text size="caption" color="foreground.2" numeric selectable>
                     {against.hueArc.toFixed(1)}
                   </Text>
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('space.oklch')}
                   </Text>
                 </Row>
@@ -1078,7 +1078,7 @@ export function Lens({
 
             {nearest.length === 0 ? null : (
               <Stack gap="sm">
-                <Text size="label" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('lens.nearest')}
                 </Text>
                 {nearest.map(({ entry, deltaE00 }) => (
@@ -1100,10 +1100,10 @@ export function Lens({
                           })}
                     />
                     <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-                      <Text size="small" color="foreground" script={script}>
+                      <Text size="label" color="foreground" script={script}>
                         {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
                       </Text>
-                      <Text size="xs" color="foreground.2" numeric selectable>
+                      <Text size="caption" color="foreground.2" numeric selectable>
                         {`${deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
                       </Text>
                     </View>
@@ -1171,7 +1171,7 @@ export function Lens({
                   }}
                   script={script}
                 />
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('lens.useForProfileNote')}
                 </Text>
               </Stack>
@@ -1193,7 +1193,7 @@ export function Lens({
                   }}
                   script={script}
                 />
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('lens.useForWardrobeNote')}
                 </Text>
               </Stack>

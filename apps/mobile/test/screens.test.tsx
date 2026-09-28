@@ -2686,7 +2686,7 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
      * thing that does: one `Text` with a number in it and no `numeric`.
      */
     const planted = draw(
-      <Text size="small" color="foreground">
+      <Text size="label" color="foreground">
         4.23
       </Text>,
       'light',
@@ -2695,7 +2695,7 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
 
     // And the same node, marked, is not reported — or the check would flag correct code.
     const marked = draw(
-      <Text size="small" color="foreground" numeric>
+      <Text size="label" color="foreground" numeric>
         4.23
       </Text>,
       'light',

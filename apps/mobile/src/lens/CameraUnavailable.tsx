@@ -67,7 +67,7 @@ export function CameraUnavailable({ error }: CameraUnavailableProps): React.JSX.
         padding="md"
       >
         <View style={{ gap: nativeSpacing.xs }}>
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t('lens.unavailableDetail')}
           </Text>
           {/*
@@ -75,7 +75,7 @@ export function CameraUnavailable({ error }: CameraUnavailableProps): React.JSX.
             is a real gap and not worth inventing a token for here. `foreground` rather than
             `foreground.2`: this is the line somebody is being asked to read out.
           */}
-          <Text size="small" color="foreground" script="latin">
+          <Text size="label" color="foreground" script="latin">
             {describe(error)}
           </Text>
         </View>

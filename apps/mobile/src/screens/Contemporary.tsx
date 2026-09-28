@@ -121,24 +121,24 @@ export function Contemporary({
       >
         <Stack gap="sm">
           <Row gap="sm" align="baseline">
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t('contemporary.computed')}
             </Text>
             <View style={{ flex: 1 }} />
             {/* Tabular and selectable, with its unit and its space, like every figure (FR-48). */}
-            <Text size="small" color="foreground" numeric selectable>
+            <Text size="label" color="foreground" numeric selectable>
               {item.deltaE00.toFixed(2)}
             </Text>
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('unit.deltaE00')}
             </Text>
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('space.cielab')}
             </Text>
           </Row>
 
           {item.inPalettes.map((p) => (
-            <Text key={p.paletteSlug} size="xs" color="foreground.2" script={script}>
+            <Text key={p.paletteSlug} size="caption" color="foreground.2" script={script}>
               {`${t('contemporary.inPalette')} ${p.paletteName} · ${p.role}`}
             </Text>
           ))}
@@ -164,7 +164,7 @@ export function Contemporary({
       <Card
         level="1"
         header={
-          <Text size="small" color="foreground" script={script}>
+          <Text size="label" color="foreground" script={script}>
             {t('contemporary.editorial')}
           </Text>
         }
@@ -174,10 +174,10 @@ export function Contemporary({
               THE PROVENANCE, ALWAYS. An editorial equivalent is somebody's recorded judgement,
               and a judgement without a name on it is the corpus's authority lent to an opinion.
             */}
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {`${t('contemporary.source')} ${item.provenance.source}`}
             </Text>
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {`${t('contemporary.reviewedBy')} ${item.provenance.verifiedBy}`}
             </Text>
           </Stack>
@@ -192,7 +192,7 @@ export function Contemporary({
 
   return (
     <Screen title={t('contemporary.title')} script={script}>
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('contemporary.what')}
       </Text>
 
@@ -201,7 +201,7 @@ export function Contemporary({
         deserves to know they are being shown this product's own curated palettes rather than an
         industry standard nobody here licensed.
       */}
-      <Text size="xs" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {t('contemporary.source.note')}
       </Text>
 
@@ -261,7 +261,7 @@ export function Contemporary({
         >
           <Stack gap="xs">
             {membership.map((p) => (
-              <Text key={p.paletteSlug} size="small" color="foreground" script={script}>
+              <Text key={p.paletteSlug} size="label" color="foreground" script={script}>
                 {`${p.paletteName} · ${p.role}`}
               </Text>
             ))}
@@ -290,10 +290,10 @@ export function Contemporary({
               {t('contemporary.none')}
             </Text>
             <Row gap="sm" align="baseline">
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('contemporary.noneHint')}
               </Text>
-              <Text size="xs" color="foreground.2" numeric>
+              <Text size="caption" color="foreground.2" numeric>
                 {EQUIVALENT_CEILING.toFixed(2)}
               </Text>
             </Row>

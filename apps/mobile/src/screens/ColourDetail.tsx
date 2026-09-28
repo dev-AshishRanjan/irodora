@@ -257,11 +257,11 @@ export function ColourDetail({
     const reason = reasonFor === undefined ? undefined : entry.unknowns[reasonFor];
     return (
       <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-        <Text size="label" color="foreground.2" script={script}>
+        <Text size="caption" color="foreground.2" script={script}>
           {label}
         </Text>
         {value !== null ? (
-          <Text size="small" color="foreground" script={script}>
+          <Text size="label" color="foreground" script={script}>
             {value}
           </Text>
         ) : (
@@ -269,7 +269,7 @@ export function ColourDetail({
             FR-21's "no silent blanks", rendered. The reason the field is empty is worth more
             to a reader than the emptiness, and it is the thing the gate spent a rule on.
           */
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {reason === undefined
               ? t('detail.notRecorded')
               : `${t('detail.notRecorded')} — ${reason}`}
@@ -311,11 +311,11 @@ export function ColourDetail({
     const resolved: readonly PublishedEntry[] = resolveSlugs(slugs);
     return (
       <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-        <Text size="label" color="foreground.2" script={script}>
+        <Text size="caption" color="foreground.2" script={script}>
           {label}
         </Text>
         {resolved.length === 0 ? (
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t('rel.none')}
           </Text>
         ) : (
@@ -328,7 +328,7 @@ export function ColourDetail({
                   color={colorFor(r.entry)}
                   size={44}
                 />
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {r.entry.name.en}
                 </Text>
               </View>
@@ -400,13 +400,13 @@ export function ColourDetail({
             pairing is declared by the surface, as every text pairing is, and gate 9 measures it.
             Before F-225 this token was large-text-only (3.17:1 against a 3.0 threshold).
           */}
-          <Text size="display.2" color="foreground" script="japanese" heading>
+          <Text size="title" color="foreground" script="japanese" heading>
             {entry.name.kanji}
           </Text>
           <Text size="body" color="foreground.2" script="japanese">
             {entry.name.kana}
           </Text>
-          <Text size="display.2" color="foreground.3" script={script}>
+          <Text size="title" color="foreground.3" script={script}>
             {entry.name.romaji}
           </Text>
           <Text size="body" color="foreground" script={script}>
@@ -416,7 +416,7 @@ export function ColourDetail({
             FR-23, on the surface. This label is the difference between an honest corpus and a
             corpus that merely stores an honest field.
           */}
-          <Text size="label" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t(CLASSIFICATION_KEYS[entry.classification])}
           </Text>
         </Stack>
@@ -624,7 +624,7 @@ export function ColourDetail({
           {panel === 'harmony' ? (
             <DetailSection title={t('detail.palettes')}>
               {palettes.length === 0 ? (
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {t('rel.none')}
                 </Text>
               ) : (
@@ -648,7 +648,7 @@ export function ColourDetail({
                     color={colorFor(entry)}
                     size={44}
                   />
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('cvd.normal')}
                   </Text>
                 </Stack>
@@ -667,13 +667,13 @@ export function ColourDetail({
                       color={colorFor(entry)}
                       size={44}
                     />
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t(CVD_KEYS[kind])}
                     </Text>
                   </View>
                 ))}
               </Row>
-              <Text size="small" color="foreground.2" script={script}>
+              <Text size="label" color="foreground.2" script={script}>
                 {t('cvd.note')}
               </Text>
             </DetailSection>

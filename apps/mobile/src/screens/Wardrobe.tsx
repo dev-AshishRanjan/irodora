@@ -178,7 +178,7 @@ function FilterRow<K extends string>({
 
   return (
     <Stack gap="sm">
-      <Text size="label" color="foreground.2" script={script}>
+      <Text size="caption" color="foreground.2" script={script}>
         {label}
       </Text>
       <ScrollView
@@ -444,7 +444,7 @@ function GarmentCell({
             </>
           )}
         </View>
-        <Text size="small" color="foreground" script={script}>
+        <Text size="label" color="foreground" script={script}>
           {garment.name ?? garment.type}
         </Text>
       </Stack>
@@ -621,7 +621,7 @@ export function Wardrobe({
           </Row>
         </Surface>
 
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t('browse.clearing')}
         </Text>
 
@@ -665,14 +665,14 @@ export function Wardrobe({
           }}
         />
         {moneyProblem === null ? null : (
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t(COST_PROBLEM_KEYS[moneyProblem])}
           </Text>
         )}
 
         <Button label={t('browse.save')} onPress={save} script={script} />
         {!saved ? null : (
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t('browse.saved')}
           </Text>
         )}
@@ -809,7 +809,7 @@ export function Wardrobe({
             */}
             {!narrowed ? null : (
               <>
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {`${t('browse.filterApplied')}: ${[
                     filter.type,
                     filter.season === null ? null : t(SEASON_KEYS[filter.season]),
@@ -882,7 +882,7 @@ export function Wardrobe({
             each garment's colour has a name. It has decided which published colours it sits
             nearest to, which is a weaker and true claim (ADR-0031).
           */}
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t('browse.grouping')}
           </Text>
 
@@ -916,7 +916,7 @@ export function Wardrobe({
             >
               <Stack gap="sm">
                 {garments.length < 2 ? (
-                  <Text size="small" color="foreground.2" script={script}>
+                  <Text size="label" color="foreground.2" script={script}>
                     {t('browse.coverageOne')}
                   </Text>
                 ) : (
@@ -929,7 +929,7 @@ export function Wardrobe({
                         value,
                       }))}
                     />
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t('browse.coverageNote')}
                     </Text>
                   </>
@@ -960,7 +960,7 @@ export function Wardrobe({
                     value: gap.wouldUnlock,
                   }))}
                 />
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('browse.gapsNote')}
                 </Text>
               </Stack>
@@ -993,7 +993,7 @@ export function Wardrobe({
                 <Text size="body" color="foreground" script={script} heading>
                   {section.title}
                 </Text>
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {`${t('browse.count')}: ${String(section.count)}`}
                 </Text>
               </Stack>

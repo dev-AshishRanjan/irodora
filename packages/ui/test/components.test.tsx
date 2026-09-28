@@ -262,11 +262,11 @@ describe('Text applies the scale and cannot express the pairing that fails AA', 
 
     // SINCE F-225 THIS COMPILES, and that is the change being recorded: the tertiary text is
     // ordinary text (§4 E3 measured it against 4.5:1), so no colour is restricted to large sizes
-    // and `ColorFor<'small'>` accepts it. The restriction's machinery is proven in tree.test.tsx.
-    const small: ColorFor<'small'> = 'foreground.3';
+    // and `ColorFor<'label'>` accepts it. The restriction's machinery is proven in tree.test.tsx.
+    const small: ColorFor<'label'> = 'foreground.3';
     void small;
     // @ts-expect-error — still refused: a name that is not a token at all.
-    const unknown: ColorFor<'small'> = 'foreground.9';
+    const unknown: ColorFor<'label'> = 'foreground.9';
     void unknown;
   });
 

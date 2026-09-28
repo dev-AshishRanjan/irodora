@@ -89,7 +89,7 @@ export function Status({
         size={14}
       />
       <Text
-        size="small"
+        size="label"
         color={presentation.colorToken as 'status.ok' | 'status.warn' | 'status.bad'}
         script={script}
       >

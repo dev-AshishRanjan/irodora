@@ -230,13 +230,13 @@ export function PaletteStudio({
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>
             {/* Tabular and selectable, like every other colour value in the app (C9). */}
-            <Text size="small" color="foreground.2" numeric selectable>
+            <Text size="label" color="foreground.2" numeric selectable>
               {entry.derived.hex}
             </Text>
           </View>
         </Row>
 
-        <Text size="xs" color="foreground.2" script={script}>
+        <Text size="caption" color="foreground.2" script={script}>
           {t('studio.role')}
         </Text>
         <Row gap="sm" wrap>
@@ -310,7 +310,7 @@ export function PaletteStudio({
         Where this palette came from, in the Studio's own words. NEVER the corpus
         classification label — see the note at the top of this file.
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('studio.origin')}
       </Text>
 
@@ -357,16 +357,16 @@ export function PaletteStudio({
             <Strip members={strip} weights={deriveWeights(strip.length)} testID="studio-strip" />
           )}
 
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('studio.order')}
           </Text>
 
           {draft.members.length === 0 ? (
             <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.sm }}>
-              <Text size="small" color="foreground" script={script}>
+              <Text size="label" color="foreground" script={script}>
                 {t('studio.empty')}
               </Text>
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('studio.emptyHint')}
               </Text>
             </View>
@@ -407,7 +407,7 @@ export function PaletteStudio({
                   color={colorFor(m.entry)}
                   size={32}
                 />
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {`${m.entry.name.kanji} ${m.entry.name.en}`}
                 </Text>
               </Row>
@@ -436,12 +436,12 @@ export function PaletteStudio({
             the schema's verdict, not from a second opinion about it.
           */}
           {problem === null ? null : (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t(PROBLEM_KEYS[problem])}
             </Text>
           )}
           {saved ? (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t('studio.saved')}
             </Text>
           ) : null}
@@ -473,7 +473,7 @@ export function PaletteStudio({
       >
         <Stack gap="sm">
           {separationProblems.length === 0 ? (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t('cvd.none')}
             </Text>
           ) : (
@@ -482,20 +482,20 @@ export function PaletteStudio({
                 key={`${finding.a.id}-${finding.b.id}`}
                 style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}
               >
-                <Text size="small" color="foreground" script={script}>
+                <Text size="label" color="foreground" script={script}>
                   {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
                 </Text>
                 <Row gap="sm" align="baseline">
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('cvd.separation')}
                   </Text>
                   {/* Tabular, like every other measured value in the app. */}
-                  <Text size="xs" color="foreground.2" numeric>
+                  <Text size="caption" color="foreground.2" numeric>
                     {finding.separation.toFixed(0)}
                   </Text>
                 </Row>
                 {finding.alternative === null ? (
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('cvd.noAlternative')}
                   </Text>
                 ) : (
@@ -511,11 +511,11 @@ export function PaletteStudio({
                         />
                       );
                     })()}
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {`${t('cvd.swapTo')} ${finding.alternative.label}`}
                     </Text>
                     {/* Tabular AND Japanese: the string is a figure and a sentence at once. */}
-                    <Text size="xs" color="foreground.2" numeric script={script}>
+                    <Text size="caption" color="foreground.2" numeric script={script}>
                       {`${finding.alternative.separation.toFixed(0)} (${t('cvd.improvement')} +${finding.alternative.improvement.toFixed(0)})`}
                     </Text>
                   </Row>
@@ -523,7 +523,7 @@ export function PaletteStudio({
               </View>
             ))
           )}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('cvd.method')}
           </Text>
         </Stack>
@@ -540,13 +540,13 @@ export function PaletteStudio({
       >
         <Stack gap="sm">
           {stored.length === 0 ? (
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('studio.none')}
             </Text>
           ) : (
             stored.map((p) => (
               <View key={p.id} style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-                <Text size="small" color="foreground" script={script}>
+                <Text size="label" color="foreground" script={script}>
                   {p.nameEn}
                 </Text>
                 <Row gap="sm" wrap>

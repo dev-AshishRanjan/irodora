@@ -19,7 +19,7 @@
  *
  * ```tsx
  * <Text size="title" color="foreground.3" />   // fine — 22px, above the floor
- * <Text size="small" color="foreground.3" />   // did not compile until F-225 made it text
+ * <Text size="label" color="foreground.3" />   // did not compile until F-225 made it text
  * ```
  *
  * ## Two affordances the HeroUI comparison surfaced (F-088)

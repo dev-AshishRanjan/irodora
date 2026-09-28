@@ -58,23 +58,22 @@ describe('THE PIN — the emitted table, asserted literally', () => {
     // If this fails, the type scale moved. That is allowed; it is a DESIGN change, and the
     // right response is to read the new mapping and update this table deliberately — not to
     // relax the assertion.
+    // F-226 (ADR-0113): board 00's scale — display1 72, title 22, body 16, label 14, caption 10.3.
     expect(nativeDynamicTypeRamp).toEqual({
-      'display.1': 'largeTitle',
-      'display.2': 'largeTitle',
+      display1: 'largeTitle',
       title: 'title2',
-      body: 'subheadline',
-      small: 'footnote',
-      xs: 'caption1',
-      label: 'caption2',
+      body: 'callout',
+      label: 'subheadline',
+      caption: 'caption2',
     });
   });
 
   it('body maps by SIZE, not by name, and that is the point', () => {
-    // Our `body` is 15px; Apple's `body` is 17. Matching by name would scale our body text
-    // along a curve calibrated for something larger, so it would drift from its intended
-    // appearance as the user's setting moves.
-    expect(nativeType.latin.body.fontSize).toBe(15);
-    expect(nativeDynamicTypeRamp.body).toBe('subheadline');
+    // Our `body` is 16px (board 00, ADR-0113); Apple's `body` is 17. Matching by name would scale
+    // our body text along a curve calibrated for something larger, so it would drift from its
+    // intended appearance as the user's setting moves. 16 is Apple's callout.
+    expect(nativeType.latin.body.fontSize).toBe(16);
+    expect(nativeDynamicTypeRamp.body).toBe('callout');
     expect(nativeDynamicTypeRamp.body).not.toBe('body');
   });
 });

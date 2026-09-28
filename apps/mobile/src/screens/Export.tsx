@@ -115,7 +115,7 @@ export function Export({
 
   return (
     <Screen title={t('export.title')} script={script}>
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('export.origin')}
       </Text>
 
@@ -159,7 +159,7 @@ export function Export({
                 hex, read as text.
               */}
               {subject.colours.map((colour) => (
-                <Text key={colour.id} size="small" color="foreground.2" script={script} numeric>
+                <Text key={colour.id} size="label" color="foreground.2" script={script} numeric>
                   {`${colour.name}   ${colour.hex}   ${colour.source}`}
                 </Text>
               ))}
@@ -168,7 +168,7 @@ export function Export({
                 (FR-10); showing it here is how somebody knows what they are about to keep,
                 rather than discovering it by opening the file.
               */}
-              <Text size="small" color="foreground.2" script={script} numeric>
+              <Text size="label" color="foreground.2" script={script} numeric>
                 {`${t('export.versions')}: ${subject.envelope.engine} · ${subject.envelope.corpus} · ${subject.envelope.rules}`}
               </Text>
             </Stack>
@@ -222,7 +222,7 @@ export function Export({
                   the one place in the app where an engine message reaches a person verbatim,
                   because rewriting it would lose the character it names.
                 */}
-                <Text size="small" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {refusal}
                 </Text>
               </Stack>

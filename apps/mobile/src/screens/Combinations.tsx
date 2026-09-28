@@ -230,7 +230,7 @@ export function Combinations({
               one recorded by a curator are different claims, and F-196 adds the second — so the
               first has to say which it is before there is anything to confuse it with.
             */}
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('combos.generated')}
             </Text>
             {/*
@@ -248,23 +248,23 @@ export function Combinations({
             */}
             {combination.separation === null ? null : (
               <Row gap="sm" wrap>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('cvd.separation')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {combination.separation.separation.toFixed(1)}
                 </Text>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t(`cvd.${combination.separation.deficiency}` as MessageKey)}
                 </Text>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('combos.severity')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {combination.separation.severity.toFixed(2)}
                 </Text>
                 {combination.separation.close ? (
-                  <Text size="xs" color="foreground.2" script={script}>
+                  <Text size="caption" color="foreground.2" script={script}>
                     {t('cvd.hard')}
                   </Text>
                 ) : null}
@@ -277,10 +277,10 @@ export function Combinations({
             */}
             {combination.personalFit === null ? null : (
               <Row gap="sm">
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('combos.personal')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {String(combination.personalFit)}
                 </Text>
               </Row>
@@ -288,21 +288,21 @@ export function Combinations({
 
             {combination.wasMapped ? (
               <Row gap="sm">
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('combos.cost')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
+                <Text size="caption" color="foreground.2" numeric selectable>
                   {combination.gamutCost.toFixed(2)}
                 </Text>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('unit.deltaE00')}
                 </Text>
-                <Text size="xs" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script}>
                   {t('space.cielab')}
                 </Text>
               </Row>
             ) : (
-              <Text size="xs" color="foreground.2" script={script}>
+              <Text size="caption" color="foreground.2" script={script}>
                 {t('combos.exact')}
               </Text>
             )}
@@ -356,7 +356,7 @@ export function Combinations({
         that exist between colours, not advice about what to wear. The claims lint holds the
         wording in both languages.
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t('combos.what')}
       </Text>
 
@@ -366,7 +366,7 @@ export function Combinations({
         person. Placed at the top because it is about the whole list, not about one card.
       */}
       {weighting === undefined ? (
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t('combos.personalNone')}
         </Text>
       ) : null}
@@ -416,14 +416,14 @@ export function Combinations({
         structural: an editor chooses published colours, and this is not one.
       */}
       {entry === null ? (
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t('combos.notInCorpus')}
         </Text>
       ) : null}
 
       {curated.length === 0 ? null : (
         <Stack gap="sm">
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t('combos.curatedWhat')}
           </Text>
           {curated.map(({ combination, role }) => (
@@ -442,10 +442,10 @@ export function Combinations({
                       where it sits on the screen, which is not a distinction a person can rely
                       on (F-194's note, one release on).
                     */}
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t('combos.curated')}
                     </Text>
-                    <Text size="xs" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script}>
                       {t(`combos.intent.${combination.intent}` as MessageKey)}
                     </Text>
                     {/*
@@ -454,7 +454,7 @@ export function Combinations({
                       things to know before looking at the rest.
                     */}
                     {role === 'lead' ? (
-                      <Text size="xs" color="foreground.2" script={script}>
+                      <Text size="caption" color="foreground.2" script={script}>
                         {t('combos.lead')}
                       </Text>
                     ) : null}
@@ -519,7 +519,7 @@ export function Combinations({
         genuinely what somebody wants for a second garment in the same family.
       */}
       {rest.length === 0 ? null : (
-        <Text size="small" color="foreground.2" script={script} heading>
+        <Text size="label" color="foreground.2" script={script} heading>
           {t('combos.more')}
         </Text>
       )}

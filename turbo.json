@@ -11,6 +11,7 @@
     "content/taxonomy.json",
     "docs/design/design-system.manifest.json",
     "mockups/inventory/**",
+    "mockups/inventory.schema.json",
     "mockups/README.md",
     ".harness/verification/claims.json"
   ],

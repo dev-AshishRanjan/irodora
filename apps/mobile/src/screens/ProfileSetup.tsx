@@ -348,11 +348,11 @@ export function ProfileSetup({
         }
       >
         <Stack gap="sm">
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t(confidenceKey(profile.confidence[dimension]))}
           </Text>
           {profile.origin[dimension] === 'user' ? (
-            <Text size="xs" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script}>
               {t('profile.corrected')}
             </Text>
           ) : null}
@@ -458,7 +458,7 @@ export function ProfileSetup({
     const candidates = [...new Set([...derived[dimension], ...kept])];
     if (candidates.length === 0)
       return (
-        <Text size="small" color="foreground" script={script}>
+        <Text size="label" color="foreground" script={script}>
           {t('profile.listEmpty')}
         </Text>
       );
@@ -476,7 +476,7 @@ export function ProfileSetup({
                 color={colorFor(found.entry)}
                 size={40}
               />
-              <Text size="small" color="foreground" script={script}>
+              <Text size="label" color="foreground" script={script}>
                 {`${found.entry.name.kanji} ${found.entry.name.en}`}
               </Text>
               <Chip
@@ -553,11 +553,11 @@ export function ProfileSetup({
             asked for a photograph of themselves by a colour app deserves to be told that nothing
             reads it — especially this one, whose whole subject is reading colour off images.
           */}
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('profile.avatar.hint')}
           </Text>
           {avatarRefused ? (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t('profile.avatar.refused')}
             </Text>
           ) : null}
@@ -581,7 +581,7 @@ export function ProfileSetup({
             onPress={onOpenSettings}
             script={script}
           />
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('settings.openHint')}
           </Text>
         </Stack>
@@ -618,18 +618,18 @@ export function ProfileSetup({
         no camera, and the photo path analysed a frame and discarded it. The second is the same
         claim NSCameraUsageDescription makes at the moment permission is requested.
       */}
-      <Text size="small" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script}>
         {t(reading === undefined ? 'profile.privacy' : 'profile.privacyPhoto')}
       </Text>
 
       {!showSummary && current !== undefined ? (
         <Stack gap="sm">
           <Row gap="sm" align="baseline">
-            <Text size="small" color="foreground.2" script={script}>
+            <Text size="label" color="foreground.2" script={script}>
               {t('profile.progress')}
             </Text>
             {/* Tabular, like every other count and value in the app. */}
-            <Text size="small" color="foreground.2" numeric>
+            <Text size="label" color="foreground.2" numeric>
               {`${String(answered + 1)} / ${String(TRIALS.length)}`}
             </Text>
           </Row>
@@ -654,11 +654,11 @@ export function ProfileSetup({
             has a second thing to admit: a camera measures the room as much as the person, so
             the estimate is weaker AND its origin is worth naming.
           */}
-          <Text size="small" color="foreground" script={script}>
+          <Text size="label" color="foreground" script={script}>
             {t('profile.estimate')}
           </Text>
           {estimate !== null && !complete ? (
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {t('profile.fromPhoto')}
             </Text>
           ) : null}
@@ -705,7 +705,7 @@ export function ProfileSetup({
             }}
             script={script}
           />
-          <Text size="xs" color="foreground.2" script={script}>
+          <Text size="caption" color="foreground.2" script={script}>
             {t('profile.restartHint')}
           </Text>
         </Stack>
@@ -726,12 +726,12 @@ export function ProfileSetup({
         save yet" without saying why is the same failure wearing a sentence.
       */}
       {canSave ? null : (
-        <Text size="small" color="foreground" script={script}>
+        <Text size="label" color="foreground" script={script}>
           {t(confirmed ? 'profile.notFinished' : 'profile.confirmHint')}
         </Text>
       )}
       {saved ? (
-        <Text size="small" color="foreground" script={script}>
+        <Text size="label" color="foreground" script={script}>
           {t('profile.saved')}
         </Text>
       ) : null}

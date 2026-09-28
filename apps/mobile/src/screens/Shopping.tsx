@@ -225,7 +225,7 @@ export function Shopping({
         script={script}
       />
       {moneyProblem === null ? null : (
-        <Text size="small" color="foreground.2" script={script}>
+        <Text size="label" color="foreground.2" script={script}>
           {t(COST_PROBLEM_KEYS[moneyProblem])}
         </Text>
       )}
@@ -283,10 +283,10 @@ export function Shopping({
                    * measurement with no units until it says out of how many, and counted at
                    * what — which is why F-048 exports COVERAGE_THRESHOLD at all.
                    */}
-                  <Text size="small" color="foreground.2" numeric script={script}>
+                  <Text size="label" color="foreground.2" numeric script={script}>
                     {`${t('shopping.now')}: ${String(check.outfits.now)}`}
                   </Text>
-                  <Text size="small" color="foreground.2" numeric script={script}>
+                  <Text size="label" color="foreground.2" numeric script={script}>
                     {`${t('shopping.countedAt')}: ${String(check.outfits.threshold)}`}
                   </Text>
                 </>
@@ -315,11 +315,11 @@ export function Shopping({
                    * is not an absent opinion, so none is filtered out for being neutral.
                    */}
                   {check.compatibility.factors.map((f) => (
-                    <Text key={f.factor} size="small" color="foreground.2" script={script}>
+                    <Text key={f.factor} size="label" color="foreground.2" script={script}>
                       {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
                     </Text>
                   ))}
-                  <Text size="small" color="foreground.2" numeric script={script}>
+                  <Text size="label" color="foreground.2" numeric script={script}>
                     {`${t('shopping.evidence')}: ${check.compatibility.confidence.toFixed(2)}`}
                   </Text>
                 </>
@@ -354,7 +354,7 @@ export function Shopping({
                     return (
                       <Text
                         key={`${pair.a.id}-${pair.b.id}`}
-                        size="small"
+                        size="label"
                         color="foreground.2"
                         numeric
                         script={script}
@@ -390,10 +390,10 @@ export function Shopping({
                   */}
                   {check.investment.reason !== 'tooFew' ? null : (
                     <>
-                      <Text size="small" color="foreground.2" numeric script={script}>
+                      <Text size="label" color="foreground.2" numeric script={script}>
                         {`${t('shopping.investmentHave')}: ${String(check.investment.have)}`}
                       </Text>
-                      <Text size="small" color="foreground.2" numeric script={script}>
+                      <Text size="label" color="foreground.2" numeric script={script}>
                         {`${t('shopping.investmentNeed')}: ${String(check.investment.need)}`}
                       </Text>
                     </>
@@ -416,7 +416,7 @@ export function Shopping({
                     garments and at what rate is asking to be believed rather than checked —
                     the same rule the outfit count follows with its threshold.
                   */}
-                  <Text size="small" color="foreground.2" numeric script={script}>
+                  <Text size="label" color="foreground.2" numeric script={script}>
                     {`${t('shopping.investmentBasis')}: ${String(check.investment.comparableCount)} ${t('shopping.investmentGarments')} ${formatMinor(check.investment.medianMinorPerWear, check.investment.currency)} ${check.investment.currency} ${t('shopping.investmentPerWear')}`}
                   </Text>
                   {/*
@@ -424,7 +424,7 @@ export function Shopping({
                     product is in a position to write, and saying so is better than leaving two
                     numbers to imply one.
                   */}
-                  <Text size="small" color="foreground.2" script={script}>
+                  <Text size="label" color="foreground.2" script={script}>
                     {t('shopping.investmentYours')}
                   </Text>
                 </>

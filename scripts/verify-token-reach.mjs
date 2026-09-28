@@ -324,7 +324,7 @@ const identifierRead = (name) => new RegExp(`\\b${escape(name)}\\b`, 'u');
  *
  * ## An ambiguous bare literal is not evidence
  *
- * `xs` is a radius step **and** a type step. The 22 `size="xs"` literals in the screens say
+ * Until F-226, `xs` was a radius step **and** a type step. The 22 `size="xs"` literals in the screens said
  * nothing whatever about the radius, so for a name that appears in more than one group the
  * bare-literal alternative is dropped and only an owner- or prop-scoped read counts. That is
  * what separates `nativeRadius.xs` (nowhere) from `size="xs"` (everywhere), and it is why
@@ -355,7 +355,7 @@ function objectValues(value, out = []) {
 /**
  * Reach is keyed by group AND name, never by name alone.
  *
- * `xs` is a radius step and a type step. Keyed by name, the 22 `size="xs"` literals in the
+ * Until F-226, `xs` was a radius step and a type step. Keyed by name, the 22 `size="xs"` literals in the
  * screens marked the *radius* step reached as well — a false negative found by running this
  * before believing it, and the reason a token is only ever reported as `<group> <name>`.
  */

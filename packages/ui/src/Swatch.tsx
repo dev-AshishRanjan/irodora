@@ -344,7 +344,7 @@ export function Swatch({
           }}
         />
       </View>
-      <Text size="small" color="foreground" script={script}>
+      <Text size="label" color="foreground" script={script}>
         {loading ? `${name}…` : selected ? `✓ ${name}` : name}
       </Text>
     </AnimatedPressable>

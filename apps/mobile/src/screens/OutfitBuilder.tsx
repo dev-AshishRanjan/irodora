@@ -262,7 +262,7 @@ export function OutfitBuilder({
                     const answer = costPerWear(stored(placed.garment));
                     if (!answer.known)
                       return (
-                        <Text size="small" color="foreground.2" script={script}>
+                        <Text size="label" color="foreground.2" script={script}>
                           {t(COST_UNKNOWN_KEYS[answer.reason])}
                         </Text>
                       );
@@ -271,7 +271,7 @@ export function OutfitBuilder({
                         <Text size="body" color="foreground" numeric script={script}>
                           {`${t('outfit.perWear')}: ${formatMinor(answer.minorPerWear, answer.currency)} ${answer.currency}`}
                         </Text>
-                        <Text size="small" color="foreground.2" numeric script={script}>
+                        <Text size="label" color="foreground.2" numeric script={script}>
                           {`${t('outfit.perWearBasis')}: ${formatMinor(answer.costMinor, answer.currency)} ${answer.currency} / ${String(answer.wearCount)}`}
                         </Text>
                       </Stack>
@@ -343,7 +343,7 @@ export function OutfitBuilder({
                   {best.score.components.map((c) => (
                     <Text
                       key={c.component}
-                      size="small"
+                      size="label"
                       color="foreground.2"
                       numeric
                       script={script}

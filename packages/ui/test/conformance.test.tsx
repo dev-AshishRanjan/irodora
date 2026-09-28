@@ -331,7 +331,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <>
-          <Wordmark size="display.2" />
+          <Wordmark size="title" />
           <Mark size={16} label="Irodora" />
         </>,
         theme,
@@ -364,7 +364,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
                 <Text size="body" color="foreground">
                   Ai-nezumi
                 </Text>
-                <Text size="small" color="foreground.2" numeric>
+                <Text size="label" color="foreground.2" numeric>
                   2.14
                 </Text>
               </Row>
@@ -522,7 +522,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           }
           media={<View style={{ height: 48, backgroundColor: '#526A6B' }} />}
           footer={
-            <Text size="xs" color="foreground.2">
+            <Text size="caption" color="foreground.2">
               Measured under D65
             </Text>
           }
@@ -784,7 +784,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               value: 'about',
               title: 'Description',
               children: (
-                <Text size="small" color="foreground.2">
+                <Text size="label" color="foreground.2">
                   A deep indigo.
                 </Text>
               ),
@@ -793,7 +793,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               value: 'coords',
               title: 'Coordinates',
               children: (
-                <Text size="small" color="foreground.2">
+                <Text size="label" color="foreground.2">
                   L 42.1
                 </Text>
               ),
@@ -802,7 +802,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               value: 'taxonomy',
               title: 'Taxonomy',
               children: (
-                <Text size="small" color="foreground.2">
+                <Text size="label" color="foreground.2">
                   Cool, mid.
                 </Text>
               ),
@@ -811,7 +811,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               value: 'source',
               title: 'Provenance',
               children: (
-                <Text size="small" color="foreground.2">
+                <Text size="label" color="foreground.2">
                   Declared.
                 </Text>
               ),
@@ -1730,7 +1730,7 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
 
   it('carries the manifest feature when the numeric prop is set', () => {
     const tree = draw(
-      <Text size="small" color="foreground" numeric>
+      <Text size="label" color="foreground" numeric>
         12.34
       </Text>,
       'light',
@@ -1745,7 +1745,7 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
    */
   it('DECOY — a Text without `numeric` carries no font variant at all', () => {
     const tree = draw(
-      <Text size="small" color="foreground">
+      <Text size="label" color="foreground">
         12.34
       </Text>,
       'light',
@@ -1768,7 +1768,7 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
     variants(
       draw(
         <DisplaySettingsProvider settings={{ ...DRAWN_DISPLAY_SETTINGS, tabularNumerals }}>
-          <Text size="small" color="foreground" numeric>
+          <Text size="label" color="foreground" numeric>
             12.34
           </Text>
         </DisplaySettingsProvider>,
@@ -1787,7 +1787,7 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
     expect(
       variants(
         draw(
-          <Text size="small" color="foreground" numeric>
+          <Text size="label" color="foreground" numeric>
             12.34
           </Text>,
           'light',

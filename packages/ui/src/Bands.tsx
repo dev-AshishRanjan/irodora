@@ -87,7 +87,7 @@ export function Bands({ bands, unit, script = 'latin', testID }: BandsProps): Re
       {shown.map((band, index) => (
         <Stack key={band.label} gap="xs">
           <Row gap="sm">
-            <Text size="small" color="foreground" script={script}>
+            <Text size="label" color="foreground" script={script}>
               {band.label}
             </Text>
             {/*
@@ -95,7 +95,7 @@ export function Bands({ bands, unit, script = 'latin', testID }: BandsProps): Re
               bar cannot be seen or compared — and for one band it is the ONLY reading, because
               a single bar scaled to itself is full whatever it counts.
             */}
-            <Text size="small" color="foreground.2" numeric>
+            <Text size="label" color="foreground.2" numeric>
               {`${String(band.value)} ${unit}`}
             </Text>
           </Row>

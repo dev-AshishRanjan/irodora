@@ -192,40 +192,34 @@ export const nativeJudgeableSample = 77 as const;
 /** Absolute points, NOT the manifest ratios — RN lineHeight is a length. */
 export const nativeType = {
   latin: {
-    'display.1': { fontSize: 72, lineHeight: 70.56, letterSpacing: -2.88, fontWeight: '500' },
-    'display.2': { fontSize: 34, lineHeight: 35.7, letterSpacing: -1.02, fontWeight: '500' },
+    display1: { fontSize: 72, lineHeight: 70.56, letterSpacing: -2.88, fontWeight: '500' },
     title: { fontSize: 22, lineHeight: 26.4, letterSpacing: -0.44, fontWeight: '600' },
-    body: { fontSize: 15, lineHeight: 24.75, letterSpacing: 0, fontWeight: '400' },
-    small: { fontSize: 13, lineHeight: 20.15, letterSpacing: 0, fontWeight: '400' },
-    xs: { fontSize: 11.5, lineHeight: 17.25, letterSpacing: 0, fontWeight: '400' },
-    label: { fontSize: 10, lineHeight: 14, letterSpacing: 1.6, fontWeight: '600', textTransform: 'uppercase' },
+    body: { fontSize: 16, lineHeight: 26.4, letterSpacing: 0, fontWeight: '400' },
+    label: { fontSize: 14, lineHeight: 21.7, letterSpacing: 0, fontWeight: '400' },
+    caption: { fontSize: 10.3, lineHeight: 15.45, letterSpacing: 0, fontWeight: '400' },
   },
   japanese: {
-    'display.1': { fontSize: 72, lineHeight: 79.11, letterSpacing: -2.88, fontWeight: '500' },
-    'display.2': { fontSize: 34, lineHeight: 40.03, letterSpacing: -1.02, fontWeight: '500' },
+    display1: { fontSize: 72, lineHeight: 79.11, letterSpacing: -2.88, fontWeight: '500' },
     title: { fontSize: 22, lineHeight: 29.6, letterSpacing: -0.44, fontWeight: '600' },
-    body: { fontSize: 15, lineHeight: 27.75, letterSpacing: 0, fontWeight: '400' },
-    small: { fontSize: 13, lineHeight: 22.59, letterSpacing: 0, fontWeight: '400' },
-    xs: { fontSize: 11.5, lineHeight: 19.34, letterSpacing: 0, fontWeight: '400' },
-    label: { fontSize: 10, lineHeight: 15.7, letterSpacing: 1.6, fontWeight: '600', textTransform: 'uppercase' },
+    body: { fontSize: 16, lineHeight: 29.6, letterSpacing: 0, fontWeight: '400' },
+    label: { fontSize: 14, lineHeight: 24.33, letterSpacing: 0, fontWeight: '400' },
+    caption: { fontSize: 10.3, lineHeight: 17.32, letterSpacing: 0, fontWeight: '400' },
   },
 } as const;
 
 /** Scale steps at or above the 18.66px WCAG large-text floor. */
-export const nativeLargeTextSizes = ['display.1', 'display.2', 'title'] as const;
+export const nativeLargeTextSizes = ['display1', 'title'] as const;
 /** Scale steps BELOW it. A largeText-only token may never be used at these. */
-export const nativeSmallTextSizes = ['body', 'small', 'xs', 'label'] as const;
+export const nativeSmallTextSizes = ['body', 'label', 'caption'] as const;
 export const nativeLargeTextMinPx = 18.66 as const;
 
 /** iOS Dynamic Type curve per step, matched by SIZE to Apple's ramp. */
 export const nativeDynamicTypeRamp = {
-  'display.1': 'largeTitle',
-  'display.2': 'largeTitle',
+  display1: 'largeTitle',
   title: 'title2',
-  body: 'subheadline',
-  small: 'footnote',
-  xs: 'caption1',
-  label: 'caption2',
+  body: 'callout',
+  label: 'subheadline',
+  caption: 'caption2',
 } as const;
 
 /** ONE family per bundled face — RN has no fallback cascade. The Latin sans is the platform. */
@@ -238,7 +232,7 @@ export const nativeFamilies = {
 /** What each bundled face is cut at, and the steps a mockup draws it at (ADR-0112). */
 export const nativeFaces = {
   jp: { family: 'NotoSansJP', file: 'NotoSansJP-Subset.ttf', script: 'japanese', weight: 400, tracking: null, steps: 'all' },
-  serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, tracking: '0', steps: ['display.1', 'title', 'body'] },
+  serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, tracking: '0', steps: ['display1', 'title', 'body'] },
   mincho: { family: 'NotoSerifJP-Regular', file: 'NotoSerifJP-Subset.ttf', script: 'japanese', weight: 400, tracking: null, steps: ['title'] },
 } as const;
 

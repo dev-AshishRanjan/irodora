@@ -85,14 +85,19 @@ describe('the screen title reaches the display tier', () => {
    * the size that actually reached the node rather than the prop that was passed — the same
    * distinction F-088 needed for `heading`, where the prop was set and the role was not.
    */
-  it('renders its title at display.2, not title', () => {
+  /*
+   * SUPERSEDED IN SIZE BY F-226 (ADR-0113). The display tier this feature reached was `display.2`,
+   * 34px, a step board 00 does not have; it snapped to `title`, 22px. What the test still holds is
+   * the point it was written for: the size that REACHES THE NODE is the scale's, not a prop's.
+   */
+  it('renders its title at the scale step the node actually carries (title, 22px)', () => {
     const tree = draw(<Screen title="Atlas" scroll={false} />);
     const node = tree.getByText('Atlas');
     const style: unknown = node.props['style'];
     const flat = (
       Array.isArray(style) ? Object.assign({}, ...(style as object[])) : (style ?? {})
     ) as Record<string, unknown>;
-    expect(flat['fontSize']).toBe(34);
+    expect(flat['fontSize']).toBe(22);
   });
 
   it('announces the title as a heading', () => {
