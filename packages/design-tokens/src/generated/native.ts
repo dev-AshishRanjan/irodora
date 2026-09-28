@@ -228,8 +228,19 @@ export const nativeDynamicTypeRamp = {
   label: 'caption2',
 } as const;
 
-/** ONE family per script — RN has no fallback cascade. jp is bundled; Latin is the platform. */
-export const nativeFamilies = { jp: 'NotoSansJP' } as const;
+/** ONE family per bundled face — RN has no fallback cascade. The Latin sans is the platform. */
+export const nativeFamilies = {
+  jp: 'NotoSansJP',
+  serif: 'Gelasio-Regular',
+  mincho: 'NotoSerifJP-Regular',
+} as const;
+
+/** What each bundled face is cut at, and the steps a mockup draws it at (ADR-0112). */
+export const nativeFaces = {
+  jp: { family: 'NotoSansJP', file: 'NotoSansJP-Subset.ttf', script: 'japanese', weight: 400, tracking: null, steps: 'all' },
+  serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, tracking: '0', steps: ['display.1', 'title', 'body'] },
+  mincho: { family: 'NotoSerifJP-Regular', file: 'NotoSerifJP-Subset.ttf', script: 'japanese', weight: 400, tracking: null, steps: ['title'] },
+} as const;
 
 export const nativeNumericFeature = 'tabular-nums' as const;
 

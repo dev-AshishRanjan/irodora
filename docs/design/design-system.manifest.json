@@ -1048,7 +1048,42 @@
     "families": {
       "sans": "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif",
       "mono": "'Geist Mono', ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace",
+      "serif": "Gelasio, Georgia, 'Times New Roman', serif",
+      "mincho": "'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif",
       "jp": "'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif"
+    },
+    "faces": {
+      "_note": "The faces the app BUNDLES (ADR-0057, ADR-0112), one native family name each: React Native takes a single name and has no fallback cascade, so the CSS stacks above cannot be used there. `family` is the name the app registers the file under, `weight` the weight the file is cut at — a `fontWeight` other than it makes a platform fake one — and `steps` the steps a mockup draws the face at (\"all\", or a list; anything else is a type error in Text). `tracking` overrides the step's where the face's own was measured (the serif's is 0, ADR-0112). The Latin SANS is not here: it is the platform's (ADR-0057 §6).",
+      "jp": {
+        "family": "NotoSansJP",
+        "file": "NotoSansJP-Subset.ttf",
+        "script": "japanese",
+        "weight": 400,
+        "tracking": null,
+        "steps": "all"
+      },
+      "serif": {
+        "family": "Gelasio-Regular",
+        "file": "Gelasio-Regular.ttf",
+        "script": "latin",
+        "weight": 400,
+        "tracking": "0",
+        "steps": [
+          "display.1",
+          "title",
+          "body"
+        ]
+      },
+      "mincho": {
+        "family": "NotoSerifJP-Regular",
+        "file": "NotoSerifJP-Subset.ttf",
+        "script": "japanese",
+        "weight": 400,
+        "tracking": null,
+        "steps": [
+          "title"
+        ]
+      }
     },
     "scale": {
       "display.1": {

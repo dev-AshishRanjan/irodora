@@ -282,6 +282,26 @@ export interface TypeStep {
   readonly transform?: string;
 }
 
+/**
+ * A face the app bundles (ADR-0112). ONE name, because React Native takes a single family and has
+ * no cascade; the file is cut static at `weight`, so asking for any other weight makes a platform
+ * fake one.
+ */
+export interface BundledFace {
+  /** The name the app registers the file under, and the `fontFamily` a component sets. */
+  readonly family: string;
+  /** The committed asset, under `apps/mobile/assets/fonts`. */
+  readonly file: string;
+  /** The script it sets. */
+  readonly script: Script;
+  /** The weight the file is cut at. */
+  readonly weight: number;
+  /** The face's own tracking, where it was measured; `null` keeps the step's. */
+  readonly tracking: string | null;
+  /** The steps a mockup draws the face at — `'all'`, or the list. */
+  readonly steps: 'all' | readonly string[];
+}
+
 /** The scripts the type scale is defined for. Japanese is not Latin with different glyphs. */
 export const SCRIPTS = ['latin', 'japanese'] as const;
 export type Script = (typeof SCRIPTS)[number];
@@ -297,6 +317,11 @@ export interface Typography {
    * asset lands (ADR-0057 §5, F-017 increment 9) — not before.
    */
   readonly families: Readonly<Record<string, string>>;
+  /**
+   * The faces the app BUNDLES, one native family name each (ADR-0057, ADR-0112). The Latin sans
+   * is not among them: it is the platform's (ADR-0057 §6).
+   */
+  readonly faces: Readonly<Record<string, BundledFace>>;
   readonly scale: Readonly<Record<string, TypeStep>>;
   /** Base leading per script. Japanese needs more at the same size. */
   readonly lineHeight: Readonly<Record<Script, number>>;
@@ -968,6 +993,58 @@ export function parseManifest(input: unknown): Manifest {
   }
 
   const scaleRaw = requireRecord(typoRaw['scale'], 'typography.scale');
+  const scaleNames = Object.keys(scaleRaw).filter((n) => !n.startsWith('_'));
+
+  // The bundled faces (ADR-0112). Each is ONE name — a stack would reach React Native as a
+  // family nothing is registered under, which falls back to the platform face in silence.
+  const facesRaw = requireRecord(typoRaw['faces'], 'typography.faces');
+  const faces: Record<string, BundledFace> = {};
+  for (const [name, value] of Object.entries(facesRaw)) {
+    if (name.startsWith('_')) continue;
+    const at = `typography.faces.${name}`;
+    const o = requireRecord(value, at);
+    const family = requireString(o['family'], `${at}.family`);
+    if (family.includes(','))
+      throw new ManifestError(
+        `${at}.family`,
+        'one family name, never a stack: React Native has no cascade',
+      );
+    const file = requireString(o['file'], `${at}.file`);
+    if (!file.endsWith('.ttf')) throw new ManifestError(`${at}.file`, 'expected a .ttf asset');
+    const script = requireString(o['script'], `${at}.script`);
+    if (!(SCRIPTS as readonly string[]).includes(script))
+      throw new ManifestError(`${at}.script`, `expected one of ${SCRIPTS.join(', ')}`);
+    const weight = requireNumber(o['weight'], `${at}.weight`);
+    if (weight < 100 || weight > 900 || weight % 100 !== 0)
+      throw new ManifestError(
+        `${at}.weight`,
+        'expected 100-900 in steps of 100, the weight the file is cut at',
+      );
+    const trackingRaw = o['tracking'];
+    const tracking = trackingRaw === null ? null : requireString(trackingRaw, `${at}.tracking`);
+    if (tracking !== null && tracking !== '0' && !/^-?\d*\.?\d+em$/u.test(tracking))
+      throw new ManifestError(
+        `${at}.tracking`,
+        'expected an em value, "0", or null for the step\'s own',
+      );
+    const stepsRaw = o['steps'];
+    let steps: 'all' | readonly string[];
+    if (stepsRaw === 'all') steps = 'all';
+    else {
+      if (!Array.isArray(stepsRaw) || stepsRaw.length === 0)
+        throw new ManifestError(`${at}.steps`, 'expected "all" or a non-empty list of scale steps');
+      steps = stepsRaw.map((s, k) => {
+        const step = requireString(s, `${at}.steps[${String(k)}]`);
+        if (!scaleNames.includes(step))
+          throw new ManifestError(
+            `${at}.steps[${String(k)}]`,
+            `"${step}" is not a step of the type scale`,
+          );
+        return step;
+      });
+    }
+    faces[name] = { family, file, script: script as Script, weight, tracking, steps };
+  }
   const typeScale: Record<string, TypeStep> = {};
   for (const [name, value] of Object.entries(scaleRaw)) {
     if (name.startsWith('_')) continue;
@@ -1171,6 +1248,7 @@ export function parseManifest(input: unknown): Manifest {
     opacity,
     typography: {
       families,
+      faces,
       scale: typeScale,
       lineHeight: leading,
       numeric: {

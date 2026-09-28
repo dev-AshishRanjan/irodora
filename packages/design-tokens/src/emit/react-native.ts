@@ -244,13 +244,26 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   // takes a single family and there is no second chance. The manifest's CSS stacks stay for
   // the CSS target, where a cascade exists.
   //
-  // `jp` only. The Latin face is deliberately still the platform's (ADR-0057 §6): Latin has
-  // no tofu failure mode, so the script that can fail silently gets the bundled font and the
-  // script that cannot, does not.
+  // DERIVED FROM THE MANIFEST'S `faces` since F-226 (ADR-0112): the Japanese sans, the serif
+  // and the mincho. The Latin SANS is still the platform's (ADR-0057 §6): it has no tofu failure
+  // mode, so it is the one face not bundled.
+  const faces = Object.entries(manifest.typography.faces);
   out.push(
-    '/** ONE family per script — RN has no fallback cascade. jp is bundled; Latin is the platform. */',
+    '/** ONE family per bundled face — RN has no fallback cascade. The Latin sans is the platform. */',
   );
-  out.push("export const nativeFamilies = { jp: 'NotoSansJP' } as const;");
+  out.push('export const nativeFamilies = {');
+  for (const [name, face] of faces) out.push(`  ${key(name)}: ${quote(face.family)},`);
+  out.push('} as const;');
+  out.push('');
+  out.push(
+    '/** What each bundled face is cut at, and the steps a mockup draws it at (ADR-0112). */',
+  );
+  out.push('export const nativeFaces = {');
+  for (const [name, face] of faces)
+    out.push(
+      `  ${key(name)}: { family: ${quote(face.family)}, file: ${quote(face.file)}, script: ${quote(face.script)}, weight: ${String(face.weight)}, tracking: ${face.tracking === null ? 'null' : quote(face.tracking)}, steps: ${face.steps === 'all' ? quote('all') : `[${face.steps.map(quote).join(', ')}]`} },`,
+    );
+  out.push('} as const;');
   out.push('');
 
   out.push(

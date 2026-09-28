@@ -149,6 +149,7 @@ export {
   nativeLargeTextMinPx,
   nativeDynamicTypeRamp,
   nativeFamilies,
+  nativeFaces,
 } from './generated/native.js';
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */

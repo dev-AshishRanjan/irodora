@@ -30,6 +30,7 @@ import {
   nativeNumericFeature,
   nativeType,
   nativeFamilies,
+  nativeFaces,
 } from '../src/generated/native.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -254,11 +255,42 @@ describe('the font family is ONE name per script, never a CSS stack', () => {
     expect(nativeFamilies.jp).not.toContain(',');
   });
 
-  it('emits NO Latin family, which is a decision rather than an omission', () => {
+  it('emits the bundled faces and NO Latin sans, which is a decision rather than an omission', () => {
     // ADR-0057 §6: Latin has no tofu failure mode, so the script that can fail silently gets
-    // the bundled font and the script that cannot, does not. DESIGN-SYSTEM.md still says
-    // "Geist ... licensing and self-hosting to confirm", which nobody has confirmed.
-    expect(Object.keys(nativeFamilies)).toEqual(['jp']);
+    // the bundled font and the script that cannot, does not. ADR-0112 amends it for the SERIF,
+    // which a mockup draws and the platform does not have; the sans stays the platform's.
+    expect(Object.keys(nativeFamilies)).toEqual(['jp', 'serif', 'mincho']);
+    const latin = Object.entries(nativeFaces).filter(([, f]) => f.script === 'latin');
+    expect(latin.map(([name]) => name)).toEqual(['serif']);
+    for (const f of Object.values(nativeFaces)) expect(f.family).not.toContain(',');
+  });
+
+  it('records each face at the weight it is cut at, and only at the steps a mockup draws it', () => {
+    // ADR-0112: Gelasio Regular for every serif role, at no tracking; the mincho at 400, at the
+    // one step 20's card draws it. A face asked for at another weight is a face a platform fakes.
+    expect(nativeFaces.serif).toMatchObject({
+      family: 'Gelasio-Regular',
+      weight: 400,
+      tracking: '0',
+    });
+    expect(nativeFaces.mincho).toMatchObject({
+      family: 'NotoSerifJP-Regular',
+      weight: 400,
+      steps: ['title'],
+    });
+    for (const f of Object.values(nativeFaces))
+      if (f.steps !== 'all') for (const step of f.steps) expect(STEP_NAMES).toContain(step);
+  });
+
+  it.each([
+    ['a stack', { family: 'Gelasio, serif' }, 'one family name'],
+    ['a step the scale does not have', { steps: ['display.9'] }, 'is not a step of the type scale'],
+    ['a weight no cut exists at', { weight: 450 }, 'steps of 100'],
+    ['a px tracking', { tracking: '1px' }, 'expected an em value'],
+  ])('refuses a face with %s', (_what, change, message) => {
+    const bad = clone() as { typography: { faces: Record<string, Record<string, unknown>> } };
+    Object.assign(bad.typography.faces['serif'] ?? {}, change);
+    expect(() => parseManifest(bad)).toThrow(message);
   });
 
   it('the manifest still carries CSS stacks, for the target that has a cascade', () => {
