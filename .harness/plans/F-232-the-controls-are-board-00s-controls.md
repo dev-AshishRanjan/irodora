@@ -268,3 +268,20 @@ pnpm test:a11y && pnpm test:contrast && pnpm test:cvd
 - Selection on Swatch, Card and Tabs.
 - 00's green badge.
 - `Select` and `Accordion`.
+
+## Status (implementing session)
+
+| inc | commit | what landed |
+|---|---|---|
+| 1 | `bc9dff1` | Measured and recorded 00, 05, 09, 12, 15, 17. ADR-0115 and the classifier: **30** icon-only controls, 15 plated and 15 bare (the plan's 71 had counted labelled buttons). |
+| 2 | `ab68902` | `ownedAccessibility.ts`, applied to Button and Chip. |
+| 3 | `d03e16f` | `size.tapTargetAndroid`, `hitArea()`, and a `tap-target` rule that reads `hitSlop`; ADR-0114. The probe shows HeroUI forwards `hitSlop`. |
+| 4 | `3802c00` | Button forms, `FocusRing`, and `Text` `weight`. The defaults are recomputed from the inventories. |
+
+**Found while measuring, and recorded in the inventories:**
+- 12's selected fills read `level3` at ΔE00 3.2–4.0, where `level2` had been recorded (6.5).
+- 15's switch is a 34.5 × 18 dp track. The inventory's 35.5 × 22.5 was a padded box.
+- 05's family chips are filled `level1`.
+- 15's chosen CVD mode is filled `level2`.
+
+These go to F-256, F-285, F-246 and F-262 at close-out.
