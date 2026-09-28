@@ -54,8 +54,10 @@
  * library's.
  */
 
-import Svg, { Circle, Path } from 'react-native-svg';
+import { useId } from 'react';
+import Svg, { Circle, ClipPath, Defs, G, Path } from 'react-native-svg';
 import { nativeIconStroke } from '@irodora/design-tokens';
+import type { ThemeColors } from './theme.js';
 
 /** The grid every glyph is drawn on — the brand mark's own 24. */
 const GRID = 24;
@@ -341,6 +343,15 @@ const TURN_HEAD = 'M3.5 3.5V8H8';
 
 const HOUSE = 'M4 10.3 12 3.8l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z';
 
+/** `00`'s wheel: the disc, and the palette inside it with its wells (a compound path, `evenodd`). */
+const WHEEL_DISC = circlePath(12, 12, 10);
+const WHEEL_PALETTE = [
+  'M12 6.3a5.7 5.7 0 0 0 0 11.4c.7 0 1-.5.9-1.1-.2-.6.2-1.3.9-1.3h1.3a2.6 2.6 0 0 0 2.6-2.6c0-3.5-2.6-6.4-5.7-6.4z',
+  circlePath(9.3, 11.2, 0.85),
+  circlePath(10.6, 8.9, 0.85),
+  circlePath(13.3, 8.7, 0.85),
+].join(' ');
+
 const PALETTE =
   'M12 3a9 9 0 0 0 0 18c1.2 0 1.7-.8 1.5-1.8-.3-1 .3-2.2 1.5-2.2h2a4 4 0 0 0 4-4C21 7.2 17 3 12 3z';
 
@@ -429,20 +440,7 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
    * `00`'s wheel: a solid hue disc with a palette cut out of it and the palette's wells inside. Its
    * hues — and the palette's white against them — are OQ-37.
    */
-  'colour-wheel': (p) => (
-    <>
-      {solid(
-        [
-          circlePath(12, 12, 10),
-          'M12 6.3a5.7 5.7 0 0 0 0 11.4c.7 0 1-.5.9-1.1-.2-.6.2-1.3.9-1.3h1.3a2.6 2.6 0 0 0 2.6-2.6c0-3.5-2.6-6.4-5.7-6.4z',
-          circlePath(9.3, 11.2, 0.85),
-          circlePath(10.6, 8.9, 0.85),
-          circlePath(13.3, 8.7, 0.85),
-        ].join(' '),
-        p,
-      )}
-    </>
-  ),
+  'colour-wheel': (p) => <>{solid([WHEEL_DISC, WHEEL_PALETTE].join(' '), p)}</>,
 
   compass: (p) =>
     p.filled ? (
@@ -867,10 +865,117 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
   ),
 };
 
+/**
+ * The glyphs `00` draws as a hue sweep over their silhouette (ADR-0110, F-232), each with the token
+ * group minted for it: `glyph.wheel.1–8` and `glyph.palette.1–8`, clockwise from the top.
+ */
+export const SPECTRUM_GLYPHS = {
+  // Every name written out: a token name built by concatenation is one the reach check cannot see.
+  'colour-wheel': [
+    'glyph.wheel.1',
+    'glyph.wheel.2',
+    'glyph.wheel.3',
+    'glyph.wheel.4',
+    'glyph.wheel.5',
+    'glyph.wheel.6',
+    'glyph.wheel.7',
+    'glyph.wheel.8',
+  ],
+  'palette-solid': [
+    'glyph.palette.1',
+    'glyph.palette.2',
+    'glyph.palette.3',
+    'glyph.palette.4',
+    'glyph.palette.5',
+    'glyph.palette.6',
+    'glyph.palette.7',
+    'glyph.palette.8',
+  ],
+} as const satisfies Partial<Record<GlyphName, readonly (keyof ThemeColors)[]>>;
+
+/** How many stops a spectrum group holds: eight 45° sectors, as `00` draws them. */
+export const SPECTRUM_STOPS = 8;
+
+/**
+ * A glyph's spectrum resolved against a theme, or `undefined` for a glyph drawn in one ink. The
+ * controls pass it for whatever icon they draw, so a surface never names a hue.
+ */
+export function glyphSpectrum(name: GlyphName, colors: ThemeColors): readonly string[] | undefined {
+  const stops = (SPECTRUM_GLYPHS as Partial<Record<GlyphName, readonly (keyof ThemeColors)[]>>)[
+    name
+  ];
+  return stops?.map((token) => colors[token]);
+}
+
+/** One 45° sector of the sweep, centred on stop `i`, clockwise from the top, past the grid's corners. */
+function wedge(i: number, count: number): string {
+  const step = (2 * Math.PI) / count;
+  const reach = 17;
+  const at = (a: number): string => `${n(12 + reach * Math.sin(a))} ${n(12 - reach * Math.cos(a))}`;
+  return `M12 12L${at(i * step - step / 2)}A${String(reach)} ${String(reach)} 0 0 1 ${at(i * step + step / 2)}Z`;
+}
+
+/**
+ * The hue sweep, clipped to a shape. A component rather than a helper because the clip needs an id
+ * unique to this glyph on the page, and `Glyph` itself is called as a plain function by its tests.
+ * The group says `fill="none"`: react-native-svg injects black otherwise. The clip's own path is
+ * geometry and is never painted, so the conformance scan does not read it (`tree.ts`).
+ */
+function Sweep({
+  clip,
+  stops,
+}: {
+  readonly clip: string;
+  readonly stops: readonly string[];
+}): React.JSX.Element {
+  const id = `sweep${useId().replace(/[^a-zA-Z0-9]/gu, '')}`;
+  return (
+    <>
+      <Defs>
+        <ClipPath id={id}>
+          <Path d={clip} clipRule="evenodd" />
+        </ClipPath>
+      </Defs>
+      <G clipPath={`url(#${id})`} fill="none">
+        {stops.map((colour, i) => (
+          <Path key={String(i)} d={wedge(i, stops.length)} fill={colour} />
+        ))}
+      </G>
+    </>
+  );
+}
+
+/**
+ * How each spectrum glyph is drawn in colour (ADR-0110 §2): the sweep over the silhouette's own
+ * area, so every hole stays a hole. On the wheel the palette is then drawn back in ink over the
+ * disc: `00` draws a white palette on a spectrum, its wells showing the hue beneath.
+ */
+const SPECTRUM: Readonly<
+  Record<keyof typeof SPECTRUM_GLYPHS, (pen: Pen, stops: readonly string[]) => React.JSX.Element>
+> = {
+  'colour-wheel': (p, stops) => (
+    <>
+      <Sweep clip={WHEEL_DISC} stops={stops} />
+      {solid(WHEEL_PALETTE, p)}
+    </>
+  ),
+  'palette-solid': (_p, stops) => (
+    <Sweep
+      clip={[PALETTE, ...WELLS.map(([x, y]) => circlePath(x, y, 1.25))].join(' ')}
+      stops={stops}
+    />
+  ),
+};
+
 export interface GlyphProps {
   readonly name: GlyphName;
   /** Resolved by the caller from a theme token — a glyph names no colour. */
   readonly color: string;
+  /**
+   * The hue stops of a spectrum glyph ({@link SPECTRUM_GLYPHS}), resolved by the caller
+   * ({@link glyphSpectrum}). Ignored by every other glyph, which is drawn in `color` alone.
+   */
+  readonly spectrum?: readonly string[] | undefined;
   /** The rendered size in dp. The line keeps its declared width at every size. */
   readonly size?: number;
   /** The active state, where a mockup draws one filled ({@link FILLABLE_GLYPHS}). */
@@ -889,9 +994,15 @@ export function Glyph({
   color,
   size = 24,
   filled = false,
+  spectrum,
   testID,
 }: GlyphProps): React.JSX.Element {
   const fillable = (FILLABLE_GLYPHS as readonly GlyphName[]).includes(name);
+  const pen = { ink: color, sw: glyphStroke(size), filled: filled && fillable };
+  const coloured =
+    spectrum !== undefined && name in SPECTRUM
+      ? SPECTRUM[name as keyof typeof SPECTRUM](pen, spectrum)
+      : undefined;
   return (
     <Svg
       width={size}
@@ -907,7 +1018,7 @@ export function Glyph({
       fill="none"
       {...(testID === undefined ? {} : { testID })}
     >
-      {GLYPHS[name]({ ink: color, sw: glyphStroke(size), filled: filled && fillable })}
+      {coloured ?? GLYPHS[name](pen)}
     </Svg>
   );
 }

@@ -449,6 +449,198 @@ export const runtimeManifest: CheckableManifest = {
         "role": "",
         "usage": "text",
         "pairsWith": []
+      },
+      "glyph.wheel.1": {
+        "oklch": {
+          "l": 0.6874346796922568,
+          "c": 0.11350605209080242,
+          "h": 39.54614872370996
+        },
+        "srgb": "#D68164",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.2": {
+        "oklch": {
+          "l": 0.7784194086363433,
+          "c": 0.09141996556861554,
+          "h": 88.29982122758139
+        },
+        "srgb": "#CFB471",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.3": {
+        "oklch": {
+          "l": 0.7184014000215351,
+          "c": 0.08068633686164599,
+          "h": 140.3743329659984
+        },
+        "srgb": "#89B181",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.4": {
+        "oklch": {
+          "l": 0.6315448453983188,
+          "c": 0.05565358258337796,
+          "h": 202.0087932641979
+        },
+        "srgb": "#609498",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.5": {
+        "oklch": {
+          "l": 0.5550675400671491,
+          "c": 0.10211826183759654,
+          "h": 267.7967187596173
+        },
+        "srgb": "#5970AF",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.6": {
+        "oklch": {
+          "l": 0.529950486097994,
+          "c": 0.11301664049440603,
+          "h": 281.83979886550344
+        },
+        "srgb": "#6262AB",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.7": {
+        "oklch": {
+          "l": 0.5589237684904045,
+          "c": 0.0827861386854818,
+          "h": 330.44415473947305
+        },
+        "srgb": "#90628B",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.8": {
+        "oklch": {
+          "l": 0.6038005483268863,
+          "c": 0.1282825731299601,
+          "h": 19.207701434230728
+        },
+        "srgb": "#C25E62",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.1": {
+        "oklch": {
+          "l": 0.6574248500434634,
+          "c": 0.0776189272247185,
+          "h": 32.70520640005566
+        },
+        "srgb": "#BC8073",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.2": {
+        "oklch": {
+          "l": 0.8011486610077554,
+          "c": 0.08032585181969697,
+          "h": 106.48532313831623
+        },
+        "srgb": "#C4C285",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.3": {
+        "oklch": {
+          "l": 0.7783166835490682,
+          "c": 0.12132546059201828,
+          "h": 140.17162772525114
+        },
+        "srgb": "#8CCA7F",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.4": {
+        "oklch": {
+          "l": 0.6628785471949159,
+          "c": 0.08357614448421166,
+          "h": 174.91816552732985
+        },
+        "srgb": "#56A490",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.5": {
+        "oklch": {
+          "l": 0.5487668350210365,
+          "c": 0.12577314371868592,
+          "h": 261.9036378532755
+        },
+        "srgb": "#476FBA",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.6": {
+        "oklch": {
+          "l": 0.5417124401691688,
+          "c": 0.13801603949861893,
+          "h": 275.4969483649769
+        },
+        "srgb": "#5A65BE",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.7": {
+        "oklch": {
+          "l": 0.5389848028351222,
+          "c": 0.12167254147526153,
+          "h": 328.75759741822367
+        },
+        "srgb": "#945291",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.8": {
+        "oklch": {
+          "l": 0.6033810862594174,
+          "c": 0.11149796204899981,
+          "h": 358.6934816409635
+        },
+        "srgb": "#B66380",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     },
     "light": {
@@ -882,6 +1074,198 @@ export const runtimeManifest: CheckableManifest = {
         "role": "",
         "usage": "text",
         "pairsWith": []
+      },
+      "glyph.wheel.1": {
+        "oklch": {
+          "l": 0.6874346796922568,
+          "c": 0.11350605209080242,
+          "h": 39.54614872370996
+        },
+        "srgb": "#D68164",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.2": {
+        "oklch": {
+          "l": 0.7784194086363433,
+          "c": 0.09141996556861554,
+          "h": 88.29982122758139
+        },
+        "srgb": "#CFB471",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.3": {
+        "oklch": {
+          "l": 0.7184014000215351,
+          "c": 0.08068633686164599,
+          "h": 140.3743329659984
+        },
+        "srgb": "#89B181",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.4": {
+        "oklch": {
+          "l": 0.6315448453983188,
+          "c": 0.05565358258337796,
+          "h": 202.0087932641979
+        },
+        "srgb": "#609498",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.5": {
+        "oklch": {
+          "l": 0.5550675400671491,
+          "c": 0.10211826183759654,
+          "h": 267.7967187596173
+        },
+        "srgb": "#5970AF",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.6": {
+        "oklch": {
+          "l": 0.529950486097994,
+          "c": 0.11301664049440603,
+          "h": 281.83979886550344
+        },
+        "srgb": "#6262AB",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.7": {
+        "oklch": {
+          "l": 0.5589237684904045,
+          "c": 0.0827861386854818,
+          "h": 330.44415473947305
+        },
+        "srgb": "#90628B",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.wheel.8": {
+        "oklch": {
+          "l": 0.6038005483268863,
+          "c": 0.1282825731299601,
+          "h": 19.207701434230728
+        },
+        "srgb": "#C25E62",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.1": {
+        "oklch": {
+          "l": 0.6574248500434634,
+          "c": 0.0776189272247185,
+          "h": 32.70520640005566
+        },
+        "srgb": "#BC8073",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.2": {
+        "oklch": {
+          "l": 0.8011486610077554,
+          "c": 0.08032585181969697,
+          "h": 106.48532313831623
+        },
+        "srgb": "#C4C285",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.3": {
+        "oklch": {
+          "l": 0.7783166835490682,
+          "c": 0.12132546059201828,
+          "h": 140.17162772525114
+        },
+        "srgb": "#8CCA7F",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.4": {
+        "oklch": {
+          "l": 0.6628785471949159,
+          "c": 0.08357614448421166,
+          "h": 174.91816552732985
+        },
+        "srgb": "#56A490",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.5": {
+        "oklch": {
+          "l": 0.5487668350210365,
+          "c": 0.12577314371868592,
+          "h": 261.9036378532755
+        },
+        "srgb": "#476FBA",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.6": {
+        "oklch": {
+          "l": 0.5417124401691688,
+          "c": 0.13801603949861893,
+          "h": 275.4969483649769
+        },
+        "srgb": "#5A65BE",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.7": {
+        "oklch": {
+          "l": 0.5389848028351222,
+          "c": 0.12167254147526153,
+          "h": 328.75759741822367
+        },
+        "srgb": "#945291",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "glyph.palette.8": {
+        "oklch": {
+          "l": 0.6033810862594174,
+          "c": 0.11149796204899981,
+          "h": 358.6934816409635
+        },
+        "srgb": "#B66380",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     }
   },
@@ -967,6 +1351,118 @@ export const runtimeManifest: CheckableManifest = {
       "owner": "design",
       "recordedAt": "2026-08-15",
       "token": "status.bad"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.1",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.2",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.3",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.4",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.5",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.6",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.7",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.wheel.8",
+      "reason": "ADR-0110, minted by F-232: 00.controls.icon-wheel is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.1",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.2",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.3",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.4",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.5",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.6",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.7",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.palette.8",
+      "reason": "ADR-0110, minted by F-232: 00.buttons.icon-palette is drawn as a hue sweep over its one-ink silhouette, eight stops measured off board 00 (sector means in linear light, ΔE00 ≈ 2). Its meaning is carried by shape and by the text beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-09-28"
     }
   ]
 };

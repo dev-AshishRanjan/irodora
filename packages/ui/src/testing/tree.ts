@@ -439,6 +439,12 @@ export function paintedColors(
   };
 
   const walk = (node: TestNode, path: readonly string[]): void => {
+    /*
+     * A CLIP IS GEOMETRY, NEVER PAINT (F-232). react-native-svg gives a `ClipPath` and its shapes a
+     * default black fill, and nothing of it reaches the screen: it only says where the shapes that
+     * use it are drawn. Reading it would report a colour no person can see.
+     */
+    if (node.type === 'RNSVGClipPath') return;
     const here = path.concat(node.type);
     /*
      * SVG PAINTS THROUGH PROPS, NOT THROUGH `style`.

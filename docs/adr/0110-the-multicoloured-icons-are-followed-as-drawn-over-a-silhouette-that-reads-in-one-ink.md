@@ -98,3 +98,28 @@ what is already there, and golden rule 14 asks for the colours.
 - A person comparing the surfaces with their mockups (F-267) finds the colour draws the eye from a
   sample; or
 - a CVD review finds an icon whose colour is carrying meaning its shape and text do not.
+
+## Amendment — F-232 mints the first two (2026-09-28)
+
+`00`'s colour wheel and palette buttons are the first colours this ADR declared to be minted as
+tokens. How they were minted is the pattern for the rest (F-244's hue ring, F-257, F-262).
+
+**Measured.** Each is a hue sweep: eight 45° sectors, clockwise from red at the top. The eight
+values are the sector means in linear light, over chromatic pixels only, read off the image
+(ΔE00 ≈ 2). The wheel reads 64 pixels per sector. The palette is 16 px, so it reads 19–39, and it
+is noisier. The two drawings differ by a few ΔE00, so each keeps its own values.
+
+**Minted as a group.** `glyph.wheel.1–8` and `glyph.palette.1–8` are ordinary non-text colour tokens
+in every theme, pairing with nothing. Each set is declared as one **token group** exception: its
+`tokens`, the `elements` that draw it, and `mintedBy`.
+- The element exception that waited for the tokens is retired in the same change (E-149).
+- The group carries the elements forward, so each drawn element stays covered exactly once.
+- `checkChromaCeiling` reports a group none of whose stops still needs it, as it reports a stale
+  token exception.
+- A device receives one token exception per stop.
+
+**Laid over the silhouette.** `Glyph` takes the resolved stops (`glyphSpectrum`) and clips the
+sweep to the glyph's own shape, so holes stay holes. On the wheel the palette is then drawn back
+in ink, which is what `00` draws: a white palette on a spectrum. Without stops, each glyph is its
+one-ink silhouette, unchanged. The controls pass the stops themselves, so a surface never names a
+hue.

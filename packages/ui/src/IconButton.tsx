@@ -29,7 +29,7 @@
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Glyph, type GlyphName } from './Glyph.js';
+import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
 import {
   withoutOwnedAccessibility,
   type OwnedAccessibility,
@@ -94,7 +94,13 @@ export function IconButton({
         opacity: inert ? 0.5 : 1,
       }}
     >
-      <Glyph name={name} color={colors[color]} size={size} filled={filled} />
+      <Glyph
+        name={name}
+        color={colors[color]}
+        size={size}
+        filled={filled}
+        spectrum={glyphSpectrum(name, colors)}
+      />
     </HeroButton>
   );
 }

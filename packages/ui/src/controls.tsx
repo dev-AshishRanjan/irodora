@@ -182,14 +182,18 @@ export function Switch({
   const inert = disabled || loading;
 
   /*
-   * AS THE MOCKUPS DRAW IT (F-232). On, `15` draws a white track (README `action.primary`, the
-   * manifest's `accent`) under a thumb in its card's `surface.1`. `00` draws its on-thumb nearer
-   * `border`, and the screen beats the board on its own surface (P3). Off, which only `00` draws, is
-   * a `surface.3` track under a white thumb. The thumb's position still says which, whatever the
-   * colours (golden rule 13).
+   * AS THE MOCKUPS DRAW IT (F-232). On, `15` draws a white track under a thumb in its card's
+   * `surface.1`. `00` draws its on-thumb nearer `border`, and the screen beats the board on its own
+   * surface (P3). Off, which only `00` draws, is a `surface.3` track under a white thumb. The thumb's
+   * position still says which, whatever the colours (golden rule 13).
+   *
+   * THE WHITE IS `inverse`, not `accent`, though the two share a value: the README's
+   * `action.primary` has two jobs, and a drawn role with two jobs is two tokens (ADR-0111). Where
+   * text sits on it (a primary pill, a chosen segment) it is `accent`, paired with its foreground;
+   * where nothing does (a track, a thumb) it is a surface of the other polarity, which is `inverse`.
    */
-  const track = checked ? colors.accent : colors['surface.3'];
-  const thumb = checked ? colors['surface.1'] : colors.accent;
+  const track = checked ? colors.inverse : colors['surface.3'];
+  const thumb = checked ? colors['surface.1'] : colors.inverse;
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: nativeSpacing.sm }}>
@@ -626,7 +630,8 @@ const SLIDER_HALO = 2;
  *
  * ## As the mockups draw it (F-232)
  *
- * A thin track, white (`accent`) up to the value and `surface.3` past it, under a white thumb with
+ * A thin track, white (`inverse`: a surface, see `Switch`) up to the value and `surface.3` past it,
+ * under a white thumb with
  * **no edge**: the thumb is identified by its fill, so the `border.strong` edge it used to rest in
  * (1.85:1 on Sumi, F-225's review) is gone rather than moved. Each screen draws its own thickness
  * and thumb, which it passes: `09` 3.5 and 14, `17` 2 and 7.5 with a halo, `23` 6.5 and 16.5 on a
@@ -713,7 +718,7 @@ function InteractiveSlider({
           }}
         >
           <HeroSlider.Fill
-            style={{ backgroundColor: colors.accent, borderRadius: nativeRadius.pill }}
+            style={{ backgroundColor: colors.inverse, borderRadius: nativeRadius.pill }}
           />
           <HeroSlider.Thumb
             testID={testID}
@@ -742,7 +747,7 @@ function InteractiveSlider({
               width: thumbSize,
               height: thumbSize,
               borderRadius: nativeRadius.pill,
-              backgroundColor: colors.accent,
+              backgroundColor: colors.inverse,
             }}
           >
             <FocusRing visible={focused} radius={nativeRadius.pill} />
@@ -805,7 +810,7 @@ function ReadoutSlider({
                 width: at,
                 height: trackHeight,
                 borderRadius: nativeRadius.pill,
-                backgroundColor: colors.accent,
+                backgroundColor: colors.inverse,
               }}
             />
           ) : (
@@ -834,7 +839,7 @@ function ReadoutSlider({
             width: marker,
             height: marker,
             borderRadius: nativeRadius.pill,
-            backgroundColor: colors.accent,
+            backgroundColor: colors.inverse,
             borderWidth: ring,
             ...(halo === undefined ? {} : { borderColor: colors[halo] }),
           }}

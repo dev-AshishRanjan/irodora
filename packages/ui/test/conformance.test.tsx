@@ -633,6 +633,12 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ['Button (secondary)', { label: 'Hold as target', variant: 'secondary' }],
       ['Button (icon, square)', { icon: 'camera', label: 'Measure a colour' }],
       ['Button (icon, round)', { icon: 'palette', label: 'Open palettes', shape: 'circle' }],
+      // 00's two spectrum buttons (ADR-0110, F-232): their hue stops are minted tokens, read here.
+      [
+        'Button (icon, wheel)',
+        { icon: 'colour-wheel', label: 'Open the colour wheel', shape: 'circle' },
+      ],
+      ['Button (icon, palette in hue)', { icon: 'palette-solid', label: 'Open palettes' }],
       [
         'Button (icon, outlined)',
         { icon: 'lock', label: 'Lock this slot', plate: 'outlined', size: 21 },

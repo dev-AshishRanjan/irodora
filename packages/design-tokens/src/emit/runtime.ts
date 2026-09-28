@@ -51,8 +51,20 @@ export function emitRuntime(manifest: Manifest): string {
     salience: manifest.salience,
     statusPairing: manifest.statusPairing,
     // Token exceptions only: a device checks tokens, and the element exceptions (C10, ADR-0110)
-    // are prose about images a phone never sees.
-    exceptions: manifest.exceptions.filter((e) => 'token' in e),
+    // are prose about images a phone never sees. A GROUP is its tokens, one exception each (F-232).
+    exceptions: manifest.exceptions.flatMap((e) =>
+      'token' in e
+        ? [e]
+        : 'tokens' in e
+          ? e.tokens.map((token) => ({
+              rule: e.rule,
+              token,
+              reason: e.reason,
+              owner: e.owner,
+              recordedAt: e.recordedAt,
+            }))
+          : [],
+    ),
   };
 
   return [

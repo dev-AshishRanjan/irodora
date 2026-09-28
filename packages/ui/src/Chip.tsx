@@ -55,7 +55,7 @@
 
 import { Pressable, View, type PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
-import { Glyph, type GlyphName } from './Glyph.js';
+import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
 import { hitArea, platformTapTarget } from './hitArea.js';
 import { inkOnSample, type Sample } from './inkOnSample.js';
 import type { Script } from './layout.js';
@@ -203,7 +203,12 @@ function Badge({
       }}
     >
       {icon === undefined ? null : (
-        <Glyph name={icon} color={colors[ink]} size={height * GLYPH_IN_PLATE} />
+        <Glyph
+          name={icon}
+          color={colors[ink]}
+          size={height * GLYPH_IN_PLATE}
+          spectrum={glyphSpectrum(icon, colors)}
+        />
       )}
       <Text size="label" color={ink} script={script} numeric={numeric} numberOfLines={1}>
         {label}

@@ -65,7 +65,7 @@
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
-import { Glyph, type GlyphName } from './Glyph.js';
+import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
 import { hitArea, platformTapTarget } from './hitArea.js';
 import type { Script } from './layout.js';
 import {
@@ -281,7 +281,13 @@ function IconOnlyButton({
         opacity: inert ? 0.5 : 1,
       }}
     >
-      <Glyph name={icon} color={colors.foreground} size={size * GLYPH_IN_PLATE} />
+      <Glyph
+        name={icon}
+        color={colors.foreground}
+        size={size * GLYPH_IN_PLATE}
+        // 00's wheel and palette are drawn in their hues (ADR-0110); every other glyph in one ink.
+        spectrum={glyphSpectrum(icon, colors)}
+      />
       <FocusRing visible={focused} radius={radius} />
     </HeroButton>
   );

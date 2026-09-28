@@ -352,7 +352,11 @@ export function checkSeparation(
  */
 export function checkChromaCeiling(manifest: Manifest): readonly Finding[] {
   const ceiling = manifest.gate.contrast.chromaCeiling.maxChroma;
-  const excepted = new Set(manifest.exceptions.flatMap((e) => ('token' in e ? [e.token] : [])));
+  const excepted = new Set(
+    manifest.exceptions.flatMap((e) =>
+      'token' in e ? [e.token] : 'tokens' in e ? [...e.tokens] : [],
+    ),
+  );
   const findings: Finding[] = [];
 
   for (const theme of THEMES)
@@ -374,6 +378,23 @@ export function checkChromaCeiling(manifest: Manifest): readonly Finding[] {
     // An ELEMENT exception (C10, ADR-0110) is needed while any tint it measured is above the
     // ceiling; one with nothing measured (a spectrum, a gradient, a sample colour) is chromatic by
     // what it is, and is checked for coverage by c10-exceptions.test.ts instead.
+    // A GROUP (F-232) is needed while any token it holds is above the ceiling in any theme.
+    if ('tokens' in exception) {
+      const needed = exception.tokens.some((name) =>
+        THEMES.some((theme) => {
+          const token = manifest.color[theme][name];
+          return token !== undefined && token.oklch.c > ceiling;
+        }),
+      );
+      if (!needed)
+        findings.push({
+          check: 'chromaCeiling',
+          detail:
+            `exceptions: the group ${exception.tokens.join(', ')} no longer exceeds the ceiling in ` +
+            'any theme. Remove the exception — a stale one makes the count meaningless.',
+        });
+      continue;
+    }
     if (!('token' in exception)) {
       const over = exception.measured.some((hex) => hexToOklch(hex).c > ceiling);
       if (exception.measured.length > 0 && !over)

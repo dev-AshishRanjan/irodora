@@ -249,7 +249,24 @@ export interface ElementChromaException {
   readonly mintedBy: string;
 }
 
-export type ChromaException = TokenChromaException | ElementChromaException;
+/**
+ * A GROUP of tokens minted together for the elements that draw them (F-232), such as a glyph's hue
+ * stops. The element exception that waited for them is retired in the same change, and the group
+ * carries its elements forward, so every drawn element stays covered exactly once
+ * (c10-exceptions.test).
+ */
+export interface TokenGroupChromaException {
+  readonly rule: 'chromaCeiling';
+  readonly tokens: readonly string[];
+  readonly elements: readonly string[];
+  readonly reason: string;
+  readonly owner: string;
+  readonly recordedAt: string;
+  readonly mintedBy: string;
+}
+
+export type ChromaException =
+  TokenChromaException | ElementChromaException | TokenGroupChromaException;
 
 export interface ContrastGateConfig {
   readonly standard: string;
@@ -801,8 +818,27 @@ export function parseManifest(input: unknown): Manifest {
     };
     if (o['token'] !== undefined && o['elements'] !== undefined)
       throw new ManifestError(at, 'names a token AND elements; an exception is one or the other');
+    if (o['token'] !== undefined && o['tokens'] !== undefined)
+      throw new ManifestError(at, 'names a token AND a group; a group lists every token it holds');
     if (o['token'] !== undefined)
       return { ...common, token: requireString(o['token'], `${at}.token`) };
+    if (o['tokens'] !== undefined) {
+      const tokens = o['tokens'];
+      const drawn = o['elements'];
+      if (!Array.isArray(tokens) || tokens.length === 0)
+        throw new ManifestError(`${at}.tokens`, 'a group holds at least one token');
+      if (!Array.isArray(drawn) || drawn.length === 0)
+        throw new ManifestError(
+          `${at}.elements`,
+          'a group carries the elements that draw it, so they stay covered after it is minted',
+        );
+      return {
+        ...common,
+        tokens: tokens.map((t, k) => requireString(t, `${at}.tokens[${String(k)}]`)),
+        elements: drawn.map((el, k) => requireString(el, `${at}.elements[${String(k)}]`)),
+        mintedBy: requireString(o['mintedBy'], `${at}.mintedBy`),
+      };
+    }
     const elements = o['elements'];
     if (!Array.isArray(elements) || elements.length === 0)
       throw new ManifestError(at, 'names neither a token nor any elements');
