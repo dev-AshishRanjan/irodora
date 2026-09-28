@@ -261,7 +261,7 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   out.push('export const nativeFaces = {');
   for (const [name, face] of faces)
     out.push(
-      `  ${key(name)}: { family: ${quote(face.family)}, file: ${quote(face.file)}, script: ${quote(face.script)}, weight: ${String(face.weight)}, tracking: ${face.tracking === null ? 'null' : quote(face.tracking)}, steps: ${face.steps === 'all' ? quote('all') : `[${face.steps.map(quote).join(', ')}]`} },`,
+      `  ${key(name)}: { family: ${quote(face.family)}, file: ${quote(face.file)}, script: ${quote(face.script)}, weight: ${String(face.weight)}, fontWeight: ${quote(String(face.weight))}, tracking: ${face.tracking === null ? 'null' : quote(face.tracking)}, steps: ${face.steps === 'all' ? quote('all') : `[${face.steps.map(quote).join(', ')}]`} },`,
     );
   out.push('} as const;');
   out.push('');

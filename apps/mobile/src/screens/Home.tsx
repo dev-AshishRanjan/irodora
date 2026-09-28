@@ -220,7 +220,7 @@ export function Home({
         least noticed and most damaging, and NFR-21's lint is binding here like everywhere else.
       */}
       <Stack gap="md">
-        <Wordmark size="display1" script={script} heading />
+        <Wordmark size="display1" heading />
         <Stack gap="xs">
           <Text size="title" color="foreground" script={script}>
             {t('home.what1')}

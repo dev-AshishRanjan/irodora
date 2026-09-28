@@ -47,6 +47,7 @@ import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 import {
   type nativeLargeTextSizes,
   nativeDynamicTypeRamp,
+  nativeFaces,
   nativeFamilies,
   nativeNumericFeature,
   nativeType,
@@ -81,44 +82,110 @@ export type ColorFor<S extends TypeSize> = S extends LargeTypeSize
  */
 type Either<A, B> = A | B;
 
-export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
-  readonly size: S;
-  readonly color: ColorFor<S>;
-  /** Japanese needs more leading at the same size; the scale carries both. */
-  readonly script?: keyof typeof nativeType;
-  /**
-   * Announce this as a heading, so a screen reader can navigate by it (NFR-8).
-   *
-   * A prop rather than a size rule: `display.1` is usually a heading and sometimes a large
-   * number, and a component that guessed would be wrong in the case nobody checks.
-   */
-  readonly heading?: boolean;
-  /**
-   * This text **carries figures** — so `15`'s tabular switch can decide whether they are set
-   * equal-width, and columns of numbers align (F-239; it meant *"render tabular"* until then, and
-   * the paragraph below says what changed).
-   *
-   * C9 in the design brief, and it is not a stylistic preference: *"colour values appear in
-   * columns and must align — proportional figures make a ΔE table unscannable."* A professional
-   * scans a column of deltas, and proportional digits make that column ragged enough that the
-   * comparison the table exists for has to be done one row at a time.
-   *
-   * A PROP rather than an automatic rule, for the same reason `heading` is one: a heuristic
-   * would have to guess which strings are numbers, and "0.42" and "F-019" are both strings. The
-   * caller knows; the component cannot.
-   *
-   * The value comes from `nativeNumericFeature`, which the manifest owns. Until F-019 that
-   * token was emitted, asserted against the manifest by its own test, and **consumed by
-   * nothing** — a generated value that reached no pixel for two releases.
-   *
-   * **Since F-239 this prop says what the text IS, and the setting says what to do about it.**
-   * `15` draws a *Tabular Numeric Figures* switch; a caller still declares that its text carries
-   * figures, because no heuristic can tell `"0.42"` from `"F-019"`, and
-   * {@link useDisplaySettings} decides whether those figures are set tabular. The switch is drawn
-   * on and defaults on, so a caller that says nothing sees exactly what it saw before.
-   */
-  readonly numeric?: boolean;
-};
+/**
+ * The faces the inventories draw a text element in (`type.face`, F-220): the platform sans, the
+ * serif, and their Japanese counterparts, gothic and mincho (C6).
+ */
+export type Face = 'sans' | 'serif' | 'gothic' | 'mincho';
+
+/** The steps a mockup draws the serif at (ADR-0112) — read from the manifest, never listed here. */
+export type SerifStep = (typeof nativeFaces.serif.steps)[number];
+/** The steps a mockup draws the mincho at. */
+export type MinchoStep = (typeof nativeFaces.mincho.steps)[number];
+
+/**
+ * Which face, and what it may be combined with — the constraints are the mockups', made TYPES:
+ *
+ * - the serif and the mincho exist only at the steps a mockup draws them at, so a serif caption
+ *   does not compile;
+ * - neither sets figures (ADR-0112 d.5): no mockup draws a serif figure, and Gelasio's default
+ *   figures are oldstyle and proportional, so `numeric` is refused with them;
+ * - the mincho carries only the corpus kanji it is subset to, so it is Japanese only.
+ */
+type FaceProps<S extends TypeSize> =
+  | {
+      /** The platform sans for Latin, the bundled gothic for Japanese — the default. */
+      readonly face?: 'sans' | 'gothic';
+      readonly numeric?: boolean;
+    }
+  | (S extends SerifStep ? { readonly face: 'serif'; readonly numeric?: false } : never)
+  | (S extends MinchoStep
+      ? { readonly face: 'mincho'; readonly numeric?: false; readonly script: 'japanese' }
+      : never);
+
+export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
+  FaceProps<S> & {
+    readonly size: S;
+    readonly color: ColorFor<S>;
+    /** Japanese needs more leading at the same size; the scale carries both. */
+    readonly script?: keyof typeof nativeType;
+    /**
+     * Announce this as a heading, so a screen reader can navigate by it (NFR-8).
+     *
+     * A prop rather than a size rule: `display.1` is usually a heading and sometimes a large
+     * number, and a component that guessed would be wrong in the case nobody checks.
+     */
+    readonly heading?: boolean;
+    /**
+     * This text **carries figures** — so `15`'s tabular switch can decide whether they are set
+     * equal-width, and columns of numbers align (F-239; it meant *"render tabular"* until then, and
+     * the paragraph below says what changed).
+     *
+     * C9 in the design brief, and it is not a stylistic preference: *"colour values appear in
+     * columns and must align — proportional figures make a ΔE table unscannable."* A professional
+     * scans a column of deltas, and proportional digits make that column ragged enough that the
+     * comparison the table exists for has to be done one row at a time.
+     *
+     * A PROP rather than an automatic rule, for the same reason `heading` is one: a heuristic
+     * would have to guess which strings are numbers, and "0.42" and "F-019" are both strings. The
+     * caller knows; the component cannot.
+     *
+     * The value comes from `nativeNumericFeature`, which the manifest owns. Until F-019 that
+     * token was emitted, asserted against the manifest by its own test, and **consumed by
+     * nothing** — a generated value that reached no pixel for two releases.
+     *
+     * **Since F-239 this prop says what the text IS, and the setting says what to do about it.**
+     * `15` draws a *Tabular Numeric Figures* switch; a caller still declares that its text carries
+     * figures, because no heuristic can tell `"0.42"` from `"F-019"`, and
+     * {@link useDisplaySettings} decides whether those figures are set tabular. The switch is drawn
+     * on and defaults on, so a caller that says nothing sees exactly what it saw before.
+     */
+    readonly numeric?: boolean;
+  };
+
+/** An em tracking from the manifest, in the points React Native takes, at one font size. */
+const trackingAt = (tracking: string, fontSize: number): number =>
+  tracking === '0' ? 0 : Number.parseFloat(tracking) * fontSize;
+
+/**
+ * The family, weight and tracking a face resolves to (ADR-0112).
+ *
+ * Japanese text in a sans or serif element is set in the bundled gothic — C6: kanji are sans on
+ * `01 05 06 26`, and a Latin serif has no kanji to set. The mincho is its own face. Latin in the
+ * serif is Gelasio at the weight it is cut at: asking a single-weight face for 600 makes a platform
+ * fake a bold, so the step's weight is overridden. The Latin sans is the platform's and carries no
+ * family at all (ADR-0057 §6).
+ */
+function faceStyle(
+  face: Face,
+  japanese: boolean,
+  fontSize: number,
+): {
+  readonly fontFamily?: string;
+  readonly fontWeight?: (typeof nativeFaces)[keyof typeof nativeFaces]['fontWeight'];
+  readonly letterSpacing?: number;
+} {
+  if (face === 'mincho')
+    return { fontFamily: nativeFamilies.mincho, fontWeight: nativeFaces.mincho.fontWeight };
+  if (japanese) return { fontFamily: nativeFamilies.jp };
+  if (face === 'serif')
+    return {
+      fontFamily: nativeFamilies.serif,
+      fontWeight: nativeFaces.serif.fontWeight,
+      letterSpacing: trackingAt(nativeFaces.serif.tracking, fontSize),
+    };
+  return {};
+}
 
 export function Text<S extends TypeSize>({
   size,
@@ -126,6 +193,7 @@ export function Text<S extends TypeSize>({
   script = 'latin',
   heading = false,
   numeric = false,
+  face = 'sans',
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
@@ -160,13 +228,12 @@ export function Text<S extends TypeSize>({
         ? { lineBreakStrategyIOS: 'push-out' as const, textBreakStrategy: 'highQuality' as const }
         : {})}
       {...rest}
-      // The bundled face for Japanese ONLY (ADR-0057 §6). Latin keeps the platform font:
-      // Latin has no tofu failure mode, so the script that can fail silently gets the
-      // bundled font and the script that cannot, does not.
+      // The bundled faces (ADR-0057, ADR-0112): Japanese always, the serif and the mincho where
+      // a mockup draws them. The Latin sans keeps the platform font: it has no tofu failure mode.
       style={{
         ...step,
         color: colors[color],
-        ...(japanese ? { fontFamily: nativeFamilies.jp } : {}),
+        ...faceStyle(face, japanese, step.fontSize),
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:
         // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
         // absent one, and the conformance suite reads what the NODE carries.

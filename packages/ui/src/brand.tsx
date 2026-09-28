@@ -78,7 +78,6 @@ import Svg, { Circle } from 'react-native-svg';
 import { nativeType } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
 import { Text } from './Text.js';
-import type { Script } from './layout.js';
 
 /**
  * The mark, as data.
@@ -325,7 +324,6 @@ export type WordmarkSize = Extract<keyof typeof nativeType.latin, 'display1' | '
 
 export interface WordmarkProps {
   readonly size?: WordmarkSize;
-  readonly script?: Script;
   /** Announce as a heading. A splash is not a heading; a screen header is. */
   readonly heading?: boolean;
 }
@@ -345,7 +343,8 @@ export interface WordmarkProps {
  *
  * A drawn wordmark is the usual answer for a wordmark-led identity, and it is out of reach:
  * React Native has no path-text and this product has no type designer. Setting the name from
- * the scale with its own tracking is honest and reversible — a drawn wordmark can replace this
+ * the scale in the mockups' serif — Gelasio, at the weight and tracking measured against 01's
+ * and 14's drawn wordmarks (ADR-0112) — is honest and reversible — a drawn wordmark can replace this
  * without touching the lockup rule, because the rule is about the interval and not the glyphs.
  *
  * The mark carries no label here. The word beside it is real text, so a screen reader already
@@ -353,7 +352,6 @@ export interface WordmarkProps {
  */
 export function Wordmark({
   size = 'title',
-  script = 'latin',
   heading = false,
 }: WordmarkProps = {}): React.JSX.Element {
   const step = nativeType.latin[size].fontSize;
@@ -367,12 +365,13 @@ export function Wordmark({
     >
       <Mark size={step} />
       {/*
-        NOT `script`-switched, and that is a brand decision rather than an i18n oversight. The
-        product is called Irodora in both locales — a name is not translated — so the wordmark
-        is always Latin. `script` is still accepted and threaded, because the surrounding line
-        height is set by the page and a wordmark that ignored it would sit wrong in Japanese.
+        LATIN IN BOTH LOCALES, and in the serif (ADR-0112). The product is called Irodora in both
+        (a name is not translated), so the name is set as Latin text. Until F-226 the page script
+        was threaded through for its leading; once the name is set in the serif, a Japanese script
+        would route it to the gothic (C6, the rule for kanji in a serif element), so the brand
+        face wins over the page leading, and the prop is gone.
       */}
-      <Text size={size} color="foreground" script={script} heading={heading}>
+      <Text size={size} color="foreground" heading={heading} face="serif">
         Irodora
       </Text>
     </View>

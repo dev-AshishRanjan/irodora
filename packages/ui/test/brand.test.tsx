@@ -24,7 +24,7 @@
  */
 
 import { render } from '@testing-library/react-native';
-import { nativeColors } from '@irodora/design-tokens';
+import { nativeColors, nativeFaces, nativeFamilies } from '@irodora/design-tokens';
 import {
   EYE_RADIUS,
   Mark,
@@ -236,5 +236,16 @@ describe('the lockup', () => {
   it('renders in both themes', () => {
     for (const theme of ['light', 'dark'] as const)
       expect(draw(<Wordmark />, theme).getByText('Irodora')).toBeTruthy();
+  });
+
+  it('sets the name in the serif, as Latin, at the measured weight (ADR-0112)', () => {
+    // The wordmark 01 and 14 draw is Gelasio-shaped; the name is Latin in both locales, so it is
+    // never routed to the gothic the way a page's Japanese text is.
+    const style: unknown = draw(<Wordmark />).getByText('Irodora').props['style'];
+    const flat = (
+      Array.isArray(style) ? Object.assign({}, ...(style as object[])) : style
+    ) as Record<string, unknown>;
+    expect(flat['fontFamily']).toBe(nativeFamilies.serif);
+    expect(flat['fontWeight']).toBe(nativeFaces.serif.fontWeight);
   });
 });
