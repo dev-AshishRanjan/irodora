@@ -174,6 +174,8 @@ export const nativeSpacing = {
   xxl: 48,
 } as const;
 export const nativeTapTarget = 44 as const;
+/** Android's tap target in dp (Material's), where `nativeTapTarget` is Apple's. */
+export const nativeTapTargetAndroid = 48 as const;
 /** An icon line's rendered width in dp. The glyph converts it to grid units at every size. */
 export const nativeIconStroke = 1.65 as const;
 /** An illustration line's rendered width in dp, half the icon's: the drawing converts it. */

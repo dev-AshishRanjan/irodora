@@ -60,6 +60,7 @@ export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
 export { IconButton, type IconButtonProps } from './IconButton.js';
+export { hitArea, platformTapTarget } from './hitArea.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { elevationShadow } from './elevation.js';
 export { Card, type CardLevel, type CardProps } from './Card.js';

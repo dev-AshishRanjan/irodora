@@ -1035,6 +1035,8 @@
   },
   "size": {
     "tapTarget": 44,
+    "tapTargetAndroid": 48,
+    "_tapTargetAndroidNote": "Material's 48 dp, where tapTarget is Apple's 44 (F-232, ADR-0114). A control reaches the one for the platform it runs on through its HIT AREA, not its drawn size: R9-MOCKUP-FIDELITY section 4 E3 keeps the drawn size.",
     "iconStroke": 1.65,
     "_iconStrokeNote": "The rendered width of every icon's line, in dp — F-220 measured it at about 3.3 px on 01's tab icons at 2 px per dp (R9-MOCKUP-FIDELITY section 5). A WIDTH ON SCREEN, NOT IN THE GLYPH: an icon drawn on a 24-unit grid at 16 dp and at 28 dp carries the same line, so the glyph converts this into its own units at every size (F-228).",
     "observerDegrees": 2,

@@ -138,6 +138,7 @@ export {
   nativeArtStroke,
   nativeArtOpacity,
   nativeTapTarget,
+  nativeTapTargetAndroid,
   nativeType,
   nativeNumericFeature,
   nativeElevation,

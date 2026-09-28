@@ -373,6 +373,11 @@ export interface Manifest {
   readonly size: {
     readonly tapTarget: number;
     /**
+     * Android's tap target in dp (F-232): Material's 48, where `tapTarget` is Apple's 44. A control
+     * reaches the one for the platform it runs on through its hit area (ADR-0114).
+     */
+    readonly tapTargetAndroid: number;
+    /**
      * The rendered width of an icon's line, in dp (F-228) — measured from the mockups, and held
      * constant across icon sizes rather than scaled with them.
      */
@@ -972,8 +977,20 @@ export function parseManifest(input: unknown): Manifest {
         'render at any density this product ships to, and above three a backdrop is drawing ' +
         'attention rather than holding it',
     );
+  /*
+   * ANDROID'S TARGET (F-232, ADR-0114): Material's 48 dp beside Apple's 44. Never below the iOS one,
+   * because the smaller of the two is WCAG's floor and a platform cannot ask for less than that.
+   */
+  const tapTarget = requireNumber(sizeRaw['tapTarget'], 'size.tapTarget');
+  const tapTargetAndroid = requireNumber(sizeRaw['tapTargetAndroid'], 'size.tapTargetAndroid');
+  if (tapTargetAndroid < tapTarget)
+    throw new ManifestError(
+      'size.tapTargetAndroid',
+      `expected at least tapTarget (${String(tapTarget)}); got ${String(tapTargetAndroid)}`,
+    );
   const size = {
-    tapTarget: requireNumber(sizeRaw['tapTarget'], 'size.tapTarget'),
+    tapTarget,
+    tapTargetAndroid,
     iconStroke,
     artStroke,
     judgeable: Math.round(fieldMm / (MM_PER_INCH / dpPerInch)),

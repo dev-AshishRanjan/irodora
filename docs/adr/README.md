@@ -78,7 +78,7 @@ Two rules that matter more than the format:
 | [0052](0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md) | The OKLab round-trip tolerance is conditioned on LMS, and 1e-12 was wrong | Accepted |
 | [0053](0053-dark-status-salience-matches-light-and-error-gets-lighter.md) | Dark-theme status salience matches light, and error gets lighter to reach it | Accepted |
 | [0054](0054-react-native-core-primitives-and-ui-stays-a-package.md) | Component behaviour comes from React Native’s own primitives; `@irodora/ui` stays a package | Accepted |
-| [0055](0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md) | The `a11y` gate renders under jest-expo, and proves the accessibility tree rather than the pixels | Accepted |
+| [0055](0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md) | The `a11y` gate renders under jest-expo, and proves the accessibility tree rather than the pixels | Accepted; tap-target rule amended by ADR-0114 |
 | [0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md) | The message catalogue is enumerated TypeScript; a missing key is a typecheck error | Accepted |
 | [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Amended by ADR-0112 |
 | [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
@@ -129,6 +129,7 @@ Two rules that matter more than the format:
 | [0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md) | The palette is the mockups', the themes are the four mockup 15 draws, and a sample is judged against the surface it sits on | Accepted |
 | [0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md) | The serif ships as one cut, Gelasio Regular at no tracking, and the mincho as Noto Serif JP at 400, because that is where the drawings measure | Accepted |
 | [0113](0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) | The type scale is board 00's four steps and a measured caption | Accepted; closes OQ-12 only (its OQ-13 closure was withdrawn) |
+| [0114](0114-a-control-is-drawn-at-its-mockups-size-and-reaches-the-tap-target-through-its-hit-area.md) | A control is drawn at its mockup's size, and reaches the tap target through its hit area | Accepted; amends ADR-0055 |
 | [0115](0115-an-icon-only-control-drawn-on-a-plate-is-a-button-and-one-drawn-bare-is-an-iconbutton.md) | An icon-only control drawn on a plate is a Button, and one drawn bare is an IconButton | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |

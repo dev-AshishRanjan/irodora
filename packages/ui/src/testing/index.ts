@@ -32,6 +32,7 @@ export {
   checkSubject,
   formatFindings,
   REQUIRED_STATES,
+  tapTargetReach,
   type ComponentKind,
   type ConformanceSubject,
   type Finding,

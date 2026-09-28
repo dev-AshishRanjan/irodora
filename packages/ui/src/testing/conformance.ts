@@ -34,8 +34,8 @@ import {
   LARGE_TEXT_TOKENS,
   nativeColors,
   nativeLargeTextMinPx,
-  nativeTapTarget,
 } from '@irodora/design-tokens';
+import { platformTapTarget } from '../hitArea.js';
 import {
   announcedStates,
   paintedColors,
@@ -171,6 +171,32 @@ const NON_ROLES = new Set(['none', 'presentation']);
  * in `| string`: a wrapper "corrected" to `accessibilityRole="slider"` compiles, satisfies the
  * rule, and announces nothing at all. See the table on `ResolvedPressableNode.role`.
  */
+type InsetSide = 'top' | 'bottom' | 'left' | 'right';
+
+/**
+ * How far a pressable reaches on each axis: its DECLARED drawn size plus its hit area (F-232,
+ * ADR-0114, amending ADR-0055). Declared, not measured, as before: a JS render tree has no Yoga
+ * pass. The drawn size on an axis is the larger of `width` and `minWidth` (`height`,
+ * `minHeight`), and a size nobody declared is `null`, which reaches nothing. `hitSlop` is a
+ * number for every side or an inset per side, as React Native takes it.
+ */
+export function tapTargetReach(
+  style: Readonly<Record<string, unknown>>,
+  hitSlop: number | Readonly<Partial<Record<InsetSide, unknown>>> | undefined,
+): { readonly width: number | null; readonly height: number | null } {
+  const num = (v: unknown): number | null => (typeof v === 'number' ? v : null);
+  const larger = (a: number | null, b: number | null): number | null =>
+    a === null ? b : b === null ? a : Math.max(a, b);
+  const side = (key: InsetSide): number =>
+    typeof hitSlop === 'number' ? hitSlop : (num(hitSlop?.[key]) ?? 0);
+  const w = larger(num(style['width']), num(style['minWidth']));
+  const h = larger(num(style['height']), num(style['minHeight']));
+  return {
+    width: w === null ? null : w + side('left') + side('right'),
+    height: h === null ? null : h + side('top') + side('bottom'),
+  };
+}
+
 function declaredRole(p: ResolvedPressableNode): string | undefined {
   return p.accessibilityRole ?? p.role;
 }
@@ -350,18 +376,24 @@ export function checkSubject(
             'generic-name',
             `${p.path.join('>')} is named "${label}", which is its own type rather than its content`,
           );
-        // DECLARED, not measured — a JS render tree has no Yoga pass (ADR-0055).
-        const w = p.style['minWidth'];
-        const h = p.style['minHeight'];
-        const declaresTarget =
-          typeof w === 'number' &&
-          typeof h === 'number' &&
-          w >= nativeTapTarget &&
-          h >= nativeTapTarget;
-        if (subject.kind === 'interactive' && !declaresTarget)
+        /*
+         * THE DRAWN SIZE PLUS THE HIT AREA (F-232, ADR-0114). A control is drawn at the size its
+         * mockup draws and reaches the target through `hitSlop` (R9-MOCKUP-FIDELITY §4 E3); this
+         * adds the two back together. DECLARED, not measured: a JS render tree has no Yoga pass
+         * (ADR-0055). The target is the platform's the tree was rendered for.
+         */
+        const target = platformTapTarget();
+        const reach = tapTargetReach(p.style, p.hitSlop);
+        const reaches =
+          reach.width !== null &&
+          reach.height !== null &&
+          reach.width >= target &&
+          reach.height >= target;
+        if (subject.kind === 'interactive' && !reaches)
           at(
             'tap-target',
-            `${p.path.join('>')} declares no ${String(nativeTapTarget)}px minimum (declared, not measured)`,
+            `${p.path.join('>')} reaches ${String(reach.width)} × ${String(reach.height)} of the ` +
+              `${String(target)} dp target: its drawn size plus its hitSlop (declared, not measured)`,
           );
         /*
          * THE STATE RULES BELOW ASK ABOUT THE SUBJECT, NOT ABOUT EVERY NODE (F-186).

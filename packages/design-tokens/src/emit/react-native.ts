@@ -134,6 +134,10 @@ export function emitReactNative(manifest: Manifest): string {
     out.push(`  ${key(name)}: ${String(value)},`);
   out.push('} as const;');
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
+  out.push("/** Android's tap target in dp (Material's), where `nativeTapTarget` is Apple's. */");
+  out.push(
+    `export const nativeTapTargetAndroid = ${String(manifest.size.tapTargetAndroid)} as const;`,
+  );
   out.push(
     "/** An icon line's rendered width in dp. The glyph converts it to grid units at every size. */",
   );

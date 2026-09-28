@@ -40,6 +40,7 @@ import {
 import {
   nativeColors,
   nativeIconStroke,
+  nativeTapTargetAndroid,
   nativeArtStroke,
   nativeArtOpacity,
   nativeRadius,
@@ -170,6 +171,11 @@ describe('the non-colour scales survive the trip', () => {
     const css = emitCss(manifest);
     expect(css).toContain(`--irodora-size-art-stroke: ${String(manifest.size.artStroke)}px;`);
     expect(css).toContain(`--irodora-opacity-art: ${String(manifest.opacity.art)};`);
+  });
+
+  it("Android's tap target reaches the native target beside Apple's (F-232)", () => {
+    expect(nativeTapTargetAndroid).toBe(manifest.size.tapTargetAndroid);
+    expect(nativeTapTargetAndroid).toBe(48);
   });
 
   it('the icon line reaches both targets as the one declared width (F-228)', () => {

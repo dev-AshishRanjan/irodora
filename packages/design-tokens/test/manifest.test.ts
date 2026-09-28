@@ -233,6 +233,19 @@ describe('what the loader refuses', () => {
     expect(parseManifest(clone()).size.iconStroke).toBe(1.65);
   });
 
+  it("an Android tap target below Apple's, or missing, is refused (F-232)", () => {
+    expect(() => parseManifest(withValue(['size', 'tapTargetAndroid'], 40))).toThrow(
+      /size\.tapTargetAndroid.*expected at least tapTarget \(44\); got 40/u,
+    );
+    expect(() => parseManifest(without(['size', 'tapTargetAndroid']))).toThrow(/tapTargetAndroid/u);
+  });
+
+  it('DECOY — an Android target at or above the iOS one is accepted, and 48 is declared', () => {
+    // Without this the case above would pass for a loader refusing every value.
+    expect(() => parseManifest(withValue(['size', 'tapTargetAndroid'], 44))).not.toThrow();
+    expect(parseManifest(clone()).size.tapTargetAndroid).toBe(48);
+  });
+
   it('an illustration line too fine for any density, or heavy enough to compete (F-229)', () => {
     expect(() => parseManifest(withValue(['size', 'artStroke'], 0.2))).toThrow(
       /size\.artStroke.*expected \[0\.25, 3\] dp; got 0\.2/u,

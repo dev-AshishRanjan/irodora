@@ -118,6 +118,11 @@ export interface ResolvedPressableNode {
   readonly accessibilityState: Readonly<Record<string, unknown>> | undefined;
   readonly disabled: boolean;
   readonly style: Readonly<Record<string, unknown>>;
+  /**
+   * The hit area beyond the drawn box (F-232, ADR-0114): a number for every side, or per side.
+   * `Pressable` hands it to its host view, which is where this is read.
+   */
+  readonly hitSlop: number | Readonly<Record<string, unknown>> | undefined;
   readonly path: readonly string[];
 }
 
@@ -317,6 +322,12 @@ export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[]
           p['accessibilityState'] !== undefined &&
           (state as { disabled?: unknown } | null)?.disabled === true,
         style: flattenStyle(p['style']),
+        hitSlop:
+          typeof p['hitSlop'] === 'number'
+            ? p['hitSlop']
+            : typeof p['hitSlop'] === 'object' && p['hitSlop'] !== null
+              ? (p['hitSlop'] as Readonly<Record<string, unknown>>)
+              : undefined,
         path: here,
       });
     }
