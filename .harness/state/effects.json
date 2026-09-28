@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-25",
+  "updated": "2026-09-28",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -273,6 +273,10 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/selection.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/fonts.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -285,7 +289,7 @@
       "severity": "high",
       "guard": "gate:contrast (verify-contrast.mjs + generate-design-tokens.mjs --check)",
       "memory": "memory/effects/a-token-change-is-a-contrast-change-in-both-themes.md",
-      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green. AS OF F-017 THE MANIFEST REACHES COMPONENTS, and that adds a break the import graph cannot show: a token RENAME now breaks @irodora/ui and apps/mobile with no import edge moving, because components index the generated theme object by string key. The parser also now reads typography, elevation, motion and defaultTheme, which it ignored entirely before — so a manifest edit changes five build outputs rather than four. THE RENDERED HALF OF GATE 9 IS THE NEW GUARD: the conformance suite resolves every colour a component actually paints back to a token and reports an unresolvable one as a FAILURE rather than skipping it, and it caught the home screen rendering light tokens when asked for dark on its first run. The checks read LARGE_TEXT_TOKENS and statusPairing from the generated exports rather than naming tokens, so a newly-classified token is covered without anyone editing them. F-019 CLOSED A HOLE IN THIS LINK THAT HAD BEEN OPEN SINCE F-017. `typography.numeric.fontFeature` was emitted to `nativeNumericFeature`, asserted against the manifest by `packages/design-tokens/test/typography.test.ts`, and CONSUMED BY NOTHING — so a change to it reached a generated constant, satisfied its own test, and stopped. The link was true of every other token and false of that one, which is worse than a missing link because the graph looked complete. `Text` now takes a `numeric` prop that reads the token, the conformance suite asserts the variant reaches the rendered NODE, and a decoy asserts a Text without the prop carries none — so the manifest value is now checkable at the pixel rather than only at the constant. THE PATTERN IS WORTH THE NAME: a generated value with no consumer passes every test it has, and the test that would catch it is the one nobody writes. F-094 CLOSED THE ONE DESTINATION THIS LINK NAMED AND NOTHING COMPARED. Of the five artefacts the generator writes, packages/design-tokens/test/emit.test.ts already byte-compares FOUR — tokens.css, tokens.tailwind.css, tokens.ts and native.ts — and carries its own \"checks all four targets\" assertion, so a manifest edited without regenerating already failed gate 5. THE FIFTH IS apps/mobile/global.css, WHICH IS THE ONE THAT SHIPS, and it was compared by nothing: hand-editing a hex in it leaves all 172 design-tokens tests green. Measured, not inferred — the first draft of F-094 claimed all five were unguarded and the measurement corrected it. That artefact is E-019’s own subject, and E-019’s guard names heroui.test.ts and emitHeroui throwing, neither of which compares the committed file against what the manifest would emit now. `generate-design-tokens.mjs --check` now runs FIRST in gate 9, which closes that hole and moves the other four ahead of the suites that would otherwise agree with stale values. Watched failing in both directions — an edited MANIFEST reports the derived srgb field plus four files at once, an edited ARTEFACT reports exactly one — with the baseline asserted green either side of each. F-175 ADDED A DESTINATION AND A FACT THIS LINK DID NOT CARRY. The destination is apps/mobile/app/(tabs)/_layout.tsx, which now paints `accent` — a route file, so the token graph reaches into `app/` and not only into `src/`. THE FACT IS THAT A GROUND IS NOT A FOREGROUND, and this link had never distinguished them: every earlier token change moved something that SITS ON a surface, where a lift raises contrast. F-175 moved the surfaces themselves, and lifting `swatch.well` by the same 0.040 as the rest of the ramp put `border.strong` at 2.88:1 and `status.ok` at 4.39:1 AGAINST IT — because a ground does not lift what sits on it, it eats the headroom of everything that does. The plan asserted the opposite in as many words ('every ground moves by exactly +0.040 L, so every existing relationship is preserved') and gate 9 refused it on the first run. The well has a hard ceiling at L 0.310, found by measuring rather than chosen. THE SECOND THING THE GUARD CAUGHT was scripts/verify-contrast-proof.mjs: its ADR-0043 case anchors on a literal hex, that hex was the dark ground, and the ramp moved it — so the case reported MUTATION DID NOT APPLY rather than passing. A mutation proof anchored on a value the feature under test can move is a proof that stops proving silently, and the no-op guard is the only reason it was visible. F-176 CONCENTRATED A MEANING THAT WAS SPREAD ACROSS THREE COMPONENTS. `Swatch`, `Chip` and `Tabs` each expressed 'chosen' differently and all three passed gate 9, because each drew a DECLARED pairing — the defect was that they disagreed, and no per-component check can see that. The treatment now lives in packages/ui/src/selection.tsx, which means a change to it repaints every chooser in the product at once; the guard is the conformance rule `selection-treatment`, which reads the treatment out of the RENDERED TREE rather than out of an import, so a component that calls selectionTone and discards the result still fails.",
+      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green. AS OF F-017 THE MANIFEST REACHES COMPONENTS, and that adds a break the import graph cannot show: a token RENAME now breaks @irodora/ui and apps/mobile with no import edge moving, because components index the generated theme object by string key. The parser also now reads typography, elevation, motion and defaultTheme, which it ignored entirely before — so a manifest edit changes five build outputs rather than four. THE RENDERED HALF OF GATE 9 IS THE NEW GUARD: the conformance suite resolves every colour a component actually paints back to a token and reports an unresolvable one as a FAILURE rather than skipping it, and it caught the home screen rendering light tokens when asked for dark on its first run. The checks read LARGE_TEXT_TOKENS and statusPairing from the generated exports rather than naming tokens, so a newly-classified token is covered without anyone editing them. F-019 CLOSED A HOLE IN THIS LINK THAT HAD BEEN OPEN SINCE F-017. `typography.numeric.fontFeature` was emitted to `nativeNumericFeature`, asserted against the manifest by `packages/design-tokens/test/typography.test.ts`, and CONSUMED BY NOTHING — so a change to it reached a generated constant, satisfied its own test, and stopped. The link was true of every other token and false of that one, which is worse than a missing link because the graph looked complete. `Text` now takes a `numeric` prop that reads the token, the conformance suite asserts the variant reaches the rendered NODE, and a decoy asserts a Text without the prop carries none — so the manifest value is now checkable at the pixel rather than only at the constant. THE PATTERN IS WORTH THE NAME: a generated value with no consumer passes every test it has, and the test that would catch it is the one nobody writes. F-094 CLOSED THE ONE DESTINATION THIS LINK NAMED AND NOTHING COMPARED. Of the five artefacts the generator writes, packages/design-tokens/test/emit.test.ts already byte-compares FOUR — tokens.css, tokens.tailwind.css, tokens.ts and native.ts — and carries its own \"checks all four targets\" assertion, so a manifest edited without regenerating already failed gate 5. THE FIFTH IS apps/mobile/global.css, WHICH IS THE ONE THAT SHIPS, and it was compared by nothing: hand-editing a hex in it leaves all 172 design-tokens tests green. Measured, not inferred — the first draft of F-094 claimed all five were unguarded and the measurement corrected it. That artefact is E-019’s own subject, and E-019’s guard names heroui.test.ts and emitHeroui throwing, neither of which compares the committed file against what the manifest would emit now. `generate-design-tokens.mjs --check` now runs FIRST in gate 9, which closes that hole and moves the other four ahead of the suites that would otherwise agree with stale values. Watched failing in both directions — an edited MANIFEST reports the derived srgb field plus four files at once, an edited ARTEFACT reports exactly one — with the baseline asserted green either side of each. F-175 ADDED A DESTINATION AND A FACT THIS LINK DID NOT CARRY. The destination is apps/mobile/app/(tabs)/_layout.tsx, which now paints `accent` — a route file, so the token graph reaches into `app/` and not only into `src/`. THE FACT IS THAT A GROUND IS NOT A FOREGROUND, and this link had never distinguished them: every earlier token change moved something that SITS ON a surface, where a lift raises contrast. F-175 moved the surfaces themselves, and lifting `swatch.well` by the same 0.040 as the rest of the ramp put `border.strong` at 2.88:1 and `status.ok` at 4.39:1 AGAINST IT — because a ground does not lift what sits on it, it eats the headroom of everything that does. The plan asserted the opposite in as many words ('every ground moves by exactly +0.040 L, so every existing relationship is preserved') and gate 9 refused it on the first run. The well has a hard ceiling at L 0.310, found by measuring rather than chosen. THE SECOND THING THE GUARD CAUGHT was scripts/verify-contrast-proof.mjs: its ADR-0043 case anchors on a literal hex, that hex was the dark ground, and the ramp moved it — so the case reported MUTATION DID NOT APPLY rather than passing. A mutation proof anchored on a value the feature under test can move is a proof that stops proving silently, and the no-op guard is the only reason it was visible. F-176 CONCENTRATED A MEANING THAT WAS SPREAD ACROSS THREE COMPONENTS. `Swatch`, `Chip` and `Tabs` each expressed 'chosen' differently and all three passed gate 9, because each drew a DECLARED pairing — the defect was that they disagreed, and no per-component check can see that. The treatment now lives in packages/ui/src/selection.tsx, which means a change to it repaints every chooser in the product at once; the guard is the conformance rule `selection-treatment`, which reads the treatment out of the RENDERED TREE rather than out of an import, so a component that calls selectionTone and discards the result still fails. F-226 (2026-09-28): the manifest's typography now carries `faces` (the bundled fonts, one native family each, with the weight each is cut at and the steps a mockup draws it at) and a REPLACED scale — display1 72, title 22, body 16, label 14, caption 10.3 (ADR-0113). A deleted step is a type error at every caller; a renamed literal behind `Extract<>` or `@ts-expect-error` is not, and three were found by hand (lesson: a-type-that-filters-or-expects-an-error-hides-a-rename).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -582,6 +586,14 @@
         {
           "kind": "decision",
           "ref": "docs/adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/NotoSerifJP-Subset.ttf"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -592,7 +604,7 @@
       "severity": "high",
       "guard": "script:verify-font-coverage.mjs",
       "memory": "memory/effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md",
-      "rationale": "A corpus publish that introduces a rare kanji produces TOFU on the product’s most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS NOW BLOCKING AND HAS FIRED FOR REAL. F-076 shipped the asset and wired verify-font-coverage.mjs into `pnpm test:content`, and F-012 is the first publish it could actually judge: with 120 entries in place and every other gate green, it reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, on the colour names themselves. The subset was regenerated (272 required codepoints, 639 in the face; 451KB to 547KB). THE EARLIER TEXT HERE SAID THE GUARD WAS \"BUILT AND PROVEN BUT NOT YET BLOCKING\" and that it exits 1 because no font asset exists. Both stopped being true when F-076 landed, and the sentence survived two features past its expiry — which is the ordinary way an effect note rots, since nothing executes a rationale. (past-state-ok: the phrase is quoted here to describe the rot, not asserted — the guard has been blocking since F-076.) The remedy is never to relax the check: a codepoint the app can render and the font cannot is a tofu box, and a widened tolerance would only make it a silent one. IT FIRED A SECOND TIME IN F-018, AND FROM THE OTHER INPUT: verify-font-coverage reads the ja catalogue as well as the corpus, and 94 new UI strings introduced 105 uncovered codepoints — 一, 覧, 収, 録, 版 among them. So the link is not only about rare kanji in colour names; ordinary UI Japanese outruns the subset just as easily, and it does so on the chrome every screen renders rather than on one entry. Subset regenerated: 386 required codepoints against 744 in the face, 547KB to 596KB. AND A THIRD TIME IN F-019, for 3 codepoints from the compare copy. Three firings in three features is the shape of this link rather than bad luck: ANY feature that writes Japanese triggers it, and the subset is regenerated as part of the work rather than discovered later.",
+      "rationale": "A corpus publish that introduces a rare kanji produces TOFU on the product’s most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS NOW BLOCKING AND HAS FIRED FOR REAL. F-076 shipped the asset and wired verify-font-coverage.mjs into `pnpm test:content`, and F-012 is the first publish it could actually judge: with 120 entries in place and every other gate green, it reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, on the colour names themselves. The subset was regenerated (272 required codepoints, 639 in the face; 451KB to 547KB). THE EARLIER TEXT HERE SAID THE GUARD WAS \"BUILT AND PROVEN BUT NOT YET BLOCKING\" and that it exits 1 because no font asset exists. Both stopped being true when F-076 landed, and the sentence survived two features past its expiry — which is the ordinary way an effect note rots, since nothing executes a rationale. (past-state-ok: the phrase is quoted here to describe the rot, not asserted — the guard has been blocking since F-076.) The remedy is never to relax the check: a codepoint the app can render and the font cannot is a tofu box, and a widened tolerance would only make it a silent one. IT FIRED A SECOND TIME IN F-018, AND FROM THE OTHER INPUT: verify-font-coverage reads the ja catalogue as well as the corpus, and 94 new UI strings introduced 105 uncovered codepoints — 一, 覧, 収, 録, 版 among them. So the link is not only about rare kanji in colour names; ordinary UI Japanese outruns the subset just as easily, and it does so on the chrome every screen renders rather than on one entry. Subset regenerated: 386 required codepoints against 744 in the face, 547KB to 596KB. AND A THIRD TIME IN F-019, for 3 codepoints from the compare copy. Three firings in three features is the shape of this link rather than bad luck: ANY feature that writes Japanese triggers it, and the subset is regenerated as part of the work rather than discovered later. F-226 (2026-09-28) GAVE THE CORPUS A SECOND FACE TO OUTRUN. The mincho 20's card draws (Noto Serif JP, ADR-0112) is subset to exactly the kanji of every entry's name — the one field a mincho element binds — so a publish that adds a kanji to a NAME now needs two regenerated subsets, and verify-font-coverage checks both. The mincho's requirement is derived from the inventories' mincho bindings (E-155), not from a list here.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -4530,6 +4542,10 @@
         {
           "kind": "gate",
           "ref": "artifact"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/brand.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4539,7 +4555,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS, rather than watched for reading them. `markGeometry()` matched four regexes against the WHOLE of brand.tsx and threw only when it could not FIND them — a `grid:` in any constant or comment above MARK would have given the generator one geometry and the app another, and `--check` could not have seen it because it compares the assets against exactly that reading. Two refusals now: exactly one `export const MARK` in the file, and the numbers read only from between its braces. THREE CASES IN --prove HAND IT A MUTATED SOURCE AND WATCH IT REFUSE, the third being the decoy — a source with NO MARK must be refused too, or a function that threw on everything would pass. The third artefact is coupled by rendering rather than by numbers, so launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap; that case was watched failing against an <Image>. WHAT IS NOT GUARDED: a regex is still a regex. A value moved into a nested object INSIDE the block would still be misread. And gate 16, which reads the mark out of a built APK, has not run.",
+      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS, rather than watched for reading them. `markGeometry()` matched four regexes against the WHOLE of brand.tsx and threw only when it could not FIND them — a `grid:` in any constant or comment above MARK would have given the generator one geometry and the app another, and `--check` could not have seen it because it compares the assets against exactly that reading. Two refusals now: exactly one `export const MARK` in the file, and the numbers read only from between its braces. THREE CASES IN --prove HAND IT A MUTATED SOURCE AND WATCH IT REFUSE, the third being the decoy — a source with NO MARK must be refused too, or a function that threw on everything would pass. The third artefact is coupled by rendering rather than by numbers, so launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap; that case was watched failing against an <Image>. WHAT IS NOT GUARDED: a regex is still a regex. A value moved into a nested object INSIDE the block would still be misread. And gate 16, which reads the mark out of a built APK, has not run. F-226: the lockup's name is set in the serif (Gelasio Regular, ADR-0112) as Latin text in both locales; `Wordmark` lost its `script` prop, and brand.test asserts the rendered family and weight. `Launch` does not render the wordmark yet (F-231).",
       "memory": "memory/effects/a-parse-that-can-find-the-wrong-numbers-is-worse-than-one-that-finds-none.md",
       "rationale": "CRITERION 1 WAS ALREADY TRUE AND THE FINDING WAS SAYING SO PRECISELY. All three artefacts already derive from MARK — the assets by parsing it, the wordmark by being it, the launch by rendering it — so the work was not building a coupling but closing the one place it could break silently. TWO ATTEMPTS FAILED FOR THE SAME REASON, and the reason is the interesting part: comparing the parse against the component cannot be written in the generator (Node cannot load brand.tsx — it imports React Native, which is WHY the parse exists) and cannot be written in jest (which cannot parse the .mjs). Both were trying to DETECT a wrong reading across a boundary that exists to keep the two sides apart. The boundary was the guard: narrow the parse until the failure has nowhere to live.",
       "confidence": 0.9,
@@ -5457,6 +5473,10 @@
         {
           "kind": "module",
           "ref": "apps/mobile/src/screens"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/text-face.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5465,7 +5485,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "THE DEFAULT IS WHAT `15` DRAWS, which is what makes a change reaching every screen invisible until somebody moves a switch: `useDisplaySettings()` returns DRAWN_DISPLAY_SETTINGS outside its provider — all three on — and conformance.test.tsx asserts a `numeric` Text carries the manifest feature with no provider at all, keeps it with the setting on, and DROPS it with the setting off, beside the existing decoy that a Text without `numeric` carries no variant ever. apps/mobile/test/display-settings.test.tsx holds the device half: an absent row reads as the drawn default; nine values that are not exactly \"false\" read as ON (including \"\", \"no\", \"0\", \"FALSE\" and a JSON blob), and only \"false\" reads off; each setting round-trips; and the DECOY FOR A TYPO IN THE KEY TABLE — turning one setting off leaves the other two on and writes exactly one row, which the round trip alone would pass with all three keys spelled the same. The provider is asserted to hand the ui provider the values it holds, to persist a change in the same frame, and to THROW outside itself where `useDisplaySettings()` deliberately does not. The screen is asserted to draw all three rows named as `15` names them, each announcing its checked state, each reporting which switch moved and to what. controls.test.tsx holds `15`'s gutter dot: drawn at 5 dp in a resolved `foreground.3` when the switch is on and the caller asked, none when off, a DECOY that an on switch without the prop draws none, and that it adds no second announcement. NOT GUARDED: the provenance badge itself, which does not exist — F-233 owns it and is blocked behind F-225 (OQ-36). What IS guarded is the boundary: swatchAccessibleName takes a name, a hex and a colour, and no setting, so the badge is hideable and the provenance is not (ADR-0005). FOUR DONE FEATURES ARE DOWNSTREAM AND EACH CARRIES A NOTE (F-239's review found them unrecorded): F-019 (“Tabular numerals, aligned columns, copyable values”), F-147, F-151 and the blocked F-226 all stated tabular figures unconditionally, and each is now true while the drawn default holds. What guards them is that the default IS the drawn state and the conformance suite renders every screen without a provider — so the shipped behaviour they were verified against is the behaviour the suite still measures.",
+      "guard": "THE DEFAULT IS WHAT `15` DRAWS, which is what makes a change reaching every screen invisible until somebody moves a switch: `useDisplaySettings()` returns DRAWN_DISPLAY_SETTINGS outside its provider — all three on — and conformance.test.tsx asserts a `numeric` Text carries the manifest feature with no provider at all, keeps it with the setting on, and DROPS it with the setting off, beside the existing decoy that a Text without `numeric` carries no variant ever. apps/mobile/test/display-settings.test.tsx holds the device half: an absent row reads as the drawn default; nine values that are not exactly \"false\" read as ON (including \"\", \"no\", \"0\", \"FALSE\" and a JSON blob), and only \"false\" reads off; each setting round-trips; and the DECOY FOR A TYPO IN THE KEY TABLE — turning one setting off leaves the other two on and writes exactly one row, which the round trip alone would pass with all three keys spelled the same. The provider is asserted to hand the ui provider the values it holds, to persist a change in the same frame, and to THROW outside itself where `useDisplaySettings()` deliberately does not. The screen is asserted to draw all three rows named as `15` names them, each announcing its checked state, each reporting which switch moved and to what. controls.test.tsx holds `15`'s gutter dot: drawn at 5 dp in a resolved `foreground.3` when the switch is on and the caller asked, none when off, a DECOY that an on switch without the prop draws none, and that it adds no second announcement. NOT GUARDED: the provenance badge itself, which does not exist — F-233 owns it and is blocked behind F-225 (OQ-36). What IS guarded is the boundary: swatchAccessibleName takes a name, a hex and a colour, and no setting, so the badge is hideable and the provenance is not (ADR-0005). FOUR DONE FEATURES ARE DOWNSTREAM AND EACH CARRIES A NOTE (F-239's review found them unrecorded): F-019 (“Tabular numerals, aligned columns, copyable values”), F-147, F-151 and the blocked F-226 all stated tabular figures unconditionally, and each is now true while the drawn default holds. What guards them is that the default IS the drawn state and the conformance suite renders every screen without a provider — so the shipped behaviour they were verified against is the behaviour the suite still measures. F-226: `Text` gained `face`, and `numeric` is refused with the serif and the mincho at the TYPE (no mockup draws a serif figure; Gelasio's default digits are oldstyle and proportional). The ragged-figure sweep now renders every registered screen and state in both themes and reads hexes and figures with a unit; it found 264 proportional figures (a Swatch named by its hex; ColourDetail's coordinate rows), fixed in the same feature.",
       "memory": "memory/effects/a-setting-that-changes-what-text-means.md",
       "rationale": "`15` draws three switches, and one of them lands on a prop that already existed: `Text`'s `numeric` stops meaning \"use tabular figures\" and starts meaning \"this text carries figures\", with the setting deciding. Nothing at any call site changed and every call site changed meaning, which is why this is high severity — it reaches every screen that shows a number, and the failure mode is silent. The prop could not be removed in favour of the setting because no heuristic can tell \"0.42\" from \"F-019\": the caller knows, the component cannot. The values live in @irodora/ui because `Text` cannot read an app context; everything touching the device lives in apps/mobile, and the app's provider mounts the ui one so the two cannot drift. The third switch writes to a reader that does not exist yet and says so, rather than being built here (F-233's scope) or left undone.",
       "confidence": 0.9,
@@ -6022,6 +6042,152 @@
       "memory": "memory/effects/a-token-that-changes-meaning-keeps-its-name-and-loses-its-readers.md",
       "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi).",
       "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-152",
+      "from": {
+        "kind": "content",
+        "ref": "mockups/inventory"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/type-scale.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory.schema.json"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "mockups",
+        "packages/design-tokens"
+      ],
+      "severity": "medium",
+      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are.",
+      "memory": "memory/effects/the-caption-is-the-median-of-what-the-mockups-draw.md",
+      "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-153",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/font-sources.json"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/Gelasio-Regular.ttf"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/NotoSerifJP-Subset.ttf"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "doc",
+          "ref": "NOTICE.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "scripts",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "`generate-font-subset.mjs --check` (gate 11) refuses a source whose sha256 differs from the pin, and byte-compares every committed face with a fresh cut. `verify-font-coverage.mjs` checks each static face: no `fvar`, the OS/2 weight class equal to the pin, the OFL licence record present, no two bundled faces sharing a PostScript name — each proven by a `--prove` decoy.",
+      "memory": "memory/effects/a-pinned-font-is-a-measured-font.md",
+      "rationale": "The weight each face ships at was MEASURED against the drawings from a specific file (ADR-0112). A font that changes upstream is a different font — its stems, its metrics, its names — so a re-pin is a re-measurement, not a version bump. The cut is not a copy either: HarfBuzz keeps the default instance's names (a 400 cut of Noto Serif JP called itself ExtraLight) and drops the licence records, so the generator rebuilds the name table, and that rebuild is part of what --check compares. NOTICE.md records each face's source, version and licence, and names the pin.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-154",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/design-tokens/src/generated/native.ts#nativeFaces"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/fonts.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Text.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/fonts.test.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "`fonts.ts`'s map `satisfies Record<Family, number>`, so a face the manifest adds without an asset is a compile error. `fonts.test.ts` holds the emitted families to the loaded map in both directions (with a decoy), checks each import against the face's file and that the file exists, and reads the hold-until-loaded order off the root layout. `text-face.test.tsx` asserts every face resolves to the family the manifest names, at the weight it is cut at.",
+      "memory": "memory/effects/a-family-name-nobody-registered-is-the-platform-font-in-silence.md",
+      "rationale": "React Native takes ONE family name and has no cascade: a `fontFamily` nothing registered falls back to the platform face with no error and no log. The name a component sets (nativeFaces, from the manifest), the name the app registers (fonts.ts, for useFonts) and the file on disk are three statements of one fact. And the root layout draws nothing until every face has loaded, which is what keeps the launch hand-over gapless — one more face is one more thing the first frame waits for (F-302 records what happens when one fails).",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-155",
+      "from": {
+        "kind": "content",
+        "ref": "mockups/inventory"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/NotoSerifJP-Subset.ttf"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "mockups",
+        "scripts",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "Both the generator and the coverage check derive the mincho's text from every inventory element with `type.face: \"mincho\"`, through a table of bindings they can read. A mincho element whose binding neither knows FAILS both, rather than being skipped — proven by the coverage check's `--prove` decoy. Today one element binds it: `20.card.kanji → corpus:entry.kanji`.",
+      "memory": "memory/effects/the-mincho-is-subset-to-what-the-mockups-bind-it-to.md",
+      "rationale": "The Japanese serif carries only the corpus kanji, because that is the only text any mockup sets in it. A mockup that later draws the mincho around other text — kana, a palette name, a heading — would be tofu with every gate green if the subset kept a hand-written list; deriving it from the bindings makes that a failure naming the element. E-145 and E-146 are the same failure for the sans, found late; this one is closed before it can happen.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

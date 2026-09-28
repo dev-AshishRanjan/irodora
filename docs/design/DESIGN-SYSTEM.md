@@ -327,11 +327,23 @@ Every component in `@irodora/ui` must:
   preference; a stated `light` is honoured. It had been decided three ways at once —
   a fallback in a screen, `dark` in the manifest, and "open" here.
 - **The mark** — in-product, or app icon only.
-- **Fonts:** the Japanese face is a bundled Noto Sans JP subset generated from the corpus
-  ([ADR-0057](../adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md));
-  **F-076** carries the asset. Latin is the platform face — Geist was "intended, licensing to
-  confirm" and nobody confirmed it, and Latin has no tofu failure mode, so the script that can
-  fail silently gets the bundled font and the script that cannot, does not.
-  **The manifest's `families` are CSS stacks and React Native has no fallback cascade**, so
-  the RN target deliberately emits no family name until the asset exists — naming a face the
-  bundle does not carry fails over to the system font silently.
+- ~~**Fonts**~~ — settled, in three faces and one platform font (F-226,
+  [ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)):
+  - the **Japanese sans** is a bundled Noto Sans JP subset generated from the corpus
+    ([ADR-0057](../adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md));
+  - the **serif** the mockups draw the wordmark and display type in is **Gelasio Regular**, at
+    no tracking, a measured weight cut static from a pinned source;
+  - the **mincho** `20`'s card draws the colour's kanji in is **Noto Serif JP** at 400, subset to
+    the corpus names;
+  - the **Latin sans** is the platform's. Geist was "intended, licensing to confirm" and nobody
+    confirmed it, and Latin has no tofu failure mode.
+
+  **The manifest's `families` are CSS stacks and React Native has no fallback cascade**, so the
+  RN target emits `nativeFaces`: one registered name per bundled face, with the weight each is
+  cut at and the steps a mockup draws it at. `Text` takes a `face`, and a serif caption or a serif
+  figure does not compile.
+- ~~**Type scale**~~ — settled as board `00`'s (F-226,
+  [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)):
+  `display1` 72 · `title` 22 · `body` 16 · `label` 14 · `caption` 10.3. The caption is the median
+  of every em the mockups draw below 12 dp, and a test recomputes it. Type drawn off the scale
+  snaps to it.
