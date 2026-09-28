@@ -30,45 +30,18 @@ import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
 import { Glyph, type GlyphName } from './Glyph.js';
+import {
+  withoutOwnedAccessibility,
+  type OwnedAccessibility,
+  type RefuseOwnedAccessibility,
+} from './ownedAccessibility.js';
 import { useTheme, type ThemeColors } from './theme.js';
-
-/**
- * Every prop through which a caller could give the control a second name, another role, a state
- * that disagrees with `disabled` and `loading`, or take it out of the accessibility tree.
- *
- * **Refused twice, because once is not enough for half of them.** They are declared `never`, which
- * is what makes TSX refuse the `aria-*` spellings at all — a hyphenated attribute is exempt from the
- * excess-property check, so merely omitting it from the props refuses nothing. And they are removed
- * at render, because React Native gives an `aria-*` prop precedence over its `accessibility*` twin
- * (`View.js`, `Pressable.js`): a cast that slipped `aria-disabled` through would override the state
- * this component sets, whatever order the props were written in.
- */
-const OWNED_ACCESSIBILITY = [
-  'accessibilityLabel',
-  'aria-label',
-  'accessibilityLabelledBy',
-  'aria-labelledby',
-  'accessibilityRole',
-  'role',
-  'accessibilityState',
-  'aria-disabled',
-  'aria-busy',
-  'aria-selected',
-  'aria-checked',
-  'aria-expanded',
-  'aria-hidden',
-  'accessible',
-  'importantForAccessibility',
-  'accessibilityElementsHidden',
-] as const;
-type OwnedAccessibility = (typeof OWNED_ACCESSIBILITY)[number];
-const OWNED = new Set<string>(OWNED_ACCESSIBILITY);
 
 export type IconButtonProps = Omit<
   PressableProps,
   'style' | 'children' | 'disabled' | OwnedAccessibility
 > &
-  Readonly<Partial<Record<OwnedAccessibility, never>>> & {
+  RefuseOwnedAccessibility & {
     /** The glyph, by the name its inventory binds. */
     readonly name: GlyphName;
     /**
@@ -98,13 +71,10 @@ export function IconButton({
 }: IconButtonProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-  const passed = Object.fromEntries(
-    Object.entries(rest).filter(([key]) => !OWNED.has(key)),
-  ) as typeof rest;
   return (
     <HeroButton
-      // FIRST, and without the owned props — see `OWNED_ACCESSIBILITY`.
-      {...passed}
+      // FIRST, and without the owned props (`ownedAccessibility.ts`).
+      {...withoutOwnedAccessibility(rest)}
       accessible
       accessibilityRole="button"
       accessibilityLabel={label}

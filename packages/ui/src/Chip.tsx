@@ -19,6 +19,10 @@
  * Golden rule 13. The tick is inside the label rather than beside it, so a screen reader
  * announces the selection as part of the name — and `accessibilityState.selected` carries it
  * again for assistive technology that reads state separately. Two channels plus the fill.
+ *
+ * Neither channel can be overridden by a caller: the props that could rename the chip, change its
+ * role or contradict its selection are refused by type and removed at render
+ * (`ownedAccessibility.ts`), and the caller's props are spread before the chip's own (F-232).
  */
 
 import { Pressable, View, type PressableProps } from 'react-native';
@@ -27,31 +31,39 @@ import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
 import { useTheme } from './theme.js';
+import {
+  withoutOwnedAccessibility,
+  type OwnedAccessibility,
+  type RefuseOwnedAccessibility,
+} from './ownedAccessibility.js';
 
-export type ChipProps = Omit<PressableProps, 'style' | 'children' | 'disabled'> & {
-  /** The visible label. Also the accessible name, so the two cannot diverge. */
-  readonly label: string;
-  readonly selected?: boolean;
-  /**
-   * Focused by an external keyboard or Switch Control.
-   *
-   * A distinct state from `selected`: focus is where the cursor is, selection is what was
-   * chosen, and a control that renders them identically has one of them in name only.
-   */
-  readonly focused?: boolean;
-  readonly disabled?: boolean;
-  /** The result behind this chip is still being computed. Announced as busy, not only dimmed. */
-  /** The result behind this chip is still being computed. Announced as busy, not only dimmed. */
-  readonly loading?: boolean;
-  /**
-   * The script the label is written in.
-   *
-   * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
-   * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
-   * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
-   */
-  readonly script?: Script;
-};
+export type ChipProps = Omit<
+  PressableProps,
+  'style' | 'children' | 'disabled' | OwnedAccessibility
+> &
+  RefuseOwnedAccessibility & {
+    /** The visible label. Also the accessible name, so the two cannot diverge. */
+    readonly label: string;
+    readonly selected?: boolean;
+    /**
+     * Focused by an external keyboard or Switch Control.
+     *
+     * A distinct state from `selected`: focus is where the cursor is, selection is what was
+     * chosen, and a control that renders them identically has one of them in name only.
+     */
+    readonly focused?: boolean;
+    readonly disabled?: boolean;
+    /** The result behind this chip is still being computed. Announced as busy, not only dimmed. */
+    readonly loading?: boolean;
+    /**
+     * The script the label is written in.
+     *
+     * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
+     * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
+     * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+     */
+    readonly script?: Script;
+  };
 
 /**
  * The accessible name, assembled here so no call site can forget the selection channel.
@@ -99,13 +111,14 @@ export function Chip({
 
   return (
     <Pressable
+      // FIRST, and without the owned props, so nothing a caller passes lands after the chip's own.
+      {...withoutOwnedAccessibility(rest)}
       accessibilityRole="button"
       accessibilityLabel={chipAccessibleName(label, selected)}
       // `selected` twice on purpose: in the name for a reader that announces only the label,
       // and in the state for one that reads state separately.
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
-      {...rest}
       style={{
         // BOTH minimums. A chip is content-width, so a short label — "All", "Warm" — is
         // comfortably under 44px wide without this, and the conformance suite caught exactly

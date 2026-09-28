@@ -36,6 +36,13 @@
  * `minWidth`/`minHeight` come from `nativeTapTarget` (44). The conformance suite asserts the
  * declared value — it cannot assert the *measured* one, because a JS render tree has no Yoga
  * layout pass. That distinction is stated in ADR-0055 and printed by the gate.
+ *
+ * ## The accessibility is the button's own (F-232)
+ *
+ * Its name is `label` and its state is `disabled` and `loading`. The props that could rename it,
+ * change its role or contradict its state are refused by type and removed at render
+ * (`ownedAccessibility.ts`). The caller's props are spread FIRST, so nothing a caller passes can
+ * land after the role, name and state set here. F-228's review found the old order let them.
  */
 
 import { Button as HeroButton } from 'heroui-native';
@@ -48,24 +55,33 @@ import {
 } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
 import type { Script } from './layout.js';
+import {
+  withoutOwnedAccessibility,
+  type OwnedAccessibility,
+  type RefuseOwnedAccessibility,
+} from './ownedAccessibility.js';
 
 export type ButtonVariant = 'primary' | 'secondary';
 
-export type ButtonProps = Omit<PressableProps, 'style' | 'children' | 'disabled'> & {
-  /** The visible label. Also the accessible name — one string, so they cannot diverge. */
-  readonly label: string;
-  readonly variant?: ButtonVariant;
-  readonly disabled?: boolean;
-  readonly loading?: boolean;
-  /**
-   * The script the label is written in.
-   *
-   * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
-   * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
-   * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
-   */
-  readonly script?: Script;
-};
+export type ButtonProps = Omit<
+  PressableProps,
+  'style' | 'children' | 'disabled' | OwnedAccessibility
+> &
+  RefuseOwnedAccessibility & {
+    /** The visible label. Also the accessible name — one string, so they cannot diverge. */
+    readonly label: string;
+    readonly variant?: ButtonVariant;
+    readonly disabled?: boolean;
+    readonly loading?: boolean;
+    /**
+     * The script the label is written in.
+     *
+     * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
+     * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
+     * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+     */
+    readonly script?: Script;
+  };
 
 export function Button({
   label,
@@ -96,6 +112,8 @@ export function Button({
 
   return (
     <HeroButton
+      // FIRST, and without the owned props, so nothing a caller passes lands after the three below.
+      {...withoutOwnedAccessibility(rest)}
       // HeroUI defaults this to 'button' already; stated because the accessible name below
       // only means anything alongside a role, and a default is a thing that can change.
       accessibilityRole="button"
@@ -107,7 +125,6 @@ export function Button({
       // Scale is a transform. The default, `scale-highlight`, cross-fades a background colour
       // — see the note above; verify-motion.mjs rejects a component that allows it.
       feedbackVariant="scale"
-      {...rest}
       style={{
         minWidth: nativeTapTarget,
         minHeight: nativeTapTarget,
