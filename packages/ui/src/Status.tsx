@@ -25,6 +25,7 @@
 
 import { View } from 'react-native';
 import {
+  nativeRadius,
   nativeSpacing,
   STATUS_PAIRING,
   statusPresentation,
@@ -61,13 +62,31 @@ export interface StatusProps {
   readonly adjacentToSample?: boolean;
   /** The script the label is written in. Latin by default, matching `Text`. */
   readonly script?: Script;
+  /**
+   * `pill` draws the status on a plate, as `04`'s tolerance verdict is drawn (F-232): the same
+   * three channels, inside a pill. `inline`, the default, sits beside what it describes.
+   */
+  readonly form?: 'inline' | 'pill';
+  /**
+   * The pill's plate: a surface the status tokens are declared on. `04` draws its verdict on a
+   * green tint that is F-245's to mint; until then a surface carries it.
+   */
+  readonly plate?: 'surface.1' | 'surface.2';
+  /** The pill's drawn height in dp. Defaults to {@link STATUS_PILL_HEIGHT}, `04`'s. */
+  readonly height?: number;
 }
+
+/** `04.sheet.tolerance`'s drawn height, in dp: the only status pill a mockup draws. */
+export const STATUS_PILL_HEIGHT = 28.5;
 
 export function Status({
   kind,
   text,
   adjacentToSample = false,
   script = 'latin',
+  form = 'inline',
+  plate = 'surface.2',
+  height = STATUS_PILL_HEIGHT,
 }: StatusProps): React.JSX.Element {
   const { colors } = useTheme();
   const presentation = statusPresentation(kind, STATUS_PAIRING[kind], text);
@@ -80,6 +99,15 @@ export function Status({
         gap: nativeSpacing.sm,
         ...(adjacentToSample
           ? { backgroundColor: colors['swatch.well'], padding: nativeSpacing.sm }
+          : {}),
+        ...(form === 'pill'
+          ? {
+              alignSelf: 'flex-start' as const,
+              height,
+              paddingHorizontal: nativeSpacing.md,
+              borderRadius: nativeRadius.pill,
+              backgroundColor: colors[plate],
+            }
           : {}),
       }}
     >

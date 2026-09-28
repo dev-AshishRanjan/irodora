@@ -63,7 +63,8 @@ export {
   type DisplaySettingKey,
   type DisplaySettingsProviderProps,
 } from './displaySettings.js';
-export { Status, type StatusProps } from './Status.js';
+export { Status, STATUS_PILL_HEIGHT, type StatusProps } from './Status.js';
+export { inkOnSample, TEXT_CONTRAST, type InkOnSample, type Sample } from './inkOnSample.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export {
   Button,
@@ -79,7 +80,14 @@ export { hitArea, platformTapTarget } from './hitArea.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { elevationShadow } from './elevation.js';
 export { Card, type CardLevel, type CardProps } from './Card.js';
-export { Chip, CHIP_HEIGHT, chipAccessibleName, type ChipProps } from './Chip.js';
+export {
+  BADGE_HEIGHT,
+  Chip,
+  CHIP_HEIGHT,
+  chipAccessibleName,
+  SAMPLE_DOT,
+  type ChipProps,
+} from './Chip.js';
 export {
   ChoiceGroup,
   SEGMENT_INSET,

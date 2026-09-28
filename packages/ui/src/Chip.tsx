@@ -35,11 +35,29 @@
  * None can be overridden by a caller: the props that could rename the chip, change its role or
  * contradict its selection are refused by type and removed at render (`ownedAccessibility.ts`), and
  * the caller's props are spread before the chip's own (F-232).
+ *
+ * ## The badge: a chip nobody presses (F-232)
+ *
+ * `form="badge"` draws the static chips the screens draw beside a reading:
+ * - the provenance chip, with a glyph (`03`, `24`);
+ * - the count pill, set in figures (`01`, `05`);
+ * - the ΔE00 badge, plain (`21`) or tinted by its row's sample (`24`), where the ink is chosen by
+ *   `inkOnSample` (C8).
+ *
+ * It is explicit, never inferred from a missing `onPress`, so a chip that is only sometimes
+ * pressable stays a control. A badge is read, not pressed: it is one text element with no role.
+ *
+ * ## The filter chip (`05`)
+ *
+ * `05`'s family chips rest FILLED (`ground`), lead with the family's colour as a dot (`dot`, a
+ * provenanced sample), and set the kanji after the romaji in the bundled gothic (`kanji`).
  */
 
 import { Pressable, View, type PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { Glyph, type GlyphName } from './Glyph.js';
 import { hitArea, platformTapTarget } from './hitArea.js';
+import { inkOnSample, type Sample } from './inkOnSample.js';
 import type { Script } from './layout.js';
 import {
   withoutOwnedAccessibility,
@@ -47,6 +65,7 @@ import {
   type RefuseOwnedAccessibility,
 } from './ownedAccessibility.js';
 import { FocusRing, pillTone, SelectionDot, type PillFill } from './selection.js';
+import { GLYPH_IN_PLATE } from './Button.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 
@@ -56,7 +75,16 @@ import { useTheme } from './theme.js';
  */
 export const CHIP_HEIGHT = 21.5;
 
-export type ChipProps = Omit<
+/**
+ * A badge's default drawn height, in dp: the median of every static chip drawn on a screen with a
+ * scale (38 of them), snapped to half a dp. Recomputed by `badges.test`.
+ */
+export const BADGE_HEIGHT = 21;
+
+/** `05`'s family colour dot, in dp: 12 px at 2 px/dp. Recomputed by `badges.test`. */
+export const SAMPLE_DOT = 6;
+
+type ChipControlProps = Omit<
   PressableProps,
   'style' | 'children' | 'disabled' | 'hitSlop' | OwnedAccessibility
 > &
@@ -90,7 +118,39 @@ export type ChipProps = Omit<
     readonly selectedFill?: PillFill;
     /** `15` edges its chosen chip in `foreground` as well as filling it. */
     readonly selectedEdge?: boolean;
+    /** A control is the default; only a badge says so (`form="badge"`). */
+    readonly form?: never;
+    /** `05`: the chip rests filled, where the other screens' chips rest as an outline. */
+    readonly ground?: 'surface.1';
+    /** `05`: the family's colour, drawn as a dot before the label. A sample, so it is provenanced. */
+    readonly dot?: Sample;
+    /** `05`: the family's kanji, set after the label in the bundled gothic. Part of the name. */
+    readonly kanji?: string;
   };
+
+/** A chip nobody presses: a badge beside a reading (F-232). */
+interface ChipBadgeProps {
+  readonly form: 'badge';
+  /** The visible text. Also the accessible name. */
+  readonly label: string;
+  /** A glyph before the text: `03`'s conditions, `24`'s capture source. */
+  readonly icon?: GlyphName;
+  /** The text carries figures (a count, a ΔE00), so it is set in the numeric setting. */
+  readonly numeric?: boolean;
+  /** Filled in `surface.2` (`05`, `12`, `21`, `24`). Without it the badge is an outline in `border`. */
+  readonly fill?: 'surface.2';
+  /** `21` draws its badge filled AND outlined. */
+  readonly edge?: boolean;
+  /** `24`: tinted by its row's sample. The text takes the ink `inkOnSample` chooses. */
+  readonly tint?: Sample;
+  readonly radius?: 'sm' | 'pill';
+  /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BADGE_HEIGHT}. */
+  readonly height?: number;
+  readonly script?: Script;
+  readonly testID?: string;
+}
+
+export type ChipProps = ChipControlProps | ChipBadgeProps;
 
 /**
  * The accessible name, assembled here so no call site can forget the selection channel.
@@ -101,7 +161,58 @@ export function chipAccessibleName(label: string, selected: boolean): string {
   return selected ? `${label} ✓` : label;
 }
 
-export function Chip({
+export function Chip(props: ChipProps): React.JSX.Element {
+  return props.form === 'badge' ? <Badge {...props} /> : <ChipControl {...props} />;
+}
+
+function Badge({
+  label,
+  icon,
+  numeric = false,
+  fill,
+  edge = false,
+  tint,
+  radius = 'pill',
+  height = BADGE_HEIGHT,
+  script = 'latin',
+  testID,
+}: ChipBadgeProps): React.JSX.Element {
+  const { colors } = useTheme();
+  // On a sample the ink is chosen against the sample (C8); otherwise it is the surface's own.
+  const ink = tint === undefined ? 'foreground' : inkOnSample(tint.hex, colors).ink;
+  const outlined = edge || (fill === undefined && tint === undefined);
+  return (
+    <View
+      testID={testID}
+      // Read, not pressed: one element, announced as the text it is and never as a control.
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={label}
+      style={{
+        height,
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        gap: nativeSpacing.xs,
+        paddingHorizontal: nativeSpacing.sm,
+        borderRadius: nativeRadius[radius],
+        backgroundColor:
+          tint !== undefined ? tint.hex : fill !== undefined ? colors[fill] : 'transparent',
+        borderWidth: outlined ? 1 : 0,
+        ...(outlined ? { borderColor: colors.border } : {}),
+      }}
+    >
+      {icon === undefined ? null : (
+        <Glyph name={icon} color={colors[ink]} size={height * GLYPH_IN_PLATE} />
+      )}
+      <Text size="label" color={ink} script={script} numeric={numeric} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function ChipControl({
   label,
   selected = false,
   focused = false,
@@ -112,8 +223,11 @@ export function Chip({
   radius = 'pill',
   selectedFill = 'surface.2',
   selectedEdge = false,
+  ground,
+  dot,
+  kanji,
   ...rest
-}: ChipProps): React.JSX.Element {
+}: ChipControlProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
   const target = platformTapTarget();
@@ -124,7 +238,10 @@ export function Chip({
       // FIRST, and without the owned props, so nothing a caller passes lands after the chip's own.
       {...withoutOwnedAccessibility(rest)}
       accessibilityRole="button"
-      accessibilityLabel={chipAccessibleName(label, selected)}
+      accessibilityLabel={chipAccessibleName(
+        kanji === undefined ? label : `${label} ${kanji}`,
+        selected,
+      )}
       // `selected` twice on purpose: in the name for a reader that announces only the label,
       // and in the state for one that reads state separately.
       accessibilityState={{ selected, disabled: inert, busy: loading }}
@@ -141,7 +258,7 @@ export function Chip({
         gap: nativeSpacing.xs,
         paddingHorizontal: nativeSpacing.sm,
         borderRadius: nativeRadius[radius],
-        backgroundColor: tone.background,
+        backgroundColor: !selected && ground !== undefined ? colors[ground] : tone.background,
         // One width in every state, so choosing a chip never moves it (selection.tsx, decision 1).
         borderWidth: 1,
         borderColor: tone.borderColor,
@@ -151,10 +268,27 @@ export function Chip({
       }}
     >
       <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
-      <View>
+      {dot === undefined ? null : (
+        <View
+          // The family's colour, as data: decorative to a screen reader, named in the label.
+          pointerEvents="none"
+          style={{
+            width: SAMPLE_DOT,
+            height: SAMPLE_DOT,
+            borderRadius: nativeRadius.pill,
+            backgroundColor: dot.hex,
+          }}
+        />
+      )}
+      <View style={{ flexDirection: 'row', gap: nativeSpacing.xs }}>
         <Text size="label" color={tone.ink} script={script} numberOfLines={1}>
           {loading ? `${label}…` : label}
         </Text>
+        {kanji === undefined ? null : (
+          <Text size="label" color={tone.ink} script="japanese" numberOfLines={1}>
+            {kanji}
+          </Text>
+        )}
       </View>
       <FocusRing visible={focused} radius={nativeRadius[radius]} />
     </Pressable>

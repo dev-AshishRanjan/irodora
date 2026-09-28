@@ -214,8 +214,12 @@ const PILL_FILLS = ['surface.2', 'surface.3', 'accent'] as const;
 /**
  * Whether a tree draws a selection dot: a small filled circle — equal sides of at most 8 dp, fully
  * rounded, with a fill. Read off the pixels' description, not off the component that drew it.
+ *
+ * A dot painted in a SAMPLE is data, not a mark: `05`'s family chip leads with the family's colour,
+ * and that dot says which family, not that it is chosen. So a dot whose fill is one of `samples`
+ * (the subject's declared sample values, lowercased) does not count.
  */
-export function drawsDot(tree: TestNode): boolean {
+export function drawsDot(tree: TestNode, samples: ReadonlySet<string> = new Set()): boolean {
   const walk = (node: TestNode): boolean => {
     const style = flattenStyle(node.props['style']);
     const w = style['width'];
@@ -228,7 +232,8 @@ export function drawsDot(tree: TestNode): boolean {
       typeof r === 'number' &&
       r >= w / 2 &&
       typeof style['backgroundColor'] === 'string' &&
-      style['backgroundColor'] !== 'transparent'
+      style['backgroundColor'] !== 'transparent' &&
+      !samples.has(style['backgroundColor'].toLowerCase())
     )
       return true;
     return (node.children ?? []).some((c) => typeof c !== 'string' && walk(c));
@@ -521,7 +526,7 @@ export function checkSubject(
         } else if (subject.treatment === 'pill') {
           const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));
           const edged = paints('borderColor', 'foreground');
-          if (!(filled || edged) || !drawsDot(tree))
+          if (!(filled || edged) || !drawsDot(tree, samples))
             at(
               'selection-treatment',
               'is a selected pill but does not draw the pill treatment — a chosen pill is filled ' +

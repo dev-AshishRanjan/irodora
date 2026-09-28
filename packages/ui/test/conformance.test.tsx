@@ -726,6 +726,58 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   })),
+  /*
+   * THE BADGES (F-232): the static chips the screens draw beside a reading — 03's outlined
+   * conditions chip with its glyph, 05's count in figures, 21's ΔE00 badge filled and edged, and
+   * 24's tinted by its row's sample. Read, not pressed, so `static`.
+   */
+  ...(
+    [
+      ['Chip (badge, outline)', { label: 'Daylight, even light', icon: 'sun' }],
+      ['Chip (badge, count)', { label: '1,240', icon: 'list', fill: 'surface.2', numeric: true }],
+      [
+        'Chip (badge, ΔE00)',
+        { label: 'ΔE00 1.8', fill: 'surface.2', edge: true, radius: 'sm', numeric: true },
+      ],
+      [
+        'Chip (badge, tinted)',
+        { label: 'ΔE00 1.8', tint: { hex: '#526A6B', color: SAMPLE }, radius: 'sm', numeric: true },
+      ],
+    ] as const
+  ).map(([name, form]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) => draw(<Chip form="badge" {...form} />, theme),
+  })),
+  {
+    /*
+     * 05'S FAMILY CHIP (F-232): filled at rest, led by the family's colour, the kanji after the
+     * romaji. The colour dot is a sample, so it is declared as one, and the selection rule does
+     * not count it as the chosen mark.
+     */
+    name: 'Chip (05, family)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['chip', 'filter'],
+    sampleValues: ['#526A6B'],
+    render: (state, theme) =>
+      draw(
+        <Chip
+          label="Ao"
+          kanji="青"
+          dot={{ hex: '#526A6B', color: SAMPLE }}
+          ground="surface.1"
+          selected={state === 'active'}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
   {
     name: 'SearchField',
     kind: 'interactive',
@@ -979,6 +1031,13 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: 'Status',
     kind: 'static',
     render: (_state, theme) => draw(<Status kind="bad" text="Could not read this colour" />, theme),
+  },
+  {
+    // 04's tolerance verdict (F-232): the three channels on a plate. Its green is F-245's.
+    name: 'Status (pill)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<Status form="pill" kind="ok" text="Within harmony tolerance" />, theme),
   },
   {
     /*
