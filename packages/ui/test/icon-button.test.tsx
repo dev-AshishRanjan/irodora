@@ -12,6 +12,7 @@ import { nativeColors, nativeTapTarget } from '@irodora/design-tokens';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Glyph, IconButton, ThemeProvider } from '../src/index.js';
+import { tapTargetReach } from '../src/testing/index.js';
 
 const INK = '#F2F2F2';
 
@@ -152,18 +153,32 @@ describe('what a screen reader and a finger get', () => {
     ).toBeTruthy();
   });
 
-  it('declares the tap target, not the glyph’s size', () => {
+  it('is drawn at the glyph’s size, and reaches the target through its hit area (F-232)', () => {
     render(
       <ThemeProvider theme="dark">
         <IconButton name="back" label="Back" size={16} testID="small" />
       </ThemeProvider>,
     );
-    const style = StyleSheet.flatten(
-      screen.getByTestId('small').props['style'] as StyleProp<ViewStyle>,
-    );
-    expect(style.minWidth).toBe(nativeTapTarget);
-    expect(style.minHeight).toBe(nativeTapTarget);
-    expect(nativeTapTarget).toBeGreaterThan(16);
+    const host = screen.getByTestId('small');
+    const style = StyleSheet.flatten(host.props['style'] as StyleProp<ViewStyle>);
+    expect([style.width, style.height]).toStrictEqual([16, 16]);
+    expect(
+      tapTargetReach(style as Record<string, unknown>, host.props['hitSlop'] as never),
+    ).toStrictEqual({ width: nativeTapTarget, height: nativeTapTarget });
+  });
+
+  it('DECOY — without its hit area the glyph alone would fall short of the target', () => {
+    expect(tapTargetReach({ width: 16, height: 16 }, undefined)).toStrictEqual({
+      width: 16,
+      height: 16,
+    });
+  });
+
+  it('owns its hit area: a caller cannot shrink it', () => {
+    // @ts-expect-error — the hit area is what makes a glyph reach the target (ADR-0114).
+    const shrunk = <IconButton name="back" label="Back" hitSlop={0} />;
+    const own = <IconButton name="back" label="Back" />;
+    expect([shrunk, own]).toHaveLength(2);
   });
 });
 

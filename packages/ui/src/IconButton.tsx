@@ -14,7 +14,9 @@
  *
  * ## What it draws, and what it leaves to the surface
  *
- * The glyph, at the mockups' weight, in a tap target — and nothing else. The square and circular
+ * The glyph, at the mockups' weight, drawn at its size — and nothing else. The box IS the glyph
+ * (F-232): the tap target is its hit area (ADR-0114), not an invisible 44 dp square around it, so a
+ * glyph beside a label sits where the mockup draws it. The square and circular
  * containers `00` draws are F-232's, and the inventories record each icon-only control's plate in
  * its own `tokens` (thirty `ui:Button` elements with an icon and no copy). A container chosen here
  * would be one answer imposed before the feature that owns the question has read the board.
@@ -28,8 +30,8 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
 import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
+import { hitArea } from './hitArea.js';
 import {
   withoutOwnedAccessibility,
   type OwnedAccessibility,
@@ -39,7 +41,7 @@ import { useTheme, type ThemeColors } from './theme.js';
 
 export type IconButtonProps = Omit<
   PressableProps,
-  'style' | 'children' | 'disabled' | OwnedAccessibility
+  'style' | 'children' | 'disabled' | 'hitSlop' | OwnedAccessibility
 > &
   RefuseOwnedAccessibility & {
     /** The glyph, by the name its inventory binds. */
@@ -84,10 +86,12 @@ export function IconButton({
       isIconOnly
       variant="ghost"
       feedbackVariant="scale"
+      // A glyph is 24 dp and a finger is not (WCAG 2.2): the rest of the target is the hit area,
+      // which the tap-target rule adds back to the drawn size (ADR-0114).
+      hitSlop={hitArea(size, size)}
       style={{
-        // DECLARED, because a glyph is 24 dp and a finger is not (WCAG 2.2, ADR-0055).
-        minWidth: nativeTapTarget,
-        minHeight: nativeTapTarget,
+        width: size,
+        height: size,
         justifyContent: 'center',
         alignItems: 'center',
         // Every declared state renders differently; `Button`'s dimming, for the same reason.
