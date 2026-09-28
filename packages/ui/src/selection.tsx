@@ -236,3 +236,76 @@ export function FocusRing({ visible, radius, testID }: FocusRingProps): React.JS
     />
   );
 }
+
+/**
+ * The leading dot's diameter, in dp: the median of the selection dots the inventories record on
+ * `12`, `15` and `17` (13 px and 11 px at 2 px/dp). Recomputed by `pill-selection.test`.
+ */
+export const SELECTION_DOT = 6.5;
+
+/** A selected pill's fill: `15` and `02` draw `surface.2`, `12` draws `surface.3`, `17` `accent`. */
+export type PillFill = 'surface.2' | 'surface.3' | 'accent';
+
+/** What a pill paints, resolved against a theme. */
+export interface PillTone {
+  readonly background: string;
+  /** The edge, always 1 dp wide so the box never moves: `border` at rest, the fill when chosen. */
+  readonly borderColor: string;
+  /** The label's and the dot's ink, as a text token. */
+  readonly ink: 'foreground' | 'accent.foreground';
+  readonly dot: boolean;
+}
+
+/**
+ * The treatment for a **pill** (F-232): the chips and segments the screens draw, where board 00's
+ * chooser treatment does not appear.
+ *
+ * At rest it is an outline in `border` with nothing inside. Chosen, it is FILLED, and a dot leads
+ * its label. That is how `12`, `15` and `17` draw a choice: a fill and a mark, never a tick or a
+ * corner badge. `15` also draws its chosen pill with a `foreground` edge. The ✓ stays in the
+ * accessible name, where it is words rather than a picture.
+ */
+export function pillTone(
+  selected: boolean,
+  fill: PillFill,
+  edge: boolean,
+  colors: ThemeColors,
+): PillTone {
+  if (!selected)
+    return { background: 'transparent', borderColor: colors.border, ink: 'foreground', dot: false };
+  return {
+    background: colors[fill],
+    borderColor: edge ? colors.foreground : colors[fill],
+    ink: fill === 'accent' ? 'accent.foreground' : 'foreground',
+    dot: true,
+  };
+}
+
+export interface SelectionDotProps {
+  /** Draw nothing when this is false, so a call site can render it unconditionally. */
+  readonly visible: boolean;
+  /** The dot's ink, resolved: the label's. */
+  readonly color: string;
+  readonly size?: number;
+  readonly testID?: string;
+}
+
+/**
+ * The mark a pill draws when it is chosen: a filled dot before its label (`12`, `15`, `17`).
+ * Decorative to a screen reader, like {@link SelectionMark}: the name and the state are the words.
+ */
+export function SelectionDot({
+  visible,
+  color,
+  size = SELECTION_DOT,
+  testID,
+}: SelectionDotProps): React.JSX.Element | null {
+  if (!visible) return null;
+  return (
+    <View
+      testID={testID}
+      pointerEvents="none"
+      style={{ width: size, height: size, borderRadius: nativeRadius.pill, backgroundColor: color }}
+    />
+  );
+}

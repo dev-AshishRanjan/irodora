@@ -635,6 +635,8 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     kind: 'interactive',
     // Same as Swatch: a filter chip that is on says so in its name and in its state.
     selectable: true,
+    // The screens' picture (F-232): chosen is filled, with a leading dot — not 00's chooser.
+    treatment: 'pill',
     // 'chip' and 'filter' are what the role already tells a screen reader. A control whose
     // whole name is its own type says nothing about WHICH filter it is.
     forbiddenNames: ['chip', 'filter'],
@@ -651,6 +653,33 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /* THE FILLS THE SCREENS DRAW A CHOSEN CHIP IN (F-232): 12's surface.3, 15's edged surface.2, 17's accent. */
+  ...(
+    [
+      ['Chip (12, surface.3)', { selectedFill: 'surface.3' }],
+      ['Chip (15, edged)', { selectedEdge: true }],
+      ['Chip (17, accent)', { selectedFill: 'accent', radius: 'sm' }],
+    ] as const
+  ).map(([name, form]): ConformanceSubject => ({
+    name,
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['chip', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <Chip
+          label="Linen"
+          {...form}
+          selected={state === 'active'}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  })),
   {
     name: 'SearchField',
     kind: 'interactive',

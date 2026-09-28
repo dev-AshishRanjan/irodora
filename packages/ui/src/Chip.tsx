@@ -1,5 +1,5 @@
 /**
- * A selectable filter chip.
+ * A selectable chip: a pill a person chooses, drawn as the screens draw it (F-232).
  *
  * ## Why this is a component rather than a `Pressable` on the Atlas
  *
@@ -14,32 +14,51 @@
  * component in the first place. So the rule that matters is the converse: **an interactive
  * control belongs in the library, and a screen stays `static`.**
  *
+ * ## What it draws: the pill treatment
+ *
+ * At rest it is an outline in `border` with nothing inside. Chosen, it is FILLED and a dot leads its
+ * label (`pillTone`, `SelectionDot`). That is how `12`, `15` and `17` draw a choice, and none of
+ * them draws a tick or a corner badge, so neither is drawn here any more. The fill is the screen's:
+ * `surface.2` by default (`15` and `02`), `surface.3` on `12`, and `accent` on `17`, where the ink
+ * turns to `accent.foreground`. `15` also edges its chosen pill in `foreground`.
+ *
+ * It is drawn at its drawn height and reaches the target through its hit area (ADR-0114). Focus is
+ * a `ring` outside the box (E-151).
+ *
  * ## Selection is never colour alone
  *
- * Golden rule 13. The tick is inside the label rather than beside it, so a screen reader
- * announces the selection as part of the name — and `accessibilityState.selected` carries it
- * again for assistive technology that reads state separately. Two channels plus the fill.
+ * Golden rule 13, in three channels:
+ * - the dot, which is a shape;
+ * - the tick in the accessible NAME, so a screen reader announces the selection with the label;
+ * - `accessibilityState.selected`, for assistive technology that reads state separately.
  *
- * Neither channel can be overridden by a caller: the props that could rename the chip, change its
- * role or contradict its selection are refused by type and removed at render
- * (`ownedAccessibility.ts`), and the caller's props are spread before the chip's own (F-232).
+ * None can be overridden by a caller: the props that could rename the chip, change its role or
+ * contradict its selection are refused by type and removed at render (`ownedAccessibility.ts`), and
+ * the caller's props are spread before the chip's own (F-232).
  */
 
 import { Pressable, View, type PressableProps } from 'react-native';
-import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
-import { Text } from './Text.js';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { hitArea, platformTapTarget } from './hitArea.js';
 import type { Script } from './layout.js';
-import { useTheme } from './theme.js';
 import {
   withoutOwnedAccessibility,
   type OwnedAccessibility,
   type RefuseOwnedAccessibility,
 } from './ownedAccessibility.js';
+import { FocusRing, pillTone, SelectionDot, type PillFill } from './selection.js';
+import { Text } from './Text.js';
+import { useTheme } from './theme.js';
+
+/**
+ * A chip's default drawn height, in dp: the median of every interactive pill chip drawn on a screen
+ * with a scale (31 of them), snapped to half a dp. Recomputed by `pill-selection.test`.
+ */
+export const CHIP_HEIGHT = 21.5;
 
 export type ChipProps = Omit<
   PressableProps,
-  'style' | 'children' | 'disabled' | OwnedAccessibility
+  'style' | 'children' | 'disabled' | 'hitSlop' | OwnedAccessibility
 > &
   RefuseOwnedAccessibility & {
     /** The visible label. Also the accessible name, so the two cannot diverge. */
@@ -63,6 +82,14 @@ export type ChipProps = Omit<
      * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
      */
     readonly script?: Script;
+    /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link CHIP_HEIGHT}. */
+    readonly height?: number;
+    /** The drawn corner: a pill, or `17`'s `sm`. */
+    readonly radius?: 'sm' | 'pill';
+    /** The chosen chip's fill, as its screen draws it. */
+    readonly selectedFill?: PillFill;
+    /** `15` edges its chosen chip in `foreground` as well as filling it. */
+    readonly selectedEdge?: boolean;
   };
 
 /**
@@ -74,15 +101,6 @@ export function chipAccessibleName(label: string, selected: boolean): string {
   return selected ? `${label} ✓` : label;
 }
 
-/**
- * The badge on a chip, smaller than the default.
- *
- * A chip is only `nativeTapTarget` tall and its label runs the full width, so the 18px badge
- * a swatch carries would sit on the text. 14 is the largest that clears a `label` at
- * the chip's padding, and it is still a drawn glyph rather than a character.
- */
-const SELECTION_MARK_CHIP = 14;
-
 export function Chip({
   label,
   selected = false,
@@ -90,24 +108,16 @@ export function Chip({
   disabled = false,
   loading = false,
   script = 'latin',
+  height = CHIP_HEIGHT,
+  radius = 'pill',
+  selectedFill = 'surface.2',
+  selectedEdge = false,
   ...rest
 }: ChipProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-
-  /*
-   * THE SHARED TREATMENT (F-176), where this drew its own.
-   *
-   * It filled with `inverse` — a near-white plate on dark and a near-black one on light. That
-   * read as selected and it was a THIRD answer to the question `Swatch` and `Tabs` each
-   * answered differently, which is what was reported.
-   *
-   * Both pairings are DECLARED in the manifest — `accent.muted` pairsWith `foreground` and
-   * `foreground.2`, `surface.2` pairsWith `foreground`. Pairing tokens the manifest does not
-   * declare together is a contrast-gate failure, so this choice is not free.
-   */
-  const tone = selectionTone({ selected, focused }, colors);
-  const foreground = selected ? ('foreground' as const) : ('foreground.2' as const);
+  const target = platformTapTarget();
+  const tone = pillTone(selected, selectedFill, selectedEdge, colors);
 
   return (
     <Pressable
@@ -119,38 +129,34 @@ export function Chip({
       // and in the state for one that reads state separately.
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
+      // The drawn height, and the rest of the target in the hit area (ADR-0114). A chip is never
+      // narrower than the target: a short label ("All") would otherwise be.
+      hitSlop={hitArea(target, height)}
       style={{
-        // BOTH minimums. A chip is content-width, so a short label — "All", "Warm" — is
-        // comfortably under 44px wide without this, and the conformance suite caught exactly
-        // that. WCAG 2.2 asks for the target, not for the text.
-        minWidth: nativeTapTarget,
-        minHeight: nativeTapTarget,
+        height,
+        minWidth: target,
+        flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: nativeRadius.md,
-        paddingHorizontal: nativeSpacing.sm,
         justifyContent: 'center',
-        backgroundColor: colors['surface.2'],
-        /*
-         * Focus is still a RING rather than a fill, for the reason this file already gave: it
-         * has to be visible on a chip that is ALREADY selected, and a fill change would be
-         * indistinguishable from selection. What changed is that the ring is now reserved in
-         * every state, so focusing a chip no longer resizes it — and the ring is `ring`
-         * rather than `border.strong`, which is the token that exists for exactly this.
-         */
-        ...selectionStyle(tone),
+        gap: nativeSpacing.xs,
+        paddingHorizontal: nativeSpacing.sm,
+        borderRadius: nativeRadius[radius],
+        backgroundColor: tone.background,
+        // One width in every state, so choosing a chip never moves it (selection.tsx, decision 1).
+        borderWidth: 1,
+        borderColor: tone.borderColor,
         // Every declared state renders differently. A control returning the same tree for
         // default and disabled has defined the state in name only.
         opacity: inert ? 0.5 : 1,
       }}
     >
-      <SelectionMark visible={tone.mark} size={SELECTION_MARK_CHIP} />
+      <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
       <View>
-        <Text size="label" color={foreground} script={script}>
-          {loading
-            ? `${chipAccessibleName(label, selected)}…`
-            : chipAccessibleName(label, selected)}
+        <Text size="label" color={tone.ink} script={script} numberOfLines={1}>
+          {loading ? `${label}…` : label}
         </Text>
       </View>
+      <FocusRing visible={focused} radius={nativeRadius[radius]} />
     </Pressable>
   );
 }

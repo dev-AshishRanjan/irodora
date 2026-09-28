@@ -38,6 +38,7 @@ import {
 import { platformTapTarget } from '../hitArea.js';
 import {
   announcedStates,
+  flattenStyle,
   paintedColors,
   pressableNodes,
   renderedPairs,
@@ -87,6 +88,13 @@ export interface ConformanceSubject {
   readonly forbiddenNames?: readonly string[];
   /** Whether `active` means SELECTED for this component. See the note above. */
   readonly selectable?: boolean;
+  /**
+   * Which selection picture a selectable subject draws (F-232). `chooser`, the default, is board
+   * 00's shared treatment: an `accent.muted` ground and an `accent` edge. `pill` is the screens':
+   * the chosen pill is filled, or edged in `foreground`, and a dot leads its label. Either way the
+   * picture is read off the rendered tree, never taken on the subject's word.
+   */
+  readonly treatment?: 'chooser' | 'pill';
   /**
    * Why this subject paints no colour at all — a REASON, never a boolean.
    *
@@ -195,6 +203,34 @@ export function tapTargetReach(
     width: w === null ? null : w + side('left') + side('right'),
     height: h === null ? null : h + side('top') + side('bottom'),
   };
+}
+
+/** The fills a chosen pill is drawn in (`pillTone`). */
+const PILL_FILLS = ['surface.2', 'surface.3', 'accent'] as const;
+
+/**
+ * Whether a tree draws a selection dot: a small filled circle — equal sides of at most 8 dp, fully
+ * rounded, with a fill. Read off the pixels' description, not off the component that drew it.
+ */
+export function drawsDot(tree: TestNode): boolean {
+  const walk = (node: TestNode): boolean => {
+    const style = flattenStyle(node.props['style']);
+    const w = style['width'];
+    const h = style['height'];
+    const r = style['borderRadius'];
+    if (
+      typeof w === 'number' &&
+      w === h &&
+      w <= 8 &&
+      typeof r === 'number' &&
+      r >= w / 2 &&
+      typeof style['backgroundColor'] === 'string' &&
+      style['backgroundColor'] !== 'transparent'
+    )
+      return true;
+    return (node.children ?? []).some((c) => typeof c !== 'string' && walk(c));
+  };
+  return walk(tree);
 }
 
 function declaredRole(p: ResolvedPressableNode): string | undefined {
@@ -472,7 +508,17 @@ export function checkSubject(
               c.resolution.kind === 'token' &&
               c.resolution.tokens.includes(token),
           );
-        if (!paints('backgroundColor', 'accent.muted') || !paints('borderColor', 'accent'))
+        if (subject.treatment === 'pill') {
+          const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));
+          const edged = paints('borderColor', 'foreground');
+          if (!(filled || edged) || !drawsDot(tree))
+            at(
+              'selection-treatment',
+              'is a selected pill but does not draw the pill treatment — a chosen pill is filled ' +
+                '(or edged in `foreground`) AND draws its leading dot (F-232). A fill alone is ' +
+                'the picture `05` leaves open (OQ-43), not the one this component claims.',
+            );
+        } else if (!paints('backgroundColor', 'accent.muted') || !paints('borderColor', 'accent'))
           at(
             'selection-treatment',
             'is selected but does not draw the shared treatment — a selected thing paints ' +

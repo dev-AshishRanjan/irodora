@@ -79,17 +79,23 @@ export { hitArea, platformTapTarget } from './hitArea.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { elevationShadow } from './elevation.js';
 export { Card, type CardLevel, type CardProps } from './Card.js';
-export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
+export { Chip, CHIP_HEIGHT, chipAccessibleName, type ChipProps } from './Chip.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './ChoiceGroup.js';
 export {
   currentTone,
   FocusRing,
   FOCUS_RING,
+  pillTone,
+  SelectionDot,
+  SELECTION_DOT,
   SelectionMark,
   selectionStyle,
   selectionTone,
   SELECTION_EDGE,
   SELECTION_MARK,
+  type PillFill,
+  type PillTone,
+  type SelectionDotProps,
   type SelectionMarkProps,
   type SelectionState,
   type SelectionTone,

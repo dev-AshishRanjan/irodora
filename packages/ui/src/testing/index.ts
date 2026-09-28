@@ -30,6 +30,7 @@ export {
   checkAll,
   checkStatusAdjacency,
   checkSubject,
+  drawsDot,
   formatFindings,
   REQUIRED_STATES,
   tapTargetReach,
