@@ -3,11 +3,10 @@
  *
  * ## Why a pair is not two swatches
  *
- * A `Swatch` exists to show you *a* colour: it has its own well, its own keyline, its own
- * label, and everything about it is arranged so the sample reads correctly **against the
- * page**. Put two of them side by side and each one is still doing that — separately. What
- * sits between them is a well, two keylines and a gap, and the reader is now comparing each
- * sample against that furniture rather than against the other sample.
+ * A `Swatch` exists to show you *a* colour: its line and its label are arranged so the sample
+ * reads correctly **against the page**. Put two of them side by side and each one is still doing
+ * that — separately. What sits between them is two lines and a gap, and the reader is now
+ * comparing each sample against that furniture rather than against the other sample.
  *
  * The question *how different are these two* is answered at the boundary. Simultaneous
  * contrast acts at an edge, and so does the visual system's own difference machinery: a
@@ -15,8 +14,16 @@
  * millimetre of anything between the two samples makes the judgement harder, and it makes it
  * harder fastest for the small differences — which are the ones a person is squinting at.
  *
- * **So there is no keyline between the halves, and that is the component.** The keyline still
- * rings the pair, where its job is unchanged: an edge against the well and against the page.
+ * **So there is no line between the members, and that is the component.** Each member's outer
+ * edges carry its own line, moved against its own colour (ADR-0116), where its job is unchanged:
+ * an edge against the card.
+ *
+ * ## Drawn as the mockups draw it (F-233)
+ *
+ * `04` draws its target bar, `10` its first palette and `23` its kasane as joined samples: no well,
+ * no ring around the whole, the corner a step (`sm` on `04`, `md` on `10` and `23`), and the README
+ * keyline on `04` and `10` but not on `23`. The height is not yet what they draw: all three sit
+ * under ADR-0095's floor, and whether the drawing or the floor governs is OQ-45, a person's.
  *
  * ## When the boundary is invisible, that is the answer
  *
@@ -44,10 +51,24 @@
 import { View } from 'react-native';
 import type { Color } from '@irodora/color-core';
 import { nativeJudgeableSample, nativeSpacing } from '@irodora/design-tokens';
+import { sampleEdge } from './sampleInk.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
-import { keylineTones, swatchAccessibleName, swatchCorner } from './Swatch.js';
+import { swatchAccessibleName, swatchCorner, type SwatchCornerStep } from './Swatch.js';
 import type { Script } from './layout.js';
+
+/**
+ * The corner a strip takes when a caller names none: `md`, which four of the five joined samples
+ * the inventories record are bound to (`10`, and `23`'s three), against `04`'s one `sm`.
+ * Recomputed by `sample-family.test`.
+ */
+export const STRIP_CORNER: SwatchCornerStep = 'md';
+
+/**
+ * Whether a strip draws the README keyline when a caller does not say: two of the five joined
+ * samples do (`04`, `10`), three do not (`23`). Either way each member's edge holds (ADR-0116).
+ */
+export const STRIP_KEYLINE = false;
 
 /** One side of the pair. The same three things a `Swatch` takes, for the same reasons. */
 export interface PairHalf {
@@ -79,6 +100,10 @@ export interface StripProps {
   readonly weights?: readonly number[];
   /** See `PairProps.height`. */
   readonly height?: number;
+  /** The corner step at the strip's two ends. Defaults to {@link STRIP_CORNER}. */
+  readonly corner?: SwatchCornerStep;
+  /** Whether the element draws the README keyline. Defaults to {@link STRIP_KEYLINE}. */
+  readonly keyline?: boolean;
   readonly testID?: string;
 }
 
@@ -97,21 +122,8 @@ export interface PairProps {
   readonly testID?: string;
 }
 
-/** The width of each of the two opaque hairlines. One device pixel, as on a swatch (F-068). */
+/** The width of a member's line. One dp, as on a swatch. */
 const KEYLINE = 1;
-
-/**
- * The ring around the pair, against the well.
- *
- * A single swatch picks its inner tone against its own sample and lets the other tone face the
- * well. A pair has two samples and one ring, so the ring is chosen against the **well** — which
- * is a known colour, and is the easy half of the problem the two-tone keyline was built for.
- * The per-half tone that faces each sample is still chosen by `keylineTones`, on the three
- * edges that are not the shared one.
- */
-function ringAgainst(well: string, tone: string, inverse: string): string {
-  return keylineTones(well, tone, inverse).inner;
-}
 
 /**
  * Samples that touch, in order, at widths that mean something.
@@ -120,77 +132,67 @@ function ringAgainst(well: string, tone: string, inverse: string): string {
  * no corner where two samples meet — lives here once, because it is the whole argument of both
  * and a second copy of it is a second place for it to be lost.
  */
-export function Strip({ members, weights, height, testID }: StripProps): React.JSX.Element {
+export function Strip({
+  members,
+  weights,
+  height,
+  corner: step = STRIP_CORNER,
+  keyline = STRIP_KEYLINE,
+  testID,
+}: StripProps): React.JSX.Element {
   const { colors } = useTheme();
 
   /*
    * THE FLOOR IS A FLOOR. A caller asking for less gets the floor, silently, rather than a
    * throw: a strip drawn small is a degraded reading, not a programming error, and a component
-   * that crashed a screen over it would be traded for a bare View within a week.
+   * that crashed a screen over it would be traded for a bare View within a week. (OQ-45 asks a
+   * person whether the drawn heights should govern instead.)
    */
   const tall = Math.max(height ?? nativeJudgeableSample, nativeJudgeableSample);
-  const corner = swatchCorner(tall);
-
-  const tone = colors['swatch.hairline'];
-  const inverse = colors['swatch.hairline.inverse'];
-  const ring = ringAgainst(colors['swatch.well'], tone, inverse);
+  const corner = swatchCorner(tall, step);
 
   const last = members.length - 1;
 
   return (
-    <View
-      testID={testID}
-      style={{
-        // The mandatory ground, exactly as on a swatch: whatever touches a sample changes how
-        // it reads, so what touches the STRIP is a known colour (the drawn card since F-225, C11).
-        backgroundColor: colors['swatch.well'],
-        padding: nativeSpacing.sm,
-      }}
-    >
-      {/* The ring, and the only line this component draws around anything. */}
-      <View style={{ padding: KEYLINE, backgroundColor: ring, borderRadius: corner.keyline }}>
-        <View style={{ flexDirection: 'row' }}>
-          {members.map((member, index) => {
-            const first = index === 0;
-            const end = index === last;
-            const edge = keylineTones(member.hex, tone, inverse).inner;
-            return (
-              <View
-                key={String(index)}
-                // Announced as one thing with a full name. Not pressable — a strip is a
-                // reading, and a role it does not have is worse than no role at all.
-                accessible
-                accessibilityRole="image"
-                accessibilityLabel={swatchAccessibleName(member.name, member.hex, member.color)}
-                style={{
-                  // The share, as flex. Normalised by flex itself, which is why a caller can
-                  // pass the quantity it already has instead of converting to fractions.
-                  flex: weights?.[index] ?? 1,
-                  height: tall,
-                  backgroundColor: member.hex,
-                  /*
-                   * WHERE TWO SAMPLES MEET THERE IS NO LINE AND NO CORNER.
-                   *
-                   * The outer edges get the tone chosen against their own sample; the inner
-                   * ones get nothing. A line between two samples is an induced edge sitting
-                   * exactly where the judgement happens — and a corner there would put a wedge
-                   * of well between them, which is the same failure drawn more slowly.
-                   */
-                  borderTopWidth: KEYLINE,
-                  borderBottomWidth: KEYLINE,
-                  borderLeftWidth: first ? KEYLINE : 0,
-                  borderRightWidth: end ? KEYLINE : 0,
-                  borderColor: edge,
-                  borderTopLeftRadius: first ? corner.sample : 0,
-                  borderBottomLeftRadius: first ? corner.sample : 0,
-                  borderTopRightRadius: end ? corner.sample : 0,
-                  borderBottomRightRadius: end ? corner.sample : 0,
-                }}
-              />
-            );
-          })}
-        </View>
-      </View>
+    <View testID={testID} style={{ flexDirection: 'row' }}>
+      {members.map((member, index) => {
+        const first = index === 0;
+        const end = index === last;
+        return (
+          <View
+            key={String(index)}
+            // Announced as one thing with a full name. Not pressable — a strip is a reading, and
+            // a role it does not have is worse than no role at all.
+            accessible
+            accessibilityRole="image"
+            accessibilityLabel={swatchAccessibleName(member.name, member.hex, member.color)}
+            style={{
+              // The share, as flex. Normalised by flex itself, which is why a caller can pass the
+              // quantity it already has instead of converting to fractions.
+              flex: weights?.[index] ?? 1,
+              height: tall,
+              backgroundColor: member.hex,
+              /*
+               * WHERE TWO SAMPLES MEET THERE IS NO LINE AND NO CORNER.
+               *
+               * The outer edges carry the member's own line, moved against its own colour; the
+               * inner ones carry nothing. A line between two samples is an induced edge sitting
+               * exactly where the judgement happens — and a corner there would put a wedge of
+               * card between them, which is the same failure drawn more slowly.
+               */
+              borderTopWidth: KEYLINE,
+              borderBottomWidth: KEYLINE,
+              borderLeftWidth: first ? KEYLINE : 0,
+              borderRightWidth: end ? KEYLINE : 0,
+              borderColor: sampleEdge(member.hex, colors, keyline).hex,
+              borderTopLeftRadius: first ? corner.sample : 0,
+              borderBottomLeftRadius: first ? corner.sample : 0,
+              borderTopRightRadius: end ? corner.sample : 0,
+              borderBottomRightRadius: end ? corner.sample : 0,
+            }}
+          />
+        );
+      })}
     </View>
   );
 }
@@ -209,9 +211,6 @@ export function Pair({ a, b, height, script = 'latin', testID }: PairProps): Rea
       {/*
         BENEATH, NOT BESIDE. The labels sit under their own half and stay out of the space
         between the samples — which is the space this component exists to keep empty.
-
-        Outside the well rather than inside it, so the text is on the page's own ground and the
-        well stays what it is for: the neutral the SAMPLES are read against.
       */}
       <View style={{ flexDirection: 'row', gap: nativeSpacing.sm }}>
         {halves.map((half, index) => (
@@ -237,12 +236,9 @@ export function Pair({ a, b, height, script = 'latin', testID }: PairProps): Rea
  * How wide each half comes out when the pair is given `available` dp to live in.
  *
  * Exported so a test can assert the pair fits the narrowest supported phone rather than
- * asserting a width somebody measured once — the well's padding and the ring are part of the
- * arithmetic, and a test that re-typed them would drift the first time either changed.
+ * asserting a width somebody measured once. Since F-233 nothing surrounds the pair, so each half
+ * is half of what it is given; its own line is inside it.
  */
 export function halfWidth(available: number): number {
-  return (available - 2 * nativeSpacing.sm - 2 * KEYLINE) / 2;
+  return available / 2;
 }
-
-/** Re-exported so the ring rule is testable without reaching into the module's internals. */
-export { ringAgainst as pairRingTone };

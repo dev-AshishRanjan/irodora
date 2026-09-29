@@ -135,7 +135,8 @@ export {
   Pair,
   Strip,
   halfWidth,
-  pairRingTone,
+  STRIP_CORNER,
+  STRIP_KEYLINE,
   type PairHalf,
   type PairProps,
   type StripProps,
@@ -146,7 +147,6 @@ export {
   SWATCH_SIZE,
   swatchAccessibleName,
   swatchCorner,
-  keylineTones,
   type SwatchAnchor,
   type SwatchProps,
 } from './Swatch.js';

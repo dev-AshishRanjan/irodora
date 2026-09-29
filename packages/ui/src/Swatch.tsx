@@ -39,7 +39,6 @@
 import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import type { Color } from '@irodora/color-core';
-import { wcagContrast } from '@irodora/color-difference';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { hitArea } from './hitArea.js';
 import { usePress } from './motion.js';
@@ -189,29 +188,6 @@ export function swatchCorner(
   const ceiling = Math.floor(Math.max(size, 0) * nativeRadius.swatchRatio);
   const sample = Math.min(nativeRadius[step], ceiling);
   return { sample, keyline: sample + KEYLINE_INSET };
-}
-
-/**
- * Which of the two hairline tones sits against a sample (F-068).
- *
- * The sample family no longer draws the two-tone ring (F-233, ADR-0116); `Pair` and `Strip` still
- * do until F-233 rebuilds them, and this goes with them.
- */
-export function keylineTones(
-  hex: string,
-  tone: string,
-  inverse: string,
-): { readonly inner: string; readonly outer: string } {
-  const sample = rgbOf(hex);
-  return wcagContrast(sample, rgbOf(tone)) >= wcagContrast(sample, rgbOf(inverse))
-    ? { inner: tone, outer: inverse }
-    : { inner: inverse, outer: tone };
-}
-
-/** A `#rrggbb` as the engine's 0–1 triple. Six digits only, as every sample here is. */
-function rgbOf(hex: string): readonly [number, number, number] {
-  const n = Number.parseInt(hex.replace('#', ''), 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
 
 /**

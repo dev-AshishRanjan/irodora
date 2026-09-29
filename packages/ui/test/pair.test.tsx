@@ -13,8 +13,8 @@
 
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeColors, nativeJudgeableSample, nativeSpacing } from '@irodora/design-tokens';
-import { halfWidth, Pair, pairRingTone, ThemeProvider } from '../src/index.js';
+import { nativeColors, nativeJudgeableSample } from '@irodora/design-tokens';
+import { halfWidth, Pair, sampleEdge, STRIP_KEYLINE, ThemeProvider } from '../src/index.js';
 
 /** The narrowest phone the viewport gate supports, and the most padding a screen may take. */
 const NARROWEST_WIDTH = 320;
@@ -77,9 +77,8 @@ describe('the shared edge', () => {
   it('DECOY — the three OUTER edges of each half do carry one', () => {
     /*
      * Without this the component could draw no border at all and the case above would pass
-     * [[a-decoy-that-is-not-broken-proves-nothing]]. The outer edges are where a keyline still
-     * has a job: an edge against the well, which is the easy half of F-068's problem because
-     * the well is a known colour.
+     * [[a-decoy-that-is-not-broken-proves-nothing]]. The outer edges are where a line still has
+     * a job: an edge against the card.
      */
     const [left, right] = samples(draw(<Pair a={A} b={B} />));
 
@@ -92,17 +91,14 @@ describe('the shared edge', () => {
     expect(right?.['borderBottomWidth']).toBe(1);
   });
 
-  it('gives each half the tone chosen against its OWN colour', () => {
-    // Two samples, two different worst cases. A single tone for both would be right for one of
+  it('gives each half its own line, moved against its OWN colour (ADR-0116)', () => {
+    // Two samples, two different worst cases. A single line for both would be right for one of
     // them by luck — which is the halo F-163 reported, one component along.
     for (const theme of ['light', 'dark'] as const) {
       const [left, right] = samples(draw(<Pair a={A} b={B} />, theme));
-      const tones = [
-        nativeColors[theme]['swatch.hairline'],
-        nativeColors[theme]['swatch.hairline.inverse'],
-      ];
-      expect(tones).toContain(left?.['borderColor']);
-      expect(tones).toContain(right?.['borderColor']);
+      const c = nativeColors[theme];
+      expect(left?.['borderColor']).toBe(sampleEdge(A.hex, c, STRIP_KEYLINE).hex);
+      expect(right?.['borderColor']).toBe(sampleEdge(B.hex, c, STRIP_KEYLINE).hex);
     }
   });
 });
@@ -131,17 +127,16 @@ describe('the size floor (ADR-0095)', () => {
      * width can fall below it when the screen is as narrow as the viewport gate allows and a
      * screen takes as much padding as it allows.
      *
-     * Computed from the well's own padding and the ring rather than from a number somebody
-     * measured, so it moves when either does.
+     * Computed by the component's own arithmetic rather than from a number somebody measured.
      */
     const available = NARROWEST_WIDTH - 2 * MAX_PADDING;
     expect(halfWidth(available)).toBeGreaterThanOrEqual(nativeJudgeableSample);
   });
 
   it('DECOY — the arithmetic is not trivially large', () => {
-    // Without this, `halfWidth` could return a constant and the case above would pass. It
-    // accounts for the well's padding and the ring, so a genuinely tight container fails.
-    expect(halfWidth(2 * nativeSpacing.sm + 2 + 20)).toBe(10);
+    // Without this, `halfWidth` could return a constant and the case above would pass. Nothing
+    // surrounds the pair since F-233, so a genuinely tight container fails.
+    expect(halfWidth(20)).toBe(10);
   });
 });
 
@@ -205,31 +200,19 @@ describe('the labels', () => {
   });
 });
 
-describe('the ring', () => {
-  it('is chosen against the well, which is the known colour', () => {
-    // A single swatch picks its inner tone against its own sample. A pair has two samples and
-    // one ring, so the ring answers the easy question — an edge against a ground we chose.
+describe('nothing around the pair (F-233)', () => {
+  it('draws no well and no ring: the mockups draw joined samples on their card', () => {
     for (const theme of ['light', 'dark'] as const) {
-      const c = nativeColors[theme];
-      const chosen = pairRingTone(
-        c['swatch.well'],
-        c['swatch.hairline'],
-        c['swatch.hairline.inverse'],
-      );
-      expect([c['swatch.hairline'], c['swatch.hairline.inverse']]).toContain(chosen);
+      const tree = draw(<Pair a={A} b={B} />, theme);
+      const painted = tree.root
+        .findAll((n) => typeof n.type === 'string')
+        .map((n) => flat(n.props['style'])['backgroundColor'])
+        .filter((v) => v !== undefined);
+      // DECOY: the two samples are painted, so the scan reached the tree.
+      expect(painted).toEqual(expect.arrayContaining([A.hex, B.hex]));
+      expect(painted).not.toContain(nativeColors[theme]['swatch.well']);
+      for (const tone of ['swatch.hairline', 'swatch.hairline.inverse'] as const)
+        expect(painted).not.toContain(nativeColors[theme][tone]);
     }
-  });
-
-  it('DECOY — it is not the same tone in both themes', () => {
-    /*
-     * The themes are authored independently and `swatch.hairline` is near-white in one of them,
-     * so a ring that came out identical in both would mean the choice is not being made. This
-     * is the assertion that would have caught the halo in F-163 a feature earlier.
-     */
-    const pick = (theme: 'light' | 'dark'): string => {
-      const c = nativeColors[theme];
-      return pairRingTone(c['swatch.well'], c['swatch.hairline'], c['swatch.hairline.inverse']);
-    };
-    expect(pick('light')).not.toBe(pick('dark'));
   });
 });

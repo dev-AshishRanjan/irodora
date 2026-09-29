@@ -1166,6 +1166,36 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE JOINED SAMPLES THE SCREENS DRAW (F-233): 04's target bar (two members, sm, keyline), 10's
+   * first palette (four members, md, keyline) and 23's kasane (three members, md, no keyline). Each
+   * member's line is moved against its own colour, and is exempt only as that sample's own. The
+   * mid-tone is where the line has to move.
+   */
+  ...(
+    [
+      ['Strip (04, the target bar)', ['#526a6b', '#87795d'], { corner: 'sm', keyline: true }],
+      [
+        'Strip (10, a palette)',
+        ['#526a6b', '#5a6f78', '#7a5c3e', '#87795d'],
+        { corner: 'md', keyline: true },
+      ],
+      ['Strip (23, a kasane)', ['#526a6b', '#87795d', '#5a6f78'], { corner: 'md', keyline: false }],
+    ] as const
+  ).map(([name, hexes, form]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: hexes,
+    render: (_state, theme) =>
+      draw(
+        <Strip
+          members={hexes.map((hex, i) => ({ name: `Colour ${String(i + 1)}`, hex, color: SAMPLE }))}
+          {...form}
+        />,
+        theme,
+      ),
+  })),
   {
     /*
      * THE PAIR (F-151). Static, because a pair is a reading rather than a control — it has no

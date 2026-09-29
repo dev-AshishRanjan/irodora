@@ -18,6 +18,8 @@ import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeRadius, paintedOver, type Theme } from '@irodora/design-tokens';
 import {
   sampleEdge,
+  STRIP_CORNER,
+  STRIP_KEYLINE,
   Swatch,
   SWATCH_KEYLINE,
   SWATCH_SIZE,
@@ -34,14 +36,15 @@ interface Element {
   readonly dp: { readonly w: number; readonly h: number } | null;
   readonly tokens?: Readonly<Record<string, string>>;
 }
-const samples: readonly Element[] = readdirSync(INVENTORY)
+const inventoried: readonly Element[] = readdirSync(INVENTORY)
   .filter((f) => /^\d\d\.json$/u.test(f))
   .flatMap(
     (f) =>
       (JSON.parse(readFileSync(join(INVENTORY, f), 'utf8')) as { elements?: readonly Element[] })
         .elements ?? [],
-  )
-  .filter((e) => e.component === 'ui:Swatch');
+  );
+const samples = inventoried.filter((e) => e.component === 'ui:Swatch');
+const strips = inventoried.filter((e) => e.component === 'ui:Strip');
 const median = (xs: readonly number[]): number => {
   const s = [...xs].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
@@ -241,6 +244,21 @@ describe('one line, moved per sample (ADR-0116)', () => {
     expect(lineNode(pale)['backgroundColor']).toBe(dark['swatch.well'].toUpperCase());
     const near = draw(<Swatch name="Near" hex="#2A2D34" color={COLOR} keyline={false} />);
     expect(lineNode(near)['backgroundColor']).not.toBe(dark['swatch.well'].toUpperCase());
+  });
+});
+
+describe('the joined samples’ defaults are the inventories’, recomputed', () => {
+  it('STRIP_CORNER is the step most joined samples are bound to', () => {
+    const md = strips.filter((e) => e.tokens?.['radius'] === 'md').length;
+    const sm = strips.filter((e) => e.tokens?.['radius'] === 'sm').length;
+    expect([md, sm]).toStrictEqual([4, 1]);
+    expect(STRIP_CORNER).toBe(md > sm ? 'md' : 'sm');
+  });
+
+  it('STRIP_KEYLINE is what most joined samples draw', () => {
+    const drawn = strips.filter((e) => e.tokens?.['keyline'] !== undefined).length;
+    expect([drawn, strips.length - drawn]).toStrictEqual([2, 3]);
+    expect(STRIP_KEYLINE).toBe(drawn > strips.length - drawn);
   });
 });
 
