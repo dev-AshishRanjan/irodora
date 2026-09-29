@@ -8,6 +8,61 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-29 — F-233 Cards and the sample family are the mockups'
+
+**Done.** Cards and every sample form draw as the mockups draw them, text on a sample and the line
+around it are chosen per sample, and a sample still cannot exist without its provenance. It shipped
+in thirteen commits, `2deb28b` through this one
+([ADR-0116](../../docs/adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).
+
+- **Measured, then recorded.** Sample edges, the ring on 19 and 21, 12's pinking
+  (`mockups/tools/pinking.mjs`: 12.7 px between tips, 5.3 px deep), 11's and 22's photo insets,
+  the card edge (2 px on 01), the heroes' line widths (01 2.5 dp, 06 6.9 dp). 04, 10 and 23 are
+  `ui:Strip`; 09 and 17 `ui:Swatch`; 12 `ui:FabricSwatch`.
+- **E3 per sample (ADR-0116).** `onSample` picks C8's ink, or the README keyline over the well,
+  unmoved where it passes; else the smallest OKLab lightness move (ties by ΔE00); where no lightness
+  move reaches (device palettes, 222 of 720 seeds), the least chroma given up, hue held.
+  - Proven by reach per luminance, not by a grid: text 4.54–4.56, edge 4.43–4.58.
+  - Gate 9 checks all 120 corpus colours in four palettes and pins a digest of every value drawn.
+  - The sample-ink rule measures text on a declared sample; a moved value is exempt by value and role.
+- **The sample family.** `Swatch`: rectangle, fill, anchor, bleed, children, caption only where
+  drawn, the line at the drawn width, the target through the hit area, no well; `SWATCH_SIZE` 60.
+  `Strip`/`Pair`: per-member lines, no well or ring, corner `md`. `FabricSwatch`: the pinked outline.
+  `Card`: `md`, a one-dp resting edge on level 1 only, media inset. `ProvenanceChip`: the sample's own
+  words, hidden by 15's switch. `Text on={sample}`.
+- **Found on the way.** The two-tone keyline's worst case is 4.16, not the 4.23 quoted since F-068;
+  `swatch-edge.test` took the better compositing model; the RN emitter pre-composites `.on.` values in
+  linear light (F-307).
+- **A colour-scientist consult** (not a review round) found no wrong value and four fixes, among them
+  that the fallback was live on device palettes and could drop hue.
+
+**Review (once, on `4859df8`): FAIL**, every gate green: 2 blocking, 5 should-fix, 11 minor. Fixed or
+raised or recorded in `79862ab`, and the gates re-run.
+- **B1:** the heroes' line is wider and lighter than the README keyline. Width measured and drawn
+  (`keylineWidth`); the colour is C20, P4.
+- **B2 → OQ-45:** 04 draws a seam and a one-sided outline Strip refuses. F-245 waits.
+- **S1:** board 00 does draw the two-tone ring; the claim that no mockup does is corrected.
+- **S2 → OQ-46:** a line where the mockup draws none (44 · 57 · 58 · 42 of 120), and its direction on
+  the heroes. The shipped guarantee stands until a person answers.
+- **S3, S5, M1–M3, M6, M7, M10, M11** fixed; **S4, M4, M5** recorded on F-233, F-267, F-258;
+  **M8** is F-308.
+
+**Recorded, not built:** F-307 (`.on.` pre-composites), F-308 (render cost on a device), OQ-45 extended,
+OQ-46. Notes to F-242–F-263, F-267 and F-284.
+
+**Gates run on the final tree, each exit 0:** `node scripts/verify-state.mjs` · `pnpm format:check` ·
+`pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build` · `pnpm test:a11y` · `pnpm test:contrast` ·
+`pnpm test:cvd` · `node scripts/verify-mockups.mjs`. Once, a jest suite failed to load on a Windows
+`realpath UNKNOWN` error and passed on the re-run; once, lint's gate-mirror proof timed out because
+gate 0 was red (the lesson `a-red-gate-0-shows-up-as-a-lint-timeout`).
+
+**Not run:** `e2e` (gate 7 pending; no device), `artifact` (no JDK), any Hermes run.
+**Attested, outstanding:** on a device, the selection frame and the card's resting edge drawn outside
+and over their boxes, and a moved line and ink as tested. **Nobody has compared a screen with its
+mockup**; that is F-267.
+
+---
+
 ## 2026-09-29 — F-232 The controls are board 00's controls
 
 **Done.** Every control and chip draws as board `00`, or the screen that uses it, draws it. Each
