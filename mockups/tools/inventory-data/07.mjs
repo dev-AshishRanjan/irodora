@@ -146,6 +146,11 @@ export default {
       tokens: { bg: 'action.primary', radius: 'md' },
       action: 'select:occasion.office',
     }),
+    // Its leading dot (F-232's review): 12.4 px across in the pill's ink, #18191E at its core.
+    el('07.occasion.selected.dot', null, B(225, 411, 12, 12), {
+      parent: '07.occasion.selected',
+      tokens: { fg: 'ground' },
+    }),
     label('07.occasion.casual', B(144, 411, 53, 14), '07.occasion', 'static:wear.occasion.casual', {
       action: 'select:occasion.casual',
     }),

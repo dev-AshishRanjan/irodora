@@ -64,8 +64,18 @@ Two further gaps:
   - React Native resolves a tap in the overlap by z-order, and this rule cannot see an overlap: it
     judges one control at a time.
   - This is a device attestation, not something a gate can close.
+- **The width floor is the drawn height, not the target** (F-232's review). A labelled control is
+  never widened: its `minWidth` is its own height, the narrowest a pill can be drawn, and the
+  horizontal slop grows that to the target. So `05`'s 34 dp "All" and `12`'s 47 dp Save keep the
+  width drawn.
 - **Under jest the rule checks iOS's 44.** The React Native preset renders as iOS. Android's 48 is
   checked by `hit-area.test`, which switches `Platform.OS`, not by rendering every subject twice.
+- **A hit area cannot reach past its parent's bounds** (F-232's review). React Native does not
+  extend a touch area outside the parent view, so where a container is drawn smaller than the
+  target — a 30.5 dp segmented row, the Switch's own label row, `15`'s rows at a 29.5 dp pitch — the
+  effective target is the container, while the rule reports 44. The rule judges one control at a
+  time and cannot see it. F-305 fixes it per container, and it is an outstanding device attestation
+  on F-232's criterion 4.
 - **It stays declared, not measured.** A control whose laid-out size falls below its declared size
   (for example a flex child that shrinks) passes here. That is ADR-0055's boundary, unchanged.
 

@@ -945,6 +945,8 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         {
           trackHeight: 6.5,
           thumbSize: 16.5,
+          labelSize: 'body',
+          valueSize: 'title',
           gradient: ['foreground.3', 'foreground'],
           ends: { low: 'Cool', high: 'Warm', note: 'From 6 trials' },
         },

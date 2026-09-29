@@ -56,7 +56,7 @@
 import { Pressable, View, type PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
-import { hitArea, platformTapTarget } from './hitArea.js';
+import { hitArea } from './hitArea.js';
 import { inkOnSample, type Sample } from './inkOnSample.js';
 import type { Script } from './layout.js';
 import {
@@ -235,7 +235,6 @@ function ChipControl({
 }: ChipControlProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-  const target = platformTapTarget();
   const tone = pillTone(selected, selectedFill, selectedEdge, colors);
 
   return (
@@ -251,12 +250,13 @@ function ChipControl({
       // and in the state for one that reads state separately.
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
-      // The drawn height, and the rest of the target in the hit area (ADR-0114). A chip is never
-      // narrower than the target: a short label ("All") would otherwise be.
-      hitSlop={hitArea(target, height)}
+      // The drawn height, and the rest of the target in the hit area (ADR-0114). The width floor is
+      // the height (a circle, the narrowest pill) and the slop grows that to the target, so a short
+      // label keeps the width drawn: `05`'s "All" is 34 dp.
+      hitSlop={hitArea(height, height)}
       style={{
         height,
-        minWidth: target,
+        minWidth: height,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -264,7 +264,8 @@ function ChipControl({
         paddingHorizontal: nativeSpacing.sm,
         borderRadius: nativeRadius[radius],
         backgroundColor: !selected && ground !== undefined ? colors[ground] : tone.background,
-        // One width in every state, so choosing a chip never moves it (selection.tsx, decision 1).
+        // One edge width in every state, so choosing a chip never shifts its outline. Choosing it
+        // does WIDEN it, by the leading dot and its gap: the dot is drawn, as 12, 15 and 17 draw it.
         borderWidth: 1,
         borderColor: tone.borderColor,
         // Every declared state renders differently. A control returning the same tree for

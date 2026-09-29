@@ -208,6 +208,26 @@ export function tapTargetReach(
   };
 }
 
+/**
+ * Whether a node announced as selected paints a ground that differs from the nearest painted ground
+ * around it (F-232's review). A chosen segment filled in its container's own colour is invisible,
+ * and this is what tells the two apart. Colours are compared as painted, after the theme resolved
+ * them; a node with no painted ancestor sits on the page, which is never a segment's fill.
+ */
+export function chosenStandsOut(tree: TestNode): boolean {
+  const painted = (node: TestNode): string | undefined => {
+    const bg = flattenStyle(node.props['style'])['backgroundColor'];
+    return typeof bg === 'string' && bg !== 'transparent' ? bg.toLowerCase() : undefined;
+  };
+  const walk = (node: TestNode, ground: string | undefined): boolean => {
+    const own = painted(node);
+    const state = node.props['accessibilityState'] as { selected?: unknown } | undefined;
+    if (state?.selected === true && own !== undefined && own !== ground) return true;
+    return (node.children ?? []).some((c) => typeof c !== 'string' && walk(c, own ?? ground));
+  };
+  return walk(tree, undefined);
+}
+
 /** The fills a chosen pill is drawn in (`pillTone`). */
 const PILL_FILLS = ['surface.2', 'surface.3', 'accent'] as const;
 
@@ -517,11 +537,18 @@ export function checkSubject(
               c.resolution.tokens.includes(token),
           );
         if (subject.treatment === 'segment') {
-          if (!PILL_FILLS.some((t) => paints('backgroundColor', t)))
+          /*
+           * A FILL IN ITS OWN GROUND MARKS NOTHING (F-232's review). A segment filled in its
+           * container's colour — `surface.2` on `surface.2` — passed the first version of this
+           * rule and could not be seen: only the label's ink would differ, which is colour alone.
+           * So the chosen segment must paint a fill that differs from the ground it sits on.
+           */
+          if (!PILL_FILLS.some((t) => paints('backgroundColor', t)) || !chosenStandsOut(tree))
             at(
               'selection-treatment',
-              'is a selected segment but draws no fill — the chosen segment of a segmented row is ' +
-                'the one shape in it (F-232), and without it only the label says which is chosen.',
+              'is a selected segment but draws no fill that differs from its container — the ' +
+                'chosen segment of a segmented row is the one shape in it (F-232), and a fill in ' +
+                'its own ground leaves only the label to say which is chosen.',
             );
         } else if (subject.treatment === 'pill') {
           const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));

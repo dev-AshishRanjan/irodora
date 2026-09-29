@@ -62,7 +62,7 @@ const tile = (key, box, swatch, name, detail, colour, selected = false) => [
     copy: { shape: 'caption', script: 'latin', lines: 2 },
   }),
 ];
-// The chosen mode is FILLED as well as outlined (F-232): its inside reads #2B3036, `level2` (ΔE00 2.4),
+// The chosen mode is FILLED as well as outlined (F-232): its inside reads #2B3036, `level2` (ΔE00 2.6),
 // where the others' insides are the card's. Its white dot is recorded beside the modes.
 const mode = (key, box, selected = false) =>
   el(`15.cvd.${key}`, 'ui:Chip', box, {
@@ -76,7 +76,7 @@ const mode = (key, box, selected = false) =>
     copy: { shape: 'label', script: 'latin' },
   });
 // The switch (F-232) is its TRACK: 69 × 36 px, a 34.5 × 18 dp pill, drawn on — a white track and a
-// thumb 28.3 px across in the card's own `level1` (ΔE00 1.1–1.3), inset 2 dp. The whites read like
+// thumb 28.3 px across in the card's own `level1` (ΔE00 0.7–1.4), inset 2 dp. The whites read like
 // board 00's, where a control's white fill is `action.primary`.
 const toggle = (key, label, dot, control, measured) => [
   t(`15.engine.${key}.label`, label, '15.section-3', `static:settings.${key}`, {

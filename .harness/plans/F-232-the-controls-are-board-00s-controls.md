@@ -144,9 +144,10 @@ caption. Surfaces pass each element's own `dp`.
   Button's icon-only form. The plate is the pressable: it takes the press scale, it is where the hit
   area starts, and it gives one announcement.
 - The same element with no plate token is `IconButton`.
-- The rule goes into `inventory.schema.json`'s component description, and a test classifies all 71
-  icon-only `ui:Button` elements (30 plated, 41 plateless). Its decoy is an element with `radius`
-  alone, which must be named as ambiguous.
+- The rule goes into `inventory.schema.json`'s component description, and a test classifies every
+  icon-only `ui:Button` element. There are **30** (15 plated, 15 plateless); this plan first said
+  "71 (30 / 41)", which counted labelled buttons with an icon too. Its decoy is an element with
+  `radius` alone, which must be named as ambiguous.
 
 ### (d) The Button accessibility fix
 
@@ -170,7 +171,9 @@ Every API change is additive. These visible changes are intended, as ADR-0103 ac
 ### Increments (each ends green)
 
 1. **Measure and record** 00, 05, 12, 15 and 17: tokens, radii, dot sizes, 17's re-record, and the
-   schema rule from (c). Gates: `verify-mockups` and `generate-inventory --check`.
+   schema rule from (c). Gates: `verify-mockups`, and `generate-inventory.mjs <ids>` reporting
+   each file clean (it has no `--check` mode; it validates with the gate's own
+   `inventoryProblems()`).
 2. **`ownedAccessibility.ts`**, applied to Button and Chip.
 3. **The hit area:** `size.tapTargetAndroid`, `hitArea()`, and a `tap-target` rule that accepts the
    drawn size plus `hitSlop`; ADR-0114. Probe whether HeroUI forwards `hitSlop`.
@@ -277,9 +280,18 @@ pnpm test:a11y && pnpm test:contrast && pnpm test:cvd
 | 2 | `ab68902` | `ownedAccessibility.ts`, applied to Button and Chip. |
 | 3 | `d03e16f` | `size.tapTargetAndroid`, `hitArea()`, and a `tap-target` rule that reads `hitSlop`; ADR-0114. The probe shows HeroUI forwards `hitSlop`. |
 | 4 | `3802c00` | Button forms, `FocusRing`, and `Text` `weight`. The defaults are recomputed from the inventories. |
+| 5 | `b48aead` | The pill treatment and `SelectionDot`; `selection-treatment` learns `pill`. |
+| 6 | `46c9546` | ChoiceGroup's segmented row; the rule learns `segment`. |
+| 7 | `69c231c` | The Switch at 15's size, the target in the hit area. |
+| 8 | `cda0f60` | The Slider at 09's size, the readout form, 23's gradient track; `tree.ts` reads gradient stops. |
+| 9 | `fd1418c` | `Chip form="badge"`, 05's family chip, `inkOnSample`, `Status form="pill"`. |
+| 10 | `37532f2` | `glyph.wheel` / `glyph.palette` minted as token groups; Glyph's spectrum layer; ADR-0110 amended. |
+| 11 | `a65c04a` | IconButton drawn at the glyph's size. |
+| 12 | `7bdbbc3` | Effects E-156–E-159, OQ-43, notes on the dependent features. |
+| review | — | One evaluator review (FAIL: B1–B3, S1–S4, M1–M7). Fixed: B1, B2, B3, S2, S4, M1–M7. Recorded: S1 as F-304, S3 as F-305 with ADR-0114's amendment, and two device attestations on F-232. |
 
 **Found while measuring, and recorded in the inventories:**
-- 12's selected fills read `level3` at ΔE00 3.2–4.0, where `level2` had been recorded (6.5).
+- 12's selected fills read `level3` at ΔE00 3.3–4.4, where `level2` had been recorded (6.3–7.3).
 - 15's switch is a 34.5 × 18 dp track. The inventory's 35.5 × 22.5 was a padded box.
 - 05's family chips are filled `level1`.
 - 15's chosen CVD mode is filled `level2`.

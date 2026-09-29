@@ -49,10 +49,17 @@
  * ## Tap target (ADR-0114)
  *
  * The button is drawn at its drawn size and reaches the platform's target (44 iOS, 48 Android)
- * through its hit area (R9-MOCKUP-FIDELITY §4 E3). A labelled button is never narrower than the
- * target: every labelled button the mockups draw is wider than that anyway. The conformance suite
- * adds the declared size and the `hitSlop` back together. That is declared, not measured, because
- * a JS render tree has no Yoga pass (ADR-0055).
+ * through its hit area (R9-MOCKUP-FIDELITY §4 E3). Its width is never raised: the floor is its own
+ * height, the narrowest a pill can be drawn, and the horizontal slop grows THAT to the target, so a
+ * button drawn narrower than the target (`12.save` is 47 dp, `05.finder` 44) keeps the width drawn.
+ * The conformance suite adds the declared size and the `hitSlop` back together. That is declared,
+ * not measured, because a JS render tree has no Yoga pass (ADR-0055).
+ *
+ * ## Nothing clips the focus ring
+ *
+ * HeroUI's root styles `overflow: hidden` (`pressable-feedback.css`, through className, which jest
+ * never sees). The ring is drawn OUTSIDE the box, so the root says `overflow: 'visible'` in `style`,
+ * which is what reaches the device; `button-forms.test` holds it.
  *
  * ## The accessibility is the button's own (F-232)
  *
@@ -66,7 +73,7 @@ import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
-import { hitArea, platformTapTarget } from './hitArea.js';
+import { hitArea } from './hitArea.js';
 import type { Script } from './layout.js';
 import {
   withoutOwnedAccessibility,
@@ -99,6 +106,10 @@ export const ICON_PLATE = 30;
  * A glyph's `size` as a share of its plate: the median over 00's three camera plates of the
  * camera's drawn width, divided by the 18 of 24 grid units it spans, over the plate. Recomputed by
  * `button-forms.test` from their `raw.glyphPx`.
+ *
+ * Measured on 00's plates only. It also sizes the glyph in a badge (`03`, `24`) and on `13`'s lock,
+ * none of whose glyphs were measured: those screens' features should read their own and pass a
+ * size where it differs.
  */
 export const GLYPH_IN_PLATE = 0.65;
 
@@ -181,7 +192,6 @@ function LabelledButton({
 }: LabelledProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-  const target = platformTapTarget();
   const primary = variant === 'primary';
 
   return (
@@ -199,11 +209,15 @@ function LabelledButton({
       // Scale is a transform. The default, `scale-highlight`, cross-fades a background colour
       // — see the note above; verify-motion.mjs rejects a component that allows it.
       feedbackVariant="scale"
-      // The drawn height, and the rest of the target in the hit area (ADR-0114).
-      hitSlop={hitArea(target, height)}
+      // The drawn height, and the rest of the target in the hit area (ADR-0114). The width floor is
+      // the height (a circle, the narrowest pill), and the slop grows that to the target, so no
+      // drawn width is raised.
+      hitSlop={hitArea(height, height)}
       style={{
         height,
-        minWidth: target,
+        minWidth: height,
+        // The focus ring is drawn outside the box; HeroUI's root would clip it (see the header).
+        overflow: 'visible',
         borderRadius: nativeRadius[radius],
         paddingHorizontal: nativeSpacing.md,
         justifyContent: 'center',
@@ -271,6 +285,8 @@ function IconOnlyButton({
       style={{
         width: size,
         height: size,
+        // The focus ring is drawn outside the plate; HeroUI's root would clip it.
+        overflow: 'visible',
         borderRadius: radius,
         justifyContent: 'center',
         alignItems: 'center',

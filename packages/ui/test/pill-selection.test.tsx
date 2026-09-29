@@ -18,6 +18,7 @@ import {
   checkSubject,
   drawsDot,
   flattenStyle,
+  tapTargetReach,
   type ConformanceSubject,
   type TestNode,
 } from '../src/testing/index.js';
@@ -46,7 +47,7 @@ const median = (xs: readonly number[]): number => {
 const half = (v: number): number => Math.round(v * 2) / 2;
 
 describe('the defaults are the inventories’, recomputed', () => {
-  it('SELECTION_DOT is the median selection dot drawn on 12, 15 and 17', () => {
+  it('SELECTION_DOT is the median selection dot drawn on 07, 10, 12, 15 and 17', () => {
     const dots = elements
       .filter(
         (e) =>
@@ -55,7 +56,7 @@ describe('the defaults are the inventories’, recomputed', () => {
           e.dp !== null,
       )
       .map((e) => e.dp?.w ?? NaN);
-    expect(dots).toHaveLength(7);
+    expect(dots).toHaveLength(9);
     expect(half(median(dots))).toBe(SELECTION_DOT);
   });
 
@@ -113,7 +114,22 @@ describe('a chosen chip is filled and dotted, and nothing else is drawn for it',
     ).toHaveLength(0);
   });
 
-  it('never moves: the edge is one width, chosen or not', () => {
+  it('keeps a short label at its drawn width: 05’s "All" is 34 dp, and the target is in the slop (B3)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Chip label="All" height={22} testID="all" />
+      </ThemeProvider>,
+    );
+    const style = hostStyle('all');
+    expect(style['minWidth']).toBe(22);
+    const host = screen.getAllByTestId('all', { includeHiddenElements: true })[0];
+    expect(tapTargetReach(style, (host?.props as { hitSlop?: never }).hitSlop)).toStrictEqual({
+      width: 44,
+      height: 44,
+    });
+  });
+
+  it('never shifts its outline: the edge is one width, chosen or not', () => {
     render(
       <ThemeProvider theme="dark">
         <Chip label="Linen" selected testID="a" />

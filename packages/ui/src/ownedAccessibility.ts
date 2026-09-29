@@ -18,7 +18,9 @@
  *   props were written in.
  *
  * `accessibilityHint` is deliberately NOT here: it describes what happens, it names nothing and
- * states nothing, and a caller is the one who knows the consequence.
+ * states nothing, and a caller is the one who knows the consequence. Nor are `accessibilityActions`
+ * and the live-region props: they add to what a control offers or when it speaks, and contradict
+ * none of its name, role, state or value.
  */
 
 export const OWNED_ACCESSIBILITY = [
@@ -38,6 +40,12 @@ export const OWNED_ACCESSIBILITY = [
   'accessible',
   'importantForAccessibility',
   'accessibilityElementsHidden',
+  // A VALUE is state (F-232's review): a caller could announce "50%" on a button that has none.
+  'accessibilityValue',
+  'aria-valuemin',
+  'aria-valuemax',
+  'aria-valuenow',
+  'aria-valuetext',
 ] as const;
 
 export type OwnedAccessibility = (typeof OWNED_ACCESSIBILITY)[number];

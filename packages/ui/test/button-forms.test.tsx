@@ -131,8 +131,31 @@ describe('the labelled forms', () => {
     expect(style['height']).toBe(35.5);
     expect(style['backgroundColor']).toBe(dark.accent);
     expect(style['borderRadius']).toBe(nativeRadius.pill);
-    expect(hitSlop).toStrictEqual(hitArea(44, 35.5));
+    expect(hitSlop).toStrictEqual(hitArea(35.5, 35.5));
     expect(tapTargetReach(style, hitSlop as never)).toStrictEqual({ width: 44, height: 44 });
+  });
+
+  it('never widens what is drawn: its width floor is its own height, not the target (B3)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Button label="Save" height={28} testID="w" />
+      </ThemeProvider>,
+    );
+    const { style, hitSlop } = hostOf('w');
+    expect(style['minWidth']).toBe(28);
+    // A button drawn as narrow as it can be still reaches the target through its slop.
+    expect(tapTargetReach(style, hitSlop as never)).toStrictEqual({ width: 44, height: 44 });
+  });
+
+  it('lets its focus ring out: HeroUI clips its root, so the root says overflow visible (B2)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Button label="Save" testID="v" />
+        <Button icon="camera" label="Measure a colour" testID="vi" />
+      </ThemeProvider>,
+    );
+    expect(hostOf('v').style['overflow']).toBe('visible');
+    expect(hostOf('vi').style['overflow']).toBe('visible');
   });
 
   it('defaults to BUTTON_HEIGHT and a pill', () => {

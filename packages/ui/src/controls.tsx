@@ -267,6 +267,9 @@ export function Switch({
         style={{
           width: SWITCH_TRACK.width,
           height: SWITCH_TRACK.height,
+          // The focus ring is drawn outside the track. HeroUI's `switch__root` class styles
+          // `overflow: hidden` (switch.css), which jest never sees and a device would apply.
+          overflow: 'visible',
           borderRadius: nativeRadius.pill,
           justifyContent: 'center',
           backgroundColor: track,
@@ -571,6 +574,15 @@ interface SliderShared {
   readonly trackHeight?: number;
   /** The thumb's drawn diameter in dp: the element's own. Defaults to {@link SLIDER_THUMB}. */
   readonly thumbSize?: number;
+  /**
+   * The header as the screen draws it (F-232's review): each screen sets the label and the value at
+   * its own steps — `09` label and label, `17` caption, `23` body and title. The defaults are
+   * `09`'s, the interactive slider's screen. The label is always the primary ink, as all three draw it.
+   */
+  readonly labelSize?: 'body' | 'label' | 'caption';
+  readonly valueSize?: 'title' | 'label' | 'caption';
+  /** `09` sets its value in the secondary ink; `17` and `23` in the primary (the default). */
+  readonly valueColor?: 'foreground' | 'foreground.2';
 }
 
 interface InteractiveSliderProps extends SliderShared {
@@ -648,19 +660,25 @@ export function Slider(props: SliderProps): React.JSX.Element {
   return props.readout === true ? <ReadoutSlider {...props} /> : <InteractiveSlider {...props} />;
 }
 
-/** The label and the value, drawn above the track. */
+/** The label and the value, drawn above the track, at the steps the screen draws them. */
 function SliderHeader({
   label,
   valueLabel,
   script,
+  labelSize,
+  valueSize,
+  valueColor,
 }: {
   readonly label: string;
   readonly valueLabel: string;
   readonly script: Script;
+  readonly labelSize: 'body' | 'label' | 'caption';
+  readonly valueSize: 'title' | 'label' | 'caption';
+  readonly valueColor: 'foreground' | 'foreground.2';
 }): React.JSX.Element {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: nativeSpacing.sm }}>
-      <Text size="caption" color="foreground.2" script={script}>
+      <Text size={labelSize} color="foreground" script={script}>
         {label}
       </Text>
       {/*
@@ -668,7 +686,7 @@ function SliderHeader({
         whether they are set tabular (F-239). `selectable` because a figure you can read is a
         figure you can copy — `screens.test.tsx` asserts it over every tabular node on Compare.
       */}
-      <Text size="caption" color="foreground" numeric selectable>
+      <Text size={valueSize} color={valueColor} numeric selectable>
         {valueLabel}
       </Text>
     </View>
@@ -690,13 +708,23 @@ function InteractiveSlider({
   testID,
   trackHeight = SLIDER_TRACK,
   thumbSize = SLIDER_THUMB,
+  labelSize = 'label',
+  valueSize = 'label',
+  valueColor = 'foreground',
 }: InteractiveSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
 
   return (
     <View style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}>
-      <SliderHeader label={label} valueLabel={valueLabel} script={script} />
+      <SliderHeader
+        label={label}
+        valueLabel={valueLabel}
+        script={script}
+        labelSize={labelSize}
+        valueSize={valueSize}
+        valueColor={valueColor}
+      />
       <HeroSlider
         value={value}
         minValue={min}
@@ -773,6 +801,9 @@ function ReadoutSlider({
   gradient,
   halo,
   ends,
+  labelSize = 'label',
+  valueSize = 'label',
+  valueColor = 'foreground',
 }: ReadoutSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
@@ -794,7 +825,14 @@ function ReadoutSlider({
       accessibilityState={{ disabled: inert, busy: loading }}
       style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}
     >
-      <SliderHeader label={label} valueLabel={valueLabel} script={script} />
+      <SliderHeader
+        label={label}
+        valueLabel={valueLabel}
+        script={script}
+        labelSize={labelSize}
+        valueSize={valueSize}
+        valueColor={valueColor}
+      />
       <View style={{ height: Math.max(marker, trackHeight), justifyContent: 'center' }}>
         <View
           style={{
@@ -853,7 +891,8 @@ function ReadoutSlider({
             {ends.low}
           </Text>
           {ends.note === undefined ? null : (
-            <Text size="caption" color="foreground.2" script={script}>
+            // 23 draws its confidence note at `label` (`23.profile.*.confidence`).
+            <Text size="label" color="foreground.2" script={script}>
               {ends.note}
             </Text>
           )}

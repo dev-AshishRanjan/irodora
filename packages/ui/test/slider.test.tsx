@@ -11,9 +11,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
-import { View } from 'react-native';
+import { Text as RNText, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { nativeColors, type Theme } from '@irodora/design-tokens';
+import { nativeColors, nativeType, type Theme } from '@irodora/design-tokens';
 import { FOCUS_RING, Slider, SLIDER_THUMB, SLIDER_TRACK, ThemeProvider } from '../src/index.js';
 import {
   checkSubject,
@@ -208,6 +208,53 @@ describe('the readout', () => {
   });
 });
 
+describe('the header is set as each screen draws it (F-232’s review)', () => {
+  const texts = () =>
+    screen.UNSAFE_getAllByType(RNText).map((t) => {
+      const st = flattenStyle((t.props as { style?: unknown }).style);
+      return [String((t.props as { children?: unknown }).children), st['fontSize'], st['color']];
+    });
+
+  it('sets 23’s label at body and value at title, both primary, and its note at label', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Slider
+          readout
+          label="Temperature"
+          value={0.62}
+          valueLabel="Warm"
+          labelSize="body"
+          valueSize="title"
+          ends={{ low: 'Cool', high: 'Hot', note: 'From 6 trials' }}
+        />
+      </ThemeProvider>,
+    );
+    const byText = new Map(texts().map(([t, size, colour]) => [t, [size, colour]]));
+    expect(byText.get('Temperature')).toStrictEqual([
+      nativeType.latin.body.fontSize,
+      dark.foreground,
+    ]);
+    expect(byText.get('Warm')).toStrictEqual([nativeType.latin.title.fontSize, dark.foreground]);
+    expect(byText.get('From 6 trials')).toStrictEqual([
+      nativeType.latin.label.fontSize,
+      dark['foreground.2'],
+    ]);
+  });
+
+  it('DECOY — a slider that names no sizes takes 09’s: label and label, primary', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Slider label="Lightness" value={0.4} valueLabel="0.40" onValueChange={() => undefined} />
+      </ThemeProvider>,
+    );
+    const byText = new Map(texts().map(([t, size, colour]) => [t, [size, colour]]));
+    expect(byText.get('Lightness')).toStrictEqual([
+      nativeType.latin.label.fontSize,
+      dark.foreground,
+    ]);
+  });
+});
+
 describe('a literal gradient stop is reported', () => {
   /** A static subject that paints a gradient: from tokens, or with one literal stop. */
   const gradient = (literal: boolean): ConformanceSubject => ({
@@ -238,6 +285,25 @@ describe('a literal gradient stop is reported', () => {
 
   it('DECOY — passes a gradient whose every stop is a token', () => {
     expect(literals(gradient(false))).toBe(0);
+  });
+
+  it('keeps a translucent stop’s alpha, so it resolves as the colour it is', () => {
+    const r = render(
+      <Svg width={4} height={4} fill="none">
+        <Defs>
+          <LinearGradient id="a">
+            <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.5} />
+            <Stop offset="1" stopColor="#000000" />
+          </LinearGradient>
+        </Defs>
+      </Svg>,
+    );
+    const stops = paintedColors(r.toJSON() as TestNode, 'dark').filter(
+      (c) => c.property === 'stopColor',
+    );
+    expect(stops).toHaveLength(2);
+    expect(stops[0]?.resolution).not.toStrictEqual(stops[1]?.resolution);
+    expect(JSON.stringify(stops[0]?.resolution)).toContain('0.5');
   });
 
   it('reports the hand-typed stop', () => {

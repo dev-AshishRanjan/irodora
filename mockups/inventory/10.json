@@ -195,8 +195,35 @@
       "copy": null
     },
     {
-      "id": "10.source.curated",
+      "id": "10.source.selected.dot",
       "order": 7,
+      "parent": "10.source.selected",
+      "component": null,
+      "box": {
+        "x": 110,
+        "y": 229,
+        "w": 18,
+        "h": 18
+      },
+      "dp": {
+        "x": 55,
+        "y": 114.5,
+        "w": 9,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "10.source.curated",
+      "order": 8,
       "parent": "10.source",
       "component": "ui:Text",
       "box": {
@@ -230,7 +257,7 @@
     },
     {
       "id": "10.source.custom",
-      "order": 8,
+      "order": 9,
       "parent": "10.source",
       "component": "ui:Text",
       "box": {
@@ -264,7 +291,7 @@
     },
     {
       "id": "10.palette-1",
-      "order": 9,
+      "order": 10,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -299,7 +326,7 @@
     },
     {
       "id": "10.palette-1.title",
-      "order": 10,
+      "order": 11,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -333,7 +360,7 @@
     },
     {
       "id": "10.palette-1.description",
-      "order": 11,
+      "order": 12,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -367,7 +394,7 @@
     },
     {
       "id": "10.palette-1.provenance",
-      "order": 12,
+      "order": 13,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -401,7 +428,7 @@
     },
     {
       "id": "10.palette-1.strip",
-      "order": 13,
+      "order": 14,
       "parent": "10.palette-1",
       "component": "ui:Bands",
       "box": {
@@ -435,7 +462,7 @@
     },
     {
       "id": "10.palette-1.colour-1.role",
-      "order": 14,
+      "order": 15,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -469,7 +496,7 @@
     },
     {
       "id": "10.palette-1.colour-2.role",
-      "order": 15,
+      "order": 16,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -503,7 +530,7 @@
     },
     {
       "id": "10.palette-1.colour-3.role",
-      "order": 16,
+      "order": 17,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -537,7 +564,7 @@
     },
     {
       "id": "10.palette-1.colour-4.role",
-      "order": 17,
+      "order": 18,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -571,7 +598,7 @@
     },
     {
       "id": "10.palette-1.colour-1.hex",
-      "order": 18,
+      "order": 19,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -606,7 +633,7 @@
     },
     {
       "id": "10.palette-1.colour-2.hex",
-      "order": 19,
+      "order": 20,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -641,7 +668,7 @@
     },
     {
       "id": "10.palette-1.colour-3.hex",
-      "order": 20,
+      "order": 21,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -676,7 +703,7 @@
     },
     {
       "id": "10.palette-1.colour-4.hex",
-      "order": 21,
+      "order": 22,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -711,7 +738,7 @@
     },
     {
       "id": "10.palette-1.colour-1.name",
-      "order": 22,
+      "order": 23,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -746,7 +773,7 @@
     },
     {
       "id": "10.palette-1.colour-2.name",
-      "order": 23,
+      "order": 24,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -781,7 +808,7 @@
     },
     {
       "id": "10.palette-1.colour-3.name",
-      "order": 24,
+      "order": 25,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -816,7 +843,7 @@
     },
     {
       "id": "10.palette-1.colour-4.name",
-      "order": 25,
+      "order": 26,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -851,7 +878,7 @@
     },
     {
       "id": "10.palette-1.badges-label",
-      "order": 26,
+      "order": 27,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -885,7 +912,7 @@
     },
     {
       "id": "10.palette-1.badge-contrast",
-      "order": 27,
+      "order": 28,
       "parent": "10.palette-1",
       "component": "ui:Chip",
       "box": {
@@ -916,7 +943,7 @@
     },
     {
       "id": "10.palette-1.badge-cvd",
-      "order": 28,
+      "order": 29,
       "parent": "10.palette-1",
       "component": "ui:Chip",
       "box": {
@@ -947,7 +974,7 @@
     },
     {
       "id": "10.palette-1.apply",
-      "order": 29,
+      "order": 30,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -978,7 +1005,7 @@
     },
     {
       "id": "10.palette-1.export",
-      "order": 30,
+      "order": 31,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -1009,7 +1036,7 @@
     },
     {
       "id": "10.palette-2",
-      "order": 31,
+      "order": 32,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1041,7 +1068,7 @@
     },
     {
       "id": "10.palette-2.kind",
-      "order": 32,
+      "order": 33,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1075,7 +1102,7 @@
     },
     {
       "id": "10.palette-2.title",
-      "order": 33,
+      "order": 34,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1109,7 +1136,7 @@
     },
     {
       "id": "10.palette-2.swatch-1",
-      "order": 34,
+      "order": 35,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1137,7 +1164,7 @@
     },
     {
       "id": "10.palette-2.swatch-2",
-      "order": 35,
+      "order": 36,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1168,7 +1195,7 @@
     },
     {
       "id": "10.palette-2.swatch-3",
-      "order": 36,
+      "order": 37,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1196,7 +1223,7 @@
     },
     {
       "id": "10.palette-2.swatch-4",
-      "order": 37,
+      "order": 38,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1224,7 +1251,7 @@
     },
     {
       "id": "10.palette-2.swatch-1.hex",
-      "order": 38,
+      "order": 39,
       "parent": "10.palette-2.swatch-1",
       "component": "ui:Text",
       "box": {
@@ -1257,7 +1284,7 @@
     },
     {
       "id": "10.palette-2.swatch-2.hex",
-      "order": 39,
+      "order": 40,
       "parent": "10.palette-2.swatch-2",
       "component": "ui:Text",
       "box": {
@@ -1290,7 +1317,7 @@
     },
     {
       "id": "10.palette-2.swatch-3.hex",
-      "order": 40,
+      "order": 41,
       "parent": "10.palette-2.swatch-3",
       "component": "ui:Text",
       "box": {
@@ -1323,7 +1350,7 @@
     },
     {
       "id": "10.palette-2.swatch-4.hex",
-      "order": 41,
+      "order": 42,
       "parent": "10.palette-2.swatch-4",
       "component": "ui:Text",
       "box": {
@@ -1356,7 +1383,7 @@
     },
     {
       "id": "10.palette-2.tag-layering",
-      "order": 42,
+      "order": 43,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1387,7 +1414,7 @@
     },
     {
       "id": "10.palette-2.tag-provenance",
-      "order": 43,
+      "order": 44,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1418,7 +1445,7 @@
     },
     {
       "id": "10.export-bar",
-      "order": 44,
+      "order": 45,
       "parent": null,
       "component": "app:ActionBar",
       "box": {
@@ -1445,7 +1472,7 @@
     },
     {
       "id": "10.export-bar.button",
-      "order": 45,
+      "order": 46,
       "parent": "10.export-bar",
       "component": "ui:Button",
       "box": {

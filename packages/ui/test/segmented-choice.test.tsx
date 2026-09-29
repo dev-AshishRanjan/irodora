@@ -63,6 +63,21 @@ const groups = elements
   .filter((x) => x.chosen !== undefined);
 
 describe('the defaults are the inventories’, recomputed', () => {
+  it('records the leading dot on every screen that draws one (02 07 10 12, F-232’s review)', () => {
+    const dotted = groups
+      .filter(({ chosen }) =>
+        elements.some((k) => k.parent === chosen?.id && k.id.endsWith('.dot')),
+      )
+      .map((x) => x.group.id)
+      .sort();
+    expect(dotted).toStrictEqual([
+      '07.occasion',
+      '10.source',
+      '12.form.category',
+      '12.source.method',
+    ]);
+  });
+
   it('reads the six segmented rows the screens draw', () => {
     expect(groups.map((x) => x.group.id).sort()).toStrictEqual([
       '02.modes',
@@ -245,5 +260,61 @@ describe('the segment treatment', () => {
 
   it('DECOY — reports a chosen segment with no fill', () => {
     expect(treatment(subject(false))).toBe(1);
+  });
+
+  it('DECOY — reports a chosen segment filled in its own ground, which no one can see', () => {
+    // F-232's review: surface.2 on surface.2 passed the first version of the rule.
+    const hidden: ConformanceSubject = {
+      name: 'fill-in-own-ground',
+      kind: 'interactive',
+      selectable: true,
+      treatment: 'segment',
+      render: (state: string, theme: Theme): TestNode => {
+        const r = render(
+          <ThemeProvider theme={theme}>
+            <ChoiceGroup
+              label="Colour source"
+              options={OPTIONS}
+              value={state === 'active' ? 'lens' : null}
+              onChange={() => undefined}
+              segmented={{ mark: 'fill', ground: 'surface.2', selectedFill: 'surface.2' }}
+              disabled={state === 'disabled'}
+              loading={state === 'loading'}
+              testID={state}
+            />
+          </ThemeProvider>,
+        );
+        const json = r.toJSON() as TestNode;
+        r.unmount();
+        return json;
+      },
+    };
+    expect(treatment(hidden)).toBe(1);
+    // and the same row with a fill it does not rest in passes
+    expect(
+      treatment({
+        ...hidden,
+        name: 'fill-in-accent',
+        render: (state: string, theme: Theme): TestNode => {
+          const r = render(
+            <ThemeProvider theme={theme}>
+              <ChoiceGroup
+                label="Colour source"
+                options={OPTIONS}
+                value={state === 'active' ? 'lens' : null}
+                onChange={() => undefined}
+                segmented={{ mark: 'fill', ground: 'surface.2', selectedFill: 'accent' }}
+                disabled={state === 'disabled'}
+                loading={state === 'loading'}
+                testID={state}
+              />
+            </ThemeProvider>,
+          );
+          const json = r.toJSON() as TestNode;
+          r.unmount();
+          return json;
+        },
+      }),
+    ).toBe(0);
   });
 });

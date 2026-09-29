@@ -25,7 +25,7 @@ const season = (key, box, selected = false) =>
     copy: { shape: 'label', script: key === 'all' ? 'latin' : 'mixed' },
     ...(key === 'spring' ? { raw: { cornerPx: 20.5 } } : {}),
   });
-// A family chip is FILLED (F-232): its inside reads `level1` (#1C2026, #1E2128; ΔE00 0.7–1.1) against
+// A family chip is FILLED (F-232): its inside reads `level1` (#1C2026, #1E2128; ΔE00 0.6–1.5) against
 // the ground around it. Its dot is the family's colour, 12.2–12.6 px (6 dp) across, 13 px in from the
 // chip's left edge and 14 down.
 const family = (key, box, measuredBg) => [

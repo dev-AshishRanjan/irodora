@@ -7641,7 +7641,21 @@
         "cvd"
       ],
       "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that). FROM F-228 (2026-09-16): `IconButton` is the named, weighted glyph inside a control and draws no plate. The inventories record 00's icon-only controls — thirty elements — as `ui:Button` with an icon and no copy, their plate on each element's `tokens`; this feature decides whether those draw as IconButton inside the plate or as a Button form, and says so in the inventory vocabulary. ALSO FROM THE F-228 REVIEW (2026-09-21): Button spreads its caller props AFTER its own accessibilityRole, accessibilityLabel and accessibilityState, so a caller can rename it, change its role or contradict its state — and an aria-* prop would win over the accessibility* twin even if the order were fixed (RN View.js and Pressable.js). IconButton now refuses those props by type and removes them at render; this feature should do the same for Button and the rest of the controls it rebuilds. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-225 (2026-09-25, ADR-0111): the tokens these controls paint have new meanings.\n(1) The primary pill is `accent` on `accent.foreground`: white with the ground as text on Sumi, sumi ink on Washi. There is no gold any more.\n(2) Focus is `ring` (#788090 / #3A3B3E), never `border.strong`. `border.strong` is DECORATIVE, pairs with nothing, and is drawn only where a label identifies the component. A control that shows a state through its edge alone must use `ring`, and E-151's rendered test is the pattern to copy.\n(3) The switch dot reads `foreground.3.card`.\n(4) The HeroUI stylesheet (`global.css`) is emitted for dark and light only. A control that paints colour through className would give Slate and Obsidian Sumi's values. Paint through `style` (ADR-0062), which is what reaches all four palettes, or emit the stylesheet for every palette first. FROM F-225'S REVIEW (2026-09-25): the slider thumb (controls.tsx) rests as a `surface.1` disc outlined 1px in `border.strong`. That is 1.85:1 on Sumi and 1.25:1 on Slate, because `border.strong` is decorative since F-225. The track fill and the value text carry the value, so the review ranked it secondary. Board 00 binds no token to the thumb (`00.controls.slider` has `tokens: {}`), so the value has to be measured off 00's image. If the drawn thumb is identified only by its edge, it takes `border.indicator`, the E3 move of the strong border where nothing else identifies the component, as the sheet handle does.",
-      "plan": "plans/F-232-the-controls-are-board-00s-controls.md"
+      "plan": "plans/F-232-the-controls-are-board-00s-controls.md",
+      "attested": [
+        {
+          "criterion": "Primary pill (white on dark, ink on light), secondary outlined pill, square and circular icon buttons, switch, segmented ChoiceGroup, slider — as 00 draws them, in every state the screens draw (selected, disabled, pressed, focused)",
+          "verifiedBy": "Focus moved by an external keyboard and by Switch Control on an iOS and an Android device, recorded: the `ring` overlay shows OUTSIDE Button (every form), the Switch, the segmented ChoiceGroup, Chip and the Slider thumb. HeroUI's root classes style `overflow: hidden` (pressable-feedback.css, switch.css) and the roots now say `overflow: 'visible'` in `style`, which button-forms.test and switch.test hold — but whether the style wins over the class is a device fact a JS tree cannot show. The pressed state is F-304's.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Each control reaches 44/48 dp by its hit area without changing its drawn size, and has an accessible name and state",
+          "verifiedBy": "Taps at the edge of each control's hit area on an iOS and an Android device, recorded — in particular where the container is smaller than the target: 15's switch rows (29.5 dp pitch), 12's segmented rows (23 dp) and chip rows (26 dp pitch), and the Slider thumb inside HeroUI's GestureDetector. React Native does not extend a hit area past its parent's bounds, and the tap-target rule judges one control at a time (ADR-0114). F-305 carries the fix where a container clips it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-233",
@@ -8314,7 +8328,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette.",
+      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-232 (2026-09-29): 07.occasion's chosen segment carries a leading dot in the pill's ink (12.4 px, #18191E), recorded as 07.occasion.selected.dot after F-232's review found it; F-232 had first read 07 as fill-only. Build it as ChoiceGroup segmented with mark 'dot' and selectedFill 'accent', radius 'md'.",
       "openQuestions": [
         "OQ-32"
       ]
@@ -8447,7 +8461,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette."
+      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-232 (2026-09-29): 10.source's chosen segment carries a white leading dot (17.7 px), recorded as 10.source.selected.dot after F-232's review found it. Its pill's inside reads #343940, nearer level3 (ΔE00 2.8) than the level2 recorded — re-read it when this screen is built. Build it as ChoiceGroup segmented with mark 'dot'."
     },
     {
       "id": "F-252",
@@ -8666,7 +8680,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 12. ELEMENTS: app bar \"← Cancel | Add Garment • 衣服の追加 | Save\" (white pill); the source card — pinked-edge fabric sample, hex and name, the provenance chip, the source segmented control (Lens Camera · Photo · Atlas Pick · # Hex); the form card — title field, category segmented control, material chips, formality and season pills; the duplicate pre-check banner with its closest item and ΔE00; the collapsible tracking section (price, brand); sticky \"Save Garment to Wardrobe\". DEPARTURES: \"Safe\" in the banner is bound to the defined duplicate threshold (E2). Both Save affordances are drawn and both are kept. FROM F-232 (2026-09-28): 12 re-recorded from measurement: every selected fill (the material/formality/season pills and both segmented rows) reads #383F46–#3C4249, `level3` at ΔE00 3.2–4.0 — outside §2's ≈2 but the nearest token by far (`level2`, recorded before, sits at 6.5); flag it in the fidelity comparison. Each carries a white leading dot (13.4 px; the source row's is 11.1 px), now recorded. Build: Chip `selectedFill=\"surface.3\"`; ChoiceGroup `segmented` with `selectedFill: 'surface.3'` (and `radius: 'sm'` for 12.form.category); the provenance chip is `Chip form=\"badge\"` with `fill=\"surface.2\"`. 12's chips sit at a 26 dp pitch, so their 44/48 dp hit areas overlap — a device check (ADR-0114)."
+      "notes": "MOCKUP 12. ELEMENTS: app bar \"← Cancel | Add Garment • 衣服の追加 | Save\" (white pill); the source card — pinked-edge fabric sample, hex and name, the provenance chip, the source segmented control (Lens Camera · Photo · Atlas Pick · # Hex); the form card — title field, category segmented control, material chips, formality and season pills; the duplicate pre-check banner with its closest item and ΔE00; the collapsible tracking section (price, brand); sticky \"Save Garment to Wardrobe\". DEPARTURES: \"Safe\" in the banner is bound to the defined duplicate threshold (E2). Both Save affordances are drawn and both are kept. FROM F-232 (2026-09-28): 12 re-recorded from measurement: every selected fill (the material/formality/season pills and both segmented rows) reads #383F46–#3C4249, `level3` at ΔE00 3.3–4.4 — outside §2's ≈2 but the nearest token by far (`level2`, recorded before, sits at 6.3–7.3); flag it in the fidelity comparison. Each carries a white leading dot (13.4 px; the source row's is 11.1 px), now recorded. Build: Chip `selectedFill=\"surface.3\"`; ChoiceGroup `segmented` with `selectedFill: 'surface.3'` (and `radius: 'sm'` for 12.form.category); the provenance chip is `Chip form=\"badge\"` with `fill=\"surface.2\"`. 12's chips sit at a 26 dp pitch, so their 44/48 dp hit areas overlap — a device check (ADR-0114)."
     },
     {
       "id": "F-257",
@@ -10134,6 +10148,61 @@
       "mockups": [
         "all"
       ]
+    },
+    {
+      "id": "F-304",
+      "title": "Pressed is a state every control renders, and the conformance suite checks it",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "00"
+      ],
+      "acceptance": [
+        "The conformance suite renders a pressed state for every interactive subject and fails one that renders it identically to default",
+        "The segmented ChoiceGroup's segments and the wrap layout's options apply the press response they already compute (usePress's style is wired to onPressIn/onPressOut and never applied)",
+        "The Switch and the Slider thumb show a press response that animates no colour (motion.animatable is opacity and transform), in every palette"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "FROM F-232'S REVIEW (2026-09-29). F-232's criterion 1 lists pressed among the states; no mockup draws a pressed control, so F-232 kept the shipped treatments and designed none — and the review found three of them render nothing: ChoiceGroup's Option and Segment call usePress() and wire its handlers but never apply press.style (the scale lives only in that style, motion.tsx); the Switch passes animation={{ state: 'disabled' }}, which removes HeroUI's only press feedback along with the colour transition (switch.animation.ts); and the Slider thumb's children replace HeroUI's AnimatedKnob and its drag animation (slider.tsx). All three predate F-232. REQUIRED_STATES.interactive has no pressed, so nothing checks any of it — that is the part to fix first, because a treatment nobody checks is one that regresses unseen."
+    },
+    {
+      "id": "F-305",
+      "title": "A control's hit area reaches its target on a device, past the bounds its container draws",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "12",
+        "15"
+      ],
+      "acceptance": [
+        "Every control whose container is smaller than the platform target is found — the Switch's own label row, the segmented ChoiceGroup's container, 12's and 15's rows — and either lets the hit area through (hitSlop on the container, or layout room the drawing allows) or is listed in R9-MOCKUP-FIDELITY §4 as a shortfall a person accepted",
+        "The tap-target rule, or a test beside it, reports a hit area that reaches past a parent drawn smaller than it, rather than only judging the control alone",
+        "Taps at the edge of each control's hit area land on an iOS and an Android device, attested with a recording — including the Slider thumb inside HeroUI's GestureDetector"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y"
+      ],
+      "notes": "FROM F-232'S REVIEW (2026-09-29), finding S3. ADR-0114 draws each control at its mockup's size and gives it the rest of the target as hitSlop, and the conformance rule adds the two back together. React Native's Pressable does not extend a touch area past its parent view's bounds, so where the parent is smaller than the target the effective target is the parent: a segment's slop reaches 7–9 dp past a 30.5 dp RadioGroup; the Switch sits in a row about as tall as its label (~26 dp) and its slop reaches 13–15 dp past it; 15's rows are drawn at a 29.5 dp pitch, so a full 44/48 dp target cannot exist there without overlapping its neighbours. The rule judges one control at a time and cannot see this. F-232 records it as an outstanding device attestation on its criterion 4 and in ADR-0114."
     }
   ]
 }

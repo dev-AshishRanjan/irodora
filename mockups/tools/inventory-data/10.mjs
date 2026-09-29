@@ -93,6 +93,12 @@ export default {
       parent: '10.source',
       tokens: { bg: 'level2', radius: 'pill' },
     }),
+    // Its leading dot (F-232's review): 17.7 px across, white. The pill's inside reads #343940, nearer
+    // level3 (ΔE00 2.8) than the level2 recorded here; F-251 builds this screen and should re-read it.
+    el('10.source.selected.dot', null, B(110, 229, 18, 18), {
+      parent: '10.source.selected',
+      tokens: { fg: 'text.primary' },
+    }),
     t('10.source.curated', B(110, 229, 210, 23), '10.source', 'static:palettes.curated', {
       tokens: { fg: 'text.primary' },
       action: 'select:palettes.curated',

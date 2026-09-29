@@ -106,7 +106,7 @@ describe('the hit area arrives where the rule reads it', () => {
       hosts.some(
         (h) =>
           JSON.stringify((h.props as { hitSlop?: unknown }).hitSlop) ===
-          JSON.stringify(hitArea(nativeTapTarget, BUTTON_HEIGHT, 'ios')),
+          JSON.stringify(hitArea(BUTTON_HEIGHT, BUTTON_HEIGHT, 'ios')),
       ),
     ).toBe(true);
   });

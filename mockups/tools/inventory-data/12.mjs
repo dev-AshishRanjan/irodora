@@ -25,8 +25,9 @@ const t = (id, box, parent, binding, extra = {}) =>
     ...extra,
   });
 // What is selected here — a choice pill or a segment — is FILLED and carries a white leading dot
-// (F-232). Every such fill reads #383F46–#3C4249: `level3` at ΔE00 3.2–4.0, outside §2's ≈ 2 but the
-// nearest token by far (`level2`, recorded before, sits at 6.5). The dot is 13.4 px (6.7 dp) across;
+// (F-232). Every such fill reads #383F46–#3C4249: `level3` at ΔE00 3.3–4.4, outside §2's ≈ 2 but the
+// nearest token by far (`level2`, recorded before, sits at 6.3–7.3). ΔE00 is computed from the recorded
+// hexes with the engine's own deltaE00. The dot is 13.4 px (6.7 dp) across;
 // the source row's is 11.1 px.
 const choice = (group, key, box, measuredBg) => {
   const id = `12.form.${group}.${key}`;

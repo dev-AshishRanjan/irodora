@@ -36,7 +36,7 @@ Rename, add or drop a stop and four readers move:
   - a stale group is reported;
   - one runtime exception per stop.
 - **spectrum.test:** the stops in order; the colour laid over the silhouette; the one-ink decoy.
-- **Conformance:** reads both spectrum buttons in every palette, and every stop resolves to a
+- **Conformance:** renders both hue-sweep buttons in every palette, and every stop resolves to a
   token.
 
 ## For the next mint

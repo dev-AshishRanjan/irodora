@@ -62,3 +62,14 @@ echo "claims=$c state=$s"; [ $c -eq 0 ] && [ $s -eq 0 ] && git commit …
 The printed `claims=0 state=0` line is also the evidence the progress entry quotes.
 
 [[a-check-that-gets-quieter-is-worse-than-one-that-fails]]
+
+## It came back as a grep (F-232, 2026-09-29)
+
+This time it was not `&&`. Every increment of F-232 checked lint with
+`pnpm lint 2>&1 | grep -E "Tasks:|error"`. Turbo's summary line printed "35 successful", but the
+root `lint` script runs more than turbo. The claims step after it failed, and its one line matched
+nothing I was grepping for. Lint was red for four increments, and the evaluator found it.
+
+The rule is the same, and it applies to reading as much as to chaining: **print the exit code
+itself** (`pnpm lint >/tmp/l.log 2>&1; echo lint=$?`), then look into the log only when it is not
+0. A filter chosen for the lines you expect cannot show you the one you did not.

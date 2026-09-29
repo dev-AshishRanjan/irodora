@@ -30,6 +30,7 @@ export {
   checkAll,
   checkStatusAdjacency,
   checkSubject,
+  chosenStandsOut,
   drawsDot,
   formatFindings,
   REQUIRED_STATES,

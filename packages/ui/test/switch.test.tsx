@@ -129,6 +129,10 @@ describe('the switch as drawn', () => {
     expect(Number(ringed[0]?.['top'])).toBeLessThan(0);
   });
 
+  it('lets its focus ring out: HeroUI clips the switch root, so it says overflow visible (B2)', () => {
+    expect(draw(true).track['overflow']).toBe('visible');
+  });
+
   it('DECOY — unfocused, nothing is drawn in ring', () => {
     expect(draw(true).all.filter((s) => s['borderColor'] === dark.ring)).toHaveLength(0);
   });

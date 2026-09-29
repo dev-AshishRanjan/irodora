@@ -374,7 +374,15 @@ export function paintedColors(
     for (let i = 1; i < raw.length; i += 2) {
       const argb: unknown = raw[i];
       if (typeof argb !== 'number') continue;
-      out.push(`#${((argb >>> 0) & 0xffffff).toString(16).padStart(6, '0')}`);
+      const word = argb >>> 0;
+      const alpha = (word >>> 24) & 0xff;
+      const hex = `#${(word & 0xffffff).toString(16).padStart(6, '0')}`;
+      // A translucent stop keeps its alpha (F-232's review), so it resolves as the colour it is.
+      out.push(
+        alpha === 0xff
+          ? hex
+          : `rgba(${String((word >>> 16) & 0xff)}, ${String((word >>> 8) & 0xff)}, ${String(word & 0xff)}, ${String(Math.round((alpha / 255) * 1000) / 1000)})`,
+      );
     }
     return out;
   };

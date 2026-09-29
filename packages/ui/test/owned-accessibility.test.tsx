@@ -108,6 +108,16 @@ describe('Button and Chip cannot be renamed, re-roled or contradicted by a calle
     ).toHaveLength(0);
   });
 
+  it('refuses a value on a control that has none (F-232’s review)', () => {
+    // @ts-expect-error — a button announces no value.
+    const b = <Button label="Save" accessibilityValue={{ text: '50%' }} />;
+    // @ts-expect-error — nor in the web spelling.
+    const c = <Chip label="Warm" aria-valuetext="50%" />;
+    // DECOY — a hint still compiles.
+    const h = <Button label="Save" accessibilityHint="Keeps it" />;
+    expect([b, c, h]).toHaveLength(3);
+  });
+
   it('strips every owned prop and keeps the rest', () => {
     const all = Object.fromEntries(OWNED_ACCESSIBILITY.map((k) => [k, 'x']));
     expect(withoutOwnedAccessibility({ ...all, testID: 't', accessibilityHint: 'h' })).toEqual({

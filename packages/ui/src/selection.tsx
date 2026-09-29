@@ -249,7 +249,7 @@ export type PillFill = 'surface.2' | 'surface.3' | 'accent';
 /** What a pill paints, resolved against a theme. */
 export interface PillTone {
   readonly background: string;
-  /** The edge, always 1 dp wide so the box never moves: `border` at rest, the fill when chosen. */
+  /** The edge, always 1 dp wide so the outline never shifts: `border` at rest, the fill when chosen. */
   readonly borderColor: string;
   /** The label's and the dot's ink, as a text token. */
   readonly ink: 'foreground' | 'accent.foreground';
