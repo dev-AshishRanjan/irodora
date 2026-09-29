@@ -1,7 +1,7 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-09-24",
+  "updated": "2026-09-29",
   "$groupComment": "`group` is required because one name can be a step in two scales that are not the same decision. Until F-226 `xs` was a radius step AND a type step — one read by 22 `size=\"xs\"` literals, the other by nothing — and keyed by name alone the literals marked the radius step reached too. F-226 (ADR-0113) replaced the type scale, so no type step is called `xs` any more; the group key stays, because the next shared name is a matter of time.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
@@ -39,22 +39,13 @@
     {
       "group": "colour token",
       "tokens": [
-        "swatch.keyline"
-      ],
-      "cites": "F-225, ADR-0111, F-233",
-      "why": "THE README'S neutralKeyline, declared as drawn (#FFFFFF22 dark, #1A1B1E18 light) and painted by nothing yet. The line around a colour sample belongs to the sample family, which F-233 rebuilds to the mockups; until then every sample keeps the two-tone opaque hairline, and whether the README keyline can replace it (swatch-edge.test.ts records it cannot keep an edge on its own) is F-233's decision.",
-      "closedBy": "F-233"
-    },
-    {
-      "group": "colour token",
-      "tokens": [
         "swatch.keyline.on.background",
         "swatch.keyline.on.surface.1",
         "swatch.keyline.on.surface.2",
         "swatch.keyline.on.surface.3"
       ],
       "cites": "F-225, ADR-0044",
-      "why": "THE FOUR PRE-COMPOSITED FORMS of the keyline, which the contrast gate composites so a translucent token can be measured against each ground it may sit on. A component reads the translucent token and lets the platform composite, so no surface will ever paint these. (This slot held border.on.*, which went when F-225 made border opaque as the README draws it.)",
+      "why": "THE FOUR PRE-COMPOSITED FORMS of the keyline, which the contrast gate composites so a translucent token can be measured against each ground it may sit on. A component reads the translucent token and lets the platform composite, or — the sample family, since F-233 — composites it itself in encoded sRGB, the way the platform does (paintedOver, ADR-0116). These four are composited in linear light (F-307), so no surface will ever paint them. (This slot held border.on.*, which went when F-225 made border opaque as the README draws it.)",
       "closedBy": null,
       "permanentBecause": "ADR-0044 — the .on.* forms are what the contrast gate measured, not what a component reads."
     },

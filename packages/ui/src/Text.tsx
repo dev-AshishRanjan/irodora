@@ -54,8 +54,10 @@ import {
   type LargeTextToken,
   type TextToken,
 } from '@irodora/design-tokens';
-import { useTheme } from './theme.js';
+import { useTheme, type ThemeColors } from './theme.js';
 import { useDisplaySettings } from './displaySettings.js';
+import type { Sample } from './inkOnSample.js';
+import { sampleInk } from './sampleInk.js';
 
 /** A step of the type scale. */
 export type TypeSize = keyof typeof nativeType.latin;
@@ -130,10 +132,27 @@ type FaceProps<S extends TypeSize> =
 /** The weights the inventories record on sans text. */
 export type TextWeight = 400 | 500 | 600;
 
+/**
+ * What the text is drawn in: a token legal at its size, or — set ON a colour sample — the ink
+ * `sampleInk` chooses for that sample (C8, ADR-0116). Never both: a token on a sample is the
+ * pairing nothing declares, and the one that goes unreadable on a mid-tone.
+ */
+type InkProps<S extends TypeSize> =
+  | { readonly color: ColorFor<S>; readonly on?: never }
+  | {
+      /**
+       * The sample this text sits on. The ink is C8's — whichever of the two passes 4.5:1 — and
+       * where neither does, the smaller E3 move (F-233). A `Sample` carries its provenance by
+       * type, so a bare hex does not compile (ADR-0005).
+       */
+      readonly on: Sample;
+      readonly color?: never;
+    };
+
 export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
-  FaceProps<S> & {
+  FaceProps<S> &
+  InkProps<S> & {
     readonly size: S;
-    readonly color: ColorFor<S>;
     /** Japanese needs more leading at the same size; the scale carries both. */
     readonly script?: keyof typeof nativeType;
     /**
@@ -169,6 +188,17 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
      */
     readonly numeric?: boolean;
   };
+
+/** The ink: the token's value, or the sample's ink. The type admits exactly one of the two. */
+function inkOf(
+  color: ColorFor<TypeSize> | undefined,
+  on: Sample | undefined,
+  colors: ThemeColors,
+): string {
+  if (on !== undefined) return sampleInk(on.hex, colors).hex;
+  if (color === undefined) throw new TypeError('Text: neither a colour nor a sample to sit on');
+  return colors[color];
+}
 
 /** A weight as the string React Native's `fontWeight` takes. */
 const weightOf = (weight: TextWeight): '400' | '500' | '600' =>
@@ -211,6 +241,7 @@ function faceStyle(
 export function Text<S extends TypeSize>({
   size,
   color,
+  on,
   script = 'latin',
   heading = false,
   numeric = false,
@@ -254,7 +285,7 @@ export function Text<S extends TypeSize>({
       // a mockup draws them. The Latin sans keeps the platform font: it has no tofu failure mode.
       style={{
         ...step,
-        color: colors[color],
+        color: inkOf(color, on, colors),
         ...faceStyle(face, japanese, step.fontSize),
         ...(weight === undefined ? {} : { fontWeight: weightOf(weight) }),
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:

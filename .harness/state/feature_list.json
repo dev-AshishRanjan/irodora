@@ -10233,6 +10233,30 @@
         "test"
       ],
       "notes": "FROM F-232 AND F-233 (2026-09-29): twice in two days pnpm test failed on this one test with \"Test timed out in 5000ms\" (5.6 s measured) while every other task passed, and it passed alone (248/248) and on the rerun. It opens and exercises a real node:sqlite database, which is slow under the CPU load of 35 turbo tasks at once. A gate that fails at random trains people to rerun it until it is green, which is how a real failure gets rerun past. Package untouched by both features, so recorded rather than fixed in their scope."
+    },
+    {
+      "id": "F-307",
+      "title": "A translucent token's pre-composited value is what the platform draws",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "Every `<token>.on.<ground>` value emitted into nativeColors (packages/design-tokens/src/emit/react-native.ts) is the colour React Native paints for that translucent token over that ground — composited in encoded sRGB (`compositeEncoded`), or the model is named in the key — and a test compares each against `paintedOver`",
+        "The conformance token index (packages/ui/src/testing/tokens.ts) does not resolve a hex that no rendering of the token produces"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "contrast"
+      ],
+      "notes": "FROM F-233 (2026-09-29): the React Native emitter pre-composites each translucent token over each declared ground with `compositeOver`, which blends in LINEAR light, while the platforms blend in encoded sRGB. So `swatch.keyline.on.surface.1` is emitted as #6B6B6D on Sumi where the keyline actually shows as #3E4046 — much lighter than anything drawn. Gate 9 is unaffected: it judges both models and takes the worse (derive.ts resolveAll). Nothing paints an `.on.` value today, so nothing on screen is wrong; but the conformance suite resolves those hexes as tokens, so a component that painted one would pass as a token while drawing a colour no mockup and no platform shows. F-233 draws the keyline through `paintedOver` (encoded) instead. Recorded, not fixed there: the emitter and its artefacts are outside F-233's scope."
     }
   ]
 }

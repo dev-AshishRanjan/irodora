@@ -756,6 +756,25 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     sampleValues: ['#526A6B'],
     render: (_state, theme) => draw(<Chip form="badge" {...form} />, theme),
   })),
+  /*
+   * TEXT SET ON A SAMPLE (F-233, C8, ADR-0116): one sample an ink passes unmoved, and one mid-tone
+   * neither ink clears, where the ink moves. The `sample-ink` rule measures both; the moved ink is
+   * no token, and is exempt only because it is this sample's.
+   */
+  ...(['#526A6B', '#87795D'] as const).map((hex): ConformanceSubject => ({
+    name: `Text on a sample (${hex})`,
+    kind: 'static',
+    sampleValues: [hex],
+    render: (_state, theme) =>
+      draw(
+        <View style={{ backgroundColor: hex }}>
+          <Text size="body" on={{ hex, color: SAMPLE }}>
+            Kuri-iro
+          </Text>
+        </View>,
+        theme,
+      ),
+  })),
   {
     /*
      * 05'S FAMILY CHIP (F-232): filled at rest, led by the family's colour, the kanji after the

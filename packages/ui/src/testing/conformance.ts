@@ -35,7 +35,10 @@ import {
   nativeColors,
   nativeLargeTextMinPx,
 } from '@irodora/design-tokens';
+import { wcagContrast } from '@irodora/color-difference';
 import { platformTapTarget } from '../hitArea.js';
+import { TEXT_CONTRAST } from '../inkOnSample.js';
+import { sampleEdge, sampleInk } from '../sampleInk.js';
 import {
   announcedStates,
   flattenStyle,
@@ -46,7 +49,7 @@ import {
   type ResolvedPressableNode,
   type TestNode,
 } from './tree.js';
-import { isStatusToken } from './tokens.js';
+import { isStatusToken, type ColorResolution } from './tokens.js';
 
 export type ComponentKind = 'interactive' | 'data' | 'static';
 
@@ -359,6 +362,42 @@ export function checkSubject(
         );
       }
 
+      /*
+       * --- TEXT ON A SAMPLE (F-233, C8, ADR-0116) -------------------------------------------
+       *
+       * The loop above skips a pair whose ground is not a token, and text on a colour sample is
+       * exactly that: the sample is data. So text set on a sample went unmeasured, and on a
+       * mid-tone neither ink clears 4.5:1. This measures what is drawn — the text's colour against
+       * the declared sample it sits on — whatever chose it. A ground that is neither a token nor a
+       * declared sample is left to the colour-literal rule, which reports the ground itself.
+       */
+      for (const pair of renderedPairs(tree, theme, nativeColors[theme].background)) {
+        if (pair.background.kind !== 'unresolved') continue;
+        const sample = pair.background.value;
+        if (!samples.has(sample.toLowerCase())) continue;
+        const ink = valueOf(pair.foreground, theme);
+        if (ink === undefined) continue;
+        const contrast = wcagContrast(rgbOf(ink), rgbOf(sample));
+        if (contrast >= TEXT_CONTRAST) continue;
+        at(
+          'sample-ink',
+          `"${pair.text.slice(0, 32)}" is set in ${ink} on the sample ${sample}, ` +
+            `${contrast.toFixed(2)}:1, under ${String(TEXT_CONTRAST)}:1. Set it with ` +
+            '`on={sample}`, which takes the ink ADR-0116 chooses.',
+        );
+      }
+
+      // What is drawn against each declared sample, as ADR-0116 moves it: its text's ink and its
+      // edge. A moved value is no token, by construction, and it is exempt exactly as the sample
+      // is: by value, derived from the declared samples, never as a blanket pass.
+      const onSamples = new Set(
+        [...samples].flatMap((hex) => [
+          sampleInk(hex, nativeColors[theme]).hex.toLowerCase(),
+          sampleEdge(hex, nativeColors[theme], true).hex.toLowerCase(),
+          sampleEdge(hex, nativeColors[theme], false).hex.toLowerCase(),
+        ]),
+      );
+
       // --- every colour resolves to a token -------------------------------------------
       // Unresolved is a FAILURE, never a skip: skipping it fails open on exactly the input
       // the colour-literal rule exists to catch.
@@ -367,6 +406,7 @@ export function checkSubject(
         // Exact-match exemption for declared sample data — never a blanket pass. Chrome
         // painted with a literal is still caught even on a component that renders samples.
         if (samples.has(painted.resolution.value.toLowerCase())) continue;
+        if (onSamples.has(painted.resolution.value.toLowerCase())) continue;
         at(
           'colour-literal',
           `${painted.path.join('>')} ${painted.property} = ${painted.resolution.value} ` +
@@ -617,6 +657,21 @@ export function checkSubject(
  * [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]]. "There are no components"
  * and "I could not find the components" are opposite facts, and only one may proceed.
  */
+/** A resolved colour's value in this theme: a token's, or the literal. */
+function valueOf(resolution: ColorResolution, theme: Theme): string | undefined {
+  if (resolution.kind === 'unresolved') return resolution.value;
+  if (resolution.kind === 'absent') return undefined;
+  const token = resolution.tokens[0];
+  const colors: Readonly<Record<string, string>> = nativeColors[theme];
+  return token === undefined ? undefined : colors[token];
+}
+
+/** A `#rrggbb` as the engine's 0–1 triple. */
+function rgbOf(hex: string): readonly [number, number, number] {
+  const n = Number.parseInt(hex.replace('#', ''), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
 export function checkAll(
   subjects: readonly ConformanceSubject[],
   themes: readonly Theme[] = ['light', 'dark'],
