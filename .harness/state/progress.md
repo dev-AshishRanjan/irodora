@@ -8,6 +8,85 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-29 — F-232 The controls are board 00's controls
+
+**Done.** Every control and chip draws as board `00`, or the screen that uses it, draws it. Each
+reaches 44 dp (iOS) or 48 dp (Android) through its own hit area rather than its drawn size. It
+shipped in fourteen commits, `c31c933` through this one
+([ADR-0114](../../docs/adr/0114-a-control-is-drawn-at-its-mockups-size-and-reaches-the-tap-target-through-its-hit-area.md),
+[ADR-0115](../../docs/adr/0115-an-icon-only-control-drawn-on-a-plate-is-a-button-and-one-drawn-bare-is-an-iconbutton.md),
+[ADR-0110's amendment](../../docs/adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md)).
+
+- **Measured, then recorded.** The switch, choice, slider and plate pixels on 00, 05, 07, 09, 10,
+  12, 15, 17 and 23 were read into the inventories.
+  - 15's switch is a 34.5 × 18 dp track; the 35.5 × 22.5 was a padded box.
+  - 12's selected fills are `level3` at ΔE00 3.3–4.4, not `level2` (6.3–7.3).
+  - 05's family chips are filled `level1`, and 15's chosen CVD mode is filled `level2`.
+  - The chosen items on 07, 10, 12, 15 and 17 carry a leading dot.
+- **Defaults are derived, not typed.** Each control's default size is a median of what the scaled
+  screens draw, or 00's own ratio where no screen draws it, and a test recomputes each (E-157).
+- **The hit area (ADR-0114).** `size.tapTargetAndroid` 48; `hitArea()`; and a `tap-target` rule that
+  adds the drawn size and the `hitSlop` back together (E-156, critical).
+  - No drawn width is raised: the floor is the control's own height.
+  - The hit area is each control's own; `hitSlop` is refused by type.
+- **Accessibility.** Button and Chip own their name, role, state and value (`ownedAccessibility.ts`).
+- **Forms:**
+  - Button: primary, secondary with no fill, and the icon-only plates (ADR-0115: 30 icon-only
+    controls, 15 plated).
+  - Chip: the pill treatment with a leading `SelectionDot`, no tick drawn; the badge form; 05's
+    family chip with its colour dot and kanji.
+  - ChoiceGroup: the segmented row.
+  - Switch and Slider at their screens' sizes; the Slider's readout form and 23's gradient track.
+  - The `Status` pill.
+  - Focus is a `ring` outside the box everywhere (`FocusRing`).
+- **Conformance.** `selection-treatment` reads three pictures off the tree: `chooser`, `pill` and
+  `segment`. `tree.ts` reads `hitSlop` and gradient stops, and skips clip paths.
+- **`inkOnSample`** (C8) picks the ink for text on a sample and reports when neither clears 4.5:1;
+  24's tints fail both (F-259).
+- **The first chroma mint.** `glyph.wheel.1–8` and `glyph.palette.1–8` were measured as hue sweeps
+  and declared as token groups that carry their elements (E-159). The element exceptions are
+  retired, and Glyph lays the sweep over the unchanged silhouette.
+
+**Review (once, on `7bdbbc3`): FAIL.** It found 3 blocking, 4 significant and 7 minor findings. Each
+was fixed or recorded, and the gates were re-run (`5ba571c`).
+
+- **B1:** lint was red at the claims step. I had grepped turbo's summary through four increments and
+  never seen that step's exit code. The line is reworded, and the lesson
+  `a-pipe-hides-the-exit-code-that-decides-the-commit` records the recurrence.
+- **B2:** HeroUI's root classes clip, so the focus ring would have been invisible on device. The
+  roots now say `overflow: 'visible'`. Tested; the device proof is attested.
+- **B3:** `minWidth: target` widened 05's 34 dp "All" and 12's 47 dp Save. The floor is now the
+  drawn height.
+- **S2:** 07 and 10 draw a dot that I had read as fill-only; both are recorded. The `segment` rule
+  now refuses a chosen fill in its own ground.
+- **S4:** the slider header takes each screen's steps.
+- **Minor:** M1 corrected ΔE ranges; M2 the plan; M3 comments; M4 `GLYPH_IN_PLATE`'s reach;
+  M5 value props owned; M6 gradient alpha; M7 ChoiceGroup's NUL written as an escape.
+
+**Recorded, not built:**
+- F-304 (S1): pressed is rendered by no Segment, Switch or Slider, and nothing checks it. All three
+  predate F-232.
+- F-305 (S3): a hit area cannot reach past its parent's bounds, so dense rows cap the real target.
+  ADR-0114 says so.
+- OQ-43, for a person: does golden rule 13 force a dot onto 05's selected season chip? F-246 waits
+  on it.
+- Notes for F-233, F-244, F-245, F-246, F-248, F-251, F-256, F-259, F-260 and F-262. F-285 gets its
+  evidence, to verify on its own run.
+
+**Gates run on the final tree, each exit 0:** `node scripts/verify-state.mjs` · `pnpm format:check` ·
+`pnpm typecheck` · `pnpm lint` · `pnpm test` (35/35 tasks; ui 30 suites, mobile 1056 tests) ·
+`pnpm build` · `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `node
+scripts/verify-mockups.mjs`. The store suite timed out once under turbo's parallel load, then passed
+alone (248/248) and in the full run. `pair.test` did the same earlier in the feature.
+
+**Not run:** `e2e` (gate 7 is pending; no device), `artifact` (no JDK).
+**Attested, outstanding:** the focus ring visible on a device (criterion 1), and taps reaching each
+hit area on a device, especially in rows smaller than the target (criterion 4). **Nobody has
+compared a screen with its mockup**; that is F-267.
+
+---
+
+
 ## 2026-09-28 — F-226 The type is the mockups' type: a serif for display, the sans for reading, tabular figures for every number
 
 **Done.** The app's type is the mockups'. It shipped in twelve commits, `a7137b8` through this one
