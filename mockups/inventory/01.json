@@ -258,7 +258,8 @@
       "binding": "corpus:entry.hex",
       "action": null,
       "raw": {
-        "cornerPx": 13.5
+        "cornerPx": 13.5,
+        "keylinePx": 5
       },
       "copy": null
     },
@@ -1351,6 +1352,12 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C20",
+      "elements": ["01.hero.sample"],
+      "resolution": "P4 for the value (the README keyline, moved per sample where it fails 3:1, ADR-0116); P1 for the width (raw.keylinePx where it is wider than a hairline) — F-233's review",
+      "flippedByUser": false
+    },
     {
       "id": "C11",
       "elements": [

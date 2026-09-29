@@ -163,7 +163,7 @@
         },
         "srgb": "#20232A",
         "usage": "surface",
-        "role": "The ground beneath every colour sample: level 1, the card the mockups draw a sample on (C11, the person’s decision of 2026-09-10). It carries the ramp’s slight cool chroma, and samples are judged against it — the consequence ADR-0111 states. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge — is the two-tone keyline’s (swatch-edge.test.ts).",
+        "role": "The ground beneath every colour sample: level 1, the card the mockups draw a sample on (C11, the person’s decision of 2026-09-10). It carries the ramp’s slight cool chroma, and samples are judged against it — the consequence ADR-0111 states. Since F-233 no padded well is drawn: the card is the well. That a sample of ANY colour keeps a perceptible edge is the line's, moved per sample against it (swatch.keyline, ADR-0116).",
         "pairsWith": [
           "foreground"
         ]
@@ -176,7 +176,7 @@
         },
         "srgb": "#F6F5F3",
         "usage": "nonText",
-        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "One half of the two-tone keyline drawn where the other side of a line is an image or a document nobody re-renders: the Lens reticle (E-072) and the export card. The sample family stopped drawing it in F-233 (ADR-0116). OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -446,7 +446,7 @@
         },
         "srgb": "#131110",
         "usage": "nonText",
-        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "The other half of the two-tone keyline described on swatch.hairline. One half of the two-tone keyline drawn where the other side of a line is an image or a document nobody re-renders: the Lens reticle (E-072) and the export card. The sample family stopped drawing it in F-233 (ADR-0116). OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -788,7 +788,7 @@
         },
         "srgb": "#FFFFFF",
         "usage": "surface",
-        "role": "The ground beneath every colour sample: level 1, the card the mockups draw a sample on (C11, the person’s decision of 2026-09-10). It carries the ramp’s slight cool chroma, and samples are judged against it — the consequence ADR-0111 states. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge — is the two-tone keyline’s (swatch-edge.test.ts).",
+        "role": "The ground beneath every colour sample: level 1, the card the mockups draw a sample on (C11, the person’s decision of 2026-09-10). It carries the ramp’s slight cool chroma, and samples are judged against it — the consequence ADR-0111 states. Since F-233 no padded well is drawn: the card is the well. That a sample of ANY colour keeps a perceptible edge is the line's, moved per sample against it (swatch.keyline, ADR-0116).",
         "pairsWith": [
           "foreground"
         ]
@@ -801,7 +801,7 @@
         },
         "srgb": "#131110",
         "usage": "nonText",
-        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "One half of the two-tone keyline drawn where the other side of a line is an image or a document nobody re-renders: the Lens reticle (E-072) and the export card. The sample family stopped drawing it in F-233 (ADR-0116). OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -1071,7 +1071,7 @@
         },
         "srgb": "#F6F5F3",
         "usage": "nonText",
-        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "The other half of the two-tone keyline described on swatch.hairline. One half of the two-tone keyline drawn where the other side of a line is an image or a document nobody re-renders: the Lens reticle (E-072) and the export card. The sample family stopped drawing it in F-233 (ADR-0116). OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },

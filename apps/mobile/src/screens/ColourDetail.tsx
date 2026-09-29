@@ -394,11 +394,11 @@ export function ColourDetail({
         it was being spent at 96px beside three lines of text. `HERO` is deliberately a large
         number: a colour is judged by AREA, and the Irodora test — put a real garment colour on
         screen and see whether you can judge it — has its best case here, where nothing sits
-        between the sample and the eye except the well and the keyline.
+        between the sample and the eye except the card it sits on and its line.
 
-        The `Swatch` is unchanged. Its mandatory well (the drawn card since F-225, C11) and its
-        gamut-verified two-tone keyline come with it, which is why the sample can be this large without the page around it
-        shifting how the colour reads.
+        The sample sits on the card the mockups draw it on (C11), and its line keeps its edge
+        against any colour, moved per sample where it must (F-233, ADR-0116), which is why the
+        sample can be this large without the page around it shifting how the colour reads.
       */}
       <Swatch
         caption="name"

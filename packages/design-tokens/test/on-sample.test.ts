@@ -209,7 +209,7 @@ describe('a device palette, where the inks do not reach (step 2)', () => {
       }
     // DECOY: the gap is real, on the count the source states, and it was exercised.
     expect(gaps).toBe(222);
-    expect(answered).toBeGreaterThan(100);
+    expect(answered).toBe(222);
   }, 120_000);
 
   it('holds a chromatic candidate’s hue — #FF0000 on #777777 stays red', () => {

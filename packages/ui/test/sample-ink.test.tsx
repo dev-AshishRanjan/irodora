@@ -185,6 +185,38 @@ describe('the conformance rule sample-ink', () => {
     expect(findings(s, 'sample-ink')).toBe(THEMES.length);
   });
 
+  it('exempts a moved ink only as a text colour — the same value painted as a fill is a literal', () => {
+    const colors = nativeColors.dark;
+    const ink = sampleInk(MID, colors).hex;
+    const misused: ConformanceSubject = {
+      name: 'MovedInkAsChrome',
+      kind: 'static',
+      sampleValues: [MID],
+      render: (_state, theme) => {
+        const rendered = render(
+          <ThemeProvider theme={theme}>
+            <View style={{ backgroundColor: MID, width: 120, height: 80 }}>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: sampleInk(MID, nativeColors[theme]).hex,
+                }}
+              />
+            </View>
+          </ThemeProvider>,
+        );
+        const json = rendered.toJSON() as TestNode;
+        rendered.unmount();
+        return json;
+      },
+    };
+    expect(ink).toMatch(/^#[0-9A-F]{6}$/u);
+    expect(checkSubject(misused, ['dark']).filter((f) => f.rule === 'colour-literal')).toHaveLength(
+      1,
+    );
+  });
+
   it('leaves a ground that is no declared sample to the colour-literal rule', () => {
     // The same failing ink as the decoy above: only the declaration differs.
     const undeclared: ConformanceSubject = {

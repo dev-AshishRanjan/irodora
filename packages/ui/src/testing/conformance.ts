@@ -389,14 +389,23 @@ export function checkSubject(
 
       // What is drawn against each declared sample, as ADR-0116 moves it: its text's ink and its
       // edge. A moved value is no token, by construction, and it is exempt exactly as the sample
-      // is: by value, derived from the declared samples, never as a blanket pass.
-      const onSamples = new Set(
+      // is: by value, derived from the declared samples, never as a blanket pass — and only in the
+      // role it has: an ink as a text colour, a line as a fill, border or stroke. (It is still not
+      // tied to the one sample it was moved for; F-233's review, M10.)
+      const inksOnSamples = new Set(
+        [...samples].map((hex) => sampleInk(hex, nativeColors[theme]).hex.toLowerCase()),
+      );
+      const linesOnSamples = new Set(
         [...samples].flatMap((hex) => [
-          sampleInk(hex, nativeColors[theme]).hex.toLowerCase(),
           sampleEdge(hex, nativeColors[theme], true).hex.toLowerCase(),
           sampleEdge(hex, nativeColors[theme], false).hex.toLowerCase(),
         ]),
       );
+      const LINE_PROPERTIES: readonly string[] = ['backgroundColor', 'borderColor', 'stroke'];
+      const onSample = (property: string, value: string): boolean =>
+        property === 'color'
+          ? inksOnSamples.has(value.toLowerCase())
+          : LINE_PROPERTIES.includes(property) && linesOnSamples.has(value.toLowerCase());
 
       // --- every colour resolves to a token -------------------------------------------
       // Unresolved is a FAILURE, never a skip: skipping it fails open on exactly the input
@@ -406,7 +415,7 @@ export function checkSubject(
         // Exact-match exemption for declared sample data — never a blanket pass. Chrome
         // painted with a literal is still caught even on a component that renders samples.
         if (samples.has(painted.resolution.value.toLowerCase())) continue;
-        if (onSamples.has(painted.resolution.value.toLowerCase())) continue;
+        if (onSample(painted.property, painted.resolution.value)) continue;
         at(
           'colour-literal',
           `${painted.path.join('>')} ${painted.property} = ${painted.resolution.value} ` +

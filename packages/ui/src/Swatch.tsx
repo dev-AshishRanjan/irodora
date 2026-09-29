@@ -19,11 +19,14 @@
  *    judge a large flat colour, and the effect grows as the swatch shrinks, which is why the
  *    ceiling is a proportion even though the corner is a length. A rectangle takes it from its
  *    shorter side.
- * 2. **One line around every sample, and it keeps the edge.** The README keyline, as it shows over
- *    the well, drawn opaque; where it would not clear 3:1 against this sample it moves the
- *    smallest lightness step that does (`sampleEdge`, ADR-0116). Where the element draws no
- *    keyline the line starts as the well itself, so it shows only where the sample would
- *    otherwise lose its edge. It replaced F-068's two-tone ring, which no mockup draws.
+ * 2. **One line around the sample, and it keeps the edge.** The README keyline, as it shows over
+ *    the well, drawn opaque at the width the element draws (`keylineWidth`: 1 dp on most, 2.5 on
+ *    01's hero, 7 on 06's); where it would not clear 3:1 against this sample it moves the smallest
+ *    lightness step that does (`sampleEdge`, ADR-0116). The screens draw it lighter than the
+ *    README's value, and the README governs token values (P4, R9 §6 C20). Where the element draws
+ *    no keyline, no line is drawn unless the sample would otherwise lose its edge. It replaced
+ *    F-068's two-tone ring, which board 00 draws in its swatch-wells panel and the screens, which
+ *    govern their own surfaces (P3), do not.
  * 3. **Text on the sample is readable.** `children` are drawn on it, and text there is set with
  *    `Text on={sample}`, which takes the ink ADR-0116 chooses.
  * 4. **Provenance is required.** The prop is a `Color`, not a hex, and a `Color` cannot exist
@@ -40,7 +43,7 @@ import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import type { Color } from '@irodora/color-core';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
-import { hitArea } from './hitArea.js';
+import { hitArea, platformTapTarget } from './hitArea.js';
 import { usePress } from './motion.js';
 import { sampleEdge } from './sampleInk.js';
 import { SelectionFrame, SelectionMark, selectionTone } from './selection.js';
@@ -61,7 +64,11 @@ export const SWATCH_SIZE = 60;
  */
 export const SWATCH_KEYLINE = true;
 
-/** 19 and 21: a ring around the anchor sample, in `text.primary`, at the width and gap drawn. */
+/**
+ * 19 and 21: a ring around the anchor sample, at the width and gap drawn, in `foreground.2`
+ * (`text.secondary`): 19's ring reads #9FA8AF–#A0A9B0 across its width, where `foreground` would
+ * read #F7F8FA (F-233's review).
+ */
 export interface SwatchAnchor {
   /** The ring's width in dp: `19` draws 2.3, `21` 1.3. */
   readonly ring: number;
@@ -114,6 +121,11 @@ export interface SwatchProps {
   readonly corner?: SwatchCornerStep;
   /** Whether the element draws the README keyline. Defaults to {@link SWATCH_KEYLINE}. */
   readonly keyline?: boolean;
+  /**
+   * The line's width in dp, as the element draws it: 1 on most samples (03, 20 and 24 read about
+   * 1 dp), 2.5 on 01's hero, 7 on 06's (the inventories' `raw.keylinePx`).
+   */
+  readonly keylineWidth?: number;
   /** Print the name under the sample, where the mockup prints it. */
   readonly caption?: 'name';
   /** The anchor form (19, 21): a ring around the sample. */
@@ -216,6 +228,7 @@ export function Swatch({
   script = 'latin',
   corner: cornerStep = 'sm',
   keyline = SWATCH_KEYLINE,
+  keylineWidth = KEYLINE_INSET,
   caption,
   anchor,
   bleed = false,
@@ -238,51 +251,76 @@ export function Swatch({
     ? { sample: 0, keyline: 0 }
     : swatchCorner(fill ? tall : Math.min(wide, tall), cornerStep);
   const edge = sampleEdge(hex, colors, keyline);
-  // The width floor is the height (ADR-0114): a filled sample declares that much, and grows.
-  const declaredWidth = fill ? tall : wide;
+  /*
+   * A LINE ONLY WHERE ONE IS DRAWN OR NEEDED. An element that draws the keyline always carries it;
+   * one that does not carries a line only where the sample would otherwise lose its edge (the well
+   * moved), and elsewhere the sample fills its box (F-233's review, M7).
+   */
+  const lined = keyline || edge.moved;
+  const lineRadius = bleed ? 0 : corner.sample + keylineWidth;
+  const outline = lined ? lineRadius : corner.sample;
+  /*
+   * The width floor is the height (ADR-0114), but a filled sample's width is its container's, so it
+   * declares no more than the target: a 299 dp hero declaring 299 would overflow a 320 pt phone's
+   * content width (F-233's review, S5).
+   */
+  const declaredWidth = fill ? Math.min(tall, platformTapTarget()) : wide;
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
 
   /*
    * THE LINE, THEN THE SAMPLE. The line sits around the sample inside the element's box, so the
-   * drawn size is the element's: the sample is the box less the line.
+   * drawn size is the element's: the sample is the box less the line. A line wider than one dp
+   * draws the rest as a border outside the one-dp inset, in the same colour.
    *
    * A LITERAL 1, DELIBERATELY, AND IT MUST STAY ONE. This was briefly `KEYLINE_INSET`, which reads
    * better and made the spacing gate go BLIND: it scans for numeric padding, margin and gap, and
    * this was the last literal left in the product. It has an exemption in `off-scale-spacing.json`
    * explaining why a 1 here is a line's width rather than spacing (E-078).
    */
-  const sample = (
+  const sample = lined ? (
     <View
       style={{
         width: fill ? '100%' : wide,
         height: tall,
         padding: 1,
+        borderWidth: keylineWidth - KEYLINE_INSET,
+        borderColor: edge.hex,
         backgroundColor: edge.hex,
-        borderRadius: corner.keyline,
+        borderRadius: lineRadius,
       }}
     >
       <View style={{ flex: 1, backgroundColor: hex, borderRadius: corner.sample }}>{children}</View>
+    </View>
+  ) : (
+    <View
+      style={{
+        width: fill ? '100%' : wide,
+        height: tall,
+        backgroundColor: hex,
+        borderRadius: corner.sample,
+      }}
+    >
+      {children}
     </View>
   );
   const drawn =
     anchor === undefined ? (
       sample
     ) : (
-      // The ring in `text.primary`, concentric with the line inside it.
+      // The ring in `foreground.2` (19 and 21 measure it there), concentric with what it holds.
       <View
         style={{
           borderWidth: anchor.ring,
-          borderColor: colors.foreground,
+          borderColor: colors['foreground.2'],
           padding: anchor.gap,
-          borderRadius: corner.keyline + anchor.gap + anchor.ring,
+          borderRadius: outline + anchor.gap + anchor.ring,
         }}
       >
         {sample}
       </View>
     );
-  const outerRadius =
-    anchor === undefined ? corner.keyline : corner.keyline + anchor.gap + anchor.ring;
+  const outerRadius = anchor === undefined ? outline : outline + anchor.gap + anchor.ring;
 
   return (
     <AnimatedPressable
@@ -313,10 +351,12 @@ export function Swatch({
       <View style={fill ? { alignSelf: 'stretch' } : {}}>
         {/*
           THE SHARED TREATMENT (F-176), drawn outside the sample (F-233): `accent` edge, or `ring`
-          under focus, with `accent.muted` in the gap. First, so the sample covers its middle.
+          under focus, with `accent.muted` in the gap. First, so the sample covers its middle. A
+          bled sample's card clips anything outside it, so its frame is its edge, drawn over it.
         */}
-        <SelectionFrame tone={tone} radius={outerRadius} />
+        {bleed ? null : <SelectionFrame tone={tone} radius={outerRadius} />}
         {drawn}
+        {bleed ? <SelectionFrame tone={tone} radius={outerRadius} inside /> : null}
         {/*
           THE MARK. Absolutely positioned, so adding it cost this component no layout — which is
           the same rule the frame follows.

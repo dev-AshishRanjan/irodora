@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Accepted |
+| **Status** | Accepted; two consequences are put to a person as OQ-46 (F-233's review) |
 | **Date** | 2026-09-29 |
 | **Feature** | F-233 |
 | **Applies** | R9-MOCKUP-FIDELITY §4 E3, per sample rather than per theme; [ADR-0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md) §5's fallback |
@@ -28,8 +28,10 @@ the text takes, per sample, whichever of the two inks passes 4.5:1. Measured ove
 **The line around a sample.** The README draws one keyline, `swatch.keyline` (`#FFFFFF22` on Sumi,
 `#1A1B1E18` on Washi). Since F-068 the product has guaranteed that **a sample of any colour keeps a
 perceptible edge**: 3:1, WCAG 1.4.11, asserted over the sRGB gamut by `swatch-edge.test` (the test gate).
-The shipped two-tone ring holds it, and no mockup draws the ring. The README keyline alone cannot
-hold it: no single line survives a sample of its own colour (1:1). Over `swatch.well` it clears 3:1
+The shipped two-tone ring holds it. Board `00` draws that ring, a light outer line and a dark inner
+one, in its swatch-wells panel; the screens, which govern how a component looks on their own
+surfaces (P3), draw one line (F-233's review corrected an earlier claim that no mockup draws the
+ring). The README keyline alone cannot hold it: no single line survives a sample of its own colour (1:1). Over `swatch.well` it clears 3:1
 against only 62, 56, 45 and 65 of the 120 corpus colours (Sumi, Washi, Slate, Obsidian).
 
 Both are gate-9 floors that the drawn values fail. E3 already says what happens then: **the token
@@ -74,7 +76,11 @@ is not known until it is drawn: it is a corpus entry, a garment or a reading.
 3. **The keyline replaces the two-tone ring on the sample family** (Decision 3, R, in F-233's plan).
    Among constructions that keep the gamut guarantee, this one draws the README's single line
    everywhere it passes, and moves it only where the floor forces it. A second line beside it (J),
-   or keeping the ring, would draw an element no mockup draws.
+   or keeping the ring, would draw what board `00` draws and no screen does; the screens govern
+   their own surfaces (P3).
+   - **Its width is each screen's** (P1): about 1 dp on `03`, `20` and `24`, 2.5 dp on `01`'s hero,
+     6.9 dp on `06`'s, recorded as `raw.keylinePx` and drawn with `keylineWidth`. **Its value is the
+     README's** (P4): the screens draw it light grey, and R9 §6 C20 records the conflict.
    - `swatch.hairline` and `swatch.hairline.inverse` stay for the Lens reticle (E-072) and the export
      card, where the other side of the line is an image or a document nobody re-renders.
 4. **A plate or scrim behind the text is rejected.** It is an element no mockup draws, so it is not
@@ -92,6 +98,17 @@ is drawn:
 | Washi | 9 | 104 steps, ΔE00 5.22 | 64 | 527 steps, ΔE00 52.42 | 0 |
 | Slate | 19 | 195 steps, ΔE00 12.07 | 75 | 294 steps, ΔE00 32.40 | 0 |
 | Obsidian | 6 | 59 steps, ΔE00 2.50 | 55 | 372 steps, ΔE00 41.83 | 0 |
+
+**Where an element draws no keyline** (19, 21, 09, 17, 23, 15 and three of five strips), the line
+starts as the well and shows only where it must. It shows on **44 · 57 · 58 · 42** of the 120 corpus
+colours (Sumi · Washi · Slate · Obsidian), at most ΔE00 48.42 · 55.86 · 40.54 · 49.99 from the well:
+Sumi's `aki-yu` (#722518) gets #858991, Washi's `aka-tsuchi` (#CD9478) #525252. **That is a line
+where the mockup draws none.**
+
+**The direction follows the step count, not the drawing.** On the mockups' own hero colour
+(#5B6B78 on `01` and `06`), the keyline over the card (#3E4046) fails 3:1 and moves dark, to
+#1D1E24 in 135 steps, where `01` and `06` draw a light line; a light line reaching 3:1 is many
+more steps away. E3 says the smallest step, and a light line is not the smallest.
 
 The text moves are small. **The edge moves are not**, and that is the honest cost. The README line is
 a faint neutral; against a sample near the card's own lightness it has to become a clearly visible
@@ -125,5 +142,11 @@ line can do.
   gate computes on Node, so gate 9's corpus test pins its outputs, and a drift shows there.
 - **The line is not held against the card.** Only its contrast with the sample is. A moved line can
   be faint against the well, so it is not a ring and is not described as one.
-- **If the review reads this as a new rule rather than E3**, the fallback is OQ-44: "Move the ink the
-  E3 way per sample, set the text on a plate no mockup draws, or something else?"
+- **OQ-46, a person's (F-233's review).** The ink half is E3 within the delegation: C8 already names
+  it, WCAG 1.4.3 applies and gate 9 enforces it. The edge half rests on the product's own promise
+  (ACCESSIBILITY.md §5, "a defined border, so its edges are perceptible against any surface"), which
+  WCAG does not require, and it draws **a line where the mockups draw none** (the counts above) and
+  **a dark line where `01` and `06` draw a light one**. Keeping a line the drawing lacks is choosing a
+  rule over the drawing, which is not the agent's to choose. Until a person answers, the product's
+  existing guarantee stands, because it is what shipped and removing it is the change that needs a
+  decision.

@@ -73,11 +73,13 @@ export default {
       measured: { bg: '#1C1C22' },
       raw: { cornerPx: 17 },
     }),
+    // The line around the hero reads 5 px across each side (a light grey plateau, #AF–#C0, x 99–104
+    // at mid-height, y 378–383 at mid-width): 2.5 dp. Its value is the README keyline (P4, C20).
     el('01.hero.sample', 'ui:Swatch', B(99, 378, 570, 344), {
       parent: '01.hero',
       tokens: { keyline: 'keyline', radius: 'sm' },
       binding: 'corpus:entry.hex',
-      raw: { cornerPx: 13.5 },
+      raw: { cornerPx: 13.5, keylinePx: 5 },
     }),
     el('01.hero.sample.kanji', 'ui:Text', B(127, 536, 90, 44), {
       parent: '01.hero.sample',
@@ -222,6 +224,13 @@ export default {
     },
   ],
   conflicts: [
+    {
+      id: 'C20',
+      elements: ['01.hero.sample'],
+      resolution:
+        "P4 for the value (the README keyline, moved per sample where it fails 3:1, ADR-0116); P1 for the width (raw.keylinePx where it is wider than a hairline) — F-233's review",
+      flippedByUser: false,
+    },
     {
       id: 'C11',
       elements: [

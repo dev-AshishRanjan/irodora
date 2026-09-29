@@ -104,24 +104,27 @@ function worstCase(edges: readonly Edge[] | ((sample: readonly number[]) => read
 const NON_TEXT_FLOOR = 3;
 
 describe('a sample of ANY colour keeps a perceptible edge', () => {
-  it.each(THEMES)('%s: the two-tone keyline clears the non-text floor everywhere', (theme) => {
-    const tone = hex(COLOR[theme]['swatch.hairline'].srgb);
-    const inverse = hex(COLOR[theme]['swatch.hairline.inverse'].srgb);
-    const { worst, at } = worstCase([
-      { rgb: tone, alpha: 1 },
-      { rgb: inverse, alpha: 1 },
-    ]);
-    // Computed over the gamut, not asserted at a convenient sample. The worst case is a
-    // mid-tone, where neither a dark nor a light line has an easy job.
-    expect(
-      `${theme} worst ${worst.toFixed(2)} at ${at.map((n) => n.toFixed(2)).join(',')}`,
-    ).toMatch(/worst [3-9]\./u);
-    expect(worst).toBeGreaterThanOrEqual(NON_TEXT_FLOOR);
-    // The figure the manifest's role, the reticle (E-072) and the export card quote. It read 4.23
-    // until F-233 pinned it: the tones had moved since F-068 measured them, and nothing held the
-    // prose to the scan.
-    expect(worst.toFixed(2)).toBe('4.16');
-  });
+  it.each(THEMES)(
+    '%s: the two-tone keyline (the Lens reticle and the export card, since F-233) clears the non-text floor everywhere',
+    (theme) => {
+      const tone = hex(COLOR[theme]['swatch.hairline'].srgb);
+      const inverse = hex(COLOR[theme]['swatch.hairline.inverse'].srgb);
+      const { worst, at } = worstCase([
+        { rgb: tone, alpha: 1 },
+        { rgb: inverse, alpha: 1 },
+      ]);
+      // Computed over the gamut, not asserted at a convenient sample. The worst case is a
+      // mid-tone, where neither a dark nor a light line has an easy job.
+      expect(
+        `${theme} worst ${worst.toFixed(2)} at ${at.map((n) => n.toFixed(2)).join(',')}`,
+      ).toMatch(/worst [3-9]\./u);
+      expect(worst).toBeGreaterThanOrEqual(NON_TEXT_FLOOR);
+      // The figure the manifest's role, the reticle (E-072) and the export card quote. It read 4.23
+      // until F-233 pinned it: the tones had moved since F-068 measured them, and nothing held the
+      // prose to the scan.
+      expect(worst.toFixed(2)).toBe('4.16');
+    },
+  );
 
   it.each(THEMES)('%s: the two tones differ from each other whatever is behind them', (theme) => {
     // The property that makes a keyline work at all: opaque tones do not depend on the

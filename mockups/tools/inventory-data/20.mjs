@@ -167,6 +167,13 @@ export default {
   ],
   conflicts: [
     {
+      id: 'C20',
+      elements: ['20.card.swatch'],
+      resolution:
+        "P4 for the value (the README keyline, moved per sample where it fails 3:1, ADR-0116); P1 for the width (raw.keylinePx where it is wider than a hairline) — F-233's review",
+      flippedByUser: false,
+    },
+    {
       id: 'C11',
       elements: ['20.card.swatch'],
       resolution:

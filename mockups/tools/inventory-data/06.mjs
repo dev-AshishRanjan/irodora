@@ -105,10 +105,13 @@ export default {
     }),
     el('06.header-rule', null, B(54, 168, 472, 2), { tokens: { fg: 'border.subtle' } }),
     // ---- the swatch, and the card stacked behind it
+    // The line around the hero reads 8.5 px across each side (a light grey band, #BE–#C9, x 73–81 at
+    // mid-height, y 182–190 at mid-width): 6.9 dp at 0.81. Its value is the README keyline (P4, C20).
     el('06.swatch', 'ui:Swatch', B(73, 181, 416, 369), {
       tokens: { keyline: 'keyline' },
       binding: 'corpus:entry.hex',
       measured: { fill: '#576777' },
+      raw: { keylinePx: 8.5 },
     }),
     el('06.swatch.stack', null, B(489, 182, 17, 368), { parent: '06.swatch' }),
     // ---- names and taxonomy
@@ -292,6 +295,13 @@ export default {
     },
   ],
   conflicts: [
+    {
+      id: 'C20',
+      elements: ['06.swatch'],
+      resolution:
+        "P4 for the value (the README keyline, moved per sample where it fails 3:1, ADR-0116); P1 for the width (raw.keylinePx where it is wider than a hairline) — F-233's review",
+      flippedByUser: false,
+    },
     {
       id: 'C11',
       elements: ['06.swatch'],

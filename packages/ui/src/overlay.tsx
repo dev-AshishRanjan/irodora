@@ -160,7 +160,7 @@ export function Popover({
             Left undefined, HeroUI renders `Popover.ContentBackground`, "whose content is decided
             by the active library theme (e.g. a frosted-glass blur layer when the theme is
             glass)". A blur TINTS WHAT IT SURROUNDS — which is precisely the simultaneous-contrast
-            hazard `swatch.well` and the two-tone keyline exist to prevent, and the reason
+            hazard `swatch.well` and the line around a sample exist to prevent, and the reason
             `expo-blur` is a refused peer rather than a missing one.
 
             So the ground is painted here, opaquely, from a token the contrast gate measures. A

@@ -102,10 +102,12 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1D2027' },
     }),
-    // The ring 3.75 px wide, then a 6.2 px gap to the sample (F-233, crossings at half height).
+    // The ring 3.75 px wide, then a 6.2 px gap to the sample (F-233, crossings at half height). Its
+    // plateau reads #9FA8AF–#A0A9B0: text.secondary (#A6B0BC), not text.primary (#F7F8FA), which an
+    // earlier reading recorded (F-233's review).
     el('19.anchor.ring', null, B(118, 216, 160, 148), {
       parent: '19.anchor',
-      tokens: { border: 'text.primary', radius: 'md' },
+      tokens: { border: 'text.secondary', radius: 'md' },
       raw: { ringPx: 3.75, gapPx: 6.2 },
     }),
     el('19.anchor.swatch', 'ui:Swatch', B(128, 223, 143, 132), {

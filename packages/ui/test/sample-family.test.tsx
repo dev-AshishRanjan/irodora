@@ -35,6 +35,7 @@ interface Element {
   readonly component: string | null;
   readonly dp: { readonly w: number; readonly h: number } | null;
   readonly tokens?: Readonly<Record<string, string>>;
+  readonly raw?: Readonly<Record<string, number>>;
 }
 const inventoried: readonly Element[] = readdirSync(INVENTORY)
   .filter((f) => /^\d\d\.json$/u.test(f))
@@ -134,7 +135,7 @@ describe('each form at its element’s size', () => {
     expect(flattenStyle(root(tree).props['style'])['alignSelf']).toBe('stretch');
   });
 
-  it('rings an anchor in text.primary at the width and gap drawn, concentric with its line', () => {
+  it('rings an anchor in foreground.2 at the width and gap drawn, concentric with its line', () => {
     const tree = draw(
       <Swatch
         name="Ai-nezumi"
@@ -149,19 +150,54 @@ describe('each form at its element’s size', () => {
       .map((n) => flattenStyle(n.props['style']))
       .find((s) => s['borderWidth'] === 1.3);
     const line = lineNode(tree);
+    // 19's ring reads #9FA8AF–#A0A9B0: foreground.2, not foreground (#F7F8FA), the DECOY.
     expect(ring).toMatchObject({
-      borderColor: nativeColors.dark.foreground,
+      borderColor: nativeColors.dark['foreground.2'],
       padding: 3.1,
       borderRadius: Number(line['borderRadius']) + 3.1 + 1.3,
     });
   });
 
-  it('bleeds into its card: no corner of its own, spanning the card', () => {
+  it('draws a bled sample’s selection edge inside it, over it, where the card cannot clip it', () => {
     const tree = draw(
-      <Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} height={88} bleed keyline={false} />,
+      <Swatch
+        name="Ai-nezumi"
+        hex="#526A6B"
+        color={COLOR}
+        height={88}
+        bleed
+        keyline={false}
+        selected
+      />,
     );
-    expect(sampleNode(tree)['borderRadius']).toBe(0);
-    expect(lineNode(tree)).toMatchObject({ width: '100%', borderRadius: 0 });
+    const frames = nodes(tree)
+      .map((n) => flattenStyle(n.props['style']))
+      .filter(
+        (st) => st['position'] === 'absolute' && st['borderColor'] === nativeColors.dark.accent,
+      );
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toMatchObject({ top: 0, left: 0, right: 0, bottom: 0 });
+    expect(frames[0]?.['backgroundColor']).toBeUndefined();
+    // DECOY: an ordinary sample's frame sits outside it.
+    const outside = nodes(draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} selected />))
+      .map((n) => flattenStyle(n.props['style']))
+      .find(
+        (st) => st['position'] === 'absolute' && st['borderColor'] === nativeColors.dark.accent,
+      );
+    expect(Number(outside?.['top'])).toBeLessThan(0);
+  });
+
+  it('bleeds into its card: no corner of its own, spanning the card', () => {
+    // A pale sample keeps its edge unaided, so the sample itself is the box.
+    const tree = draw(
+      <Swatch name="Pale" hex="#F0EDE6" color={COLOR} height={88} bleed keyline={false} />,
+    );
+    expect(sampleNode(tree, '#F0EDE6')).toMatchObject({ width: '100%', borderRadius: 0 });
+    // And where a line must show, it is square too.
+    const near = draw(
+      <Swatch name="Near" hex="#2A2D34" color={COLOR} height={88} bleed keyline={false} />,
+    );
+    expect(lineNode(near)).toMatchObject({ width: '100%', borderRadius: 0 });
   });
 
   it('draws what it is given ON the sample', () => {
@@ -217,6 +253,17 @@ describe('the target is the hit area, not the drawing (ADR-0114)', () => {
     expect(reach.height).toBeGreaterThanOrEqual(44);
   });
 
+  it('declares no more than the target for a filled width, so a tall hero cannot overflow a phone', () => {
+    // 06's hero is 337 × 299 dp; declaring its height as a minimum width would overflow the 273 dp
+    // a 320 pt phone leaves (F-233's review).
+    const tree = draw(
+      <Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} width="fill" height={299} />,
+    );
+    const minWidth = flattenStyle(root(tree).props['style'])['minWidth'];
+    expect(minWidth).toBeLessThanOrEqual(48);
+    expect(minWidth).toBeGreaterThanOrEqual(44);
+  });
+
   it('DECOY: the drawing is not inflated to the target', () => {
     const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} size={34} />);
     expect(flattenStyle(root(tree).props['style'])['minWidth']).toBe(34);
@@ -239,11 +286,51 @@ describe('one line, moved per sample (ADR-0116)', () => {
     expect(drawn).not.toBe(keyline);
   });
 
-  it('with no keyline drawn, draws the well — and a line only where the sample needs one', () => {
-    const pale = draw(<Swatch name="Pale" hex="#F0EDE6" color={COLOR} keyline={false} />);
-    expect(lineNode(pale)['backgroundColor']).toBe(dark['swatch.well'].toUpperCase());
+  it('with no keyline drawn, draws no line — the sample fills its box — unless it must', () => {
+    const pale = draw(<Swatch name="Pale" hex="#F0EDE6" color={COLOR} keyline={false} size={48} />);
+    const pads = nodes(pale).filter((n) => flattenStyle(n.props['style'])['padding'] === 1);
+    expect(pads).toHaveLength(0);
+    expect(sampleNode(pale, '#F0EDE6')).toMatchObject({ width: 48, height: 48 });
+    // DECOY: a sample near the card's own colour would lose its edge, so there the line appears.
     const near = draw(<Swatch name="Near" hex="#2A2D34" color={COLOR} keyline={false} />);
+    expect(lineNode(near)['backgroundColor']).toBe(sampleEdge('#2A2D34', dark, false).hex);
     expect(lineNode(near)['backgroundColor']).not.toBe(dark['swatch.well'].toUpperCase());
+  });
+
+  it('draws the line at the width the element draws: 2.5 dp on 01’s hero', () => {
+    const tree = draw(
+      <Swatch
+        name="Ai-nezumi"
+        hex="#526A6B"
+        color={COLOR}
+        width="fill"
+        height={172}
+        keylineWidth={2.5}
+      />,
+    );
+    const line = lineNode(tree);
+    // One dp as the pinned inset, the rest as a border in the same colour; concentric corners.
+    expect(line).toMatchObject({ padding: 1, borderWidth: 1.5 });
+    expect(line['borderColor']).toBe(line['backgroundColor']);
+    expect(line['borderRadius']).toBe(Number(sampleNode(tree)['borderRadius']) + 2.5);
+    // DECOY: the default is one dp, with no border beyond the inset.
+    expect(lineNode(draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} />))).toMatchObject({
+      padding: 1,
+      borderWidth: 0,
+    });
+  });
+});
+
+describe('the line is the width each screen draws (C20, P1)', () => {
+  it('is recorded where it is wider than a hairline: 01’s hero 2.5 dp, 06’s 6.9', () => {
+    const wide = samples.filter((e) => e.raw?.['keylinePx'] !== undefined);
+    expect(wide.map((e) => e.id).sort()).toStrictEqual(['01.hero.sample', '06.swatch']);
+    const dp = (id: string, dpPerPx: number): number =>
+      (wide.find((e) => e.id === id)?.raw?.['keylinePx'] ?? NaN) * dpPerPx;
+    expect(dp('01.hero.sample', 0.5)).toBe(2.5);
+    expect(dp('06.swatch', 0.8101)).toBeCloseTo(6.9, 1);
+    // DECOY: the default the rest are drawn at.
+    expect(dp('01.hero.sample', 0.5)).not.toBe(1);
   });
 });
 

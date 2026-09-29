@@ -242,6 +242,11 @@ export interface SelectionFrameProps {
   readonly tone: SelectionTone;
   /** The drawn box's corner radius in dp. The frame follows it, grown by its own offset. */
   readonly radius: number;
+  /**
+   * Draw the edge INSIDE the box, over what it holds: for a sample bled into its card, where the
+   * card clips anything outside. Only the edge is drawn there; a fill would cover the sample.
+   */
+  readonly inside?: boolean;
   readonly testID?: string;
 }
 
@@ -249,18 +254,36 @@ export interface SelectionFrameProps {
  * The chooser treatment drawn OUTSIDE a box that reserves no edge (F-233): a colour sample.
  *
  * A swatch sat in a padded well until F-233, and the chooser's fill and edge were painted on that
- * well. The mockups draw no well, and a sample drawn at its element's size has no room to reserve
- * an edge, so the treatment moves outside the box as {@link FocusRing} did for the controls: the
- * same `accent` edge (or `ring`, under focus), with `accent.muted` in the one-dp gap between it
- * and the sample. It costs no layout. The fill behind the sample is covered by the sample, so the
- * visible ground is that gap — the picture board 00 draws, at the width the sample leaves it.
+ * well. A sample drawn at its element's size has no room to reserve an edge, so the treatment moves
+ * outside the box as {@link FocusRing} did for the controls: the same `accent` edge (or `ring`,
+ * under focus), with `accent.muted` in the one-dp gap between it and the sample. It costs no
+ * layout. **No mockup draws a chosen sample**: this is the shared chooser treatment carried to a
+ * form that has no well, a capability listed in R9 §4 E4, not a picture read off a board.
  */
 export function SelectionFrame({
   tone,
   radius,
+  inside = false,
   testID,
 }: SelectionFrameProps): React.JSX.Element | null {
   if (tone.background === undefined && tone.borderColor === 'transparent') return null;
+  if (inside)
+    return (
+      <View
+        testID={testID}
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          borderRadius: radius,
+          borderWidth: tone.borderWidth,
+          borderColor: tone.borderColor,
+        }}
+      />
+    );
   const offset = FOCUS_RING + FOCUS_RING_GAP;
   return (
     <View

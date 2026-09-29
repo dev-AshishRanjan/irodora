@@ -27,6 +27,7 @@ import {
   ThemeProvider,
   type Sample,
 } from '../src/index.js';
+import { nativeColors } from '@irodora/design-tokens';
 import { flattenStyle, type TestNode } from '../src/testing/index.js';
 
 const COPY: Readonly<Record<MeasurementSource, string>> = {
@@ -141,7 +142,7 @@ describe('drawn as the mockups draw it', () => {
     const at = (node: React.JSX.Element): Record<string, unknown> => badge(draw(node));
     expect(
       at(<ProvenanceChip sample={sampleOf('estimated')} copy={COPY} height={16.5} />),
-    ).toMatchObject({ height: 16.5 });
+    ).toMatchObject({ height: 16.5, borderWidth: 1, borderColor: nativeColors.dark.border });
     expect(
       at(
         <ProvenanceChip
@@ -151,7 +152,11 @@ describe('drawn as the mockups draw it', () => {
           height={18.5}
         />,
       ),
-    ).toMatchObject({ height: 18.5 });
+    ).toMatchObject({
+      height: 18.5,
+      borderWidth: 0,
+      backgroundColor: nativeColors.dark['surface.2'],
+    });
     const camera = draw(
       <ProvenanceChip
         sample={sampleOf('estimated')}
@@ -161,7 +166,11 @@ describe('drawn as the mockups draw it', () => {
         height={25}
       />,
     );
-    expect(badge(camera)).toMatchObject({ height: 25 });
+    expect(badge(camera)).toMatchObject({
+      height: 25,
+      borderWidth: 0,
+      backgroundColor: nativeColors.dark['surface.2'],
+    });
     expect(nodes(camera).some((n) => n.type === 'RNSVGSvgView')).toBe(true);
   });
 });

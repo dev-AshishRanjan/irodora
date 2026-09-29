@@ -18,6 +18,8 @@
  * - **The move (ADR-0116).** `onSample`, the E3 rule applied per sample: for the text and for the
  *   edge, how many entries need a move, whether any has none, and the largest move in 0.001 steps
  *   of OKLab L and in ΔE00 from what is drawn.
+ * - **A line where none is drawn (OQ-46).** The same for an element that binds no keyline: the line
+ *   starts as the well, and the count is how many samples it has to show on.
  *
  * ```
  * pnpm --filter @irodora/design-tokens build   # the tool reads the built package
@@ -81,6 +83,7 @@ for (const [palette, colors] of Object.entries(nativeColors)) {
   for (const [what, candidates, floor] of [
     ['text', inks, ON_SAMPLE_FLOOR.text],
     ['edge', edge, ON_SAMPLE_FLOOR.edge],
+    ['line where no keyline is drawn (the well)', [colors['swatch.well']], ON_SAMPLE_FLOOR.edge],
   ]) {
     let moved = 0;
     let none = 0;

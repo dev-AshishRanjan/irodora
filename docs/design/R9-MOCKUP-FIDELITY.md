@@ -104,6 +104,9 @@ rule 3 make this non-negotiable, and the mockups show why:
   (it is `44.37 / -2.85 / -9.23`) and OKLCh `0.490 / 0.035 / 240.2°` (it is `0.519 / 0.028 /
   242.7°`); its "Display-P3" triplet is the sRGB values ÷ 255, not a P3 conversion; `05` renders
   `#EB6EA5`, a light pink, as deep crimson.
+- **Texture drawn inside a sample**: `12`'s fabric sample carries a woven texture. The sample is the
+  colour (or the stored photograph where the binding is a photo), so `FabricSwatch` draws the colour
+  and its pinked edge, not the weave (`F-233`).
 
 ### E2 — A drawn claim the product cannot demonstrate
 
@@ -209,12 +212,19 @@ rule above is applied to each sample by `onSample`, with the same search and the
 | what | drawn | floor | where it fails | moved to |
 |---|---|---|---|---|
 | text on a sample (C8) | `foreground` or `inverse.foreground`, whichever passes | 4.5:1 | on mid-tones neither ink clears: 7 · 9 · 19 · 6 of the 120 corpus colours (Sumi · Washi · Slate · Obsidian) | the ink needing fewer steps, the smallest step that passes; at most ΔE00 4.15 · 5.22 · 12.07 · 2.50 |
-| a sample's edge | `swatch.keyline` over `swatch.well` (the well itself where an element draws no keyline) | 3:1 | against samples near the line's own lightness: it clears only 62 · 56 · 45 · 65 of 120 | the smallest step that passes; at most ΔE00 40.28 · 52.42 · 32.40 · 41.83 |
+| a sample's edge, where the element draws the keyline | `swatch.keyline` over `swatch.well`, at the drawn width (C20) | 3:1 | against samples near the line's own lightness: it clears only 62 · 56 · 45 · 65 of 120 | the smallest step that passes; at most ΔE00 40.28 · 52.42 · 32.40 · 41.83 |
+| a sample's edge, where the element draws **no** keyline | nothing (the well) | 3:1 | against samples near the card's own lightness | **a line appears** on 44 · 57 · 58 · 42 of 120; at most ΔE00 48.42 · 55.86 · 40.54 · 49.99 from the well. **OQ-46** |
 
-The edge row is the large one. The README line is faint, and against a sample near the card's own
-lightness no faint line reaches 3:1, so on about half the corpus it is drawn as a visible grey.
-That replaces the two-tone ring F-068 drew, which no mockup draws. `F-267` carries the moved values
-for a person to confirm. A plate behind the text is not an E3 move: no mockup draws one.
+The edge rows are the large ones. The README line is faint, and against a sample near the card's own
+lightness no faint line reaches 3:1, so on about half the corpus it is drawn as a visible grey; and
+where an element draws no line at all, a line appears on 42–58 of 120. **The direction follows the
+step count**: on the mockups' own hero colour (#5B6B78), the keyline moves dark (#1D1E24, 135 steps)
+where `01` and `06` draw a light line. This replaces the two-tone ring F-068 drew, which board `00`
+draws in its swatch-wells panel and the screens, which govern their own surfaces (P3), do not.
+The edge rests on the product's own promise (ACCESSIBILITY.md §5), not on WCAG, so keeping a line
+the drawing lacks is **OQ-46**, a person's; until it is answered the shipped guarantee stands.
+`F-267` carries the moved values for a person to confirm. A plate behind the text is not an E3 move:
+no mockup draws one.
 
 In the four palettes a lightness move reaches every sample. The **device colour** tints the inks
 (up to C 0.017), and on 222 of its 720 seeds no lightness move reaches a narrow band of mid-tones.
@@ -234,6 +244,11 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   behind *Garment Scan* or *Calibrated Card*. **OQ-8.**
 - **FR-52** — the personal-compatibility score and the investment signal. `22` draws four tiles
   and neither of them. **OQ-10** — dropping them is a PRD change, not a layout one.
+- **A chosen sample** — `AddGarment`, `Measure`, `OutfitBuilder`, `ProfileSetup` and `Shopping` let a
+  person choose a colour by its sample, and no mockup draws a chosen sample. The shared chooser
+  treatment (F-176) was painted on the padded well; with no well (`F-233`) it is drawn as a frame
+  just outside the sample (`SelectionFrame`), costing no layout, and on a sample bled into its card
+  as its edge drawn over it.
 
 ---
 
@@ -254,7 +269,7 @@ the old `chromaCeiling` of `0.01` (C 0.0086–0.0256, h ≈ 264°), so the ceili
 | level 3 | `#323742` | `#E5E3DE` |
 | border.subtle | `#2E333D` | `#E5E3DE` |
 | border.strong | `#464D5B`, decorative; the state is `ring` `#788090` (§E3) | `#1A1B1E`; `ring` `#3A3B3E` (§E3) |
-| keyline | `#FFFFFF22` (`swatch.keyline`; `F-233` draws it around every sample, moved per sample where it fails 3:1, §E3) | `#1A1B1E18` (the same) |
+| keyline | `#FFFFFF22` (`swatch.keyline`; `F-233` draws it around a sample whose element binds a keyline, at the drawn width, moved per sample where it fails 3:1, §E3, C20; where none is bound, a line only where the sample would lose its edge, OQ-46) | `#1A1B1E18` (the same) |
 | text.primary | `#F7F8FA` | `#1A1B1E` |
 | text.secondary | `#A6B0BC` | `#5C6470` |
 | text.tertiary | `#768290` on ground (`foreground.3`), `#94A1AF` on cards (`foreground.3.card`) (§E3) | `#5D6674`, both tokens (§E3) |
@@ -489,6 +504,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C17** ⇄ | `14` draws the splash dark only | light appearance: `14`'s composition in `25`'s palette — so a light-mode launch does not flash dark then light |
 | **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn. Settled by `F-220` against FR-73's acceptance text: it also requires each proposed colour's gamut cost and each combination's family and generated-or-curated mark, none of which `19` draws — **OQ-27** |
 | **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row |
+| **C20** | The line around a sample is drawn light grey on `01` (#AF–#C0, 2.5 dp), `06` (#BE–#C9, 6.9 dp), `03` (#A0A5AB, 1 dp) and `20` (#717B84, 1 dp); the README's keyline is `#FFFFFF22`, which over the card reads `#3E4046` | **P4** for the value: the README keyline, moved per sample where it fails 3:1 (§4 E3, ADR-0116). **P1** for the width: each screen's, recorded as `raw.keylinePx` and drawn with `keylineWidth` (`F-233`). Found by `F-233`'s review |
 
 **The C10 census (`F-225`, [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)).**
 Each element C10 and ADR-0110 name is declared once in the manifest's `exceptions`, keyed by the
@@ -646,7 +662,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 | **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
-| **OQ-45** | `04`, `10` and `23` draw their joined samples 46.5, 60 and 45.5 dp tall, under ADR-0095's 77 dp floor for a pair a person judges (a sample must subtend the observer its ΔE00 was fit for). Follow the drawn height (golden rule 14), keep the floor (rule 11: never overstate accuracy), or keep it only where a figure is shown beside the pair? F-233 leaves `Strip`'s height as it is until this is answered. | `F-245` `F-251` `F-260` |
+| **OQ-46** | The line around a sample rests on the product's own promise (ACCESSIBILITY.md §5), not on WCAG, and ADR-0116 keeps it per sample. It draws **a line where the mockups draw none**: where an element binds no keyline (19, 21, 09, 17, 23, 15, three of five strips) a line appears on 44 · 57 · 58 · 42 of 120 corpus colours. And its direction follows the step count: on the heroes' own colour it moves **dark** where `01` and `06` draw a light line. Keep the promise as ADR-0116 applies it, drop it where the mockup draws no line, or move the line toward the drawn lightness? | `F-267` |
+| **OQ-45** | `04`, `10` and `23` draw their joined samples 46.5, 60 and 45.5 dp tall, under ADR-0095's 77 dp floor for a pair a person judges (a sample must subtend the observer its ΔE00 was fit for). Follow the drawn height (golden rule 14), keep the floor (rule 11: never overstate accuracy), or keep it only where a figure is shown beside the pair? F-233 leaves `Strip`'s height as it is until this is answered. **Extended by F-233's review:** `04` also draws a light seam between its two members (#B7C1CA) and a bright outline on the right member only (#CAD1D9), where `Strip` draws no line where members meet (ADR-0095's argument) and treats both alike. Follow the seam and the one-sided outline, or keep ADR-0095's rule? | `F-245` `F-251` `F-260` |
 | **OQ-43** | `05` draws its selected season chip as a fill swap with no mark; ACCESSIBILITY §4 asks for a highlight + checkmark, and `12 15 17` mark a chosen pill with a leading dot. Does golden rule 13 force the dot onto `05`'s chip? A segmented row is a different case — an unchosen segment draws no shape, so its fill is a shape appearing (F-232) | `F-246` |
 | **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |

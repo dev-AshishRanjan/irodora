@@ -191,7 +191,7 @@
         "h": 85.5
       },
       "tokens": {
-        "border": "text.primary",
+        "border": "text.secondary",
         "radius": "md"
       },
       "type": null,

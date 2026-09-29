@@ -6074,6 +6074,14 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/selection.tsx#FocusRing"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/selection.tsx#SelectionFrame"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6082,9 +6090,9 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "`selection.test.tsx` renders TextField and SearchField focused and not, in all four palettes. It requires the focus edge to be `ring` and not `border.strong`, and requires no edge without focus. Mutation-checked: painting focus in `border.strong` fails four cases. The selection tone's own tests hold `ring` for focus in every state. Gate 9 checks `ring` at 3:1 on the ground and levels 1–3 in every palette. Gate 10's `[ring, border.strong]` pair keeps them distinguishable, which is what moved Washi's ring off the drawn `#1A1B1E`. AND `inventory-pairings.test.ts` now checks the premise per element instead of assuming it. Every element outlined in `border.strong` must carry a label, its own or a child's, and a decoy with none is named. The strong border drawn as a FOREGROUND, the sheet handle, maps to `border.indicator`, whose pairings must be declared in both themes.",
+      "guard": "`selection.test.tsx` renders TextField and SearchField focused and not, in all four palettes. It requires the focus edge to be `ring` and not `border.strong`, and requires no edge without focus. Mutation-checked: painting focus in `border.strong` fails four cases. The selection tone's own tests hold `ring` for focus in every state. Gate 9 checks `ring` at 3:1 on the ground and levels 1–3 in every palette. Gate 10's `[ring, border.strong]` pair keeps them distinguishable, which is what moved Washi's ring off the drawn `#1A1B1E`. AND `inventory-pairings.test.ts` now checks the premise per element instead of assuming it. Every element outlined in `border.strong` must carry a label, its own or a child's, and a decoy with none is named. The strong border drawn as a FOREGROUND, the sheet handle, maps to `border.indicator`, whose pairings must be declared in both themes. F-233: sample-family.test (the bled sample's frame inside, the ordinary one outside) and the conformance Swatch subject under `selection-treatment` (chooser) in four palettes.",
       "memory": "memory/effects/a-token-that-changes-meaning-keeps-its-name-and-loses-its-readers.md",
-      "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi). F-232 (2026-09-28): focus on a control drawn at its mockup's size is `FocusRing`, a `ring` overlay OUTSIDE the box that costs no layout — Button, Chip, the segmented ChoiceGroup, Switch and the Slider thumb. The Switch drew focus as a border inside its track; that is gone. Rendered in button-forms, switch, slider and segmented-choice tests, each with an unfocused decoy.",
+      "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi). F-232 (2026-09-28): focus on a control drawn at its mockup's size is `FocusRing`, a `ring` overlay OUTSIDE the box that costs no layout — Button, Chip, the segmented ChoiceGroup, Switch and the Slider thumb. The Switch drew focus as a border inside its track; that is gone. Rendered in button-forms, switch, slider and segmented-choice tests, each with an unfocused decoy. F-233 (2026-09-29): a Swatch has no well to paint the chooser treatment on, so SelectionFrame draws it just outside the sample (and, on a sample bled into its card, as its edge drawn over it). It paints `ring` under focus and `accent` when chosen, so a change to either token's meaning reaches it. No mockup draws a chosen sample (R9 §4 E4).",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -6472,7 +6480,7 @@
       "feature": "F-233",
       "guard": "test:packages/design-tokens/test/on-sample.test.ts (the gamut scan in four palettes; the reach per luminance; the 222 device-palette gaps answered; the tie, the chromatic fallback and minimality, each with a decoy) · test:packages/design-tokens/test/swatch-edge.test.ts (the moved keyline measured by its own arithmetic) · gate:contrast — apps/mobile/test/screens-sample-ink.test.ts pins the census and a digest of every value drawn against the corpus in every palette, and a 0.01 change to the edge floor was shown to fail all four.",
       "memory": "memory/effects/a-colour-drawn-against-a-sample-moves-per-sample.md",
-      "rationale": "ADR-0116: E3 applied per sample. Every ink set on a sample and every line around one is chosen by onSample at render, so a change to its search, its tie-break, its floors, the inks, the keyline or the well repaints every sample in the product and changes the colour drawn on Hermes and on Node alike. The gate-9 corpus test is the one place a drift shows before a device does. The sample family's components draw ONLY what sampleEdge and sampleInk return: a component that painted a token on a sample instead would pass as a token and fail the floor on a mid-tone."
+      "rationale": "ADR-0116: E3 applied per sample. Every ink set on a sample and every line around one is chosen by onSample at render, so a change to its search, its tie-break, its floors, the inks, the keyline or the well repaints every sample in the product and changes the colour drawn on Hermes and on Node alike. The gate-9 corpus test is the one place a drift shows before a device does. The sample family's components draw ONLY what sampleEdge and sampleInk return: a component that painted a token on a sample instead would pass as a token and fail the floor on a mid-tone. F-233's review: the line is drawn at the element's width (keylineWidth, raw.keylinePx; C20), no line is drawn where an element binds none and the sample holds its own edge, and OQ-46 asks a person whether a line the drawing lacks should be drawn at all."
     },
     {
       "id": "E-161",
@@ -6537,6 +6545,10 @@
         {
           "kind": "doc",
           "ref": ".harness/state/feature_list.json#F-284"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-244"
         }
       ],
       "kind": "EFFECT_LINK",
