@@ -15,6 +15,9 @@
  *   edge by itself; this says how many it misses.
  * - **Compositing.** The keyline is translucent, and its composite is taken in encoded sRGB — the
  *   way React Native blends — which is the model the gate reports.
+ * - **The move (ADR-0116).** `onSample`, the E3 rule applied per sample: for the text and for the
+ *   edge, how many entries need a move, whether any has none, and the largest move in 0.001 steps
+ *   of OKLab L and in ΔE00 from what is drawn.
  *
  * ```
  * pnpm --filter @irodora/design-tokens build   # the tool reads the built package
@@ -32,8 +35,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 const dist = (pkg) => pathToFileURL(join(ROOT, 'packages', pkg, 'dist', 'index.js')).href;
-const { nativeColors } = await import(dist('design-tokens'));
-const { wcagContrast } = await import(dist('color-difference'));
+const { nativeColors, onSample, ON_SAMPLE_FLOOR, paintedOver } = await import(
+  dist('design-tokens')
+);
+const { deltaE00, wcagContrast } = await import(dist('color-difference'));
+const { srgbToXyz, xyzToLab } = await import(dist('color-spaces'));
 
 /** The corpus the app ships: the label its generated bundle pins, read from the published version. */
 const pinned = readFileSync(
@@ -50,27 +56,12 @@ const rgbOf = (hex) => {
   const n = Number.parseInt(hex.replace('#', ''), 16);
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 };
-/** `rgba(r, g, b, a)` or `#rrggbbaa` over an opaque ground, blended in encoded sRGB. */
-const over = (colour, ground) => {
-  const g = rgbOf(ground);
-  let rgb;
-  let a;
-  const m = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/u.exec(colour);
-  if (m) {
-    rgb = [Number(m[1]) / 255, Number(m[2]) / 255, Number(m[3]) / 255];
-    a = Number(m[4]);
-  } else if (/^#[0-9a-f]{8}$/iu.test(colour)) {
-    rgb = rgbOf(colour.slice(0, 7));
-    a = Number.parseInt(colour.slice(7), 16) / 255;
-  } else return rgbOf(colour);
-  return rgb.map((c, i) => c * a + (g[i] ?? 0) * (1 - a));
-};
-
 console.log(`corpus ${pinned}: ${String(entries.length)} entries\n`);
 for (const [palette, colors] of Object.entries(nativeColors)) {
   const light = rgbOf(colors.foreground);
   const dark = rgbOf(colors['inverse.foreground']);
-  const keyline = over(colors['swatch.keyline'], colors['swatch.well']);
+  // The keyline as it shows over the well, drawn as the 8-bit hex `onSample` starts from.
+  const keyline = rgbOf(paintedOver(colors['swatch.keyline'], colors['swatch.well']));
   const neither = [];
   let keylinePasses = 0;
   for (const { slug, hex } of entries) {
@@ -85,4 +76,32 @@ for (const [palette, colors] of Object.entries(nativeColors)) {
   console.log(
     `  the keyline alone clears 3:1 on ${String(keylinePasses)} of ${String(entries.length)}`,
   );
+  const inks = [colors.foreground, colors['inverse.foreground']];
+  const edge = [paintedOver(colors['swatch.keyline'], colors['swatch.well'])];
+  for (const [what, candidates, floor] of [
+    ['text', inks, ON_SAMPLE_FLOOR.text],
+    ['edge', edge, ON_SAMPLE_FLOOR.edge],
+  ]) {
+    let moved = 0;
+    let none = 0;
+    let steps = 0;
+    let far = 0;
+    for (const { hex } of entries) {
+      let r;
+      try {
+        r = onSample({ candidates, sampleHex: hex, floor });
+      } catch {
+        none++;
+        continue;
+      }
+      if (!r.moved) continue;
+      moved++;
+      steps = Math.max(steps, r.steps);
+      const lab = (h) => xyzToLab(srgbToXyz(rgbOf(h)));
+      far = Math.max(far, deltaE00(lab(candidates[r.from]), lab(r.hex)));
+    }
+    console.log(
+      `  the ${what} moves on ${String(moved)}, with none found on ${String(none)}; the largest move ${String(steps)} steps, ΔE00 ${far.toFixed(2)}`,
+    );
+  }
 }

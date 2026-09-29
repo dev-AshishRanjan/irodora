@@ -164,7 +164,7 @@ export function cardSvg(entry: PublishedEntry, options: CardOptions): string {
    * THE TWO-TONE OPAQUE KEYLINE, and it is F-068's rather than a border invented here.
    *
    * A near-white entry on a near-white card has no perceptible boundary. `swatch.hairline` and
-   * its inverse were chosen so the worse of the two still reaches 4.23 against the WORST
+   * its inverse were chosen so the better of the two still reaches 4.16 against the WORST
    * possible sample — measured in packages/design-tokens/test/swatch-edge.test.ts. Reusing the
    * tokens inherits that proof; drawing a single line here would discard it.
    */

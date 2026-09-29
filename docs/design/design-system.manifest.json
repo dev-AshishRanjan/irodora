@@ -176,7 +176,7 @@
         },
         "srgb": "#F6F5F3",
         "usage": "nonText",
-        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -446,7 +446,7 @@
         },
         "srgb": "#131110",
         "usage": "nonText",
-        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -511,9 +511,9 @@
           "surface.2",
           "surface.3"
         ],
-        "role": "The README's neutralKeyline (#FFFFFF22): the line around a colour sample. Declared by F-225 as drawn; drawn by the sample family (F-233), which decides how it sits beside the two-tone hairline.",
+        "role": "The README's neutralKeyline (#FFFFFF22): the line around a colour sample. It is judged as it shows over swatch.well, against the sample it edges: where it clears 3:1 it is drawn unmoved, and where it does not it moves the smallest OKLab lightness step that does, hue and chroma held — R9 §4 E3, applied per sample because a sample is not known until it is drawn (ADR-0116, onSample).",
         "pairsWith": [],
-        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. Whether it keeps an edge against every sample is the sample family’s question (F-233), and swatch-edge.test.ts records that it cannot on its own."
+        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. It is NOT unchecked: on-sample.test.ts and swatch-edge.test.ts scan the sRGB gamut in every palette and assert 3:1 once the line is moved per sample, and carry the unmoved line — which alone cannot keep an edge — as the decoy that must fail."
       },
       "foreground.3.card": {
         "oklch": {
@@ -801,7 +801,7 @@
         },
         "srgb": "#131110",
         "usage": "nonText",
-        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -1071,7 +1071,7 @@
         },
         "srgb": "#F6F5F3",
         "usage": "nonText",
-        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
+        "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.16), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
       },
@@ -1136,9 +1136,9 @@
           "surface.2",
           "surface.3"
         ],
-        "role": "The README's neutralKeyline (#1A1B1E18): the line around a colour sample. Declared by F-225 as drawn; drawn by the sample family (F-233), which decides how it sits beside the two-tone hairline.",
+        "role": "The README's neutralKeyline (#1A1B1E18): the line around a colour sample. It is judged as it shows over swatch.well, against the sample it edges: where it clears 3:1 it is drawn unmoved, and where it does not it moves the smallest OKLab lightness step that does, hue and chroma held — R9 §4 E3, applied per sample because a sample is not known until it is drawn (ADR-0116, onSample).",
         "pairsWith": [],
-        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. Whether it keeps an edge against every sample is the sample family’s question (F-233), and swatch-edge.test.ts records that it cannot on its own."
+        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. It is NOT unchecked: on-sample.test.ts and swatch-edge.test.ts scan the sRGB gamut in every palette and assert 3:1 once the line is moved per sample, and carry the unmoved line — which alone cannot keep an edge — as the decoy that must fail."
       },
       "foreground.3.card": {
         "oklch": {

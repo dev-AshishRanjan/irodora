@@ -199,7 +199,7 @@ const percent = (value: number): DimensionValue => `${String(value)}%` as Dimens
  * **IT IS TWO-TONE**, for the reason `Swatch`'s keyline is (F-068): the other side of this line
  * is an arbitrary image. A single grey is nearly invisible over a pale garment, on the one
  * surface where the marker must always be findable. The same gamut-verified pair is reused
- * rather than a new one invented — the better of the two reaches 4.23 against the worst possible
+ * rather than a new one invented — the better of the two reaches 4.16 against the worst possible
  * sample, and they differ from each other by about 18:1 whatever sits behind them.
  *
  * `pointerEvents="none"` so the overlay never swallows a gesture meant for what is underneath.

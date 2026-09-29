@@ -306,7 +306,7 @@ export function Swatch({
         rescue it either, because both composite over the same sample and their difference
         compresses to 1.15 against white.
 
-        Opaque and two-tone: scanning the sRGB gamut, the better of the two tones reaches 4.23
+        Opaque and two-tone: scanning the sRGB gamut, the better of the two tones reaches 4.16
         against the worst possible sample, and the tones differ from each other by ~18:1
         whatever sits behind them. Verified in packages/design-tokens/test/swatch-edge.test.ts.
       */}

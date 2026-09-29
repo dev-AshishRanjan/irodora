@@ -71,6 +71,8 @@ export {
   type MoveSpace,
 } from './derive-theme.js';
 
+export { ON_SAMPLE_FLOOR, onSample, paintedOver, type OnSample } from './on-sample.js';
+
 export {
   CONTRAST_CROSSOVER_L,
   settleFloors,

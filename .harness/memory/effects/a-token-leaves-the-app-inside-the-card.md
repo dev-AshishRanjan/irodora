@@ -43,7 +43,7 @@ is reported. A hand-typed colour in the card is a failing test rather than a rev
 
 **The keyline tones are inherited, not re-derived.** The card uses `swatch.hairline` and
 `swatch.hairline.inverse` precisely so it inherits F-068's measurement — the worse tone still
-reaching 4.23 against the worst possible sample. But that measurement lives in
+reaching 4.16 against the worst possible sample. But that measurement lives in
 `packages/design-tokens/test/swatch-edge.test.ts`, not here.
 
 So a manifest change that moved `swatch.hairline` would keep **this** link green while the card

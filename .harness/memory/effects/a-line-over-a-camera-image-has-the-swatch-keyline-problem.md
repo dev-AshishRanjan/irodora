@@ -21,7 +21,7 @@ the marker must always be findable, it was nearly invisible over a pale garment.
 
 The fix was not to invent a tone. `swatch.hairline` and `swatch.hairline.inverse` already exist
 and are scanned across the whole sRGB gamut by `swatch-edge.test.ts`: the better tone reaches
-**4.23** against the worst possible sample, and the two differ from each other by **~18:1**
+**4.16** against the worst possible sample, and the two differ from each other by **~18:1**
 whatever sits behind them. A new pair would have carried no such evidence — and nothing would have
 measured it, because **the camera image is not a token** and no contrast gate can see it.
 

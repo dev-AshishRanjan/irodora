@@ -202,6 +202,25 @@ drawn. The moves live in the manifest's `themeDerivations` and are recomputed by
 (`seed.ts`) applies the same rule at runtime, in its own theme only, and reports each move as a
 floor correction. All 720 hue-and-mode seeds apply.
 
+**Per sample (`F-233`, [ADR-0116](../adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).**
+Two things are drawn against a colour sample, and a sample is not known until it is drawn, so the
+rule above is applied to each sample by `onSample`, with the same search and the same checker:
+
+| what | drawn | floor | where it fails | moved to |
+|---|---|---|---|---|
+| text on a sample (C8) | `foreground` or `inverse.foreground`, whichever passes | 4.5:1 | on mid-tones neither ink clears: 7 · 9 · 19 · 6 of the 120 corpus colours (Sumi · Washi · Slate · Obsidian) | the ink needing fewer steps, the smallest step that passes; at most ΔE00 4.15 · 5.22 · 12.07 · 2.50 |
+| a sample's edge | `swatch.keyline` over `swatch.well` (the well itself where an element draws no keyline) | 3:1 | against samples near the line's own lightness: it clears only 62 · 56 · 45 · 65 of 120 | the smallest step that passes; at most ΔE00 40.28 · 52.42 · 32.40 · 41.83 |
+
+The edge row is the large one. The README line is faint, and against a sample near the card's own
+lightness no faint line reaches 3:1, so on about half the corpus it is drawn as a visible grey.
+That replaces the two-tone ring F-068 drew, which no mockup draws. `F-267` carries the moved values
+for a person to confirm. A plate behind the text is not an E3 move: no mockup draws one.
+
+In the four palettes a lightness move reaches every sample. The **device colour** tints the inks
+(up to C 0.017), and on 222 of its 720 seeds no lightness move reaches a narrow band of mid-tones.
+There the ink gives up the least chroma it must on ADR-0111 §5's grid, hue held, and then takes the
+smallest lightness move (ADR-0116).
+
 **Tap targets** meet 44 dp (iOS) / 48 dp (Android) through the hit area, not the drawn size — the
 chip stays the size the mockup draws.
 
@@ -235,7 +254,7 @@ the old `chromaCeiling` of `0.01` (C 0.0086–0.0256, h ≈ 264°), so the ceili
 | level 3 | `#323742` | `#E5E3DE` |
 | border.subtle | `#2E333D` | `#E5E3DE` |
 | border.strong | `#464D5B`, decorative; the state is `ring` `#788090` (§E3) | `#1A1B1E`; `ring` `#3A3B3E` (§E3) |
-| keyline | `#FFFFFF22` (`swatch.keyline`; the hairline stays until `F-233` draws it) | `#1A1B1E18` |
+| keyline | `#FFFFFF22` (`swatch.keyline`; `F-233` draws it around every sample, moved per sample where it fails 3:1, §E3) | `#1A1B1E18` (the same) |
 | text.primary | `#F7F8FA` | `#1A1B1E` |
 | text.secondary | `#A6B0BC` | `#5C6470` |
 | text.tertiary | `#768290` on ground (`foreground.3`), `#94A1AF` on cards (`foreground.3.card`) (§E3) | `#5D6674`, both tokens (§E3) |
@@ -458,7 +477,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C5** | Board `00` draws a *Level 1* card white | **P3**: the screens draw it `#20232A` |
 | **C6** | Kanji are sans on `01 05 06 26`, Mincho on the card `20` | each surface follows its own mockup — the card needs a Japanese serif face |
 | **C7** | `25` draws Home's hero sample as a circle | **P1**: `01`'s rounded square |
-| **C8** | Text sits **on** the sample in `01 07 09 13` and beside it in `05 06 19 21 24` | each screen follows its own mockup. Text on a sample takes, per sample, whichever of the two text colours passes 4.5:1 (E3) |
+| **C8** | Text sits **on** the sample in `01 07 09 13` and beside it in `05 06 19 21 24` | each screen follows its own mockup. Text on a sample takes, per sample, whichever of the two text colours passes 4.5:1 (E3). Where neither does, the one needing fewer steps moves the smallest lightness step that passes (§4 E3, per sample; ADR-0116) |
 | **C9** | `15` draws four themes; the product shipped eight | the four drawn (§5), adopted by `F-225` (ADR-0111); system and device accent kept (E4) |
 | **C10** | Chroma where the monochrome brief says none: `02` gold HUD, `04 12` green verdicts, `24` tinted ΔE00 badges, `27` tan / amber / purple state art, `23` gradient slider tracks and a brown label pill, `13` tinted slot rows | followed. Each also carries text or an icon (golden rule 13); each is declared as a chroma-ceiling exception by `F-225`; the purple mark in `27` is the one place the mark takes a tint. **Extended by [ADR-0110](../adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md)** (OQ-15, OQ-37) to the icons drawn in colour: `00`'s wheel and palette, `03`'s hue ring, `06`'s seal, `07 15 16`'s padlocks, `11`'s bulb, `13`'s harmony circles and sparkles, `15`'s split CVD badge — each over its one-ink silhouette (`24`'s camera, which OQ-15 called gold, is drawn white and takes none) |
 | **C11** | Samples sit on tinted cards (C up to 0.0206). A neutral well at the same lightness would **visibly** differ from them — ΔE00 2.94 (ground) to 6.50 (level 3) | followed — **the user's decision**, reaffirmed 2026-09-10 after this was raised. The ADR superseding [ADR-0096](../adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) records that samples are now judged against a surround of measured chroma, which is the consequence that ADR existed to prevent |

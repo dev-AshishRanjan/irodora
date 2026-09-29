@@ -388,3 +388,15 @@ fixed, or recorded as `backlog`, and the gates are re-run.
 - `KasaneBar`, `ThemeTile`, `TextureBadge`, `PaletteSlot`, `CorpusChip`.
 - The export card SVG, and the `Sheet`.
 - **The joined samples' height (OQ-45).**
+
+## Status (implementing session)
+
+| inc | commit | what landed |
+|---|---|---|
+| 1 | `06550f0` | Measured and recorded: the samples, the cards, the rings; 04, 10 and 23 re-recorded as `ui:Strip`, 09 and 17 as `ui:Swatch`; `sample-census.mjs`; OQ-45 raised. |
+| 2 | this commit | `onSample` and `paintedOver`; gamut scans for the ink (4.5:1) and the edge (3:1) in four palettes, no null; `swatch-edge.test`'s `worstCase` takes the worse compositing model and 8-bit samples; ADR-0116; R9 §4 E3 (per sample), §5, §6 C8; the keyline's role. The colour-scientist consult (not a review round) found no wrong value and asked for four fixes, all made: the reach proven per luminance instead of argued from white and black; the fallback holding hue (it could drop chroma to 0), on §5's grid and E3's order, 12 ms interpreted where a ΔE00-ranked grid took 630 ms; the tie-break stated and settled by ΔE00; the edge floor called the product's guarantee at 1.4.11's ratio, not a WCAG requirement. **It also found the fallback is live**: device palettes leave a gap on 222 of 720 seeds, now each answered in `on-sample.test`. |
+
+**Found on the way, and corrected where it is quoted:**
+- The two-tone keyline's worst case is **4.16**, not the 4.23 quoted since F-068: the tones moved after
+  it was measured and nothing held the prose to the scan. `swatch-edge.test` now pins it.
+- E-072's guard named gate 9 for `swatch-edge.test`, which runs in gate 5.
