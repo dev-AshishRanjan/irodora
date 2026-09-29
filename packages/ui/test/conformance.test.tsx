@@ -20,6 +20,7 @@ import {
   Button,
   Card,
   Chip,
+  FabricSwatch,
   ChoiceGroup,
   Dialog,
   DisplaySettingsProvider,
@@ -1195,6 +1196,18 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         />,
         theme,
       ),
+  })),
+  /*
+   * 12'S PINKED FABRIC SAMPLE (F-233): the outline stroked in the sample's line, on a pale sample
+   * where the keyline holds and a mid-tone where it moves.
+   */
+  ...(['#F0EDE6', '#87795D'] as const).map((hex): ConformanceSubject => ({
+    name: `FabricSwatch (12, ${hex})`,
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: [hex],
+    render: (_state, theme) =>
+      draw(<FabricSwatch name="Kuri-iro" hex={hex} color={SAMPLE} />, theme),
   })),
   {
     /*

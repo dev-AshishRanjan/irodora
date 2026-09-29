@@ -95,10 +95,15 @@ export default {
       measured: { bg: '#1E2128' },
       raw: { cornerPx: 21 },
     }),
-    el('12.source.swatch', 'new:FabricSwatch', B(67, 156, 167, 167), {
+    // A fabric sample with a pinked edge on all four sides (F-233). Its edge profile, read at the
+    // half-way level between the card and the fill: 12 tips across the top at a 13.3 px pitch and
+    // 13 down the left at 12.2, tips on the box edge, valleys 5.4 and 5.3 px in; the two sides
+    // pooled give the pitch and depth below (mockups/tools/pinking.mjs).
+    el('12.source.swatch', 'ui:FabricSwatch', B(67, 156, 167, 167), {
       parent: '12.source',
       tokens: { keyline: 'keyline' },
       binding: 'store:draft.colour.hex',
+      raw: { toothPx: 5.3, pitchPx: 12.7 },
     }),
     t('12.source.name', B(258, 197, 287, 25), '12.source', 'engine:draft.colour.label', {
       tokens: { fg: 'text.primary' },

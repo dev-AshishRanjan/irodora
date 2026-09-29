@@ -204,7 +204,7 @@
       "id": "12.source.swatch",
       "order": 7,
       "parent": "12.source",
-      "component": "new:FabricSwatch",
+      "component": "ui:FabricSwatch",
       "box": {
         "x": 67,
         "y": 156,
@@ -225,6 +225,10 @@
       "illustration": null,
       "binding": "store:draft.colour.hex",
       "action": null,
+      "raw": {
+        "toothPx": 5.3,
+        "pitchPx": 12.7
+      },
       "copy": null
     },
     {

@@ -142,6 +142,16 @@ export {
   type StripProps,
 } from './Pair.js';
 export {
+  FABRIC_KEYLINE,
+  FABRIC_PITCH,
+  FABRIC_SIZE,
+  FABRIC_TOOTH,
+  FabricSwatch,
+  pinkedOutline,
+  type FabricSwatchProps,
+  type PinkedPoint,
+} from './FabricSwatch.js';
+export {
   Swatch,
   SWATCH_KEYLINE,
   SWATCH_SIZE,

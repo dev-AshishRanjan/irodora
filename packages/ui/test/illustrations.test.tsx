@@ -342,7 +342,7 @@ describe('never over a sample (the rule the well exists for)', () => {
     'ui:Strip',
     'ui:Bands',
     'new:DrapeSwatch',
-    'new:FabricSwatch',
+    'ui:FabricSwatch',
     'new:KasaneBar',
     'new:KasaneStrip',
     'new:SplitBar',
