@@ -1215,6 +1215,49 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE SAMPLE FORMS (F-233, criterion 2), each at an element's measured size: 03's detail
+   * rectangle with its caption, 01's hero spanning its card with its name set on it, 19's anchor
+   * in its ring, 17's draping sample bled into its card, and a list sample drawn without a keyline
+   * on a mid-tone, where the line has to appear and move. The line and any ink ADR-0116 moves are
+   * no token, and are exempt only because they are these samples' own.
+   */
+  ...(
+    [
+      [
+        'Swatch (detail rectangle, md, captioned)',
+        '#526A6B',
+        { width: 105, height: 58.5, corner: 'md', caption: 'name' },
+      ],
+      [
+        'Swatch (hero, spanning its card, named on it)',
+        '#526A6B',
+        {
+          width: 'fill',
+          height: 172,
+          children: (
+            <Text size="label" on={{ hex: '#526A6B', color: SAMPLE }}>
+              Ai-nezumi
+            </Text>
+          ),
+        },
+      ],
+      [
+        'Swatch (anchor, in its ring)',
+        '#526A6B',
+        { width: 87.5, height: 81, corner: 'md', anchor: { ring: 2.3, gap: 3.8 } },
+      ],
+      ['Swatch (bled into its card)', '#526A6B', { height: 88, bleed: true, keyline: false }],
+      ['Swatch (list, no keyline, a mid-tone)', '#87795D', { size: 34, keyline: false }],
+    ] as const
+  ).map(([name, hex, form]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: [hex],
+    render: (_state, theme) =>
+      draw(<Swatch name="Ai-nezumi" hex={hex} color={SAMPLE} {...form} />, theme),
+  })),
 ];
 
 /**
@@ -1509,15 +1552,29 @@ describe('the swatch carries what ACCESSIBILITY.md section 5 requires', () => {
   });
 
   it('carries a non-colour channel for selection', () => {
-    // NFR-9: a highlighted selected item needs a checkmark too, not a border alone.
-    const off = JSON.stringify(
-      draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} />, 'light'),
-    );
-    const on = JSON.stringify(
-      draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} selected />, 'light'),
-    );
-    expect(off).not.toContain('✓');
-    expect(on).toContain('✓');
+    // NFR-9: a highlighted selected item needs a checkmark too, not a border alone. The drawn
+    // tick badge is that channel on every swatch (its path is the check glyph); the caption's
+    // tick joins it where the mockup prints a caption (F-233: only there).
+    const TICK = 'M5 12.5l4.5 4.5L19 7.5';
+    const draws = (selected: boolean, caption?: 'name'): string =>
+      JSON.stringify(
+        draw(
+          <Swatch
+            name="Ai-nezumi"
+            hex="#526A6B"
+            color={SAMPLE}
+            selected={selected}
+            {...(caption === undefined ? {} : { caption })}
+          />,
+          'light',
+        ),
+      );
+    expect(draws(false)).not.toContain(TICK);
+    expect(draws(true)).toContain(TICK);
+    expect(draws(false, 'name')).not.toContain('✓');
+    expect(draws(true, 'name')).toContain('✓');
+    // DECOY: without a caption there is no caption tick to lean on — the badge stands alone.
+    expect(draws(true)).not.toContain('✓');
   });
 });
 

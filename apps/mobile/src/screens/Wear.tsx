@@ -180,6 +180,7 @@ export function Wear({
           <Row gap="sm" align="center">
             {entry === null ? null : (
               <Swatch
+                caption="name"
                 name={entry.entry.name.en}
                 hex={entry.derived.hex}
                 color={colorFor(entry.entry)}
@@ -262,6 +263,7 @@ export function Wear({
           <Row gap="sm" align="center">
             {entry === null ? null : (
               <Swatch
+                caption="name"
                 name={entry.entry.name.en}
                 hex={entry.derived.hex}
                 color={colorFor(entry.entry)}
@@ -352,6 +354,7 @@ export function Wear({
       >
         <Stack gap="sm">
           <Swatch
+            caption="name"
             name={found.entry.name.en}
             hex={found.derived.hex}
             color={colorFor(found.entry)}

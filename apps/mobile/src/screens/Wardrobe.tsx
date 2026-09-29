@@ -404,6 +404,7 @@ function GarmentCell({
         <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.lg }}>
           {uri === null ? (
             <Swatch
+              caption="name"
               name={garment.color.name}
               hex={garment.color.hex}
               color={colorOf(garment.color)}
@@ -427,6 +428,7 @@ function GarmentCell({
                 style={{ position: 'absolute', left: nativeSpacing.sm, bottom: nativeSpacing.sm }}
               >
                 <Swatch
+                  caption="name"
                   name={garment.color.name}
                   hex={garment.color.hex}
                   color={colorOf(garment.color)}
@@ -598,6 +600,7 @@ export function Wardrobe({
         >
           <Row gap="md">
             <Swatch
+              caption="name"
               name={selected.color.name}
               hex={selected.color.hex}
               color={colorOf(selected.color)}

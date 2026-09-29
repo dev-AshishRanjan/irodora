@@ -220,6 +220,7 @@ export function PaletteStudio({
       <View style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}>
         <Row gap="sm">
           <Swatch
+            caption="name"
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}
@@ -402,6 +403,7 @@ export function PaletteStudio({
             >
               <Row gap="sm">
                 <Swatch
+                  caption="name"
                   name={m.entry.name.en}
                   hex={m.derived.hex}
                   color={colorFor(m.entry)}
@@ -504,6 +506,7 @@ export function PaletteStudio({
                       const entry = entryBySlug(finding.alternative.slug);
                       return entry === null ? null : (
                         <Swatch
+                          caption="name"
                           name={entry.entry.name.en}
                           hex={entry.derived.hex}
                           color={colorFor(entry.entry)}

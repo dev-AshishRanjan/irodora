@@ -270,6 +270,7 @@ export function Compare({
             >
               <Row gap="sm">
                 <Swatch
+                  caption="name"
                   name={m.entry.name.en}
                   hex={m.derived.hex}
                   color={colorFor(m.entry)}

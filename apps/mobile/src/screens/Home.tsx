@@ -149,6 +149,7 @@ export function Home({
           precisely so this is always true.
         */}
         <Swatch
+          caption="name"
           name={content.lastReading.name}
           hex={content.lastReading.hex}
           color={colorOf(content.lastReading)}
@@ -188,7 +189,12 @@ export function Home({
         }}
       >
         <Row gap="md" align="start">
-          <Swatch name={content.today.entry.name.en} {...entrySwatch(content.today)} size={size} />
+          <Swatch
+            caption="name"
+            name={content.today.entry.name.en}
+            {...entrySwatch(content.today)}
+            size={size}
+          />
           <Stack gap="xs">
             {/*
               The kanji leads, with the reading beneath it. That order is the corpus's own — the
@@ -345,6 +351,7 @@ export function Home({
               <Row gap="sm" wrap>
                 {content.wardrobe.colors.map((c) => (
                   <Swatch
+                    caption="name"
                     key={c.id}
                     name={c.name}
                     hex={c.hex}

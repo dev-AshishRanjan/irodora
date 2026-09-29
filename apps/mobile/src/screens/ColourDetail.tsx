@@ -336,6 +336,7 @@ export function ColourDetail({
             {resolved.map((r) => (
               <View key={r.entry.slug} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
                 <Swatch
+                  caption="name"
                   name={r.entry.name.en}
                   hex={r.derived.hex}
                   color={colorFor(r.entry)}
@@ -399,7 +400,13 @@ export function ColourDetail({
         gamut-verified two-tone keyline come with it, which is why the sample can be this large without the page around it
         shifting how the colour reads.
       */}
-      <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={heroSize} />
+      <Swatch
+        caption="name"
+        name={entry.name.en}
+        hex={derived.hex}
+        color={colorFor(entry)}
+        size={heroSize}
+      />
 
       <Stack padding="lg" gap="xl">
         <Stack gap="xs">
@@ -657,6 +664,7 @@ export function ColourDetail({
               <Row gap="sm" wrap align="stretch" padY="xs">
                 <Stack gap="xs" align="center">
                   <Swatch
+                    caption="name"
                     name={entry.name.en}
                     hex={derived.hex}
                     color={colorFor(entry)}
@@ -676,6 +684,7 @@ export function ColourDetail({
                 rendering of it, not a second measurement.
               */}
                     <Swatch
+                      caption="name"
                       name={`${entry.name.en} — ${t(CVD_KEYS[kind])}`}
                       hex={hex}
                       color={colorFor(entry)}

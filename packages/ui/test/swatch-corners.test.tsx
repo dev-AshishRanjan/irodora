@@ -14,12 +14,12 @@
  * a quarter of the side.
  *
  * Nothing else in the system would see either. The contrast gate reads colours, the conformance
- * suite reads structure, and `swatch-edge.test.ts` scans the gamut for the two tones — none of
- * them has a geometry.
+ * suite reads structure, and `on-sample.test.ts` scans the gamut for the line — none of them has
+ * a geometry.
  */
 
 import { swatchCorner } from '../src/Swatch.js';
-import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { nativeRadius } from '@irodora/design-tokens';
 
 /**
  * The straight run left on each edge, as a fraction of the side.
@@ -46,35 +46,15 @@ describe('swatchCorner', () => {
     }
   });
 
-  it('keeps the well exactly one inset outside the keyline, at every size (F-187)', () => {
+  it('draws no well: the sample and its line are the whole of it (F-233)', () => {
     /*
-     * THE SAME ASSERTION AS THE ONE ABOVE, ONE LEVEL OUT.
-     *
-     * The well was a RECTANGLE while the sample inside it was rounded — reported as *"The bg of
-     * color div, which is grey color, is still square/rectangle shaped"*. ADR-0090 rounded the
-     * sample and F-161 called the roundness done; the ground it sits on was never touched.
-     *
-     * Nesting a third rounded rectangle brings back the concentricity failure the keyline
-     * already had to solve: equal radii make the outer arc TIGHTER than the inner one, and a
-     * sliver of ground shows through each corner. The gap has to be the padding, exactly.
+     * The well was a third rounded rectangle around the keyline, and F-187 had to keep it
+     * concentric. No mockup draws one — every sample sits on a level-1 card (C11) — so F-233 took
+     * it away, and with it the one place its corner could go wrong. What is left is the line's
+     * one-pixel inset above, which still has to hold.
      */
-    for (const size of [16, 24, 32, 44, 56, 80, 140, 160, 320, 380]) {
-      const { keyline, well } = swatchCorner(size);
-      expect(`${String(size)}: ${String(well - keyline)}`).toBe(
-        `${String(size)}: ${String(nativeSpacing.sm)}`,
-      );
-    }
-  });
-
-  it('lets the well keep growing past the step the SAMPLE stops at', () => {
-    /*
-     * The step exists so a sample stays a field rather than becoming a curve at hero sizes. A
-     * container following its own content outward is the correct direction — and holding the well
-     * while the keyline kept growing is precisely the sliver the rule above forbids.
-     */
-    const { sample, well } = swatchCorner(1000);
-    expect(sample).toBe(nativeRadius.sm);
-    expect(well).toBeGreaterThan(nativeRadius.sm);
+    expect(Object.keys(swatchCorner(1000)).sort()).toStrictEqual(['keyline', 'sample']);
+    expect(swatchCorner(1000).sample).toBe(nativeRadius.sm);
   });
 
   /*

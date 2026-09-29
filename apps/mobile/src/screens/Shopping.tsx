@@ -251,6 +251,7 @@ export function Shopping({
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
             >
               <Swatch
+                caption="name"
                 name={e.entry.name.en}
                 hex={e.derived.hex}
                 color={colorFor(e.entry)}

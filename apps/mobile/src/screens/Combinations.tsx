@@ -314,6 +314,7 @@ export function Combinations({
             const shown = companion(c);
             return (
               <Swatch
+                caption="name"
                 key={`${combination.kind}-${shown.hex}`}
                 /*
                   NAMED BY ITS VALUE, because it has no other name. A generated colour is not a
@@ -387,6 +388,7 @@ export function Combinations({
             identity.
           */
           <Swatch
+            caption="name"
             name={subjectName}
             hex={displayFromOklch([oklch[0], oklch[1], oklch[2]]).hex}
             color={displayFromOklch([oklch[0], oklch[1], oklch[2]]).color}
@@ -394,6 +396,7 @@ export function Combinations({
           />
         ) : (
           <Swatch
+            caption="name"
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}
@@ -467,6 +470,7 @@ export function Combinations({
                   const member = entryBySlug(m.slug);
                   return member === null ? null : (
                     <Swatch
+                      caption="name"
                       key={m.slug}
                       name={member.entry.name.en}
                       hex={member.derived.hex}

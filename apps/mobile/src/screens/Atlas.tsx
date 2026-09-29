@@ -217,6 +217,7 @@ function AtlasEntry({
           comes from the entry's own authored XYZ, so this path converts nothing at all.
         */}
         <Swatch
+          caption="name"
           name={entry.name.en}
           hex={derived.hex}
           color={colorFor(entry)}

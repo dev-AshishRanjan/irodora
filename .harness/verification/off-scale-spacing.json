@@ -8,8 +8,8 @@
       "file": "packages/ui/src/Swatch.tsx",
       "property": "padding",
       "value": 1,
-      "cites": "F-068, ADR-0074, packages/design-tokens/test/swatch-edge.test.ts",
-      "why": "NOT SPACING. This is the inner half of F-068's two-tone keyline: two nested opaque 1px borders, drawn as padding because that is how a nested View makes a ring of an exact pixel width. A single hairline cannot work — the other side of it is an arbitrary garment colour, and a translucent line measured 1.00 against a black sample, which is no edge at all. The 1 is a border width sized to the device pixel, and rounding it to the smallest scale step would turn a keyline into a 4px frame around every swatch in the product."
+      "cites": "F-068, F-233, ADR-0074, ADR-0116",
+      "why": "NOT SPACING. This is the line around a colour sample: one opaque line drawn as a one-dp inset, because that is how a View makes a line of an exact width that the sample sits inside. Until F-233 it was the inner half of F-068's two-tone ring; since F-233 it is the README keyline, composited over the well and moved per sample where it would not clear 3:1 (ADR-0116). The 1 is the line's width, and a spacing step would draw a band, not a line."
     }
   ]
 }

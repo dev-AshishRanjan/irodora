@@ -107,6 +107,7 @@ export {
   pillTone,
   SelectionDot,
   SELECTION_DOT,
+  SelectionFrame,
   SelectionMark,
   selectionStyle,
   selectionTone,
@@ -115,6 +116,7 @@ export {
   type PillFill,
   type PillTone,
   type SelectionDotProps,
+  type SelectionFrameProps,
   type SelectionMarkProps,
   type SelectionState,
   type SelectionTone,
@@ -140,9 +142,12 @@ export {
 } from './Pair.js';
 export {
   Swatch,
+  SWATCH_KEYLINE,
+  SWATCH_SIZE,
   swatchAccessibleName,
   swatchCorner,
   keylineTones,
+  type SwatchAnchor,
   type SwatchProps,
 } from './Swatch.js';
 export {

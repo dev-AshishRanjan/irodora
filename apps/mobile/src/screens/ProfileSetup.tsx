@@ -308,6 +308,7 @@ export function ProfileSetup({
           <Row gap="sm">
             {entries.map((e) => (
               <Swatch
+                caption="name"
                 key={e.entry.slug}
                 name={e.entry.name.en}
                 hex={e.derived.hex}
@@ -471,6 +472,7 @@ export function ProfileSetup({
           return (
             <Row key={slug} gap="sm" wrap>
               <Swatch
+                caption="name"
                 name={found.entry.name.en}
                 hex={found.derived.hex}
                 color={colorFor(found.entry)}

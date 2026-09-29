@@ -187,6 +187,7 @@ export function Measure({
                   style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
                 >
                   <Swatch
+                    caption="name"
                     name={entry.name}
                     hex={hexOf(entry.color)}
                     color={entry.color}

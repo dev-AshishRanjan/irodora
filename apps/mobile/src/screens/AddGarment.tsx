@@ -302,6 +302,7 @@ export function AddGarment({
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
             >
               <Swatch
+                caption="name"
                 name={entry.entry.name.en}
                 hex={entry.derived.hex}
                 color={colorFor(entry.entry)}

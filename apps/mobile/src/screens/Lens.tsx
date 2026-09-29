@@ -815,6 +815,7 @@ export function Lens({
             </Text>
             <Row gap="sm">
               <Swatch
+                caption="name"
                 name={t('lens.reading')}
                 script={script}
                 hex={liveDisplay.hex}
@@ -970,6 +971,7 @@ export function Lens({
 
                 <Row gap="sm">
                   <Swatch
+                    caption="name"
                     name={t('lens.reading')}
                     script={script}
                     hex={display.hex}
@@ -1084,6 +1086,7 @@ export function Lens({
                 {nearest.map(({ entry, deltaE00 }) => (
                   <Row key={entry.entry.slug} gap="sm">
                     <Swatch
+                      caption="name"
                       name={entry.entry.name.en}
                       hex={entry.derived.hex}
                       color={colorFor(entry.entry)}

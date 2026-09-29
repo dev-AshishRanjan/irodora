@@ -230,6 +230,7 @@ export function OutfitBuilder({
               ) : (
                 <Row gap="sm">
                   <Swatch
+                    caption="name"
                     name={placed.garment.color.name}
                     hex={placed.garment.color.hex}
                     color={colorOf(placed.garment.color)}
@@ -310,6 +311,7 @@ export function OutfitBuilder({
                         style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
                       >
                         <Swatch
+                          caption="name"
                           name={r.garment.color.name}
                           hex={r.garment.color.hex}
                           color={colorOf(r.garment.color)}

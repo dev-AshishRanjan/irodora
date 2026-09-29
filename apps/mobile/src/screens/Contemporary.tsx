@@ -225,6 +225,7 @@ export function Contemporary({
         }
       >
         <Swatch
+          caption="name"
           name={half.name}
           hex={half.hex}
           color={half.color}

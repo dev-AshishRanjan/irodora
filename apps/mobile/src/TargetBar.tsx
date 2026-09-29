@@ -45,6 +45,7 @@ export function TargetBar({ target, onDisarm }: TargetBarProps): React.JSX.Eleme
       >
         <Row gap="sm" align="center">
           <Swatch
+            caption="name"
             name={target.label}
             hex={target.hex}
             color={target.color}

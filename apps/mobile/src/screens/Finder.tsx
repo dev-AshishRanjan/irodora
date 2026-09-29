@@ -92,6 +92,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
       >
         <Row gap="sm" padY="sm">
           <Swatch
+            caption="name"
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}

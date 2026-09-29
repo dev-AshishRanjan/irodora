@@ -237,6 +237,50 @@ export function FocusRing({ visible, radius, testID }: FocusRingProps): React.JS
   );
 }
 
+export interface SelectionFrameProps {
+  /** The chooser's tone, from {@link selectionTone}. Nothing is drawn when it says nothing. */
+  readonly tone: SelectionTone;
+  /** The drawn box's corner radius in dp. The frame follows it, grown by its own offset. */
+  readonly radius: number;
+  readonly testID?: string;
+}
+
+/**
+ * The chooser treatment drawn OUTSIDE a box that reserves no edge (F-233): a colour sample.
+ *
+ * A swatch sat in a padded well until F-233, and the chooser's fill and edge were painted on that
+ * well. The mockups draw no well, and a sample drawn at its element's size has no room to reserve
+ * an edge, so the treatment moves outside the box as {@link FocusRing} did for the controls: the
+ * same `accent` edge (or `ring`, under focus), with `accent.muted` in the one-dp gap between it
+ * and the sample. It costs no layout. The fill behind the sample is covered by the sample, so the
+ * visible ground is that gap — the picture board 00 draws, at the width the sample leaves it.
+ */
+export function SelectionFrame({
+  tone,
+  radius,
+  testID,
+}: SelectionFrameProps): React.JSX.Element | null {
+  if (tone.background === undefined && tone.borderColor === 'transparent') return null;
+  const offset = FOCUS_RING + FOCUS_RING_GAP;
+  return (
+    <View
+      testID={testID}
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: -offset,
+        right: -offset,
+        bottom: -offset,
+        left: -offset,
+        borderRadius: radius + offset,
+        borderWidth: tone.borderWidth,
+        borderColor: tone.borderColor,
+        ...(tone.background === undefined ? {} : { backgroundColor: tone.background }),
+      }}
+    />
+  );
+}
+
 /**
  * The leading dot's diameter, in dp: the median of the selection dots the inventories record on
  * `12`, `15` and `17` (13 px and 11 px at 2 px/dp). Recomputed by `pill-selection.test`.
