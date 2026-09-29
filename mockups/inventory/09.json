@@ -746,7 +746,7 @@
       "id": "09.results.result-1",
       "order": 23,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:Swatch",
       "box": {
         "x": 28,
         "y": 796,
@@ -779,7 +779,7 @@
       "id": "09.results.result-2",
       "order": 24,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:Swatch",
       "box": {
         "x": 396,
         "y": 796,
@@ -1071,7 +1071,7 @@
       "id": "09.results.result-3",
       "order": 33,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:Swatch",
       "box": {
         "x": 28,
         "y": 1035,
@@ -1101,7 +1101,7 @@
       "id": "09.results.result-4",
       "order": 34,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:Swatch",
       "box": {
         "x": 396,
         "y": 1035,

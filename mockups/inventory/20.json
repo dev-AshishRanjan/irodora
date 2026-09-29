@@ -241,6 +241,7 @@
         "h": 216
       },
       "tokens": {
+        "keyline": "keyline",
         "radius": "sm"
       },
       "type": null,

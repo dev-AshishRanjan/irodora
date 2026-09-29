@@ -20,6 +20,7 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 | `slate-status-search.mjs` | whether any lightness-only move settles Slate's status triple, exhaustively over a stated grid | ADR-0111 §5 (`F-225`) |
 | `stem.ps1` | how heavy a line of drawn type is: the integral of ink coverage across horizontal bands, over the word's ink height, which blur and JPEG bloom leave alone; `-render` sets a word from a font file and measures that instead | the weight a serif role is drawn at (`F-226`, ADR-0112) |
 | `serif-weight.mjs` | the same number computed exactly from a font's outlines at every `wght`, solved against `stem.ps1`'s reading; `--calibrate` is the known-answer run | the weight and tracking of each serif role, and the mincho (`F-226`) |
+| `sample-census.mjs` | over the shipped corpus, in every palette: the entries on which neither text ink clears 4.5:1, and how many the README keyline alone clears 3:1 against | text on a sample and the sample's edge (`F-233`, C8) |
 
 ## Naming the serif (§5, OQ-29)
 

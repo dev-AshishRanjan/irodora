@@ -114,9 +114,11 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#21232A' },
     }),
+    // The ring 2.1 px wide, then a 4.9 px gap to the sample (F-233, crossings at half height).
     el('21.anchor.ring', null, B(126, 277, 136, 137), {
       parent: '21.anchor',
       tokens: { border: 'text.primary', radius: 'md' },
+      raw: { ringPx: 2.1, gapPx: 4.9 },
     }),
     el('21.anchor.swatch', 'ui:Swatch', B(133, 284, 122, 122), {
       parent: '21.anchor.ring',

@@ -126,7 +126,8 @@ export default {
       tokens: { fg: 'text.secondary' },
       copy: { shape: 'body', script: 'latin' },
     }),
-    el(`${p1}.strip`, 'ui:Bands', B(71, 467, 627, 120), {
+    // Joined samples: a Strip (F-233). ui:Bands is the bar chart, which this is not.
+    el(`${p1}.strip`, 'ui:Strip', B(71, 467, 627, 120), {
       parent: p1,
       tokens: { keyline: 'keyline', radius: 'md' },
       binding: 'corpus:palette.colours',

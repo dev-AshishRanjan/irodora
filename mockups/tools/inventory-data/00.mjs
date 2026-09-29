@@ -285,6 +285,7 @@ export default {
       tokens: { bg: 'level1' },
       raw: { cornerPx: 6.25 },
     }),
+    // No edge reads on levels 2 and 3 (F-233: every side within ±0.025 of both the ground and the fill).
     el('00.cards.level2', 'ui:Card', B(1067, 379, 125, 117), { tokens: { bg: 'level2' } }),
     el('00.cards.level3', 'ui:Card', B(1201, 379, 121, 115), { tokens: { bg: 'level3' } }),
 

@@ -78,9 +78,10 @@ export default {
       tokens: { border: 'border.subtle', radius: 'md' },
       action: 'select:card.next',
     }),
+    // A light keyline reads on all four edges (F-233: +0.07–0.10 over both sides).
     el('20.card.swatch', 'ui:Swatch', B(141, 239, 486, 432), {
       parent: '20.card',
-      tokens: { radius: 'sm' },
+      tokens: { keyline: 'keyline', radius: 'sm' },
       binding: 'corpus:entry.hex',
       measured: { fill: '#586976' },
     }),

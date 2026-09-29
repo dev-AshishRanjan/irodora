@@ -463,7 +463,7 @@
       "id": "04.gauge.pair",
       "order": 16,
       "parent": "04.gauge",
-      "component": "new:SplitBar",
+      "component": "ui:Strip",
       "box": {
         "x": 185,
         "y": 763,

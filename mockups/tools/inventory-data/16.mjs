@@ -50,9 +50,11 @@ const slot = (n, role, s) => {
       ...cap(s.em.heading, 500),
       copy: { shape: 'heading', script: 'latin' },
     }),
+    // A light keyline reads on slots 1 and 3 (F-233: +0.17 and +0.09 over both sides on every edge);
+    // the four are drawn alike.
     el(`${p}.swatch`, 'ui:Swatch', s.swatch, {
       parent: p,
-      tokens: { radius: 'sm' },
+      tokens: { keyline: 'keyline', radius: 'sm' },
       binding: `store:draft.palette.slot.${n}.hex`,
       measured: { fill: s.fill },
     }),

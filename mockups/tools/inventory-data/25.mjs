@@ -32,8 +32,10 @@ const t = (id, box, parent, binding, extra = {}) =>
 const tile = (n, box, badge, photo, name, size, emDp) => {
   const p = `25.wardrobe.tile-${n}`;
   return [
+    // An edge darker than both the paper and the card reads on three sides (F-233): 25 draws the
+    // card's border too, in the light palette's border.subtle (#E5E3DE), as 01 draws it in the dark.
     el(p, 'ui:Card', box, {
-      tokens: { bg: 'level1', radius: 'md' },
+      tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       action: 'navigate:/wardrobe/[id]',
     }),
     el(`${p}.badge`, 'new:TextureBadge', badge, {
@@ -86,7 +88,7 @@ export default {
     }),
     // ---- the hero
     el('25.hero', 'ui:Card', B(165, 425, 438, 554), {
-      tokens: { bg: 'level1', radius: 'md' },
+      tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#FEFEFE' },
     }),
     el('25.hero.ring', null, B(244, 446, 280, 280), {

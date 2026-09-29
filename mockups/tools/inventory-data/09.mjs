@@ -47,7 +47,9 @@ const slider = (key, label, track, value, m) => [
 const result = (n, card, lines, measuredBg) => {
   const p = `09.results.result-${n}`;
   return [
-    el(p, 'ui:Card', card, {
+    // The result card IS the swatch (R9 §5): its fill is the colour, and its text is set on it
+    // (F-233), so it is a Swatch with children rather than a Card holding one.
+    el(p, 'ui:Swatch', card, {
       tokens: { radius: 'md' },
       binding: `corpus:finder.nearest.${n - 1}.hex`,
       action: 'navigate:/atlas/[slug]',

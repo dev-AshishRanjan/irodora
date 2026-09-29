@@ -36,7 +36,9 @@ const option = (key, o) => {
       parent: '17.draping',
       tokens: { border: 'border.subtle', radius: 'sm' },
     }),
-    el(`${p}.swatch`, 'new:DrapeSwatch', o.swatch, {
+    // A Swatch bled into its card's top (F-233): the card clips the top corners, the bottom ones are
+    // square (read on option a).
+    el(`${p}.swatch`, 'ui:Swatch', o.swatch, {
       parent: p,
       tokens: { radius: 'sm' },
       binding: `corpus:profile.trial.${key}.hex`,

@@ -199,6 +199,10 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "ringPx": 2.1,
+        "gapPx": 4.9
+      },
       "copy": null
     },
     {

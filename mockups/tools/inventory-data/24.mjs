@@ -66,9 +66,10 @@ const row = (n, r) => {
       binding: `engine:with.${n - 1}.deltaE00`,
       copy: { shape: 'badge', script: 'figures' },
     }),
+    // A light keyline reads on rows 3 and 4 (F-233); the four are drawn alike.
     el(`${p}.swatch`, 'ui:Swatch', r.swatch, {
       parent: L,
-      tokens: { radius: 'md' },
+      tokens: { keyline: 'keyline', radius: 'md' },
       binding: `corpus:with.${n - 1}.hex`,
       measured: { fill: r.fill },
     }),
@@ -141,9 +142,10 @@ export default {
       binding: 'engine:reading.conditions',
       copy: { shape: 'badge', script: 'latin' },
     }),
+    // A light keyline reads on all four edges (F-233: +0.07–0.08 over a sample near the card's own L).
     el('24.capture.swatch', 'ui:Swatch', B(149, 290, 145, 145), {
       parent: '24.capture',
-      tokens: { radius: 'md' },
+      tokens: { keyline: 'keyline', radius: 'md' },
       binding: 'engine:reading.hex',
       measured: { fill: '#182937' },
     }),

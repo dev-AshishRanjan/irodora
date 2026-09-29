@@ -430,7 +430,7 @@
       "id": "10.palette-1.strip",
       "order": 14,
       "parent": "10.palette-1",
-      "component": "ui:Bands",
+      "component": "ui:Strip",
       "box": {
         "x": 71,
         "y": 467,

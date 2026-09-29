@@ -70,7 +70,8 @@ const dimension = (key, d) => {
 const rule = (n, box) =>
   el(`23.profile.rule-${n}`, null, box, { parent: '23.profile', tokens: { fg: 'border.subtle' } });
 const kasane = (n, strip, caption) => [
-  el(`23.palettes.kasane-${n}`, 'new:KasaneStrip', strip, {
+  // Joined samples: a Strip (F-233).
+  el(`23.palettes.kasane-${n}`, 'ui:Strip', strip, {
     parent: '23.palettes',
     tokens: { radius: 'md' },
     binding: `engine:profile.palettes.${n - 1}`,

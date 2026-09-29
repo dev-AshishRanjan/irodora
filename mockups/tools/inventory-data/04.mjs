@@ -108,7 +108,8 @@ export default {
       binding: 'derived:F-222',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('04.gauge.pair', 'new:SplitBar', B(185, 763, 510, 63), {
+    // Two samples that touch: a Strip with two members (F-233), where it was recorded as its own kind.
+    el('04.gauge.pair', 'ui:Strip', B(185, 763, 510, 63), {
       parent: '04.gauge',
       tokens: { keyline: 'keyline', radius: 'sm' },
       binding: 'engine:reading.hex',

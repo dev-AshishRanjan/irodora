@@ -1191,7 +1191,7 @@
       "id": "23.palettes.kasane-1",
       "order": 37,
       "parent": "23.palettes",
-      "component": "new:KasaneStrip",
+      "component": "ui:Strip",
       "box": {
         "x": 153,
         "y": 876,
@@ -1218,7 +1218,7 @@
       "id": "23.palettes.kasane-2",
       "order": 38,
       "parent": "23.palettes",
-      "component": "new:KasaneStrip",
+      "component": "ui:Strip",
       "box": {
         "x": 329,
         "y": 876,
@@ -1245,7 +1245,7 @@
       "id": "23.palettes.kasane-3",
       "order": 39,
       "parent": "23.palettes",
-      "component": "new:KasaneStrip",
+      "component": "ui:Strip",
       "box": {
         "x": 506,
         "y": 876,

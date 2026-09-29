@@ -224,7 +224,7 @@
       "id": "17.draping.option-a.swatch",
       "order": 7,
       "parent": "17.draping.option-a",
-      "component": "new:DrapeSwatch",
+      "component": "ui:Swatch",
       "box": {
         "x": 73,
         "y": 301,
@@ -282,7 +282,7 @@
       "id": "17.draping.option-b.swatch",
       "order": 9,
       "parent": "17.draping.option-b",
-      "component": "new:DrapeSwatch",
+      "component": "ui:Swatch",
       "box": {
         "x": 393,
         "y": 301,

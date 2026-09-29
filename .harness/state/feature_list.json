@@ -8190,7 +8190,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10). ALSO DEPARTS (F-219): the hue delta keeps its figure and its descriptor band and drops the claim of an identical hue 04 draws — FR-74 never asserts identity (E2). This is outside F-219’s five lint classes, so this record and §4 E2 hold it, not the lint. FROM F-232 (2026-09-28): 04's tolerance verdict is `Status form=\"pill\"` (04.sheet.tolerance's 28.5 dp): icon + text on a plate, typed `plate?: 'surface.1' | 'surface.2'` because the status tokens are declared on those. Minting 04's and 12's greens is this feature's; widen `plate` to the minted token and declare its pairings when you do."
+      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10). ALSO DEPARTS (F-219): the hue delta keeps its figure and its descriptor band and drops the claim of an identical hue 04 draws — FR-74 never asserts identity (E2). This is outside F-219’s five lint classes, so this record and §4 E2 hold it, not the lint. FROM F-232 (2026-09-28): 04's tolerance verdict is `Status form=\"pill\"` (04.sheet.tolerance's 28.5 dp): icon + text on a plate, typed `plate?: 'surface.1' | 'surface.2'` because the status tokens are declared on those. Minting 04's and 12's greens is this feature's; widen `plate` to the minted token and declare its pairings when you do. FROM F-233 (2026-09-29): OQ-45 (a person's) — this screen draws its joined samples below ADR-0095's 77 dp floor; F-233 leaves Strip's height as it is until the question is answered, and this feature waits on it.",
+      "openQuestions": [
+        "OQ-45"
+      ]
     },
     {
       "id": "F-246",
@@ -8462,7 +8465,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-232 (2026-09-29): 10.source's chosen segment carries a white leading dot (17.7 px), recorded as 10.source.selected.dot after F-232's review found it. Its pill's inside reads #343940, nearer level3 (ΔE00 2.8) than the level2 recorded — re-read it when this screen is built. Build it as ChoiceGroup segmented with mark 'dot'."
+      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-232 (2026-09-29): 10.source's chosen segment carries a white leading dot (17.7 px), recorded as 10.source.selected.dot after F-232's review found it. Its pill's inside reads #343940, nearer level3 (ΔE00 2.8) than the level2 recorded — re-read it when this screen is built. Build it as ChoiceGroup segmented with mark 'dot'. FROM F-233 (2026-09-29): OQ-45 (a person's) — this screen draws its joined samples below ADR-0095's 77 dp floor; F-233 leaves Strip's height as it is until the question is answered, and this feature waits on it.",
+      "openQuestions": [
+        "OQ-45"
+      ]
     },
     {
       "id": "F-252",
@@ -8868,11 +8874,12 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1). F-223 (2026-09-15): the seasonal pill's value is seasonalSummary(profile); F-260 builds the guard that the pill's basis agrees with each dimension row's label beside it (E-129), and discharges F-223's attested criterion 3. FROM F-232 (2026-09-28): the ranges are Slider's readout form (`readout`, not adjustable — one text element): 17 passes `trackHeight={2} thumbSize={7.5} halo=\"surface.1\"` (measured 3.6 px track, 14.8 px marker, ringed in the card), and its unfilled track is re-recorded `level3` (ΔE00 2.1; border.subtle was 3.0); 23 passes `trackHeight={6.5} thumbSize={16.5}`, `gradient={[…tokens]}` and `ends={{ low, high, note }}`. 23's gradient stops are this feature's to mint, as a token group (E-159); the slot takes token names only, and the colour-literal rule reads every stop.",
+      "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1). F-223 (2026-09-15): the seasonal pill's value is seasonalSummary(profile); F-260 builds the guard that the pill's basis agrees with each dimension row's label beside it (E-129), and discharges F-223's attested criterion 3. FROM F-232 (2026-09-28): the ranges are Slider's readout form (`readout`, not adjustable — one text element): 17 passes `trackHeight={2} thumbSize={7.5} halo=\"surface.1\"` (measured 3.6 px track, 14.8 px marker, ringed in the card), and its unfilled track is re-recorded `level3` (ΔE00 2.1; border.subtle was 3.0); 23 passes `trackHeight={6.5} thumbSize={16.5}`, `gradient={[…tokens]}` and `ends={{ low, high, note }}`. 23's gradient stops are this feature's to mint, as a token group (E-159); the slot takes token names only, and the colour-literal rule reads every stop. FROM F-233 (2026-09-29): OQ-45 (a person's) — this screen draws its joined samples below ADR-0095's 77 dp floor; F-233 leaves Strip's height as it is until the question is answered, and this feature waits on it.",
       "openQuestions": [
         "OQ-31",
         "OQ-33",
-        "OQ-34"
+        "OQ-34",
+        "OQ-45"
       ]
     },
     {
@@ -10204,6 +10211,28 @@
         "a11y"
       ],
       "notes": "FROM F-232'S REVIEW (2026-09-29), finding S3. ADR-0114 draws each control at its mockup's size and gives it the rest of the target as hitSlop, and the conformance rule adds the two back together. React Native's Pressable does not extend a touch area past its parent view's bounds, so where the parent is smaller than the target the effective target is the parent: a segment's slop reaches 7–9 dp past a 30.5 dp RadioGroup; the Switch sits in a row about as tall as its label (~26 dp) and its slop reaches 13–15 dp past it; 15's rows are drawn at a 29.5 dp pitch, so a full 44/48 dp target cannot exist there without overlapping its neighbours. The rule judges one control at a time and cannot see this. F-232 records it as an outstanding device attestation on its criterion 4 and in ADR-0114."
+    },
+    {
+      "id": "F-306",
+      "title": "The store conformance test finishes inside its timeout when the whole suite runs at once",
+      "requirements": [
+        "NFR-3"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "packages/store/test/conformance.test.ts (\"the node:sqlite driver conforms\") passes under pnpm test run with turbo's default concurrency, ten runs out of ten, without a timeout raised past what the check needs",
+        "The test states why its budget is what it is, measured, rather than inheriting vitest's 5 s default by accident"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "notes": "FROM F-232 AND F-233 (2026-09-29): twice in two days pnpm test failed on this one test with \"Test timed out in 5000ms\" (5.6 s measured) while every other task passed, and it passed alone (248/248) and on the rerun. It opens and exercises a real node:sqlite database, which is slow under the CPU load of 35 turbo tasks at once. A gate that fails at random trains people to rerun it until it is green, which is how a real failure gets rerun past. Package untouched by both features, so recorded rather than fixed in their scope."
     }
   ]
 }
