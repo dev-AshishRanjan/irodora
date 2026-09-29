@@ -581,6 +581,42 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE LEVELS AS DRAWN (F-233): level 1 with its resting edge, levels 2 and 3 without one (board
+   * 00), and 11's garment card with its photograph inset and cornered.
+   */
+  ...(['1', '2', '3'] as const).map((level): ConformanceSubject => ({
+    name: `Card (level ${level}, as drawn)`,
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Card level={level}>
+          <Text size="body" color="foreground.2">
+            A grey with indigo in it.
+          </Text>
+        </Card>,
+        theme,
+      ),
+  })),
+  {
+    name: 'Card (media inset, 11)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Card
+          radius="sm"
+          media={<View style={{ height: 96, backgroundColor: '#526A6B' }} />}
+          mediaInset={7.25}
+          mediaRadius="sm"
+        >
+          <Text size="body" color="foreground">
+            Linen shirt
+          </Text>
+        </Card>,
+        theme,
+      ),
+  },
   {
     /*
      * PRESSABLE AND SELECTED, which is a different tree and a different set of rules: it has a

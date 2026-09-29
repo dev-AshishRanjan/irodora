@@ -50,6 +50,18 @@
  * the outer one usually wins the touch, which is the defect that looks like a card whose button
  * does not work. When `onPress` is given, the whole card is the control and carries the name.
  *
+ * ## Drawn as the mockups draw it (F-233)
+ *
+ * - **The corner is `md`** unless a surface binds another: 56 of the 87 cards the inventories
+ *   record, against 21 `sm` and 4 `lg` ({@link CARD_RADIUS}, recomputed by `cards.test`).
+ * - **A level-1 card carries a resting edge**, one dp of `border` (the README's `border.subtle`):
+ *   73 of the 80 filled cards bind it, in both palettes, and it measures 2 px wide at 2 px per dp
+ *   on `01`'s hero. Board `00` draws none on levels 2 and 3, so they carry none. It is drawn over
+ *   the card's outer edge, where the state edge is reserved, and only at rest: a chosen or focused
+ *   card draws its state there instead.
+ * - **Media can be inset**: `11` and `22` draw their photographs inside the card, 7.25 and 6.6 dp
+ *   in, cornered `sm` on `11`. Each surface passes what it draws; the default is edge to edge.
+ *
  * ## Selection is F-176's, and cannot be otherwise
  *
  * `selected` and `focused` draw {@link selectionTone}. A card that invented its own would be the
@@ -67,12 +79,18 @@ import {
 } from '@irodora/design-tokens';
 import { elevationShadow } from './elevation.js';
 import { usePress } from './motion.js';
-import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
+import { SELECTION_EDGE, SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { useTheme, type ThemeColors } from './theme.js';
 import type { SpacingStep } from './layout.js';
 
 /** The elevation levels the manifest declares, as a union derived from it. */
 export type CardLevel = keyof typeof nativeElevation;
+
+/** The corner a card takes when a caller names none: the step most drawn cards are bound to. */
+export const CARD_RADIUS = 'md' satisfies keyof typeof nativeRadius;
+
+/** The resting edge's width, in dp: one, as measured on `01`'s hero (2 px at 2 px per dp). */
+export const CARD_EDGE = 1;
 
 export interface CardProps {
   readonly children?: React.ReactNode;
@@ -94,7 +112,17 @@ export interface CardProps {
    * `Surface` cannot express, and it is why 48 surfaces never became cards.
    */
   readonly media?: React.ReactNode;
+  /** How far inside the card the media sits, in dp: `11` draws 7.25, `22` 6.6. Edge to edge by default. */
+  readonly mediaInset?: number;
+  /** The media's own corner, where the surface draws one (`11`: `sm`). */
+  readonly mediaRadius?: keyof typeof nativeRadius;
   readonly level?: CardLevel;
+  /**
+   * Whether the card carries its resting edge. By default a level-1 card does and a level-2 or
+   * level-3 card does not, as the mockups draw them; a surface whose mockup draws a level-1 card
+   * without one (`02`'s reading, `26`) says so here.
+   */
+  readonly edge?: boolean;
   readonly padding?: SpacingStep;
   readonly radius?: keyof typeof nativeRadius;
   /** Makes the WHOLE card the control. Requires {@link label}. */
@@ -140,9 +168,12 @@ export function Card({
   header,
   footer,
   media,
+  mediaInset,
+  mediaRadius,
   level = '1',
+  edge = level === '1',
   padding = 'md',
-  radius = 'lg',
+  radius = CARD_RADIUS,
   onPress,
   label,
   selected = false,
@@ -187,7 +218,26 @@ export function Card({
   const body = (
     <>
       {/* Outside the padding, deliberately. See the docblock. */}
-      {media === undefined ? null : <View>{media}</View>}
+      {media === undefined ? null : mediaInset === undefined && mediaRadius === undefined ? (
+        <View>{media}</View>
+      ) : (
+        <View
+          style={
+            mediaInset === undefined
+              ? {}
+              : { paddingTop: mediaInset, paddingLeft: mediaInset, paddingRight: mediaInset }
+          }
+        >
+          <View
+            style={{
+              borderRadius: mediaRadius === undefined ? 0 : nativeRadius[mediaRadius],
+              overflow: 'hidden',
+            }}
+          >
+            {media}
+          </View>
+        </View>
+      )}
       <SelectionMark visible={tone.mark} />
       {header === undefined ? null : (
         <>
@@ -202,6 +252,26 @@ export function Card({
           <View style={{ padding: inset }}>{footer}</View>
         </>
       )}
+      {/*
+        THE RESTING EDGE, last so nothing inside covers it, and over the card's OUTER edge: the
+        state edge is reserved there (F-176), so the line sits in it rather than inside it. Only at
+        rest — a chosen or focused card draws its state in that place instead.
+      */}
+      {edge && tone.borderColor === 'transparent' ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: -SELECTION_EDGE,
+            right: -SELECTION_EDGE,
+            bottom: -SELECTION_EDGE,
+            left: -SELECTION_EDGE,
+            borderRadius: nativeRadius[radius],
+            borderWidth: CARD_EDGE,
+            borderColor: colors.border,
+          }}
+        />
+      ) : null}
     </>
   );
 

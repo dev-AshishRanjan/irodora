@@ -83,7 +83,7 @@ export { IconButton, type IconButtonProps } from './IconButton.js';
 export { hitArea, platformTapTarget } from './hitArea.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { elevationShadow } from './elevation.js';
-export { Card, type CardLevel, type CardProps } from './Card.js';
+export { Card, CARD_EDGE, CARD_RADIUS, type CardLevel, type CardProps } from './Card.js';
 export {
   BADGE_HEIGHT,
   Chip,
