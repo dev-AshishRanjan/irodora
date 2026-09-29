@@ -128,8 +128,18 @@ no longer neutral** ([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sam
 the person decided twice to follow them, and so the well is level 1. The surround carries C 0.0086 to
 0.0206. A neutral well at the same lightness would differ from it by ΔE00 2.94 to 6.50, and
 `mockup-palette.test.ts` reproduces those numbers. ADR-0096 existed to prevent exactly this, and it
-is superseded. `swatch.keyline` (`#FFFFFF22` / `#1A1B1E18`) is the README's hairline around a
-sample; the older neutral hairline stays until F-233 draws the keyline.
+is superseded. Since F-233 no padded well is drawn: the card IS the well, and a sample sits on it
+as the mockups draw.
+
+**The line around a sample, and text on it, are chosen per sample** ([ADR-0116](../adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).
+`swatch.keyline` (`#FFFFFF22` / `#1A1B1E18`) is the README's line around a sample. It is drawn as
+it shows over the well, unmoved where it clears 3:1 against the sample, and moved the smallest
+OKLab lightness step that does where it would not. Where an element draws no keyline, the line
+starts as the well and shows only where the sample would lose its edge. Text set on a sample takes
+C8's ink that passes 4.5:1, and moves the same way where neither does. Both are `onSample`, E3
+applied per sample, and gate 9 pins every value drawn against the corpus. The two-tone opaque ring
+F-068 drew (`swatch.hairline`, `swatch.hairline.inverse`) stays on the Lens reticle and the export
+card, where the other side of the line is an image or a document.
 
 **No status colour beside a sample** — the same physics, one step out. A saturated `status.*`
 token adjacent to a colour sample changes how that sample reads, and the person is looking at
@@ -299,7 +309,12 @@ Every component in `@irodora/ui` must:
 
 7. **Never render a colour without its provenance.** The type system enforces it
    ([ADR-0005](../adr/0005-measurement-provenance-is-a-type.md)).
-8. **Never place a decorative colour adjacent to a sample.** The `swatch.well` is mandatory.
+8. **Never place a decorative colour adjacent to a sample.** The `swatch.well` is mandatory: since
+   F-233 it is the level-1 card the sample sits on, not a padded frame.
+9. **Draw against a sample only what `onSample` chose** — the line through `sampleEdge`, text
+   through `Text on={sample}` ([ADR-0116](../adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).
+   A token on a sample is the pairing nothing declares, and the conformance rule `sample-ink`
+   reports it where it fails.
 
 ---
 

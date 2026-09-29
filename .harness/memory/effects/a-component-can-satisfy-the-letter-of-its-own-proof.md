@@ -49,3 +49,9 @@ and an optimisation that dropped it would pass every contrast assertion against 
 losing the edge against the well.
 
 Related: [[a-rule-can-be-right-about-the-thing-and-wrong-about-the-value]]
+
+## Resolved (F-233, 2026-09-29)
+
+The two-tone ring left the sample family: ADR-0116 draws one line, moved per sample, and
+`keylineTones` went with `swatch-keyline.test`. The lesson stands for the reticle, which keeps the
+pair (E-072). See [[a-colour-drawn-against-a-sample-moves-per-sample]].

@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-28",
+  "updated": "2026-09-29",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2737,7 +2737,7 @@
       "severity": "medium",
       "guard": "gate:test (it named gate:contrast until F-233; swatch-edge.test runs under vitest, in gate 5) — the reticle reuses `swatch.hairline` and `swatch.hairline.inverse`, the pair `packages/design-tokens/test/swatch-edge.test.ts` scans the whole sRGB gamut for: the better tone reaches 4.16 (pinned since F-233; it read 4.23, measured before the tones moved) against the worst possible sample and the two differ from each other by ~18:1 whatever sits behind them. A new pair invented for the reticle would have carried no such evidence, and nothing here would have measured it — the camera image is not a token.",
       "memory": "memory/effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md",
-      "rationale": "THE RETICLE HAD THE PROBLEM THE SWATCH KEYLINE WAS BUILT TO SOLVE, AND NOBODY HAD NOTICED BECAUSE IT IS NOT A SWATCH. It was a single 2px rule in `border.strong` — a UI border token, chosen for drawing edges on our own surfaces, where the other side of the line is a known ground. Over a live camera image the other side is an ARBITRARY COLOUR, which is precisely the case F-068 proved a single tone cannot handle: a single hairline measured 1.00 against its own colour, \"not a weak edge but NO EDGE AT ALL\". On the one surface where the marker must always be findable, it was nearly invisible over a pale garment. SECOND, AND LESS OBVIOUS: it was a CLOSED border on all four sides, and a hard rule around a colour changes how that colour reads. Simultaneous contrast is the entire reason `swatch.well` exists, and this was that hazard applied to the live subject somebody is judging — the product framing the thing it is asking you to look at. Corner marks say where the sample is taken without enclosing it. THE GENERAL SHAPE: a contrast rule attaches to the SITUATION, not to the component. \"A line whose other side we do not control\" is the situation, and it occurs wherever the product draws over content — a reticle today, a crop handle or a magnifier tomorrow. The tokens for it already existed and were gamut-verified; what was missing was noticing that this was the same problem.",
+      "rationale": "THE RETICLE HAD THE PROBLEM THE SWATCH KEYLINE WAS BUILT TO SOLVE, AND NOBODY HAD NOTICED BECAUSE IT IS NOT A SWATCH. It was a single 2px rule in `border.strong` — a UI border token, chosen for drawing edges on our own surfaces, where the other side of the line is a known ground. Over a live camera image the other side is an ARBITRARY COLOUR, which is precisely the case F-068 proved a single tone cannot handle: a single hairline measured 1.00 against its own colour, \"not a weak edge but NO EDGE AT ALL\". On the one surface where the marker must always be findable, it was nearly invisible over a pale garment. SECOND, AND LESS OBVIOUS: it was a CLOSED border on all four sides, and a hard rule around a colour changes how that colour reads. Simultaneous contrast is the entire reason `swatch.well` exists, and this was that hazard applied to the live subject somebody is judging — the product framing the thing it is asking you to look at. Corner marks say where the sample is taken without enclosing it. THE GENERAL SHAPE: a contrast rule attaches to the SITUATION, not to the component. \"A line whose other side we do not control\" is the situation, and it occurs wherever the product draws over content — a reticle today, a crop handle or a magnifier tomorrow. The tokens for it already existed and were gamut-verified; what was missing was noticing that this was the same problem. F-233 (2026-09-29): the sample family stopped drawing the two-tone pair (ADR-0116, E-160); the reticle keeps it, and swatch-edge.test keeps its two-tone scan as the reticle's proof, pinned at 4.16.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -2925,7 +2925,7 @@
       "severity": "medium",
       "guard": "gate:a11y — `verify-spacing-scale.mjs` refuses a scan that finds nothing at all: \"No spacing declarations found at all. That is not a clean product; it is a broken scan.\" That refusal is the only reason this was caught, and it caught it within one run of the change.",
       "memory": "memory/effects/the-last-literal-is-what-keeps-a-scan-honest.md",
-      "rationale": "NAMING A CONSTANT MADE A GATE BLIND, FOR THE SECOND TIME. `Swatch` draws its two-tone keyline as a 1px-inset parent, written `padding: 1`, and F-161 replaced it with `KEYLINE_INSET` because the number now also feeds the corner arithmetic. It reads better. It was also THE LAST NUMERIC SPACING LITERAL IN THE PRODUCT — the spacing gate went from one declaration to zero and refused, correctly, because a scanner that finds nothing cannot tell a clean codebase from a broken regex. F-140 did the same thing at scale: tokenising the screens took the scan from 161 declarations to 1, and the fix then was to teach it to read `nativeSpacing.<step>` as a reference. TWO THINGS DEPEND ON THAT LITERAL BEING VISIBLE. The scan needs a subject, and the EXEMPTION needs a match: `off-scale-spacing.json` documents at length why a 1 here is a border width sized to the device pixel rather than spacing, and an exemption matching nothing fails in the other direction — which is the check working from both ends. THE GENERAL SHAPE: a source-scanning gate is a contract with the way the source is WRITTEN, and every refactor that improves readability is a candidate for breaking it silently. The gates that survive this are the ones that refuse an empty result.",
+      "rationale": "NAMING A CONSTANT MADE A GATE BLIND, FOR THE SECOND TIME. `Swatch` draws its two-tone keyline as a 1px-inset parent, written `padding: 1`, and F-161 replaced it with `KEYLINE_INSET` because the number now also feeds the corner arithmetic. It reads better. It was also THE LAST NUMERIC SPACING LITERAL IN THE PRODUCT — the spacing gate went from one declaration to zero and refused, correctly, because a scanner that finds nothing cannot tell a clean codebase from a broken regex. F-140 did the same thing at scale: tokenising the screens took the scan from 161 declarations to 1, and the fix then was to teach it to read `nativeSpacing.<step>` as a reference. TWO THINGS DEPEND ON THAT LITERAL BEING VISIBLE. The scan needs a subject, and the EXEMPTION needs a match: `off-scale-spacing.json` documents at length why a 1 here is a border width sized to the device pixel rather than spacing, and an exemption matching nothing fails in the other direction — which is the check working from both ends. THE GENERAL SHAPE: a source-scanning gate is a contract with the way the source is WRITTEN, and every refactor that improves readability is a candidate for breaking it silently. The gates that survive this are the ones that refuse an empty result. F-233 (2026-09-29): the `padding: 1` is now the one line around the sample (sampleEdge), not the inner half of the two-tone ring; the exemption's reason says so and the literal stays.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -2953,10 +2953,10 @@
       "severity": "medium",
       "guard": "gate:test — `swatch-keyline.test.tsx` asserts the dark tone goes against a pale sample and the light tone against a dark one, in both themes and against the tokens as they actually ship. One case asserts BOTH tones are still drawn, because choosing which is adjacent must not become choosing to draw one. gate:contrast — `swatch-edge.test.ts` is untouched and still passes: it already measured the better of the two, which is now the one that is used.",
       "memory": "memory/effects/a-component-can-satisfy-the-letter-of-its-own-proof.md",
-      "rationale": "THE PROOF ASSUMED SOMETHING THE COMPONENT DID NOT DO. `swatch-edge.test.ts` scans the sRGB gamut with `worstCase([tone, inverse])` — it takes the BETTER of the two tones against each sample and asserts the worst such best clears the non-text floor. That is the guarantee: for any sample, at least one of these two contrasts. THE COMPONENT DREW THEM IN A FIXED ORDER: `swatch.hairline` always touched the sample, `swatch.hairline.inverse` always sat outside it. Every assertion passed, because one of the two WAS adjacent and against roughly half of all samples it was the good one. On the dark theme `hairline` is `#F6F5F3`, so every pale sample was ringed in white — reported as \"a white border/outline … around colors. This looks unprofessional\". THE FIX USES THE SAME EVIDENCE AND NEEDED NO NEW MEASUREMENT: put the better tone against the sample every time, which is what the proof had been assuming all along. The other tone stays a pixel further out doing the job it always did — guaranteeing an edge against the WELL, which is a known colour and therefore the easy half. THE GENERAL SHAPE: a proof can be about a PROPERTY the implementation never claimed to have. \"One of these two works\" was true of the component; \"the one that works is the one you see\" was true only of the test. The gap between them was invisible for five months because every assertion was green.",
+      "rationale": "RESOLVED BY F-233 (ADR-0116): keylineTones and swatch-keyline.test are retired with the two-tone ring. The sample family draws one line, moved per sample (E-160); the hairline pair survives on the reticle (E-072) and the export card. THE PROOF ASSUMED SOMETHING THE COMPONENT DID NOT DO. `swatch-edge.test.ts` scans the sRGB gamut with `worstCase([tone, inverse])` — it takes the BETTER of the two tones against each sample and asserts the worst such best clears the non-text floor. That is the guarantee: for any sample, at least one of these two contrasts. THE COMPONENT DREW THEM IN A FIXED ORDER: `swatch.hairline` always touched the sample, `swatch.hairline.inverse` always sat outside it. Every assertion passed, because one of the two WAS adjacent and against roughly half of all samples it was the good one. On the dark theme `hairline` is `#F6F5F3`, so every pale sample was ringed in white — reported as \"a white border/outline … around colors. This looks unprofessional\". THE FIX USES THE SAME EVIDENCE AND NEEDED NO NEW MEASUREMENT: put the better tone against the sample every time, which is what the proof had been assuming all along. The other tone stays a pixel further out doing the job it always did — guaranteeing an edge against the WELL, which is a known colour and therefore the easy half. THE GENERAL SHAPE: a proof can be about a PROPERTY the implementation never claimed to have. \"One of these two works\" was true of the component; \"the one that works is the one you see\" was true only of the test. The gap between them was invisible for five months because every assertion was green.",
       "confidence": 0.9,
       "origin": "manual",
-      "status": "active"
+      "status": "resolved"
     },
     {
       "id": "E-080",
@@ -3207,6 +3207,10 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleInk"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3216,7 +3220,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared.",
+      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared. F-233: the `sample-ink` rule measures text on a declared sample (sample-ink.test.tsx), the one pair `pair-undeclared` cannot see.",
       "memory": "memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md",
       "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro. F-232 (2026-09-28): new painted pairs — a selection dot in foreground or accent.foreground on its fill, thumbs on tracks — all resolve to tokens and pass `pair-undeclared`. Text ON A SAMPLE (24's tinted ΔE00 badge) is invisible to that rule, so its ink is chosen by `inkOnSample`, which has its own tests and reports \"neither\" on a mid-tone (E-158).",
       "confidence": 0.94,
@@ -5195,6 +5199,10 @@
         {
           "kind": "gate",
           "ref": "typecheck"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Pair.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5203,10 +5211,10 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "packages/ui/test/swatch-corners.test.tsx asserts the step at every size the product draws, the ceiling below about 24 px where a step would take more than a quarter of the side, the keyline one pixel outside the sample and the well one inset outside that, at ten sizes — each with a decoy: a component returning its step unconditionally fails the ceiling case, and one returning the ceiling unconditionally fails the step case. packages/design-tokens/test/manifest.test.ts keeps ADR-0094 bound itself (a ratio leaving too little of each edge straight throws, with a decoy inside it). gate:typecheck refuses a radius step that no longer exists.",
+      "guard": "packages/ui/test/swatch-corners.test.tsx asserts the step at every size the product draws, the ceiling below about 24 px where a step would take more than a quarter of the side, the line one pixel outside the sample at ten sizes (F-233 removed the well, and the test asserts it is gone) — each with a decoy: a component returning its step unconditionally fails the ceiling case, and one returning the ceiling unconditionally fails the step case. packages/design-tokens/test/manifest.test.ts keeps ADR-0094 bound itself (a ratio leaving too little of each edge straight throws, with a decoy inside it). gate:typecheck refuses a radius step that no longer exists.",
       "feature": "F-227",
       "memory": "memory/effects/a-corner-is-a-step-and-the-ratio-is-its-ceiling.md",
-      "rationale": "ADR-0090 made a swatch corner a RATIO of its side and ADR-0094 bounded that ratio by what stays straight. F-220 then measured what the mockups actually draw: 4 to 11.5 dp across 28 images, bound per element in the inventories as sm or md — 42 of the 70 drawn ui:Swatch elements take sm, 25 take md, one takes pill (25 circular hero, resolved by C7) and two bind nothing — lengths, not proportions, and a hero at 0.25 would take 85 px. So ADR-0103 makes the corner a step and keeps the ratio as its CEILING. The link is high because it reaches every sample in the product at once and nothing else would report it: the contrast gate reads colours, the conformance suite reads structure, and neither has a geometry. It also reaches the inventories in the other direction — a surface built to a mockup that binds md must pass corner=\"md\", and a surface that forgets gets sm quietly.",
+      "rationale": "ADR-0090 made a swatch corner a RATIO of its side and ADR-0094 bounded that ratio by what stays straight. F-220 then measured what the mockups actually draw: 4 to 11.5 dp across 28 images, bound per element in the inventories as sm or md — 42 of the 70 drawn ui:Swatch elements take sm, 25 take md, one takes pill (25 circular hero, resolved by C7) and two bind nothing — lengths, not proportions, and a hero at 0.25 would take 85 px. So ADR-0103 makes the corner a step and keeps the ratio as its CEILING. The link is high because it reaches every sample in the product at once and nothing else would report it: the contrast gate reads colours, the conformance suite reads structure, and neither has a geometry. It also reaches the inventories in the other direction — a surface built to a mockup that binds md must pass corner=\"md\", and a surface that forgets gets sm quietly. F-233 (2026-09-29): no well is drawn, so swatchCorner returns the sample and its line only; a rectangle takes its corner from its shorter side; Strip takes a corner step (md by default).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -6310,6 +6318,22 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/controls.tsx#SLIDER_TRACK"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx#SWATCH_SIZE"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Pair.tsx#STRIP_CORNER"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Card.tsx#CARD_RADIUS"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/FabricSwatch.tsx#FABRIC_PITCH"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6321,7 +6345,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy.",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6394,6 +6418,178 @@
       "guard": "c10-exceptions.test's group block (eight stops per group in every theme, the two element exceptions retired, a wrong element leaves the drawn one uncovered, a group without elements or beside a token refused, a stale group reported, one runtime exception per stop); spectrum.test (the stops in order, laid over the silhouette, the one-ink decoy); the conformance colour-literal rule over both spectrum buttons in every palette; verify-token-reach (every stop named literally).",
       "memory": "memory/effects/a-minted-group-carries-its-elements-forward.md",
       "rationale": "ADR-0110's amendment: a colour a mockup draws is minted as tokens and declared as a token GROUP exception that carries the elements drawing it, retiring the element exception in the same change. Rename or add a stop and four readers move: Glyph's literal list (the reach check cannot see a constructed name), the chroma check, the runtime's per-token expansion, and coverage. F-244, F-257 and F-262 mint the same way."
+    },
+    {
+      "id": "E-160",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/design-tokens/src/on-sample.ts#onSample"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleEdge"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleInk"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Pair.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/FabricSwatch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Text.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens-sample-ink.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "feature": "F-233",
+      "guard": "test:packages/design-tokens/test/on-sample.test.ts (the gamut scan in four palettes; the reach per luminance; the 222 device-palette gaps answered; the tie, the chromatic fallback and minimality, each with a decoy) · test:packages/design-tokens/test/swatch-edge.test.ts (the moved keyline measured by its own arithmetic) · gate:contrast — apps/mobile/test/screens-sample-ink.test.ts pins the census and a digest of every value drawn against the corpus in every palette, and a 0.01 change to the edge floor was shown to fail all four.",
+      "memory": "memory/effects/a-colour-drawn-against-a-sample-moves-per-sample.md",
+      "rationale": "ADR-0116: E3 applied per sample. Every ink set on a sample and every line around one is chosen by onSample at render, so a change to its search, its tie-break, its floors, the inks, the keyline or the well repaints every sample in the product and changes the colour drawn on Hermes and on Node alike. The gate-9 corpus test is the one place a drift shows before a device does. The sample family's components draw ONLY what sampleEdge and sampleInk return: a component that painted a token on a sample instead would pass as a token and fail the floor on a mid-tone."
+    },
+    {
+      "id": "E-161",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/sampleInk.ts"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/testing/conformance.ts#checkSubject"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/testing/tree.ts#renderedPairs"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "feature": "F-233",
+      "guard": "test:packages/ui/test/sample-ink.test.tsx — the rule is silent for text set with on={sample} and its moved ink is no colour literal; a token ink failing on #87795D is reported in every palette (the decoy); a ground that is no declared sample is left to colour-literal. The conformance suite's Text-on-a-sample, Swatch, Strip and FabricSwatch subjects exercise the exemption in four palettes.",
+      "memory": "memory/effects/text-on-a-sample-is-measured-whatever-chose-its-ink.md",
+      "rationale": "The conformance rule `sample-ink` measures text on a declared sample, and the colour-literal rule exempts a moved ink or line BY VALUE, derived from the declared samples through sampleInk and sampleEdge. Change either function and the set of exempt values changes with it: a component still drawing the old value would become a literal, and one drawing a value the functions no longer return would be reported. The rule reads what is painted, not the import, so a component that calls sampleInk and discards the result still fails."
+    },
+    {
+      "id": "E-162",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/displaySettings.tsx#provenanceBadges"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ProvenanceChip.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-243"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-256"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-259"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-284"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "feature": "F-233",
+      "guard": "test:packages/ui/test/provenance-chip.test.tsx — drawn when the switch is on and nothing when off; the sample's accessible name identical either way and still naming source and confidence, on the rendered tree beside a real Swatch; words exhaustive over MeasurementSource by type. The conformance suite renders a sample with the chip hidden (F-284's third criterion).",
+      "memory": "memory/effects/the-provenance-chip-reads-the-switch-and-the-name-does-not.md",
+      "rationale": "15's Show Provenance Badges switch reaches the screen through exactly one reader, ProvenanceChip. The surfaces that draw a chip (02 and 24 through F-243 and F-259, 12 through F-256, 03 through F-244) must place THIS component, not a Chip with provenance words typed in: a hand-written chip would ignore the switch and could say a source the sample does not carry. The switch changes what a person sees and never what a screen reader hears — the sample's own name carries provenance (ADR-0005)."
+    },
+    {
+      "id": "E-163",
+      "from": {
+        "kind": "content",
+        "ref": "mockups/inventory"
+      },
+      "to": [
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/illustrations.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/sample-family.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/cards.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/fabric-swatch.test.tsx"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "scope": [
+        "mockups",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "feature": "F-233",
+      "guard": "test:packages/ui/test/sample-family.test.tsx, cards.test.tsx and fabric-swatch.test.tsx recompute SWATCH_SIZE, SWATCH_KEYLINE, the swatch corner, STRIP_CORNER, STRIP_KEYLINE, CARD_RADIUS, the card edge and the fabric teeth from the inventories, with the counts asserted and the old values as decoys; illustrations.test counts every sample component by name.",
+      "memory": "memory/effects/a-sample-renamed-in-the-inventory-must-be-renamed-in-the-scans.md",
+      "rationale": "The sample family's defaults are counted off the inventories by component name (ui:Swatch, ui:Strip, ui:Card, ui:FabricSwatch) and by element id (12.source.swatch). Re-record an element under another name, add one, or change a token it binds, and a count moves: the default tests fail on purpose, and illustrations.test's SAMPLE_COMPONENTS stops seeing a sample unless its name is listed. F-233 renamed five (04, 10, 23 to ui:Strip; 09, 17 to ui:Swatch; 12 to ui:FabricSwatch) and moved each list in the same change."
     }
   ]
 }
