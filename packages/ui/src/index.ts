@@ -69,6 +69,7 @@ export {
 export { Status, STATUS_PILL_HEIGHT, type StatusProps } from './Status.js';
 export { inkOnSample, TEXT_CONTRAST, type InkOnSample, type Sample } from './inkOnSample.js';
 export { sampleEdge, sampleInk, type SampleEdge, type SampleInk } from './sampleInk.js';
+export { ProvenanceChip, type ProvenanceChipProps } from './ProvenanceChip.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export {
   Button,

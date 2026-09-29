@@ -48,6 +48,7 @@ import {
   Status,
   Surface,
   Pair,
+  ProvenanceChip,
   Strip,
   Swatch,
   swatchCorner,
@@ -581,6 +582,51 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE PROVENANCE CHIP (F-233, F-284): as 03 draws it (outlined) and as 24 draws it (filled, led
+   * by the camera), beside its sample — and the sample with the chip HIDDEN by 15's switch, so
+   * the state a person can choose is measured, not only the drawn one.
+   */
+  ...(
+    [
+      ['ProvenanceChip (03, outlined)', true, { height: 16.5 }],
+      [
+        'ProvenanceChip (24, filled, camera)',
+        true,
+        { fill: 'surface.2', icon: 'camera', height: 25 },
+      ],
+      [
+        'Swatch with its provenance chip hidden (15 off)',
+        false,
+        { fill: 'surface.2', height: 18.5 },
+      ],
+    ] as const
+  ).map(([name, provenanceBadges, form]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <DisplaySettingsProvider settings={{ ...DRAWN_DISPLAY_SETTINGS, provenanceBadges }}>
+          <View>
+            <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} size={54.5} />
+            <ProvenanceChip
+              sample={{ hex: '#526A6B', color: SAMPLE }}
+              copy={{
+                reference: 'Reference',
+                calibrated: 'Calibrated',
+                estimated: 'Estimated',
+                declared: 'Declared',
+                derived: 'Derived',
+              }}
+              {...form}
+            />
+          </View>
+        </DisplaySettingsProvider>,
+        theme,
+      ),
+  })),
   /*
    * THE LEVELS AS DRAWN (F-233): level 1 with its resting edge, levels 2 and 3 without one (board
    * 00), and 11's garment card with its photograph inset and cornered.
