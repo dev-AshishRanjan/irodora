@@ -187,6 +187,11 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
      * on and defaults on, so a caller that says nothing sees exactly what it saw before.
      */
     readonly numeric?: boolean;
+    /**
+     * Centre every line (F-234): the app bar's stacked title, whose two lines are each centred on
+     * `22`, `23` and `24`. A single line is centred by its container; this is for more than one.
+     */
+    readonly align?: 'center';
   };
 
 /** The ink: the token's value, or the sample's ink. The type admits exactly one of the two. */
@@ -247,6 +252,7 @@ export function Text<S extends TypeSize>({
   numeric = false,
   face = 'sans',
   weight,
+  align,
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
@@ -292,6 +298,7 @@ export function Text<S extends TypeSize>({
         // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
         // absent one, and the conformance suite reads what the NODE carries.
         ...(numeric && tabularNumerals ? { fontVariant: [nativeNumericFeature] } : {}),
+        ...(align === undefined ? {} : { textAlign: align }),
       }}
     >
       {children}

@@ -231,8 +231,14 @@ export function narrowestFeature(size: number): number {
 export interface MarkProps extends Omit<ViewProps, 'style' | 'accessibilityRole'> {
   /** Rendered edge length. Defaults to the brief's floor. */
   readonly size?: number;
-  /** Which foreground token every disc takes. The mark introduces no colour of its own. */
-  readonly color?: Extract<keyof ThemeColors, 'foreground' | 'foreground.2' | 'inverse.foreground'>;
+  /**
+   * Which foreground token every disc takes. The mark introduces no colour of its own. `22` draws it
+   * in the header in `text.tertiary`, which is `foreground.3` (F-234).
+   */
+  readonly color?: Extract<
+    keyof ThemeColors,
+    'foreground' | 'foreground.2' | 'foreground.3' | 'inverse.foreground'
+  >;
   /**
    * What a screen reader announces.
    *

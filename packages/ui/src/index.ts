@@ -61,6 +61,18 @@ export {
 } from './TabBar.js';
 export { Icon, ICON_TOKENS, type IconProps, type IconToken } from './Icon.js';
 export {
+  AppBar,
+  APP_BAR_HEIGHT,
+  APP_BAR_INSET,
+  APP_BAR_RULE,
+  APP_BAR_STACKED,
+  type AppBarBack,
+  type AppBarIcon,
+  type AppBarProps,
+  type AppBarTitle,
+  type AppBarTrailing,
+} from './AppBar.js';
+export {
   Illustration,
   ILLUSTRATIONS,
   DRAWN_ILLUSTRATIONS,
@@ -185,6 +197,7 @@ export {
   type Align,
   type Justify,
   type RowProps,
+  type ScreenAppBar,
   type ScreenProps,
   type Script,
   type SectionProps,

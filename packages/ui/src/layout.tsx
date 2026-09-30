@@ -51,6 +51,7 @@ import { useContext } from 'react';
 import { ScrollView, View, type ViewProps } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing, type nativeType } from '@irodora/design-tokens';
+import { AppBar, type AppBarProps } from './AppBar.js';
 import { Appear } from './motion.js';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
@@ -339,7 +340,23 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
   readonly gap?: SpacingStep;
   /** Threaded to the title and eyebrow. See {@link Script}. */
   readonly script?: Script;
+  /**
+   * The app bar the governing mockup draws (F-234, ADR-0118), above the scroller and pinned.
+   *
+   * Absent by default: a route on the platform header passes none, and `chrome.test` pins which
+   * routes those are. With one, the status bar's inset moves INTO the bar (`topInset`), so a fill
+   * runs behind the status bar as `18`, `19` and `24` draw it, and the scroller starts below the
+   * bar: content still has nowhere to go under the status bar (E-084).
+   */
+  readonly appBar?: ScreenAppBar;
 };
+
+/** An app bar as a screen passes it: everything but the inset, which is the screen's to set. */
+export type ScreenAppBar = AppBarProps extends infer P
+  ? P extends unknown
+    ? Omit<P, 'topInset'>
+    : never
+  : never;
 
 /**
  * The page root, and the thing seventeen screens were each writing by hand.
@@ -367,6 +384,7 @@ export function Screen({
   padding = 'lg',
   gap = 'xl',
   script = 'latin',
+  appBar,
   children,
   ...rest
 }: ScreenProps): React.JSX.Element {
@@ -494,7 +512,8 @@ export function Screen({
    * context this component is rendered in that is not an app.
    */
   const hardware = {
-    paddingTop: insets.top,
+    // With an app bar the inset is the bar's (`topInset`), and the bar sits above the scroller.
+    paddingTop: appBar === undefined ? insets.top : 0,
     paddingLeft: insets.left,
     paddingRight: insets.right,
   } as const;
@@ -513,9 +532,13 @@ export function Screen({
    */
   const ground = { flex: 1, backgroundColor: colors.background, ...hardware } as const;
 
+  /** Pinned above the scroller, never inside it: it does not scroll away (ADR-0118). */
+  const bar = appBar === undefined ? null : <AppBar {...appBar} topInset={insets.top} />;
+
   if (!scroll)
     return (
       <View style={ground}>
+        {bar}
         <View {...rest} style={{ flex: 1, flexDirection: 'column', ...rhythm }}>
           {content}
         </View>
@@ -524,6 +547,7 @@ export function Screen({
 
   return (
     <View style={ground}>
+      {bar}
       <ScrollView
         {...rest}
         style={{ flex: 1 }}

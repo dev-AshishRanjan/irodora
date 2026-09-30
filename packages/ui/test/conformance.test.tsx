@@ -14,6 +14,7 @@ import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/de
 import type { Theme } from '@irodora/design-tokens';
 import {
   Accordion,
+  AppBar,
   Appear,
   Avatar,
   Bands,
@@ -58,6 +59,7 @@ import {
   TextField,
   ThemeProvider,
   Wordmark,
+  type AppBarProps,
 } from '../src/index.js';
 import {
   checkAll,
@@ -1283,6 +1285,240 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         ),
     }),
   ),
+  /*
+   * THE APP BARS THE MOCKUPS DRAW (F-234, ADR-0118), each the arrangement its screen's inventory
+   * records: its members, their type, glyphs and tokens. The copy is a fixture; the screens' own
+   * words arrive with their features (F-242 onward). Static: each control in a bar is a subject of
+   * its own, in every state.
+   */
+  ...(
+    [
+      [
+        '02 (inline bilingual, centred)',
+        {
+          title: {
+            text: 'Lens',
+            ja: 'レンズ',
+            layout: 'inline',
+            align: 'centre',
+            placement: 'bar',
+            size: 'title',
+            weight: 500,
+          },
+          height: 54,
+        },
+      ],
+      [
+        '05 (leading title, a row below, a rule)',
+        {
+          title: {
+            text: 'Colour Atlas',
+            ja: '色図鑑',
+            layout: 'inline',
+            align: 'leading',
+            placement: 'bar',
+            size: 'title',
+            weight: 600,
+          },
+          trailing: { icons: [{ glyph: 'more', label: 'More', onPress: () => undefined }] },
+          below: (
+            <Row gap="sm">
+              <Chip form="badge" label="120 colours" icon="list" fill="surface.2" numeric />
+              <Button variant="secondary" edge="border" label="Compare" height={20} />
+              <Button variant="secondary" edge="border" label="Finder" height={18.5} />
+              <Button variant="secondary" edge="border" label="Palettes" height={18.5} />
+            </Row>
+          ),
+          rule: true,
+          height: 70,
+        },
+      ],
+      [
+        '06 (back and word, three icons, no title)',
+        {
+          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          trailing: {
+            icons: [
+              { glyph: 'bookmark', label: 'Bookmark this colour', onPress: () => undefined },
+              { glyph: 'share', label: 'Share this colour', onPress: () => undefined },
+              { glyph: 'export', label: 'Export this colour', onPress: () => undefined },
+            ],
+          },
+          rule: true,
+          height: 57.5,
+        },
+      ],
+      [
+        '08 (back, inline title, one icon)',
+        {
+          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          title: {
+            text: 'Compare',
+            ja: '比較',
+            layout: 'inline',
+            align: 'centre',
+            placement: 'bar',
+            size: 'title',
+            weight: 500,
+          },
+          trailing: { icons: [{ glyph: 'download', label: 'Export', onPress: () => undefined }] },
+          rule: true,
+        },
+      ],
+      [
+        '10 (the title on its own row, a button)',
+        {
+          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          title: {
+            text: 'Palette Studio',
+            ja: 'パレット',
+            layout: 'inline',
+            align: 'leading',
+            placement: 'below',
+            size: 'title',
+            weight: 600,
+          },
+          trailing: {
+            button: {
+              variant: 'secondary',
+              edge: 'border',
+              label: 'New palette',
+              glyph: 'plus',
+              radius: 'md',
+              height: 24,
+            },
+          },
+          height: 84,
+        },
+      ],
+      [
+        '12 (cancel, a primary save)',
+        {
+          back: { glyph: 'back', label: 'Cancel', onPress: () => undefined },
+          title: {
+            text: 'Add garment',
+            ja: '衣装を追加',
+            layout: 'inline',
+            align: 'centre',
+            placement: 'bar',
+            size: 'body',
+            weight: 600,
+          },
+          trailing: { button: { label: 'Save', radius: 'md', height: 28 } },
+          rule: true,
+          height: 52.5,
+        },
+      ],
+      [
+        '16 (an outlined save)',
+        {
+          back: { glyph: 'back', label: 'Palettes', onPress: () => undefined },
+          title: {
+            text: 'New palette',
+            layout: 'inline',
+            align: 'centre',
+            placement: 'bar',
+            size: 'label',
+            weight: 600,
+          },
+          trailing: {
+            button: {
+              variant: 'secondary',
+              edge: 'border.strong',
+              label: 'Save',
+              radius: 'sm',
+              height: 25.5,
+            },
+          },
+          rule: true,
+          height: 50,
+        },
+      ],
+      [
+        '19 (a fill, a divider)',
+        {
+          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          divider: 21.5,
+          title: {
+            text: 'What goes with this',
+            ja: '合わせ',
+            layout: 'inline',
+            align: 'leading',
+            placement: 'bar',
+            size: 'body',
+            weight: 600,
+          },
+          trailing: { icons: [{ glyph: 'filter', label: 'Filter', onPress: () => undefined }] },
+          fill: 'surface.1',
+          height: 47,
+        },
+      ],
+      [
+        '22 (a glyph alone, stacked, the mark)',
+        {
+          back: { glyph: 'back', name: 'Back', onPress: () => undefined },
+          title: {
+            text: 'Shopping check',
+            ja: '買い物チェック',
+            layout: 'stacked',
+            align: 'centre',
+            placement: 'bar',
+            size: 'body',
+            weight: 600,
+            jaSize: 'body',
+          },
+          trailing: { mark: { size: 25, color: 'foreground.3', label: 'Irodora' } },
+          height: 81,
+        },
+      ],
+      [
+        '23 (an avatar lead, stacked)',
+        {
+          lead: <Avatar uri={null} size={36} label="Your profile" />,
+          title: {
+            text: 'Your colour profile',
+            ja: 'カラープロフィール',
+            layout: 'stacked',
+            align: 'centre',
+            placement: 'bar',
+            size: 'title',
+            weight: 600,
+            jaSize: 'label',
+          },
+          trailing: {
+            icons: [{ glyph: 'share', label: 'Share your profile', onPress: () => undefined }],
+          },
+          height: 74,
+        },
+      ],
+      [
+        '24 (a fill behind the status bar, stacked)',
+        {
+          back: { glyph: 'chevron-left', label: 'Wardrobe', onPress: () => undefined },
+          title: {
+            text: 'Linen shirt',
+            ja: '麻のシャツ',
+            layout: 'stacked',
+            align: 'centre',
+            placement: 'bar',
+            size: 'title',
+            weight: 600,
+            jaSize: 'body',
+          },
+          trailing: {
+            icons: [{ glyph: 'share', label: 'Share this garment', onPress: () => undefined }],
+          },
+          fill: 'surface.1',
+          rule: true,
+          topInset: 34,
+        },
+      ],
+    ] as const satisfies readonly (readonly [string, AppBarProps])[]
+  ).map(([name, props]): ConformanceSubject => ({
+    name: `AppBar ${name}`,
+    kind: 'static',
+    render: (_state, theme) => draw(<AppBar {...props} />, theme),
+  })),
   {
     /*
      * THE STRIP, REGISTERED IN ITS OWN RIGHT rather than left to `Pair` to exercise.
