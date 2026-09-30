@@ -132,6 +132,7 @@ Two rules that matter more than the format:
 | [0114](0114-a-control-is-drawn-at-its-mockups-size-and-reaches-the-tap-target-through-its-hit-area.md) | A control is drawn at its mockup's size, and reaches the tap target through its hit area | Accepted; amends ADR-0055 |
 | [0115](0115-an-icon-only-control-drawn-on-a-plate-is-a-button-and-one-drawn-bare-is-an-iconbutton.md) | An icon-only control drawn on a plate is a Button, and one drawn bare is an IconButton | Accepted |
 | [0116](0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md) | Text on a sample, and a sample's edge, move the E3 way per sample | Accepted; OQ-46 open for a person |
+| [0117](0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md) | The tab bar is 01's, drawn by our own component, and its words return | Accepted; OQ-47 open for a person; supersedes F-168 |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

@@ -76,7 +76,7 @@ const GREEN = '\x1b[32m',
  * The tabs, read out of the registry rather than listed here.
  *
  * `src/tabs.ts` is TypeScript and this is a script, so it is parsed as text — the same trade
- * every scanner here makes. The shape is asserted by `tab-icons.test.tsx`, so a registry this
+ * every scanner here makes. The shape is asserted by `tab-bar.test.tsx`, so a registry this
  * regex stopped matching would be a registry that changed shape, which is a thing somebody did
  * deliberately.
  */

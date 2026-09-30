@@ -412,7 +412,7 @@ export default tseslint.config(
   // `src/screens/` precisely so it can be rendered and therefore checked"* — and the tab
   // registry now lives in `apps/mobile/src/tabs.ts` for exactly that reason.
   //
-  // Reading a route as TEXT is still allowed and still used: `tab-icons.test.tsx` asserts on
+  // Reading a route as TEXT is still allowed and still used: `tab-bar.test.tsx` asserts on
   // the source of `_layout.tsx` with `readFileSync`. It is EXECUTING one that drags a native
   // module in, and that is what this forbids.
   {

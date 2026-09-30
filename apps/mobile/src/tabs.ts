@@ -14,8 +14,8 @@
  *
  * ## What that cost, precisely
  *
- * `test/tab-icons.test.tsx` imports three constants from here. While they lived in the route, it
- * paid for the whole navigator to get them:
+ * `test/tab-icons.test.tsx` (now `tab-bar.test.tsx`) imported three constants from here. While they
+ * lived in the route, it paid for the whole navigator to get them:
  *
  * ```
  * tab-icons.test.tsx → app/(tabs)/_layout.tsx → expo-router
@@ -40,7 +40,6 @@
  * `scripts/verify-guards.mjs` watches it fire.
  */
 
-import { nativeTapTarget } from '@irodora/design-tokens';
 import type { NavIconName } from '@irodora/ui';
 import type { MessageKey } from './i18n/index';
 
@@ -58,52 +57,53 @@ import type { MessageKey } from './i18n/index';
  *
  * That refusal is the safe direction and worth keeping. So the id is a plain literal the
  * scanner reads directly, and **the derivation is asserted rather than performed**:
- * `tab-icons.test.tsx` checks every `testID` against its own name. A test holding the invariant
+ * `tab-bar.test.tsx` checks every `testID` against its own name. A test holding the invariant
  * is a stronger guarantee than a template hiding it — the template made drift impossible and
  * also made the id unreadable to the one tool that had to read it.
  */
 export const TABS = [
-  { name: 'index', labelKey: 'tab.home', icon: 'home', testID: 'tab-index' },
-  { name: 'atlas', labelKey: 'tab.atlas', icon: 'atlas', testID: 'tab-atlas' },
-  { name: 'lens', labelKey: 'tab.lens', icon: 'lens', testID: 'tab-lens' },
-  { name: 'wardrobe', labelKey: 'tab.wardrobe', icon: 'wardrobe', testID: 'tab-wardrobe' },
-  { name: 'profile', labelKey: 'tab.profile', icon: 'profile', testID: 'tab-profile' },
+  {
+    name: 'index',
+    labelKey: 'tab.home',
+    icon: 'home',
+    activeGlyph: 'filled',
+    testID: 'tab-index',
+  },
+  {
+    name: 'atlas',
+    labelKey: 'tab.atlas',
+    icon: 'atlas',
+    activeGlyph: 'outline',
+    testID: 'tab-atlas',
+  },
+  { name: 'lens', labelKey: 'tab.lens', icon: 'lens', activeGlyph: 'outline', testID: 'tab-lens' },
+  {
+    name: 'wardrobe',
+    labelKey: 'tab.wardrobe',
+    icon: 'wardrobe',
+    activeGlyph: 'outline',
+    testID: 'tab-wardrobe',
+  },
+  {
+    name: 'profile',
+    labelKey: 'tab.profile',
+    icon: 'profile',
+    activeGlyph: 'outline',
+    testID: 'tab-profile',
+  },
 ] as const satisfies readonly {
   readonly name: string;
   readonly labelKey: MessageKey;
   readonly icon: NavIconName;
+  /**
+   * The glyph's shape when the tab is active: the governing inventory's (`01`'s `raw.filled`),
+   * which draws only Home active, filled. The other four keep the outline `01` gives them until
+   * OQ-47 is answered (F-234, ADR-0117). The test holds this to the inventory.
+   */
+  readonly activeGlyph: 'filled' | 'outline';
   /** The e2e selector. Asserted against `name` by the test; see the note above. */
   readonly testID: string;
 }[];
 
 /** The prefix every tab id carries. One place, so the test and the data agree by construction. */
 export const TAB_TESTID_PREFIX = 'tab-';
-
-/**
- * How big a glyph is when it is the only thing identifying a tab.
- *
- * `NavIcon`'s own default is 20, chosen when a word sat under it and carried the identity. With
- * the word gone the shape is doing all the work, so it grows — and it is a constant rather than
- * a literal at the call site because it is a decision about this bar rather than about the
- * component.
- */
-export const TAB_GLYPH = 26;
-
-/**
- * The bar's own height, before the device's inset is added.
- *
- * A DESIGN VALUE AND IT STAYS ONE: it is what fits the selected indicator above a 26px glyph
- * without crowding either. Deriving the inset does not derive this, and pretending otherwise
- * would be dressing a chosen number as a measured one.
- *
- * It was 68 while a label sat under the glyph. Losing a line of type loses about twelve points
- * of it, and what is left still clears `nativeTapTarget` comfortably before any inset is added —
- * which the test asserts, because a bar that fits is not the same as a bar you can hit.
- */
-export const TAB_BAR_BASE = 56;
-
-/** Exported so the test can assert the bar clears a tap target rather than restating 56. */
-export const TAB_BAR_HEIGHT = (): number => TAB_BAR_BASE;
-
-/** The minimum a tab must be. Re-exported so the assertion reads against one source. */
-export const TAB_MINIMUM = nativeTapTarget;

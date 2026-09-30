@@ -5,7 +5,7 @@
  *
  * `Icon` holds the status tokens and asserts them both ways against `statusPairing`. A tab is not a
  * status, so this stays its own list with the same discipline applied to its own subject: every tab
- * has a glyph, every glyph here belongs to a tab, asserted both ways by the app's `tab-icons` test.
+ * has a glyph, every glyph here belongs to a tab, asserted both ways by the app's `tab-bar` test.
  *
  * **The drawings are not here any more.** As of F-228 every glyph a mockup draws lives once, in
  * {@link Glyph}, and these five are entries in it. What this module owns is the LIST — which five

@@ -76,6 +76,12 @@ reads, and the derivation the template used to perform is now an invariant the t
 which is a stronger guarantee than the template, because the template made drift impossible and
 also made the id unreadable to the one tool that had to read it.
 
+## Since F-234
+
+The test is `tab-bar.test.tsx`. The route now hands the whole bar to `src/tabBar.tsx`, an adapter
+that takes the navigator through a structural type — the same rule once more: the part a test must
+exercise lives in `src/`, and the test drives it with plain objects rather than a navigator.
+
 Related: [[a-check-that-reads-one-of-two-spellings]] ·
 [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] ·
 [[a-dependency-can-be-wrong-about-the-runtime-it-will-run-in]]
