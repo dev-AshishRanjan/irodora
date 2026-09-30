@@ -52,6 +52,7 @@ import {
   Strip,
   Swatch,
   swatchCorner,
+  TabBar,
   Tabs,
   Text,
   TextField,
@@ -1242,10 +1243,46 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           {NAV_ICON_NAMES.map((name) => (
             <NavIcon key={name} name={name} color="#131110" />
           ))}
+          {/* 01's active Home, filled (F-234). */}
+          <NavIcon name="home" color="#131110" filled />
         </Row>,
         theme,
       ),
   },
+  /*
+   * 01'S TAB BAR, WITH EACH OF ITS FIVE TABS ACTIVE (F-234, ADR-0117).
+   *
+   * A tab bar always has a tab chosen, so the `default` a subject is compared against is the bar with
+   * a neighbour chosen, and `active` is this tab's turn. The kind is `navigation`: there is no
+   * disabled or loading tab bar, because neither is drawn and neither exists in the navigator it
+   * serves, and the suite holds the kind to the tablist the tree draws.
+   */
+  ...(['home', 'atlas', 'lens', 'wardrobe', 'profile'] as const).map(
+    (key, i, keys): ConformanceSubject => ({
+      name: `TabBar (${key} active)`,
+      kind: 'navigation',
+      selectable: true,
+      treatment: 'indicator',
+      forbiddenNames: ['tab', 'tab bar'],
+      render: (state, theme) =>
+        draw(
+          <TabBar
+            items={keys.map((k) => ({
+              key: k,
+              label: k.charAt(0).toUpperCase() + k.slice(1),
+              icon: k,
+              activeGlyph: k === 'home' ? 'filled' : 'outline',
+            }))}
+            active={state === 'active' ? key : (keys[(i + 1) % keys.length] ?? key)}
+            onSelect={() => undefined}
+            bottomInset={34}
+            {...(state === 'focus' ? { focused: key } : {})}
+            testID={state}
+          />,
+          theme,
+        ),
+    }),
+  ),
   {
     /*
      * THE STRIP, REGISTERED IN ITS OWN RIGHT rather than left to `Pair` to exercise.
@@ -1471,6 +1508,52 @@ describe('the suite rejects what it is supposed to reject', () => {
       ['light', 'dark'],
     );
     expect(rules(findings)).toContain('state-not-rendered');
+  });
+
+  it('holds the navigation kind to the tablist the tree draws (F-234)', () => {
+    // DECOY: a button calling itself navigation to shed its disabled and loading states.
+    const button = checkSubject(
+      {
+        name: 'NotNavigation',
+        kind: 'navigation',
+        render: (state, theme) =>
+          draw(
+            <Button
+              label="Save"
+              onPress={() => undefined}
+              {...(state === 'focus' ? { focused: true } : {})}
+              testID={state}
+            />,
+            theme,
+          ),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(button)).toContain('not-navigation');
+    // And the kind still owes what it owes: a tab bar rendering nothing for focus is reported.
+    const unfocused = checkSubject(
+      {
+        name: 'TabBarWithoutFocus',
+        kind: 'navigation',
+        render: (state, theme) =>
+          state === 'focus'
+            ? null
+            : draw(
+                <TabBar
+                  items={[
+                    { key: 'home', label: 'Home', icon: 'home', activeGlyph: 'filled' },
+                    { key: 'atlas', label: 'Atlas', icon: 'atlas', activeGlyph: 'outline' },
+                  ]}
+                  active={state === 'active' ? 'home' : 'atlas'}
+                  onSelect={() => undefined}
+                  bottomInset={0}
+                />,
+                theme,
+              ),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(unfocused)).toStrictEqual(['state-missing', 'state-missing']);
   });
 
   it('rejects a hand-typed colour', () => {

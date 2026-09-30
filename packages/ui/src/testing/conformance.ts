@@ -51,16 +51,24 @@ import {
 } from './tree.js';
 import { isStatusToken, type ColorResolution } from './tokens.js';
 
-export type ComponentKind = 'interactive' | 'data' | 'static';
+export type ComponentKind = 'interactive' | 'navigation' | 'data' | 'static';
 
 /**
  * What each kind owes. Derived from the kind, never declared per component.
  *
  * `focus` is included for `interactive` because an external keyboard and Switch Control both
  * move focus on mobile — ACCESSIBILITY.md's A4 is about that, not about a keyboard nobody has.
+ *
+ * `navigation` is 01's tab bar (F-234): a control that chooses where you are. It owes no
+ * `disabled` and no `loading`, because a destination is never unavailable or busy — none is drawn,
+ * and the navigator it serves has neither. Everything else an `interactive` subject owes, it owes:
+ * something must respond, and every target must reach the tap target. The kind is not taken on a
+ * subject's word: a `navigation` subject that draws no tablist of tabs is reported, so a button
+ * cannot shed its disabled state by calling itself one.
  */
 export const REQUIRED_STATES: Readonly<Record<ComponentKind, readonly string[]>> = {
   interactive: ['default', 'focus', 'active', 'disabled', 'loading'],
+  navigation: ['default', 'focus', 'active'],
   data: ['default', 'loading', 'error', 'empty'],
   static: ['default'],
 };
@@ -98,9 +106,10 @@ export interface ConformanceSubject {
    * segmented row's: the chosen segment is filled. An unchosen segment draws no shape at all, only
    * its label, so the fill is a SHAPE that appears, not a fill swapped on a shape that was already
    * there; that is why a segment needs no dot and a pill does (OQ-43 is the pill case). Either way
-   * the picture is read off the rendered tree, never taken on the subject's word.
+   * the picture is read off the rendered tree, never taken on the subject's word. `indicator` is 01's
+   * tab bar (F-234): the active tab draws its indicator and its word in `foreground`.
    */
-  readonly treatment?: 'chooser' | 'pill' | 'segment';
+  readonly treatment?: 'chooser' | 'pill' | 'segment' | 'indicator';
   /**
    * Why this subject paints no colour at all — a REASON, never a boolean.
    *
@@ -266,6 +275,30 @@ export function drawsDot(tree: TestNode, samples: ReadonlySet<string> = new Set(
 
 function declaredRole(p: ResolvedPressableNode): string | undefined {
   return p.accessibilityRole ?? p.role;
+}
+
+/** Whether a subject is one a person presses: `interactive`, or `navigation` (F-234). */
+function pressing(subject: ConformanceSubject): boolean {
+  return subject.kind === 'interactive' || subject.kind === 'navigation';
+}
+
+/**
+ * Whether a tree draws a tablist whose pressables are all tabs, at least two of them (F-234): what
+ * the `navigation` kind is earned by. Read off the roles the tree declares.
+ */
+export function drawsTablist(tree: TestNode): boolean {
+  const roleOf = (node: TestNode): unknown => node.props['accessibilityRole'] ?? node.props['role'];
+  const find = (node: TestNode): TestNode | undefined =>
+    roleOf(node) === 'tablist'
+      ? node
+      : (node.children ?? [])
+          .filter((c): c is TestNode => typeof c !== 'string')
+          .map(find)
+          .find((n) => n !== undefined);
+  const list = find(tree);
+  if (list === undefined) return false;
+  const pressables = pressableNodes(list);
+  return pressables.length >= 2 && pressables.every((p) => declaredRole(p) === 'tab');
 }
 
 /**
@@ -450,8 +483,14 @@ export function checkSubject(
 
       // --- anything pressable ------------------------------------------------------------
       const pressables = pressableNodes(tree);
-      if (subject.kind === 'interactive' && pressables.length === 0)
-        at('not-interactive', 'declares kind "interactive" but nothing in the tree responds');
+      if (pressing(subject) && pressables.length === 0)
+        at('not-interactive', `declares kind "${subject.kind}" but nothing in the tree responds`);
+      if (subject.kind === 'navigation' && !drawsTablist(tree))
+        at(
+          'not-navigation',
+          'declares kind "navigation" but draws no tablist of tabs — the kind that owes no ' +
+            'disabled or loading state is earned by the tree, not taken on the subject’s word',
+        );
 
       /*
        * WHAT THE SUBJECT ANNOUNCED, ANYWHERE IN ITS TREE.
@@ -502,7 +541,7 @@ export function checkSubject(
           reach.height !== null &&
           reach.width >= target &&
           reach.height >= target;
-        if (subject.kind === 'interactive' && !reaches)
+        if (pressing(subject) && !reaches)
           at(
             'tap-target',
             `${p.path.join('>')} reaches ${String(reach.width)} × ${String(reach.height)} of the ` +
@@ -598,6 +637,18 @@ export function checkSubject(
               'is a selected segment but draws no fill that differs from its container — the ' +
                 'chosen segment of a segmented row is the one shape in it (F-232), and a fill in ' +
                 'its own ground leaves only the label to say which is chosen.',
+            );
+        } else if (subject.treatment === 'indicator') {
+          /*
+           * 01'S ACTIVE TAB (F-234): the indicator on the rule, in `foreground`, AND the word in
+           * `foreground` where the others are `foreground.2`. The ink alone would be colour alone.
+           */
+          if (!paints('backgroundColor', 'foreground') || !paints('color', 'foreground'))
+            at(
+              'selection-treatment',
+              'is an active tab but does not draw the picture 01 draws — the indicator in `foreground` ' +
+                'on the rule AND the word in `foreground` (F-234). An ink change alone is colour ' +
+                'alone.',
             );
         } else if (subject.treatment === 'pill') {
           const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));

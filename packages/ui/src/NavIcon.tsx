@@ -43,6 +43,11 @@ export interface NavIconProps {
   /** Resolved by the caller from a theme token — this component names no colour. */
   readonly color: string;
   readonly size?: number;
+  /**
+   * Drawn filled, where the governing mockup draws this tab filled when active (F-234): `01` draws
+   * only Home so. The shapes of the other active tabs are OQ-47's, and ship outlined meanwhile.
+   */
+  readonly filled?: boolean;
 }
 
 /**
@@ -51,6 +56,11 @@ export interface NavIconProps {
  * **Decorative to a screen reader.** The tab it sits in carries the accessible name, and a second
  * announcement of "home, image" adds nothing a person can act on.
  */
-export function NavIcon({ name, color, size = 20 }: NavIconProps): React.JSX.Element {
-  return <Glyph name={name} color={color} size={size} />;
+export function NavIcon({
+  name,
+  color,
+  size = 20,
+  filled = false,
+}: NavIconProps): React.JSX.Element {
+  return <Glyph name={name} color={color} size={size} filled={filled} />;
 }

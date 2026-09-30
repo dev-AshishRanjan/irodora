@@ -32,6 +32,7 @@ export {
   checkSubject,
   chosenStandsOut,
   drawsDot,
+  drawsTablist,
   formatFindings,
   REQUIRED_STATES,
   tapTargetReach,
