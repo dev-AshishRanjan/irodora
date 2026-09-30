@@ -19,6 +19,8 @@ import {
   FOCUS_RING,
   GLYPH_IN_PLATE,
   Glyph,
+  glyphSide,
+  type GlyphName,
   hitArea,
   ICON_PLATE,
   Text,
@@ -317,5 +319,104 @@ describe('Text sets a weight on the sans only', () => {
       </Text>
     );
     expect([serif, sans]).toHaveLength(2);
+  });
+});
+
+describe('the chrome’s forms (F-234)', () => {
+  /** A labelled button drawn in a screen's app bar or action bar that carries a glyph. */
+  const inChrome = (e: Element): boolean => {
+    let p = e.parent === null ? undefined : byId.get(e.parent);
+    while (p !== undefined) {
+      if (p.component === 'ui:AppBar' || p.component === 'ui:ActionBar') return true;
+      p = p.parent === null ? undefined : byId.get(p.parent);
+    }
+    return false;
+  };
+
+  it('puts a glyph where the chrome draws it: an arrow trails its label, every other glyph leads', () => {
+    const drawn = elements.filter(
+      (e) =>
+        e.component === 'ui:Button' && inChrome(e) && labelled(e) && typeof e.icon === 'string',
+    );
+    expect(drawn.length).toBeGreaterThan(15);
+    for (const e of drawn)
+      expect([e.id, glyphSide(e.icon as GlyphName)]).toStrictEqual([
+        e.id,
+        e.icon === 'arrow-right' ? 'trailing' : 'leading',
+      ]);
+    // 03 records its glyphs as children with boxes: the arrow after the label, the plus before it.
+    const x = (id: string): number => (byId.get(id)?.box as { x?: number } | undefined)?.x ?? NaN;
+    expect(x('03.actions.wear.icon')).toBeGreaterThan(x('03.actions.wear.label'));
+    expect(x('03.actions.add.icon')).toBeLessThan(x('03.actions.add.label'));
+  });
+
+  const order = (testID: string): readonly string[] => {
+    const host = screen
+      .getAllByTestId(testID, { includeHiddenElements: true })
+      .find((h) => typeof h.type === 'string');
+    const kinds: string[] = [];
+    const walk = (node: { type: unknown; children: readonly unknown[] }): void => {
+      if (node.type === 'RNSVGSvgView') kinds.push('glyph');
+      else if (node.type === 'Text') kinds.push('label');
+      else for (const c of node.children) if (typeof c === 'object' && c !== null) walk(c as never);
+    };
+    if (host !== undefined) walk(host);
+    return kinds;
+  };
+
+  it('draws the glyph on its side, in the label’s ink', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Button label="Wear this" glyph="arrow-right" testID="t" />
+        <Button label="Add to wardrobe" variant="secondary" glyph="plus" testID="l" />
+        <Button label="Atlas" variant="plain" glyph="back" glyphAt="trailing" testID="o" />
+      </ThemeProvider>,
+    );
+    expect(order('t')).toStrictEqual(['label', 'glyph']);
+    expect(order('l')).toStrictEqual(['glyph', 'label']);
+    // DECOY: a caller can place it against the rule, and the order follows.
+    expect(order('o')).toStrictEqual(['label', 'glyph']);
+  });
+
+  it('paints each form as drawn: plain bare, tonal in its level, secondary in its edge', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Button label="Atlas" variant="plain" glyph="back" height={11} testID="plain" />
+        <Button label="Save to Wardrobe" variant="tonal" level={2} testID="t2" />
+        <Button label="Build outfit" variant="tonal" level={3} testID="t3" />
+        <Button label="Export" variant="secondary" edge="border" testID="sb" />
+        <Button label="Save" variant="secondary" testID="ss" />
+      </ThemeProvider>,
+    );
+    const plain = hostOf('plain').style;
+    expect(plain['backgroundColor']).toBe('transparent');
+    expect(plain['borderWidth']).toBe(0);
+    expect(plain['paddingHorizontal']).toBeUndefined();
+    expect(hostOf('t2').style).toMatchObject({
+      backgroundColor: dark['surface.2'],
+      borderWidth: 0,
+    });
+    expect(hostOf('t3').style).toMatchObject({
+      backgroundColor: dark['surface.3'],
+      borderWidth: 0,
+    });
+    expect(hostOf('sb').style).toMatchObject({ borderWidth: 1, borderColor: dark.border });
+    // DECOY: the secondary's default edge is still board 00's.
+    expect(hostOf('ss').style).toMatchObject({
+      borderWidth: 1,
+      borderColor: dark['border.strong'],
+    });
+  });
+
+  it('refuses a form’s props on another form', () => {
+    const wrong = [
+      // @ts-expect-error — an edge belongs to the secondary form
+      <Button key="a" label="x" edge="border" />,
+      // @ts-expect-error — a tonal button names its level
+      <Button key="b" label="x" variant="tonal" />,
+      // @ts-expect-error — an ink belongs to the plain form
+      <Button key="c" label="x" variant="secondary" ink="foreground.2" />,
+    ];
+    expect(wrong).toHaveLength(3);
   });
 });

@@ -726,6 +726,29 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         'Button (icon, outlined)',
         { icon: 'lock', label: 'Lock this slot', plate: 'outlined', size: 21 },
       ],
+      // The chrome's forms (F-234): a trailing arrow, a leading plus on the screens' outline, a back
+      // label, and the two tonal fills.
+      [
+        'Button (primary, trailing arrow)',
+        { label: 'Wear this', glyph: 'arrow-right', height: 32 },
+      ],
+      [
+        'Button (secondary, border, leading plus)',
+        { label: 'Add to wardrobe', variant: 'secondary', edge: 'border', glyph: 'plus' },
+      ],
+      [
+        'Button (plain, back label)',
+        { label: 'Atlas', variant: 'plain', glyph: 'back', height: 11 },
+      ],
+      [
+        'Button (plain, secondary ink)',
+        { label: 'Clear', variant: 'plain', ink: 'foreground.2', glyph: 'close', height: 14 },
+      ],
+      ['Button (tonal, level 2)', { label: 'Save to Wardrobe', variant: 'tonal', level: 2 }],
+      [
+        'Button (tonal, level 3)',
+        { label: 'Build an outfit', variant: 'tonal', level: 3, glyph: 'arrow-right' },
+      ],
     ] as const
   ).map(([name, form]): ConformanceSubject => ({
     name,

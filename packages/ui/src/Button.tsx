@@ -71,7 +71,7 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeType } from '@irodora/design-tokens';
 import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
 import { hitArea } from './hitArea.js';
 import type { Script } from './layout.js';
@@ -84,7 +84,23 @@ import { FocusRing } from './selection.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 
-export type ButtonVariant = 'primary' | 'secondary';
+/**
+ * The labelled forms the mockups draw. `plain` and `tonal` are the chrome's (F-234): a back label or
+ * a text action (`plain`: no fill, no edge), and a filled button in a surface level (`tonal`: 10,
+ * 19, 20, 03's *hold*).
+ */
+export type ButtonVariant = 'primary' | 'secondary' | 'plain' | 'tonal';
+
+/** Which side of its label a glyph sits: an arrow trails, every other glyph leads (F-234). */
+export type GlyphSide = 'leading' | 'trailing';
+
+/** The glyphs the mockups draw after a label: the arrows. Every other glyph is drawn before it. */
+const TRAILING_GLYPHS: readonly GlyphName[] = ['arrow-right'];
+
+/** The side a glyph is drawn on when a caller does not say, as the chrome draws it. */
+export function glyphSide(glyph: GlyphName): GlyphSide {
+  return TRAILING_GLYPHS.includes(glyph) ? 'trailing' : 'leading';
+}
 
 /** The corners the mockups draw on buttons: 00's pill, and the screens' `sm`, `md` and `lg`. */
 export type ButtonRadius = 'sm' | 'md' | 'lg' | 'pill';
@@ -131,10 +147,9 @@ type Shared = Omit<
     readonly focused?: boolean;
   };
 
-type LabelledProps = Shared & {
+type LabelledBase = Shared & {
   /** The visible label. Also the accessible name — one string, so they cannot diverge. */
   readonly label: string;
-  readonly variant?: ButtonVariant;
   /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BUTTON_HEIGHT}. */
   readonly height?: number;
   /** The drawn corner. Board 00 draws a pill, which is the default. */
@@ -147,11 +162,53 @@ type LabelledProps = Shared & {
    * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
    */
   readonly script?: Script;
+  /**
+   * A glyph beside the label (F-234): `03`'s *wear* ends in an arrow, its *add* starts with a plus;
+   * back labels start with a back glyph. Decorative: the label is the name.
+   */
+  readonly glyph?: GlyphName;
+  /** Which side the glyph is on. Defaults to {@link glyphSide}: an arrow trails, others lead. */
+  readonly glyphAt?: GlyphSide;
+  /**
+   * The glyph's size in dp. Defaults to the label's type size, a convention rather than a reading:
+   * only `03`'s two button glyphs are measured, and a surface passes its own where it differs.
+   */
+  readonly glyphSize?: number;
   readonly icon?: never;
   readonly plate?: never;
   readonly shape?: never;
   readonly size?: never;
 };
+
+type PrimaryProps = LabelledBase & {
+  readonly variant?: 'primary';
+  readonly edge?: never;
+  readonly level?: never;
+  readonly ink?: never;
+};
+type SecondaryProps = LabelledBase & {
+  readonly variant: 'secondary';
+  /** The outline: board 00's `border.strong` (the default), or the screens' `border.subtle`. */
+  readonly edge?: 'border' | 'border.strong';
+  readonly level?: never;
+  readonly ink?: never;
+};
+type PlainProps = LabelledBase & {
+  readonly variant: 'plain';
+  /** The label's ink: `foreground`, or `foreground.2` where the chrome draws it secondary. */
+  readonly ink?: 'foreground' | 'foreground.2';
+  readonly edge?: never;
+  readonly level?: never;
+};
+type TonalProps = LabelledBase & {
+  readonly variant: 'tonal';
+  /** The surface level it is filled with: `level2` (20, 03's *hold*) or `level3` (19). */
+  readonly level: 2 | 3;
+  readonly edge?: never;
+  readonly ink?: never;
+};
+
+type LabelledProps = PrimaryProps | SecondaryProps | PlainProps | TonalProps;
 
 type IconOnlyProps = Shared & {
   /** The glyph, by the name its inventory binds. */
@@ -179,20 +236,97 @@ export function Button(props: ButtonProps): React.JSX.Element {
   return props.icon === undefined ? <LabelledButton {...props} /> : <IconOnlyButton {...props} />;
 }
 
-function LabelledButton({
-  label,
-  variant = 'primary',
-  height = BUTTON_HEIGHT,
-  radius = 'pill',
-  disabled = false,
-  loading = false,
-  focused = false,
-  script = 'latin',
-  ...rest
-}: LabelledProps): React.JSX.Element {
+/** What a labelled form paints: its fill, its edge, and its label's ink and weight. */
+interface LabelledPaint {
+  readonly background: string;
+  readonly edge: string | undefined;
+  readonly ink: 'accent.foreground' | 'foreground' | 'foreground.2';
+  readonly weight: 400 | 500;
+  /** Whether the label sits inside a padded shape, or is the whole control (a plain label). */
+  readonly padded: boolean;
+}
+
+/** The four props that choose a labelled form's paint. */
+interface PaintProps {
+  readonly variant: ButtonVariant;
+  readonly edge: 'border' | 'border.strong' | undefined;
+  readonly level: 2 | 3 | undefined;
+  readonly ink: 'foreground' | 'foreground.2' | undefined;
+}
+
+function labelledPaint(
+  props: PaintProps,
+  colors: ReturnType<typeof useTheme>['colors'],
+): LabelledPaint {
+  switch (props.variant) {
+    case 'secondary':
+      // Board 00's outline is `border.strong`; the screens' chrome draws `border.subtle` (`border`).
+      return {
+        background: 'transparent',
+        edge: colors[props.edge ?? 'border.strong'],
+        ink: 'foreground',
+        weight: 400,
+        padded: true,
+      };
+    case 'plain':
+      // A back label or a text action: the words and their glyph, and nothing drawn around them.
+      return {
+        background: 'transparent',
+        edge: undefined,
+        ink: props.ink ?? 'foreground',
+        weight: 400,
+        padded: false,
+      };
+    case 'tonal':
+      // Filled in a surface level; `foreground` on `surface.2` and `surface.3` are both declared.
+      return {
+        background: colors[props.level === 2 ? 'surface.2' : 'surface.3'],
+        edge: undefined,
+        ink: 'foreground',
+        weight: 400,
+        padded: true,
+      };
+    case 'primary':
+      return {
+        background: colors.accent,
+        edge: undefined,
+        ink: 'accent.foreground',
+        weight: 500,
+        padded: true,
+      };
+  }
+}
+
+function LabelledButton(props: LabelledProps): React.JSX.Element {
+  const {
+    label,
+    variant = 'primary',
+    height = BUTTON_HEIGHT,
+    radius = 'pill',
+    disabled = false,
+    loading = false,
+    focused = false,
+    script = 'latin',
+    glyph,
+    glyphAt,
+    glyphSize,
+    edge,
+    level,
+    ink,
+    ...rest
+  } = props;
   const { colors } = useTheme();
   const inert = disabled || loading;
-  const primary = variant === 'primary';
+  const paint = labelledPaint({ variant, edge, level, ink }, colors);
+  const side = glyph === undefined ? undefined : (glyphAt ?? glyphSide(glyph));
+  const glyphNode =
+    glyph === undefined ? null : (
+      <Glyph
+        name={glyph}
+        color={colors[paint.ink]}
+        size={glyphSize ?? nativeType[script].body.fontSize}
+      />
+    );
 
   return (
     <HeroButton
@@ -219,17 +353,20 @@ function LabelledButton({
         // The focus ring is drawn outside the box; HeroUI's root would clip it (see the header).
         overflow: 'visible',
         borderRadius: nativeRadius[radius],
-        paddingHorizontal: nativeSpacing.md,
+        ...(paint.padded ? { paddingHorizontal: nativeSpacing.md } : {}),
+        flexDirection: 'row',
+        ...(glyph === undefined ? {} : { gap: nativeSpacing.xs }),
         justifyContent: 'center',
         alignItems: 'center',
         /*
-         * Both drawn pairings are DECLARED in the manifest: `accent.foreground` on `accent`, and
-         * `foreground` on whatever surface the outline sits on. The secondary has NO FILL: board
-         * 00 draws an outline and nothing inside it (F-232), where this used to paint `surface.2`.
+         * Every drawn pairing is DECLARED in the manifest: `accent.foreground` on `accent`;
+         * `foreground` on `surface.2` and `surface.3` (tonal); and `foreground` or `foreground.2` on
+         * whatever surface an outline or a plain label sits on. The secondary has NO FILL: board 00
+         * draws an outline and nothing inside it (F-232).
          */
-        backgroundColor: primary ? colors.accent : 'transparent',
-        borderWidth: primary ? 0 : 1,
-        ...(primary ? {} : { borderColor: colors['border.strong'] }),
+        backgroundColor: paint.background,
+        borderWidth: paint.edge === undefined ? 0 : 1,
+        ...(paint.edge === undefined ? {} : { borderColor: paint.edge }),
         // Every declared state renders DIFFERENTLY. A component that returns the same tree for
         // default and disabled has defined the state in name only, and the conformance suite
         // rejects exactly that. Press feedback is HeroUI's scale, which the tree shows as a
@@ -237,20 +374,16 @@ function LabelledButton({
         opacity: inert ? 0.5 : 1,
       }}
     >
+      {side === 'leading' ? glyphNode : null}
       {/*
         THE LABEL GOES THROUGH `Text` (F-232), where it was HeroUI's own label: so it takes the
         type scale, the bundled face for Japanese (F-152), Dynamic Type, and the weight board 00
-        draws — body at 500 on the primary, 400 on the secondary.
+        draws — body at 500 on the primary, 400 on the others.
       */}
-      <Text
-        size="body"
-        weight={primary ? 500 : 400}
-        color={primary ? 'accent.foreground' : 'foreground'}
-        script={script}
-        numberOfLines={1}
-      >
+      <Text size="body" weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
         {loading ? `${label}…` : label}
       </Text>
+      {side === 'trailing' ? glyphNode : null}
       <FocusRing visible={focused} radius={nativeRadius[radius]} />
     </HeroButton>
   );

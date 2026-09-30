@@ -75,10 +75,12 @@ export {
   Button,
   BUTTON_HEIGHT,
   GLYPH_IN_PLATE,
+  glyphSide,
   ICON_PLATE,
   type ButtonProps,
   type ButtonRadius,
   type ButtonVariant,
+  type GlyphSide,
 } from './Button.js';
 export { IconButton, type IconButtonProps } from './IconButton.js';
 export { hitArea, platformTapTarget } from './hitArea.js';
