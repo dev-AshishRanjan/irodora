@@ -249,6 +249,14 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   treatment (F-176) was painted on the padded well; with no well (`F-233`) it is drawn as a frame
   just outside the sample (`SelectionFrame`), costing no layout, and on a sample bled into its card
   as its edge drawn over it.
+- **FR-71** — the tab bar on a screen that draws an action bar. `16`, `22` and `24` draw the OS home
+  indicator where the tab bar would be, and no mockup draws the two together. FR-71 and F-145's
+  first criterion give every route a tab that owns it, and F-234's third criterion puts the action
+  bar *above the tab bar*, so the tab bar stays: it is laid out below the scene, and the action bar
+  sits above it in flow (`F-234`,
+  [ADR-0118](../adr/0118-the-app-bar-and-the-action-bar-are-placed-by-screen-and-the-sheet-by-its-form.md)). Hiding
+  it on pushed screens would change FR-71 — a PRD change, not a layout one, and not an agent's
+  (the reasoning of OQ-10). The reading is named on `F-267` for the person comparing screens.
 
 ---
 

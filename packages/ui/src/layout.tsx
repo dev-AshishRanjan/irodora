@@ -51,6 +51,7 @@ import { useContext } from 'react';
 import { ScrollView, View, type ViewProps } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing, type nativeType } from '@irodora/design-tokens';
+import { ActionBar, type ActionBarProps } from './ActionBar.js';
 import { AppBar, type AppBarProps } from './AppBar.js';
 import { Appear } from './motion.js';
 import { useTheme } from './theme.js';
@@ -349,6 +350,12 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
    * bar: content still has nowhere to go under the status bar (E-084).
    */
   readonly appBar?: ScreenAppBar;
+  /**
+   * The action bar the governing mockup draws (F-234, ADR-0118): after the scroller, in normal
+   * flow, never over it. The content ends above it, so it covers nothing; the tab bar is laid out
+   * below the scene, so it sits above the tab bar, which keeps the device's bottom inset (§4 E4).
+   */
+  readonly actionBar?: ActionBarProps;
 };
 
 /** An app bar as a screen passes it: everything but the inset, which is the screen's to set. */
@@ -385,6 +392,7 @@ export function Screen({
   gap = 'xl',
   script = 'latin',
   appBar,
+  actionBar,
   children,
   ...rest
 }: ScreenProps): React.JSX.Element {
@@ -535,6 +543,9 @@ export function Screen({
   /** Pinned above the scroller, never inside it: it does not scroll away (ADR-0118). */
   const bar = appBar === undefined ? null : <AppBar {...appBar} topInset={insets.top} />;
 
+  /** In flow after the scroller, never absolute: the content ends above it (ADR-0118). */
+  const actions = actionBar === undefined ? null : <ActionBar {...actionBar} />;
+
   if (!scroll)
     return (
       <View style={ground}>
@@ -542,6 +553,7 @@ export function Screen({
         <View {...rest} style={{ flex: 1, flexDirection: 'column', ...rhythm }}>
           {content}
         </View>
+        {actions}
       </View>
     );
 
@@ -561,6 +573,7 @@ export function Screen({
       >
         {content}
       </ScrollView>
+      {actions}
     </View>
   );
 }

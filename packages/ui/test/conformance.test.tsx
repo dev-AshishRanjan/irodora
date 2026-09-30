@@ -14,6 +14,7 @@ import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/de
 import type { Theme } from '@irodora/design-tokens';
 import {
   Accordion,
+  ActionBar,
   AppBar,
   Appear,
   Avatar,
@@ -59,6 +60,7 @@ import {
   TextField,
   ThemeProvider,
   Wordmark,
+  type ActionBarProps,
   type AppBarProps,
 } from '../src/index.js';
 import {
@@ -1518,6 +1520,74 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: `AppBar ${name}`,
     kind: 'static',
     render: (_state, theme) => draw(<AppBar {...props} />, theme),
+  })),
+  /*
+   * THE ACTION BARS (F-234, ADR-0118), each as its inventory records it: the buttons' forms, drawn
+   * heights, corners and glyphs, in the order drawn. Static, as the app bars are.
+   */
+  ...(
+    [
+      [
+        '08 (two, primary first, a rule)',
+        {
+          actions: [
+            { label: 'Save as PDF', radius: 'md', height: 31.5 },
+            {
+              variant: 'secondary',
+              edge: 'border',
+              label: 'Open in Studio',
+              radius: 'md',
+              height: 30,
+            },
+          ],
+        },
+      ],
+      ['12 (one primary)', { actions: [{ label: 'Save garment', radius: 'md', height: 33 }] }],
+      [
+        '17 (one primary, a trailing arrow)',
+        { actions: [{ label: 'Continue', glyph: 'arrow-right', radius: 'sm', height: 32 }] },
+      ],
+      [
+        '19 (one tonal)',
+        {
+          actions: [
+            {
+              variant: 'tonal',
+              level: 3,
+              label: 'Build an outfit',
+              glyph: 'arrow-right',
+              radius: 'md',
+              height: 41,
+            },
+          ],
+        },
+      ],
+      [
+        '22 (two stacked, no rule)',
+        {
+          actions: [
+            { label: 'Save to wardrobe', radius: 'md', height: 44 },
+            {
+              variant: 'secondary',
+              edge: 'border',
+              label: 'Scan again',
+              radius: 'md',
+              height: 42.5,
+            },
+          ],
+          layout: 'column',
+          rule: false,
+        },
+      ],
+      [
+        '24 (one plain)',
+        { actions: [{ variant: 'plain', label: 'Create an outfit with this', height: 18 }] },
+      ],
+    ] as const satisfies readonly (readonly [string, ActionBarProps])[]
+  ).map(([name, props]): ConformanceSubject => ({
+    name: `ActionBar ${name}`,
+    kind: 'static',
+    render: (_state, theme) => draw(<ActionBar {...props} />, theme),
   })),
   {
     /*

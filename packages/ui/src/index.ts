@@ -61,6 +61,16 @@ export {
 } from './TabBar.js';
 export { Icon, ICON_TOKENS, type IconProps, type IconToken } from './Icon.js';
 export {
+  ActionBar,
+  ACTION_BAR_BOTTOM,
+  ACTION_BAR_GAP,
+  ACTION_BAR_RULE,
+  ACTION_BAR_SIDE,
+  ACTION_BAR_TOP,
+  type Action,
+  type ActionBarProps,
+} from './ActionBar.js';
+export {
   AppBar,
   APP_BAR_HEIGHT,
   APP_BAR_INSET,
