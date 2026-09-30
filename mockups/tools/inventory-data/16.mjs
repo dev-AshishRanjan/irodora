@@ -126,25 +126,33 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 50 dp, bounded by the rule.
+    el('16.header', 'ui:AppBar', B(0, 0, 768, 100)),
     el('16.back', 'ui:Button', B(33, 41, 116, 18), {
+      parent: '16.header',
       icon: 'back',
       binding: 'static:palettes.back',
       action: 'navigate:/atlas/palettes',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('16.title', 'ui:Text', B(259, 40, 250, 20), {
+      parent: '16.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'label', 600),
       binding: 'static:palettes.createTitle',
       copy: { shape: 'heading', script: 'latin' },
     }),
     el('16.save', 'ui:Button', B(582, 24, 159, 51), {
+      parent: '16.header',
       tokens: { border: 'border.strong', radius: 'sm' },
       binding: 'static:palettes.save',
       action: 'submit:palette.save',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('16.header-rule', null, B(0, 98, 768, 2), { tokens: { fg: 'border.subtle' } }),
+    el('16.header-rule', null, B(0, 98, 768, 2), {
+      parent: '16.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- margin line-art, inside the screen (§2: design)
     el('16.art-left', 'ui:Illustration', B(0, 332, 80, 417), { illustration: 'kimono' }),
     el('16.art-right-top', 'ui:Illustration', B(690, 190, 78, 167), { illustration: 'sashiko' }),
@@ -267,7 +275,11 @@ export default {
     }),
     chip(9, B(714, 1092, 54, 113)),
     // ---- the action
+    // The action bar (F-234): no container is drawn, so its band runs from the action to the
+    // frame's bottom, over the home indicator the image draws.
+    el('16.actions', 'ui:ActionBar', B(0, 1235, 768, 141)),
     el('16.create', 'ui:Button', B(79, 1235, 610, 61), {
+      parent: '16.actions',
       tokens: { bg: 'action.primary', radius: 'sm' },
       icon: 'arrow-right',
       binding: 'static:palettes.createAndSave',

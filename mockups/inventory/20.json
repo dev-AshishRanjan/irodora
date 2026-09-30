@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "20.back",
+      "id": "20.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 96
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 48
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "20.back",
+      "order": 2,
+      "parent": "20.header",
       "component": "ui:Button",
       "box": {
         "x": 29,
@@ -50,8 +75,8 @@
     },
     {
       "id": "20.title",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "20.header",
       "component": "ui:Text",
       "box": {
         "x": 182,
@@ -84,8 +109,8 @@
     },
     {
       "id": "20.share",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "20.header",
       "component": "ui:Button",
       "box": {
         "x": 709,
@@ -109,7 +134,7 @@
     },
     {
       "id": "20.carousel",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "new:Carousel",
       "box": {
@@ -134,7 +159,7 @@
     },
     {
       "id": "20.carousel.previous",
-      "order": 5,
+      "order": 6,
       "parent": "20.carousel",
       "component": "ui:Card",
       "box": {
@@ -162,7 +187,7 @@
     },
     {
       "id": "20.card",
-      "order": 6,
+      "order": 7,
       "parent": "20.carousel",
       "component": "ui:Card",
       "box": {
@@ -197,7 +222,7 @@
     },
     {
       "id": "20.carousel.next",
-      "order": 7,
+      "order": 8,
       "parent": "20.carousel",
       "component": "ui:Card",
       "box": {
@@ -225,7 +250,7 @@
     },
     {
       "id": "20.card.swatch",
-      "order": 8,
+      "order": 9,
       "parent": "20.card",
       "component": "ui:Swatch",
       "box": {
@@ -256,7 +281,7 @@
     },
     {
       "id": "20.card.kanji",
-      "order": 9,
+      "order": 10,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -293,7 +318,7 @@
     },
     {
       "id": "20.card.mark",
-      "order": 10,
+      "order": 11,
       "parent": "20.card",
       "component": "ui:Mark",
       "box": {
@@ -320,7 +345,7 @@
     },
     {
       "id": "20.card.kana",
-      "order": 11,
+      "order": 12,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -357,7 +382,7 @@
     },
     {
       "id": "20.card.romaji",
-      "order": 12,
+      "order": 13,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -394,7 +419,7 @@
     },
     {
       "id": "20.card.english",
-      "order": 13,
+      "order": 14,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -428,7 +453,7 @@
     },
     {
       "id": "20.card.oklch.label",
-      "order": 14,
+      "order": 15,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -465,7 +490,7 @@
     },
     {
       "id": "20.card.hex.label",
-      "order": 15,
+      "order": 16,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -502,7 +527,7 @@
     },
     {
       "id": "20.card.cielab.label",
-      "order": 16,
+      "order": 17,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -539,7 +564,7 @@
     },
     {
       "id": "20.card.oklch.value",
-      "order": 17,
+      "order": 18,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -575,7 +600,7 @@
     },
     {
       "id": "20.card.hex.value",
-      "order": 18,
+      "order": 19,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -610,7 +635,7 @@
     },
     {
       "id": "20.card.cielab.value",
-      "order": 19,
+      "order": 20,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -646,7 +671,7 @@
     },
     {
       "id": "20.card.rule",
-      "order": 20,
+      "order": 21,
       "parent": "20.card",
       "component": null,
       "box": {
@@ -673,7 +698,7 @@
     },
     {
       "id": "20.card.provenance",
-      "order": 21,
+      "order": 22,
       "parent": "20.card",
       "component": "ui:Text",
       "box": {
@@ -711,7 +736,7 @@
     },
     {
       "id": "20.card.footer-mark",
-      "order": 22,
+      "order": 23,
       "parent": "20.card",
       "component": "ui:Mark",
       "box": {
@@ -738,9 +763,9 @@
     },
     {
       "id": "20.actions",
-      "order": 23,
+      "order": 24,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 77,
         "y": 1166,
@@ -765,7 +790,7 @@
     },
     {
       "id": "20.actions.save",
-      "order": 24,
+      "order": 25,
       "parent": "20.actions",
       "component": "ui:Button",
       "box": {
@@ -799,7 +824,7 @@
     },
     {
       "id": "20.actions.share",
-      "order": 25,
+      "order": 26,
       "parent": "20.actions",
       "component": "ui:Button",
       "box": {

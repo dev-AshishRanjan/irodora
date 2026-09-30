@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "02.title",
+      "id": "02.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 108
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 54
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.title",
+      "order": 2,
+      "parent": "02.header",
       "component": "ui:Text",
       "box": {
         "x": 220,
@@ -59,7 +84,7 @@
     },
     {
       "id": "02.modes",
-      "order": 2,
+      "order": 3,
       "parent": null,
       "component": "ui:ChoiceGroup",
       "box": {
@@ -87,7 +112,7 @@
     },
     {
       "id": "02.modes.selected",
-      "order": 3,
+      "order": 4,
       "parent": "02.modes",
       "component": null,
       "box": {
@@ -118,7 +143,7 @@
     },
     {
       "id": "02.modes.live-dot",
-      "order": 4,
+      "order": 5,
       "parent": "02.modes",
       "component": null,
       "box": {
@@ -145,7 +170,7 @@
     },
     {
       "id": "02.modes.live",
-      "order": 5,
+      "order": 6,
       "parent": "02.modes",
       "component": "ui:Text",
       "box": {
@@ -182,7 +207,7 @@
     },
     {
       "id": "02.modes.scan",
-      "order": 6,
+      "order": 7,
       "parent": "02.modes",
       "component": "ui:Text",
       "box": {
@@ -219,7 +244,7 @@
     },
     {
       "id": "02.modes.divider-1",
-      "order": 7,
+      "order": 8,
       "parent": "02.modes",
       "component": null,
       "box": {
@@ -246,7 +271,7 @@
     },
     {
       "id": "02.modes.target",
-      "order": 8,
+      "order": 9,
       "parent": "02.modes",
       "component": "ui:Text",
       "box": {
@@ -283,7 +308,7 @@
     },
     {
       "id": "02.modes.divider-2",
-      "order": 9,
+      "order": 10,
       "parent": "02.modes",
       "component": null,
       "box": {
@@ -310,7 +335,7 @@
     },
     {
       "id": "02.modes.card",
-      "order": 10,
+      "order": 11,
       "parent": "02.modes",
       "component": "ui:Text",
       "box": {
@@ -347,7 +372,7 @@
     },
     {
       "id": "02.viewfinder",
-      "order": 11,
+      "order": 12,
       "parent": null,
       "component": "app:CameraPreview",
       "box": {
@@ -374,7 +399,7 @@
     },
     {
       "id": "02.conditions",
-      "order": 12,
+      "order": 13,
       "parent": "02.viewfinder",
       "component": "ui:Chip",
       "box": {
@@ -404,7 +429,7 @@
     },
     {
       "id": "02.conditions.icon",
-      "order": 13,
+      "order": 14,
       "parent": "02.conditions",
       "component": null,
       "box": {
@@ -429,7 +454,7 @@
     },
     {
       "id": "02.conditions.text",
-      "order": 14,
+      "order": 15,
       "parent": "02.conditions",
       "component": "ui:Text",
       "box": {
@@ -461,7 +486,7 @@
     },
     {
       "id": "02.reticle",
-      "order": 15,
+      "order": 16,
       "parent": "02.viewfinder",
       "component": "app:Reticle",
       "box": {
@@ -488,7 +513,7 @@
     },
     {
       "id": "02.reticle.corner-tl",
-      "order": 16,
+      "order": 17,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -513,7 +538,7 @@
     },
     {
       "id": "02.reticle.corner-tr",
-      "order": 17,
+      "order": 18,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -538,7 +563,7 @@
     },
     {
       "id": "02.reticle.ring",
-      "order": 18,
+      "order": 19,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -563,7 +588,7 @@
     },
     {
       "id": "02.reticle.cross",
-      "order": 19,
+      "order": 20,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -588,7 +613,7 @@
     },
     {
       "id": "02.reticle.corner-bl",
-      "order": 20,
+      "order": 21,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -613,7 +638,7 @@
     },
     {
       "id": "02.reticle.corner-br",
-      "order": 21,
+      "order": 22,
       "parent": "02.reticle",
       "component": null,
       "box": {
@@ -638,7 +663,7 @@
     },
     {
       "id": "02.reading",
-      "order": 22,
+      "order": 23,
       "parent": "02.viewfinder",
       "component": "ui:Card",
       "box": {
@@ -669,7 +694,7 @@
     },
     {
       "id": "02.reading.sample",
-      "order": 23,
+      "order": 24,
       "parent": "02.reading",
       "component": "ui:Swatch",
       "box": {
@@ -700,7 +725,7 @@
     },
     {
       "id": "02.reading.label",
-      "order": 24,
+      "order": 25,
       "parent": "02.reading",
       "component": "ui:Text",
       "box": {
@@ -737,7 +762,7 @@
     },
     {
       "id": "02.reading.value",
-      "order": 25,
+      "order": 26,
       "parent": "02.reading",
       "component": "ui:Text",
       "box": {
@@ -775,7 +800,7 @@
     },
     {
       "id": "02.reading.srgb",
-      "order": 26,
+      "order": 27,
       "parent": "02.reading",
       "component": "ui:Text",
       "box": {
@@ -810,7 +835,7 @@
     },
     {
       "id": "02.reading.caption",
-      "order": 27,
+      "order": 28,
       "parent": "02.reading",
       "component": "ui:Text",
       "box": {
@@ -847,7 +872,7 @@
     },
     {
       "id": "02.reading.nearest-1",
-      "order": 28,
+      "order": 29,
       "parent": "02.reading",
       "component": "ui:Chip",
       "box": {
@@ -877,7 +902,7 @@
     },
     {
       "id": "02.reading.nearest-2",
-      "order": 29,
+      "order": 30,
       "parent": "02.reading",
       "component": "ui:Chip",
       "box": {
@@ -907,7 +932,7 @@
     },
     {
       "id": "02.reading.nearest-3",
-      "order": 30,
+      "order": 31,
       "parent": "02.reading",
       "component": "ui:Chip",
       "box": {
@@ -937,7 +962,7 @@
     },
     {
       "id": "02.reading.nearest-1.name",
-      "order": 31,
+      "order": 32,
       "parent": "02.reading.nearest-1",
       "component": "ui:Text",
       "box": {
@@ -972,7 +997,7 @@
     },
     {
       "id": "02.reading.nearest-2.name",
-      "order": 32,
+      "order": 33,
       "parent": "02.reading.nearest-2",
       "component": "ui:Text",
       "box": {
@@ -1007,7 +1032,7 @@
     },
     {
       "id": "02.reading.nearest-3.name",
-      "order": 33,
+      "order": 34,
       "parent": "02.reading.nearest-3",
       "component": "ui:Text",
       "box": {
@@ -1042,7 +1067,7 @@
     },
     {
       "id": "02.reading.nearest-1.delta",
-      "order": 34,
+      "order": 35,
       "parent": "02.reading.nearest-1",
       "component": "ui:Text",
       "box": {
@@ -1078,7 +1103,7 @@
     },
     {
       "id": "02.reading.nearest-2.delta",
-      "order": 35,
+      "order": 36,
       "parent": "02.reading.nearest-2",
       "component": "ui:Text",
       "box": {
@@ -1114,7 +1139,7 @@
     },
     {
       "id": "02.reading.nearest-3.delta",
-      "order": 36,
+      "order": 37,
       "parent": "02.reading.nearest-3",
       "component": "ui:Text",
       "box": {
@@ -1150,7 +1175,7 @@
     },
     {
       "id": "02.capture",
-      "order": 37,
+      "order": 38,
       "parent": "02.viewfinder",
       "component": "ui:Button",
       "box": {
@@ -1178,7 +1203,7 @@
     },
     {
       "id": "02.import",
-      "order": 38,
+      "order": 39,
       "parent": "02.viewfinder",
       "component": "ui:Button",
       "box": {
@@ -1210,7 +1235,7 @@
     },
     {
       "id": "02.capture.mark",
-      "order": 39,
+      "order": 40,
       "parent": "02.capture",
       "component": "ui:Mark",
       "box": {
@@ -1237,7 +1262,7 @@
     },
     {
       "id": "02.hold",
-      "order": 40,
+      "order": 41,
       "parent": "02.viewfinder",
       "component": "ui:Button",
       "box": {
@@ -1269,7 +1294,7 @@
     },
     {
       "id": "02.import.icon",
-      "order": 41,
+      "order": 42,
       "parent": "02.import",
       "component": null,
       "box": {
@@ -1294,7 +1319,7 @@
     },
     {
       "id": "02.import.label",
-      "order": 42,
+      "order": 43,
       "parent": "02.import",
       "component": "ui:Text",
       "box": {
@@ -1331,7 +1356,7 @@
     },
     {
       "id": "02.hold.label",
-      "order": 43,
+      "order": 44,
       "parent": "02.hold",
       "component": "ui:Text",
       "box": {
@@ -1368,9 +1393,9 @@
     },
     {
       "id": "02.tabs",
-      "order": 44,
+      "order": 45,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1256,
@@ -1396,7 +1421,7 @@
     },
     {
       "id": "02.tabs.indicator",
-      "order": 45,
+      "order": 46,
       "parent": "02.tabs",
       "component": null,
       "box": {
@@ -1423,7 +1448,7 @@
     },
     {
       "id": "02.tabs.lens.icon",
-      "order": 46,
+      "order": 47,
       "parent": "02.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1448,7 +1473,7 @@
     },
     {
       "id": "02.tabs.gallery.icon",
-      "order": 47,
+      "order": 48,
       "parent": "02.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1473,7 +1498,7 @@
     },
     {
       "id": "02.tabs.profile.icon",
-      "order": 48,
+      "order": 49,
       "parent": "02.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1498,7 +1523,7 @@
     },
     {
       "id": "02.tabs.lens.label",
-      "order": 49,
+      "order": 50,
       "parent": "02.tabs",
       "component": "ui:Text",
       "box": {

@@ -102,11 +102,12 @@ export default {
   },
   elements: [
     // ---- header
-    el('24.header', null, B(116, 72, 536, 128), {
+    el('24.header', 'ui:AppBar', B(116, 72, 536, 128), {
       tokens: { bg: 'level1' },
       measured: { bg: '#1F2227' },
     }),
     el('24.title', 'ui:Text', B(275, 146, 219, 20), {
+      parent: '24.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:with.garmentTitle',
@@ -114,16 +115,19 @@ export default {
       raw: { emDp: 19.6 },
     }),
     el('24.share', 'ui:Button', B(604, 145, 33, 44), {
+      parent: '24.header',
       icon: 'share',
       action: 'open:share.garment',
     }),
     el('24.back', 'ui:Button', B(121, 154, 95, 36), {
+      parent: '24.header',
       icon: 'chevron-left',
       binding: 'static:with.back',
       action: 'navigate:/wardrobe',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('24.subtitle', 'ui:Text', B(320, 172, 127, 19), {
+      parent: '24.header',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'body'),
       binding: 'static:with.garmentTitleJa',
@@ -303,7 +307,7 @@ export default {
       hex: B(506, 1157, 99, 20),
     }),
     // ---- the action
-    el('24.actions', 'app:ActionBar', B(116, 1188, 536, 123), {
+    el('24.actions', 'ui:ActionBar', B(116, 1188, 536, 123), {
       tokens: { border: 'border.subtle' },
       measured: { bg: '#1E2028' },
     }),

@@ -60,14 +60,18 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 57.3 dp, bounded by the first content below.
+    el('26.header', 'ui:AppBar', B(136, 154, 496, 74)),
     el('26.back', 'ui:Button', B(142, 185, 142, 27), {
+      parent: '26.header',
       icon: 'chevron-left',
       binding: 'static:atlas.backJa',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'japanese' },
     }),
-    heading('26.title', B(314, 186, 139, 25), 'detailTitleJa'),
+    { ...heading('26.title', B(314, 186, 139, 25), 'detailTitleJa'), parent: '26.header' },
     el('26.share', 'ui:Button', B(585, 181, 29, 35), {
+      parent: '26.header',
       icon: 'share',
       action: 'open:share.colour',
     }),
@@ -204,7 +208,7 @@ export default {
       copy: { shape: 'value', script: 'japanese' },
     }),
     // ---- actions
-    el('26.actions', 'app:ActionBar', B(136, 1183, 496, 104), {
+    el('26.actions', 'ui:ActionBar', B(136, 1183, 496, 104), {
       tokens: { border: 'border.subtle' },
       measured: { bg: '#15151B' },
     }),

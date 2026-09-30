@@ -47,19 +47,27 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 48 dp, bounded by symmetric about its elements.
+    el('20.header', 'ui:AppBar', B(0, 0, 768, 96)),
     el('20.back', 'ui:Button', B(29, 38, 96, 20), {
+      parent: '20.header',
       icon: 'back',
       binding: 'static:card.back',
       action: 'dismiss:card',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('20.title', 'ui:Text', B(182, 36, 423, 25), {
+      parent: '20.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'label', 600),
       binding: 'static:card.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
-    el('20.share', 'ui:Button', B(709, 31, 28, 34), { icon: 'share', action: 'open:share.card' }),
+    el('20.share', 'ui:Button', B(709, 31, 28, 34), {
+      parent: '20.header',
+      icon: 'share',
+      action: 'open:share.card',
+    }),
     // ---- the carousel: the neighbours' edges either side of the card
     el('20.carousel', 'new:Carousel', B(0, 208, 768, 1168), { binding: 'corpus:entries' }),
     el('20.carousel.previous', 'ui:Card', B(0, 208, 78, 1168), {
@@ -126,7 +134,7 @@ export default {
       tokens: { fg: 'text.tertiary' },
     }),
     // ---- the actions
-    el('20.actions', 'app:ActionBar', B(77, 1166, 615, 133), {
+    el('20.actions', 'ui:ActionBar', B(77, 1166, 615, 133), {
       tokens: { border: 'border.subtle' },
     }),
     el('20.actions.save', 'ui:Button', B(104, 1194, 272, 77), {

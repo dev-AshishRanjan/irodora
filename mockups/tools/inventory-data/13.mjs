@@ -108,25 +108,33 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 47.5 dp, bounded by the rule.
+    el('13.header', 'ui:AppBar', B(0, 0, 768, 95)),
     el('13.back', 'ui:Button', B(27, 37, 144, 19), {
+      parent: '13.header',
       icon: 'back',
       binding: 'static:wardrobe.back',
       action: 'navigate:/wardrobe',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('13.title', 'ui:Text', B(247, 32, 273, 27), {
+      parent: '13.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
       binding: 'static:lab.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('13.capsule-solver', 'ui:Button', B(548, 22, 201, 48), {
+      parent: '13.header',
       tokens: { border: 'border.strong', radius: 'md' },
       binding: 'static:lab.capsuleSolver',
       action: 'open:lab.capsule',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('13.header-rule', null, B(0, 92, 768, 3), { tokens: { fg: 'border.subtle' } }),
+    el('13.header-rule', null, B(0, 92, 768, 3), {
+      parent: '13.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- line-art down both margins, inside the screen (§2: design); it continues behind the slots
     el('13.art-left', 'ui:Illustration', B(0, 100, 36, 1140), { illustration: 'kimono' }),
     el('13.art-right', 'ui:Illustration', B(732, 112, 36, 1110), { illustration: 'kimono' }),
@@ -242,7 +250,7 @@ export default {
       copy: { shape: 'body', script: 'latin', lines: 2 },
     }),
     // ---- actions
-    el('13.actions', 'app:ActionBar', B(0, 1250, 768, 126), {
+    el('13.actions', 'ui:ActionBar', B(0, 1250, 768, 126), {
       tokens: { border: 'border.subtle' },
     }),
     el('13.actions.next', 'ui:Button', B(35, 1276, 342, 63), {

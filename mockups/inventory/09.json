@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "09.back",
+      "id": "09.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 115
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 57.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "09.back",
+      "order": 2,
+      "parent": "09.header",
       "component": "ui:Button",
       "box": {
         "x": 31,
@@ -50,8 +75,8 @@
     },
     {
       "id": "09.title",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "09.header",
       "component": "ui:Text",
       "box": {
         "x": 235,
@@ -84,8 +109,8 @@
     },
     {
       "id": "09.clear",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "09.header",
       "component": "ui:Button",
       "box": {
         "x": 622,
@@ -112,7 +137,7 @@
     },
     {
       "id": "09.art",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -137,7 +162,7 @@
     },
     {
       "id": "09.search",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -169,7 +194,7 @@
     },
     {
       "id": "09.search.query",
-      "order": 6,
+      "order": 7,
       "parent": "09.search",
       "component": "ui:TextField",
       "box": {
@@ -203,7 +228,7 @@
     },
     {
       "id": "09.search.clear",
-      "order": 7,
+      "order": 8,
       "parent": "09.search",
       "component": "ui:Button",
       "box": {
@@ -228,7 +253,7 @@
     },
     {
       "id": "09.search.mode-phrase",
-      "order": 8,
+      "order": 9,
       "parent": "09.search",
       "component": "ui:Chip",
       "box": {
@@ -259,7 +284,7 @@
     },
     {
       "id": "09.search.mode-kanji",
-      "order": 9,
+      "order": 10,
       "parent": "09.search",
       "component": "ui:Chip",
       "box": {
@@ -290,7 +315,7 @@
     },
     {
       "id": "09.search.mode-hex",
-      "order": 10,
+      "order": 11,
       "parent": "09.search",
       "component": "ui:Chip",
       "box": {
@@ -321,7 +346,7 @@
     },
     {
       "id": "09.sliders.title",
-      "order": 11,
+      "order": 12,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -355,7 +380,7 @@
     },
     {
       "id": "09.sliders",
-      "order": 12,
+      "order": 13,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -387,7 +412,7 @@
     },
     {
       "id": "09.sliders.lightness.label",
-      "order": 13,
+      "order": 14,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -421,7 +446,7 @@
     },
     {
       "id": "09.sliders.lightness.track",
-      "order": 14,
+      "order": 15,
       "parent": "09.sliders",
       "component": "ui:Slider",
       "box": {
@@ -460,7 +485,7 @@
     },
     {
       "id": "09.sliders.lightness.value",
-      "order": 15,
+      "order": 16,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -495,7 +520,7 @@
     },
     {
       "id": "09.sliders.chroma.label",
-      "order": 16,
+      "order": 17,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -529,7 +554,7 @@
     },
     {
       "id": "09.sliders.chroma.track",
-      "order": 17,
+      "order": 18,
       "parent": "09.sliders",
       "component": "ui:Slider",
       "box": {
@@ -567,7 +592,7 @@
     },
     {
       "id": "09.sliders.chroma.value",
-      "order": 18,
+      "order": 19,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -602,7 +627,7 @@
     },
     {
       "id": "09.sliders.hue.label",
-      "order": 19,
+      "order": 20,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -636,7 +661,7 @@
     },
     {
       "id": "09.sliders.hue.track",
-      "order": 20,
+      "order": 21,
       "parent": "09.sliders",
       "component": "ui:Slider",
       "box": {
@@ -675,7 +700,7 @@
     },
     {
       "id": "09.sliders.hue.value",
-      "order": 21,
+      "order": 22,
       "parent": "09.sliders",
       "component": "ui:Text",
       "box": {
@@ -710,7 +735,7 @@
     },
     {
       "id": "09.results.heading",
-      "order": 22,
+      "order": 23,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -744,7 +769,7 @@
     },
     {
       "id": "09.results.result-1",
-      "order": 23,
+      "order": 24,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -777,7 +802,7 @@
     },
     {
       "id": "09.results.result-2",
-      "order": 24,
+      "order": 25,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -807,7 +832,7 @@
     },
     {
       "id": "09.results.result-1.name",
-      "order": 25,
+      "order": 26,
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
@@ -839,7 +864,7 @@
     },
     {
       "id": "09.results.result-2.name",
-      "order": 26,
+      "order": 27,
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
@@ -871,7 +896,7 @@
     },
     {
       "id": "09.results.result-1.english",
-      "order": 27,
+      "order": 28,
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
@@ -904,7 +929,7 @@
     },
     {
       "id": "09.results.result-2.english",
-      "order": 28,
+      "order": 29,
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
@@ -937,7 +962,7 @@
     },
     {
       "id": "09.results.result-1.distance",
-      "order": 29,
+      "order": 30,
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
@@ -970,7 +995,7 @@
     },
     {
       "id": "09.results.result-2.hex",
-      "order": 30,
+      "order": 31,
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
@@ -1003,7 +1028,7 @@
     },
     {
       "id": "09.results.result-1.oklch",
-      "order": 31,
+      "order": 32,
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
@@ -1036,7 +1061,7 @@
     },
     {
       "id": "09.results.result-2.distance",
-      "order": 32,
+      "order": 33,
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
@@ -1069,7 +1094,7 @@
     },
     {
       "id": "09.results.result-3",
-      "order": 33,
+      "order": 34,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -1099,7 +1124,7 @@
     },
     {
       "id": "09.results.result-4",
-      "order": 34,
+      "order": 35,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -1129,7 +1154,7 @@
     },
     {
       "id": "09.results.result-3.kanji",
-      "order": 35,
+      "order": 36,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
@@ -1162,7 +1187,7 @@
     },
     {
       "id": "09.results.result-4.kanji",
-      "order": 36,
+      "order": 37,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
@@ -1195,7 +1220,7 @@
     },
     {
       "id": "09.results.result-3.name",
-      "order": 37,
+      "order": 38,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
@@ -1227,7 +1252,7 @@
     },
     {
       "id": "09.results.result-4.name",
-      "order": 38,
+      "order": 39,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
@@ -1259,7 +1284,7 @@
     },
     {
       "id": "09.results.result-3.english",
-      "order": 39,
+      "order": 40,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
@@ -1292,7 +1317,7 @@
     },
     {
       "id": "09.results.result-4.english",
-      "order": 40,
+      "order": 41,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
@@ -1325,7 +1350,7 @@
     },
     {
       "id": "09.results.result-3.distance",
-      "order": 41,
+      "order": 42,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
@@ -1358,7 +1383,7 @@
     },
     {
       "id": "09.results.result-4.distance",
-      "order": 42,
+      "order": 43,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
@@ -1391,9 +1416,9 @@
     },
     {
       "id": "09.tabs",
-      "order": 43,
+      "order": 44,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1266,
@@ -1422,7 +1447,7 @@
     },
     {
       "id": "09.tabs.indicator",
-      "order": 44,
+      "order": 45,
       "parent": "09.tabs",
       "component": null,
       "box": {
@@ -1449,7 +1474,7 @@
     },
     {
       "id": "09.tabs.atlas.icon",
-      "order": 45,
+      "order": 46,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1474,7 +1499,7 @@
     },
     {
       "id": "09.tabs.map.icon",
-      "order": 46,
+      "order": 47,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1499,7 +1524,7 @@
     },
     {
       "id": "09.tabs.profile.icon",
-      "order": 47,
+      "order": 48,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1524,7 +1549,7 @@
     },
     {
       "id": "09.tabs.settings.icon",
-      "order": 48,
+      "order": 49,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1549,7 +1574,7 @@
     },
     {
       "id": "09.tabs.atlas.label",
-      "order": 49,
+      "order": 50,
       "parent": "09.tabs",
       "component": "ui:Text",
       "box": {

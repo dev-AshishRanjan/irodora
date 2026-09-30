@@ -65,13 +65,17 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 84 dp, bounded by symmetric about its elements.
+    el('10.header', 'ui:AppBar', B(0, 0, 768, 168)),
     el('10.back', 'ui:Button', B(44, 42, 85, 20), {
+      parent: '10.header',
       icon: 'back',
       binding: 'static:atlas.back',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('10.create', 'ui:Button', B(474, 28, 254, 48), {
+      parent: '10.header',
       tokens: { border: 'border.subtle', radius: 'md' },
       icon: 'plus',
       binding: 'static:palettes.create',
@@ -79,6 +83,7 @@ export default {
       copy: { shape: 'label', script: 'latin' },
     }),
     el('10.title', 'ui:Text', B(42, 106, 396, 34), {
+      parent: '10.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:palettes.title',
@@ -196,13 +201,15 @@ export default {
       copy: { shape: 'badge', script: 'latin' },
     }),
     // ---- the export bar
-    el('10.export-bar', 'app:ActionBar', B(0, 1225, 768, 151), {
+    el('10.export-bar', 'ui:ActionBar', B(0, 1225, 768, 151), {
       tokens: { border: 'border.subtle' },
     }),
+    // Its fill reads #464F58 across the button (F-234): border.strong's value (#464D5B, ΔE00 3.43),
+    // not a surface level (level3 #323742 is ΔE00 8.23, level2 11.50). level2 was recorded before.
     el('10.export-bar.button', 'ui:Button', B(40, 1275, 688, 58), {
       parent: '10.export-bar',
-      tokens: { bg: 'level2', radius: 'md' },
-      measured: { bg: '#454F58' },
+      tokens: { bg: 'border.strong', radius: 'md' },
+      measured: { bg: '#464F58' },
       binding: 'static:palettes.exportSelected',
       action: 'navigate:/profile/export',
       copy: { shape: 'label', script: 'latin' },

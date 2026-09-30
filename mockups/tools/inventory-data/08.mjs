@@ -86,13 +86,17 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 50 dp, bounded by the rule.
+    el('08.header', 'ui:AppBar', B(0, 0, 768, 100)),
     el('08.back', 'ui:Button', B(35, 37, 94, 22), {
+      parent: '08.header',
       icon: 'back',
       binding: 'static:atlas.back',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('08.title', 'ui:Text', B(245, 34, 278, 30), {
+      parent: '08.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 500),
       binding: 'static:compare.title',
@@ -100,10 +104,14 @@ export default {
       raw: { emDp: 20.5 },
     }),
     el('08.export', 'ui:Button', B(705, 30, 27, 34), {
+      parent: '08.header',
       icon: 'download',
       action: 'share:comparePdf',
     }),
-    el('08.header-rule', null, B(0, 93, 768, 7), { tokens: { fg: 'border.subtle' } }),
+    el('08.header-rule', null, B(0, 93, 768, 7), {
+      parent: '08.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- line-art inside the screen (§2: design)
     el('08.art-top', 'ui:Illustration', B(520, 100, 206, 80), { illustration: 'plum-branch' }),
     el('08.art-right', 'ui:Illustration', B(736, 190, 32, 252), { illustration: 'plum-branch' }),
@@ -181,7 +189,7 @@ export default {
     rule('08.access.rule-4', B(420, 1127, 289, 2), '08.access'),
     ...access('tritan', B(421, 1143, 98, 23), B(420, 1171, 201, 22), 'engine:separation.tritan'),
     // ---- actions
-    el('08.actions', 'app:ActionBar', B(0, 1235, 768, 141), {
+    el('08.actions', 'ui:ActionBar', B(0, 1235, 768, 141), {
       tokens: { border: 'border.subtle' },
     }),
     el('08.actions.pdf', 'ui:Button', B(32, 1279, 345, 63), {

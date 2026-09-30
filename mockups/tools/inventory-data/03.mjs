@@ -197,14 +197,15 @@ export default {
       raw: { emDp: 12.5 },
     }),
     ...ranked.flatMap((r) => [...r.top, r.rank, ...r.detail]),
-    // ---- actions
+    // ---- actions: wear and add are the sheet's action bar (F-234); hold, beneath, is F-244's.
+    el('03.actions', 'ui:ActionBar', B(94, 1149, 580, 64), { parent: sheet }),
     el('03.actions.wear', 'ui:Button', B(94, 1149, 298, 64), {
-      parent: sheet,
+      parent: '03.actions',
       tokens: { bg: 'action.primary', radius: 'pill' },
       action: 'navigate:/atlas/with/reading/[id]',
     }),
     el('03.actions.add', 'ui:Button', B(402, 1150, 272, 63), {
-      parent: sheet,
+      parent: '03.actions',
       tokens: { border: 'border.strong', radius: 'pill' },
       action: 'navigate:/wardrobe/add',
     }),

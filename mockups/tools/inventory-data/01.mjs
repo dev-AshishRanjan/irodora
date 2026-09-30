@@ -16,10 +16,15 @@ const el = (id, component, box, extra = {}) => ({
 });
 const text = (face, size, weight = 400, extra = {}) => ({ face, size, weight, ...extra });
 const tab = (key, route, icon, iconBox, labelBox) => [
+  // The glyph's ink, read as the brightest 8 % of its box (F-234): home #FAFDFF, the other four
+  // #ACAFB4–#AFB2B5 — text.primary active, text.secondary not, as the labels. Home's glyph is filled:
+  // 70 % of its box reads bright, against 37 % for an outlined glyph.
   el(`01.tabs.${key}.icon`, 'ui:NavIcon', iconBox, {
     parent: '01.tabs',
+    tokens: { fg: key === 'home' ? 'text.primary' : 'text.secondary' },
     icon,
     action: `navigate:${route}`,
+    ...(key === 'home' ? { raw: { filled: true } } : {}),
   }),
   el(`01.tabs.${key}.label`, 'ui:Text', labelBox, {
     parent: '01.tabs',
@@ -183,8 +188,12 @@ export default {
       raw: { emDp: 12.3 },
     }),
     // ---- the tab bar (C1: 01 governs every tab bar)
-    el('01.tabs', 'app:TabBar', B(0, 1222, 768, 154), {
+    // The rule across the top reads 2 px (y 1222–1224, peak #393D44 over #1A1C21): one dp of
+    // border.subtle. The indicator lies directly under it, 4.5 px of #FAFBFD (y 1224–1228) — on
+    // the rule, as drawn. 71 px (35.5 dp) lie under the labels (F-234).
+    el('01.tabs', 'ui:TabBar', B(0, 1222, 768, 154), {
       tokens: { bg: 'ground', border: 'border.subtle' },
+      raw: { rulePx: 2, belowLabelsPx: 71 },
     }),
     el('01.tabs.indicator', null, B(89, 1224, 95, 5), {
       parent: '01.tabs',

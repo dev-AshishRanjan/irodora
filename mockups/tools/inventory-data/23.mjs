@@ -92,20 +92,28 @@ export default {
   },
   elements: [
     // ---- header
-    el('23.avatar', 'new:Avatar', B(135, 162, 51, 50), { binding: 'store:profile.avatar' }),
+    // The app bar (F-234): a container for the header, 74 dp, bounded by the first content below.
+    el('23.header', 'ui:AppBar', B(114, 132, 540, 104)),
+    el('23.avatar', 'new:Avatar', B(135, 162, 51, 50), {
+      parent: '23.header',
+      binding: 'store:profile.avatar',
+    }),
     el('23.title', 'ui:Text', B(251, 163, 267, 22), {
+      parent: '23.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:profile.title',
       copy: { shape: 'heading', script: 'latin' },
     }),
     el('23.subtitle', 'ui:Text', B(306, 194, 154, 18), {
+      parent: '23.header',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'label'),
       binding: 'static:profile.titleJa',
       copy: { shape: 'label', script: 'japanese' },
     }),
     el('23.share', 'ui:Button', B(601, 170, 28, 33), {
+      parent: '23.header',
       icon: 'share',
       action: 'open:share.profile',
     }),
@@ -208,7 +216,7 @@ export default {
       copy: { shape: 'value', script: 'mixed' },
     }),
     // ---- actions
-    el('23.actions', 'app:ActionBar', B(114, 1102, 540, 196), {
+    el('23.actions', 'ui:ActionBar', B(114, 1102, 540, 196), {
       tokens: { border: 'border.subtle' },
     }),
     el('23.actions.retake', 'ui:Button', B(134, 1122, 499, 57), {

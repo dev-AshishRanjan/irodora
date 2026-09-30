@@ -104,8 +104,15 @@ export default {
   },
   elements: [
     // ---- header
-    el('07.back', null, B(132, 154, 23, 20), { icon: 'back', action: 'navigate:/atlas/[slug]' }),
+    // The app bar (F-234): a container for the header, 36.8 dp, bounded by symmetric about its elements.
+    el('07.header', 'ui:AppBar', B(103, 137, 564, 54)),
+    el('07.back', null, B(132, 154, 23, 20), {
+      parent: '07.header',
+      icon: 'back',
+      action: 'navigate:/atlas/[slug]',
+    }),
     el('07.title', 'ui:Text', B(175, 150, 443, 28), {
+      parent: '07.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 500),
       binding: 'corpus:entry.name.romaji',
@@ -257,7 +264,7 @@ export default {
     pill('contrast', B(409, 1139, 238, 33)),
     pill('monochrome', B(134, 1179, 252, 33)),
     // ---- the sticky action bar
-    el('07.actions', 'app:ActionBar', B(103, 1249, 564, 100), {
+    el('07.actions', 'ui:ActionBar', B(103, 1249, 564, 100), {
       tokens: { border: 'border.subtle' },
     }),
     el('07.actions.save', 'ui:Button', B(124, 1279, 257, 54), {

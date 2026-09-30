@@ -905,7 +905,7 @@
       "id": "25.tabs",
       "order": 30,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 149,
         "y": 1195,

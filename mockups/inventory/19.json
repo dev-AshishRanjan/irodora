@@ -24,7 +24,7 @@
       "id": "19.header",
       "order": 1,
       "parent": null,
-      "component": null,
+      "component": "ui:AppBar",
       "box": {
         "x": 70,
         "y": 62,
@@ -53,7 +53,7 @@
     {
       "id": "19.back",
       "order": 2,
-      "parent": null,
+      "parent": "19.header",
       "component": "ui:Button",
       "box": {
         "x": 97,
@@ -81,7 +81,7 @@
     {
       "id": "19.header-divider",
       "order": 3,
-      "parent": null,
+      "parent": "19.header",
       "component": null,
       "box": {
         "x": 210,
@@ -108,7 +108,7 @@
     {
       "id": "19.title",
       "order": 4,
-      "parent": null,
+      "parent": "19.header",
       "component": "ui:Text",
       "box": {
         "x": 228,
@@ -142,7 +142,7 @@
     {
       "id": "19.filter",
       "order": 5,
-      "parent": null,
+      "parent": "19.header",
       "component": "ui:Button",
       "box": {
         "x": 640,
@@ -1244,7 +1244,7 @@
       "id": "19.bar",
       "order": 39,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 72,
         "y": 1208,

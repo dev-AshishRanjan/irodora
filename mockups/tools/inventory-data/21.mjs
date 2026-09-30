@@ -87,19 +87,24 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 56.9 dp, bounded by symmetric about its elements.
+    el('21.header', 'ui:AppBar', B(77, 107, 614, 91)),
     el('21.back', 'ui:Button', B(105, 141, 89, 21), {
+      parent: '21.header',
       icon: 'back',
       binding: 'static:nearby.back',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('21.title', 'ui:Text', B(235, 138, 311, 29), {
+      parent: '21.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:nearby.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('21.filter', 'ui:Button', B(631, 141, 31, 21), {
+      parent: '21.header',
       icon: 'filter-lines',
       action: 'open:nearby.filter',
     }),
@@ -204,7 +209,7 @@ export default {
       view: B(570, 1167, 78, 20),
     }),
     // ---- 21's own tab bar — three items; C1 puts 01's five in its place
-    el('21.tabs', 'app:TabBar', B(77, 1202, 614, 95), {
+    el('21.tabs', 'ui:TabBar', B(77, 1202, 614, 95), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#16171B' },
     }),

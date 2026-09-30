@@ -73,7 +73,10 @@ export default {
   },
   elements: [
     el('11.art', 'ui:Illustration', B(560, 0, 208, 690), { illustration: 'kimono' }),
+    // The app bar (F-234): a container for the header, 58.5 dp, bounded by the first content below.
+    el('11.header', 'ui:AppBar', B(0, 0, 768, 117)),
     el('11.title', 'ui:Text', B(233, 59, 298, 24), {
+      parent: '11.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 500),
       binding: 'static:wardrobe.title',
@@ -179,7 +182,7 @@ export default {
       action: 'navigate:/wardrobe/[id]',
     }),
     // ---- 11's own tab bar — four items; C1 puts 01's five in its place
-    el('11.tabs', 'app:TabBar', B(0, 1288, 768, 88), {
+    el('11.tabs', 'ui:TabBar', B(0, 1288, 768, 88), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#1F2329' },
     }),

@@ -105,13 +105,19 @@ export default {
     screens: [{ id: '15.screen', box: B(0, 0, 768, 1376), dpPerPx: 0.5 }],
   },
   elements: [
+    // The app bar (F-234): a container for the header, 44.5 dp, bounded by symmetric about its elements.
+    el('15.header', 'ui:AppBar', B(0, 36, 768, 89)),
     el('15.title', 'ui:Text', B(28, 60, 523, 44), {
+      parent: '15.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:settings.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
-    el('15.mark', 'ui:Mark', B(693, 57, 48, 45), { tokens: { fg: 'text.primary' } }),
+    el('15.mark', 'ui:Mark', B(693, 57, 48, 45), {
+      parent: '15.header',
+      tokens: { fg: 'text.primary' },
+    }),
     el('15.art', 'ui:Illustration', B(736, 100, 32, 1190), { illustration: 'leaves' }),
     // ---- 1. themes
     heading(1, B(30, 152, 456, 27), 'appearance'),
@@ -211,7 +217,7 @@ export default {
       copy: { shape: 'badge', script: 'latin' },
     }),
     // ---- 15's own tab bar — four items; C1 puts 01's five in its place
-    el('15.tabs', 'app:TabBar', B(0, 1288, 768, 88), {
+    el('15.tabs', 'ui:TabBar', B(0, 1288, 768, 88), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#1E2126' },
     }),

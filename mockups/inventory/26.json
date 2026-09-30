@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "26.back",
+      "id": "26.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 136,
+        "y": 154,
+        "w": 496,
+        "h": 74
+      },
+      "dp": {
+        "x": 0,
+        "y": 31,
+        "w": 384,
+        "h": 57.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.back",
+      "order": 2,
+      "parent": "26.header",
       "component": "ui:Button",
       "box": {
         "x": 142,
@@ -50,8 +75,8 @@
     },
     {
       "id": "26.title",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "26.header",
       "component": "ui:Text",
       "box": {
         "x": 314,
@@ -84,8 +109,8 @@
     },
     {
       "id": "26.share",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "26.header",
       "component": "ui:Button",
       "box": {
         "x": 585,
@@ -109,7 +134,7 @@
     },
     {
       "id": "26.header-rule",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": null,
       "box": {
@@ -136,7 +161,7 @@
     },
     {
       "id": "26.hero",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -164,7 +189,7 @@
     },
     {
       "id": "26.hero.photo",
-      "order": 6,
+      "order": 7,
       "parent": "26.hero",
       "component": "ui:Swatch",
       "box": {
@@ -192,7 +217,7 @@
     },
     {
       "id": "26.next-card",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -220,7 +245,7 @@
     },
     {
       "id": "26.hero.kana",
-      "order": 8,
+      "order": 9,
       "parent": "26.hero",
       "component": "ui:Text",
       "box": {
@@ -254,7 +279,7 @@
     },
     {
       "id": "26.hero.kanji",
-      "order": 9,
+      "order": 10,
       "parent": "26.hero",
       "component": "ui:Text",
       "box": {
@@ -291,7 +316,7 @@
     },
     {
       "id": "26.hero.description",
-      "order": 10,
+      "order": 11,
       "parent": "26.hero",
       "component": "ui:Text",
       "box": {
@@ -326,7 +351,7 @@
     },
     {
       "id": "26.readout.title",
-      "order": 11,
+      "order": 12,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -363,7 +388,7 @@
     },
     {
       "id": "26.readout",
-      "order": 12,
+      "order": 13,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -394,7 +419,7 @@
     },
     {
       "id": "26.readout.divider",
-      "order": 13,
+      "order": 14,
       "parent": "26.readout",
       "component": null,
       "box": {
@@ -421,7 +446,7 @@
     },
     {
       "id": "26.readout.oklch.label",
-      "order": 14,
+      "order": 15,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -458,7 +483,7 @@
     },
     {
       "id": "26.readout.cielab.label",
-      "order": 15,
+      "order": 16,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -495,7 +520,7 @@
     },
     {
       "id": "26.readout.oklch.value",
-      "order": 16,
+      "order": 17,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -530,7 +555,7 @@
     },
     {
       "id": "26.readout.cielab.value",
-      "order": 17,
+      "order": 18,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -568,7 +593,7 @@
     },
     {
       "id": "26.readout.rule-1",
-      "order": 18,
+      "order": 19,
       "parent": "26.readout",
       "component": null,
       "box": {
@@ -595,7 +620,7 @@
     },
     {
       "id": "26.readout.hex.label",
-      "order": 19,
+      "order": 20,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -632,7 +657,7 @@
     },
     {
       "id": "26.readout.srgb.label",
-      "order": 20,
+      "order": 21,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -666,7 +691,7 @@
     },
     {
       "id": "26.readout.hex.value",
-      "order": 21,
+      "order": 22,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -704,7 +729,7 @@
     },
     {
       "id": "26.readout.srgb.value",
-      "order": 22,
+      "order": 23,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -742,7 +767,7 @@
     },
     {
       "id": "26.readout.rule-2",
-      "order": 23,
+      "order": 24,
       "parent": "26.readout",
       "component": null,
       "box": {
@@ -769,7 +794,7 @@
     },
     {
       "id": "26.readout.p3.label",
-      "order": 24,
+      "order": 25,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -803,7 +828,7 @@
     },
     {
       "id": "26.readout.p3.value",
-      "order": 25,
+      "order": 26,
       "parent": "26.readout",
       "component": "ui:Text",
       "box": {
@@ -841,7 +866,7 @@
     },
     {
       "id": "26.kasane.title",
-      "order": 26,
+      "order": 27,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -878,7 +903,7 @@
     },
     {
       "id": "26.kasane",
-      "order": 27,
+      "order": 28,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -909,7 +934,7 @@
     },
     {
       "id": "26.kasane.label",
-      "order": 28,
+      "order": 29,
       "parent": "26.kasane",
       "component": "ui:Text",
       "box": {
@@ -946,7 +971,7 @@
     },
     {
       "id": "26.kasane.bar",
-      "order": 29,
+      "order": 30,
       "parent": "26.kasane",
       "component": "new:KasaneBar",
       "box": {
@@ -973,7 +998,7 @@
     },
     {
       "id": "26.kasane.bar.segment-1",
-      "order": 30,
+      "order": 31,
       "parent": "26.kasane.bar",
       "component": "ui:Text",
       "box": {
@@ -1008,7 +1033,7 @@
     },
     {
       "id": "26.kasane.bar.segment-2",
-      "order": 31,
+      "order": 32,
       "parent": "26.kasane.bar",
       "component": "ui:Text",
       "box": {
@@ -1043,7 +1068,7 @@
     },
     {
       "id": "26.provenance.title",
-      "order": 32,
+      "order": 33,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1080,7 +1105,7 @@
     },
     {
       "id": "26.provenance.corpus",
-      "order": 33,
+      "order": 34,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1114,7 +1139,7 @@
     },
     {
       "id": "26.provenance.seal",
-      "order": 34,
+      "order": 35,
       "parent": null,
       "component": "new:HankoSeal",
       "box": {
@@ -1141,7 +1166,7 @@
     },
     {
       "id": "26.provenance.review",
-      "order": 35,
+      "order": 36,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1175,9 +1200,9 @@
     },
     {
       "id": "26.actions",
-      "order": 36,
+      "order": 37,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 136,
         "y": 1183,
@@ -1205,7 +1230,7 @@
     },
     {
       "id": "26.actions.add",
-      "order": 37,
+      "order": 38,
       "parent": "26.actions",
       "component": "ui:Button",
       "box": {
@@ -1236,7 +1261,7 @@
     },
     {
       "id": "26.actions.share",
-      "order": 38,
+      "order": 39,
       "parent": "26.actions",
       "component": "ui:Button",
       "box": {

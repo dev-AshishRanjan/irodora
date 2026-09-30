@@ -1133,9 +1133,34 @@
       }
     },
     {
-      "id": "03.actions.wear",
+      "id": "03.actions",
       "order": 34,
       "parent": "03.sheet",
+      "component": "ui:ActionBar",
+      "box": {
+        "x": 94,
+        "y": 1149,
+        "w": 580,
+        "h": 64
+      },
+      "dp": {
+        "x": 47,
+        "y": 574.5,
+        "w": 290,
+        "h": 32
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.actions.wear",
+      "order": 35,
+      "parent": "03.actions",
       "component": "ui:Button",
       "box": {
         "x": 94,
@@ -1162,8 +1187,8 @@
     },
     {
       "id": "03.actions.add",
-      "order": 35,
-      "parent": "03.sheet",
+      "order": 36,
+      "parent": "03.actions",
       "component": "ui:Button",
       "box": {
         "x": 402,
@@ -1190,7 +1215,7 @@
     },
     {
       "id": "03.actions.wear.label",
-      "order": 36,
+      "order": 37,
       "parent": "03.actions.wear",
       "component": "ui:Text",
       "box": {
@@ -1227,7 +1252,7 @@
     },
     {
       "id": "03.actions.wear.icon",
-      "order": 37,
+      "order": 38,
       "parent": "03.actions.wear",
       "component": null,
       "box": {
@@ -1252,7 +1277,7 @@
     },
     {
       "id": "03.actions.add.icon",
-      "order": 38,
+      "order": 39,
       "parent": "03.actions.add",
       "component": null,
       "box": {
@@ -1277,7 +1302,7 @@
     },
     {
       "id": "03.actions.add.label",
-      "order": 39,
+      "order": 40,
       "parent": "03.actions.add",
       "component": "ui:Text",
       "box": {
@@ -1311,7 +1336,7 @@
     },
     {
       "id": "03.actions.hold",
-      "order": 40,
+      "order": 41,
       "parent": "03.sheet",
       "component": "ui:Button",
       "box": {
@@ -1342,7 +1367,7 @@
     },
     {
       "id": "03.actions.hold.label",
-      "order": 41,
+      "order": 42,
       "parent": "03.actions.hold",
       "component": "ui:Text",
       "box": {

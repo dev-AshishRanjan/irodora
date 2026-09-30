@@ -85,8 +85,15 @@ export default {
   ],
   elements: [
     // ---- header
-    el('06.back.icon', null, B(72, 134, 18, 16), { icon: 'back', action: 'navigate:/atlas' }),
+    // The app bar (F-234): a container for the header, 57.5 dp, bounded by the rule.
+    el('06.header', 'ui:AppBar', B(53, 99, 474, 71)),
+    el('06.back.icon', null, B(72, 134, 18, 16), {
+      parent: '06.header',
+      icon: 'back',
+      action: 'navigate:/atlas',
+    }),
     el('06.back.label', 'ui:Text', B(101, 134, 47, 17), {
+      parent: '06.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 500),
       binding: 'static:atlas.back',
@@ -95,15 +102,24 @@ export default {
       raw: { emDp: 18.9 },
     }),
     el('06.bookmark', 'ui:Button', B(405, 131, 18, 22), {
+      parent: '06.header',
       icon: 'bookmark',
       action: 'toggle:bookmark',
     }),
-    el('06.share', 'ui:Button', B(446, 131, 19, 23), { icon: 'share', action: 'share:colourCard' }),
+    el('06.share', 'ui:Button', B(446, 131, 19, 23), {
+      parent: '06.header',
+      icon: 'share',
+      action: 'share:colourCard',
+    }),
     el('06.export', 'ui:Button', B(487, 132, 22, 21), {
+      parent: '06.header',
       icon: 'export',
       action: 'navigate:/profile/export',
     }),
-    el('06.header-rule', null, B(54, 168, 472, 2), { tokens: { fg: 'border.subtle' } }),
+    el('06.header-rule', null, B(54, 168, 472, 2), {
+      parent: '06.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- the swatch, and the card stacked behind it
     // The line around the hero reads 8.5 px across each side (a light grey band, #BE–#C9, x 73–81 at
     // mid-height, y 182–190 at mid-width): 6.9 dp at 0.81. Its value is the README keyline (P4, C20).
@@ -211,7 +227,7 @@ export default {
     caption(2, B(170, 1194, 93, 27)),
     caption(3, B(281, 1194, 72, 27)),
     // ---- the sticky action bar (drawn wider than the upper frame)
-    el('06.actions', 'app:ActionBar', B(51, 1222, 667, 78), {
+    el('06.actions', 'ui:ActionBar', B(51, 1222, 667, 78), {
       tokens: { bg: 'level1', border: 'border.subtle' },
       measured: { bg: '#20232A' },
     }),

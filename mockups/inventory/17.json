@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "17.title",
+      "id": "17.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 111
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 55.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.title",
+      "order": 2,
+      "parent": "17.header",
       "component": "ui:Text",
       "box": {
         "x": 92,
@@ -56,7 +81,7 @@
     },
     {
       "id": "17.step",
-      "order": 2,
+      "order": 3,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -90,7 +115,7 @@
     },
     {
       "id": "17.draping",
-      "order": 3,
+      "order": 4,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -122,7 +147,7 @@
     },
     {
       "id": "17.draping.title",
-      "order": 4,
+      "order": 5,
       "parent": "17.draping",
       "component": "ui:Text",
       "box": {
@@ -156,7 +181,7 @@
     },
     {
       "id": "17.draping.prompt",
-      "order": 5,
+      "order": 6,
       "parent": "17.draping",
       "component": "ui:Text",
       "box": {
@@ -194,7 +219,7 @@
     },
     {
       "id": "17.draping.option-a",
-      "order": 6,
+      "order": 7,
       "parent": "17.draping",
       "component": "ui:Card",
       "box": {
@@ -222,7 +247,7 @@
     },
     {
       "id": "17.draping.option-a.swatch",
-      "order": 7,
+      "order": 8,
       "parent": "17.draping.option-a",
       "component": "ui:Swatch",
       "box": {
@@ -252,7 +277,7 @@
     },
     {
       "id": "17.draping.option-b",
-      "order": 8,
+      "order": 9,
       "parent": "17.draping",
       "component": "ui:Card",
       "box": {
@@ -280,7 +305,7 @@
     },
     {
       "id": "17.draping.option-b.swatch",
-      "order": 9,
+      "order": 10,
       "parent": "17.draping.option-b",
       "component": "ui:Swatch",
       "box": {
@@ -310,7 +335,7 @@
     },
     {
       "id": "17.draping.option-a.label",
-      "order": 10,
+      "order": 11,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -344,7 +369,7 @@
     },
     {
       "id": "17.draping.option-b.label",
-      "order": 11,
+      "order": 12,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -378,7 +403,7 @@
     },
     {
       "id": "17.draping.option-a.name",
-      "order": 12,
+      "order": 13,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -415,7 +440,7 @@
     },
     {
       "id": "17.draping.option-b.name",
-      "order": 13,
+      "order": 14,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -452,7 +477,7 @@
     },
     {
       "id": "17.draping.option-a.hex",
-      "order": 14,
+      "order": 15,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -489,7 +514,7 @@
     },
     {
       "id": "17.draping.option-b.hex",
-      "order": 15,
+      "order": 16,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -526,7 +551,7 @@
     },
     {
       "id": "17.draping.option-a.select",
-      "order": 16,
+      "order": 17,
       "parent": "17.draping.option-a",
       "component": "ui:Chip",
       "box": {
@@ -557,7 +582,7 @@
     },
     {
       "id": "17.draping.option-b.select",
-      "order": 17,
+      "order": 18,
       "parent": "17.draping.option-b",
       "component": "ui:Chip",
       "box": {
@@ -588,7 +613,7 @@
     },
     {
       "id": "17.draping.option-b.select.selected",
-      "order": 18,
+      "order": 19,
       "parent": "17.draping.option-b.select",
       "component": null,
       "box": {
@@ -615,7 +640,7 @@
     },
     {
       "id": "17.radar",
-      "order": 19,
+      "order": 20,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -647,7 +672,7 @@
     },
     {
       "id": "17.radar.title",
-      "order": 20,
+      "order": 21,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -681,7 +706,7 @@
     },
     {
       "id": "17.radar.subtitle",
-      "order": 21,
+      "order": 22,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -718,7 +743,7 @@
     },
     {
       "id": "17.radar.axis-temperature",
-      "order": 22,
+      "order": 23,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -755,7 +780,7 @@
     },
     {
       "id": "17.radar.temperature.label",
-      "order": 23,
+      "order": 24,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -792,7 +817,7 @@
     },
     {
       "id": "17.radar.temperature.value",
-      "order": 24,
+      "order": 25,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -829,7 +854,7 @@
     },
     {
       "id": "17.radar.chart",
-      "order": 25,
+      "order": 26,
       "parent": "17.radar",
       "component": "new:RadarChart",
       "box": {
@@ -856,7 +881,7 @@
     },
     {
       "id": "17.radar.temperature.range",
-      "order": 26,
+      "order": 27,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -892,7 +917,7 @@
     },
     {
       "id": "17.radar.depth.label",
-      "order": 27,
+      "order": 28,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -929,7 +954,7 @@
     },
     {
       "id": "17.radar.depth.value",
-      "order": 28,
+      "order": 29,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -966,7 +991,7 @@
     },
     {
       "id": "17.radar.depth.range",
-      "order": 29,
+      "order": 30,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -994,7 +1019,7 @@
     },
     {
       "id": "17.radar.axis-muted-tolerance",
-      "order": 30,
+      "order": 31,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1032,7 +1057,7 @@
     },
     {
       "id": "17.radar.axis-depth",
-      "order": 31,
+      "order": 32,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1069,7 +1094,7 @@
     },
     {
       "id": "17.radar.chroma.label",
-      "order": 32,
+      "order": 33,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1106,7 +1131,7 @@
     },
     {
       "id": "17.radar.chroma.value",
-      "order": 33,
+      "order": 34,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1143,7 +1168,7 @@
     },
     {
       "id": "17.radar.chroma.range",
-      "order": 34,
+      "order": 35,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1171,7 +1196,7 @@
     },
     {
       "id": "17.radar.contrast.label",
-      "order": 35,
+      "order": 36,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1208,7 +1233,7 @@
     },
     {
       "id": "17.radar.contrast.value",
-      "order": 36,
+      "order": 37,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1245,7 +1270,7 @@
     },
     {
       "id": "17.radar.axis-chroma",
-      "order": 37,
+      "order": 38,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1282,7 +1307,7 @@
     },
     {
       "id": "17.radar.contrast.range",
-      "order": 38,
+      "order": 39,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1310,7 +1335,7 @@
     },
     {
       "id": "17.palette",
-      "order": 39,
+      "order": 40,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1342,7 +1367,7 @@
     },
     {
       "id": "17.palette.title",
-      "order": 40,
+      "order": 41,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1376,7 +1401,7 @@
     },
     {
       "id": "17.palette.subtitle",
-      "order": 41,
+      "order": 42,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1413,7 +1438,7 @@
     },
     {
       "id": "17.palette.swatch-1",
-      "order": 42,
+      "order": 43,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1443,7 +1468,7 @@
     },
     {
       "id": "17.palette.swatch-2",
-      "order": 43,
+      "order": 44,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1473,7 +1498,7 @@
     },
     {
       "id": "17.palette.swatch-3",
-      "order": 44,
+      "order": 45,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1503,7 +1528,7 @@
     },
     {
       "id": "17.palette.swatch-4",
-      "order": 45,
+      "order": 46,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1533,7 +1558,7 @@
     },
     {
       "id": "17.palette.swatch-5",
-      "order": 46,
+      "order": 47,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1563,7 +1588,7 @@
     },
     {
       "id": "17.palette.swatch-1.name",
-      "order": 47,
+      "order": 48,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1600,7 +1625,7 @@
     },
     {
       "id": "17.palette.swatch-2.name",
-      "order": 48,
+      "order": 49,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1637,7 +1662,7 @@
     },
     {
       "id": "17.palette.swatch-3.name",
-      "order": 49,
+      "order": 50,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1674,7 +1699,7 @@
     },
     {
       "id": "17.palette.swatch-4.name",
-      "order": 50,
+      "order": 51,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1711,7 +1736,7 @@
     },
     {
       "id": "17.palette.swatch-5.name",
-      "order": 51,
+      "order": 52,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1748,7 +1773,7 @@
     },
     {
       "id": "17.next-card",
-      "order": 52,
+      "order": 53,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1777,9 +1802,9 @@
     },
     {
       "id": "17.actions",
-      "order": 53,
+      "order": 54,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 0,
         "y": 1257,
@@ -1807,7 +1832,7 @@
     },
     {
       "id": "17.actions.continue",
-      "order": 54,
+      "order": 55,
       "parent": "17.actions",
       "component": "ui:Button",
       "box": {

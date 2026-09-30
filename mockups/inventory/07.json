@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "07.back",
+      "id": "07.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 103,
+        "y": 137,
+        "w": 564,
+        "h": 54
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 37
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.back",
+      "order": 2,
+      "parent": "07.header",
       "component": null,
       "box": {
         "x": 132,
@@ -47,8 +72,8 @@
     },
     {
       "id": "07.title",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "07.header",
       "component": "ui:Text",
       "box": {
         "x": 175,
@@ -84,7 +109,7 @@
     },
     {
       "id": "07.anchor",
-      "order": 3,
+      "order": 4,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -116,7 +141,7 @@
     },
     {
       "id": "07.anchor.swatch",
-      "order": 4,
+      "order": 5,
       "parent": "07.anchor",
       "component": "ui:Swatch",
       "box": {
@@ -144,7 +169,7 @@
     },
     {
       "id": "07.anchor.name",
-      "order": 5,
+      "order": 6,
       "parent": "07.anchor",
       "component": "ui:Text",
       "box": {
@@ -178,7 +203,7 @@
     },
     {
       "id": "07.anchor.category",
-      "order": 6,
+      "order": 7,
       "parent": "07.anchor",
       "component": "ui:Text",
       "box": {
@@ -212,7 +237,7 @@
     },
     {
       "id": "07.occasion",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "component": "ui:ChoiceGroup",
       "box": {
@@ -240,7 +265,7 @@
     },
     {
       "id": "07.occasion.selected",
-      "order": 8,
+      "order": 9,
       "parent": "07.occasion",
       "component": null,
       "box": {
@@ -268,7 +293,7 @@
     },
     {
       "id": "07.occasion.casual",
-      "order": 9,
+      "order": 10,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -300,7 +325,7 @@
     },
     {
       "id": "07.occasion.selected.dot",
-      "order": 10,
+      "order": 11,
       "parent": "07.occasion.selected",
       "component": null,
       "box": {
@@ -327,7 +352,7 @@
     },
     {
       "id": "07.occasion.classic",
-      "order": 11,
+      "order": 12,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -359,7 +384,7 @@
     },
     {
       "id": "07.occasion.evening",
-      "order": 12,
+      "order": 13,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -391,7 +416,7 @@
     },
     {
       "id": "07.slots.slot-1",
-      "order": 13,
+      "order": 14,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -421,7 +446,7 @@
     },
     {
       "id": "07.slots.slot-2",
-      "order": 14,
+      "order": 15,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -451,7 +476,7 @@
     },
     {
       "id": "07.slots.slot-1.title",
-      "order": 15,
+      "order": 16,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -483,7 +508,7 @@
     },
     {
       "id": "07.slots.slot-2.title",
-      "order": 16,
+      "order": 17,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -515,7 +540,7 @@
     },
     {
       "id": "07.slots.slot-2.hex",
-      "order": 17,
+      "order": 18,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -548,7 +573,7 @@
     },
     {
       "id": "07.slots.slot-1.hex",
-      "order": 18,
+      "order": 19,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -581,7 +606,7 @@
     },
     {
       "id": "07.slots.slot-2.name",
-      "order": 19,
+      "order": 20,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -614,7 +639,7 @@
     },
     {
       "id": "07.slots.slot-1.name",
-      "order": 20,
+      "order": 21,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -647,7 +672,7 @@
     },
     {
       "id": "07.slots.slot-2.swap",
-      "order": 21,
+      "order": 22,
       "parent": "07.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -675,7 +700,7 @@
     },
     {
       "id": "07.slots.slot-2.lock",
-      "order": 22,
+      "order": 23,
       "parent": "07.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -703,7 +728,7 @@
     },
     {
       "id": "07.slots.slot-3",
-      "order": 23,
+      "order": 24,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -733,7 +758,7 @@
     },
     {
       "id": "07.slots.slot-4",
-      "order": 24,
+      "order": 25,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -763,7 +788,7 @@
     },
     {
       "id": "07.slots.slot-3.title",
-      "order": 25,
+      "order": 26,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -795,7 +820,7 @@
     },
     {
       "id": "07.slots.slot-3.swap",
-      "order": 26,
+      "order": 27,
       "parent": "07.slots.slot-3",
       "component": "ui:Button",
       "box": {
@@ -823,7 +848,7 @@
     },
     {
       "id": "07.slots.slot-4.title",
-      "order": 27,
+      "order": 28,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -855,7 +880,7 @@
     },
     {
       "id": "07.slots.slot-4.swap",
-      "order": 28,
+      "order": 29,
       "parent": "07.slots.slot-4",
       "component": "ui:Button",
       "box": {
@@ -883,7 +908,7 @@
     },
     {
       "id": "07.slots.slot-3.hex",
-      "order": 29,
+      "order": 30,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -916,7 +941,7 @@
     },
     {
       "id": "07.slots.slot-4.hex",
-      "order": 30,
+      "order": 31,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -949,7 +974,7 @@
     },
     {
       "id": "07.slots.slot-3.name",
-      "order": 31,
+      "order": 32,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -982,7 +1007,7 @@
     },
     {
       "id": "07.slots.slot-4.name",
-      "order": 32,
+      "order": 33,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -1015,7 +1040,7 @@
     },
     {
       "id": "07.intelligence",
-      "order": 33,
+      "order": 34,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1047,7 +1072,7 @@
     },
     {
       "id": "07.intelligence.title",
-      "order": 34,
+      "order": 35,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1081,7 +1106,7 @@
     },
     {
       "id": "07.intelligence.harmony.label",
-      "order": 35,
+      "order": 36,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1115,7 +1140,7 @@
     },
     {
       "id": "07.intelligence.harmony.value",
-      "order": 36,
+      "order": 37,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1149,7 +1174,7 @@
     },
     {
       "id": "07.intelligence.fit.label",
-      "order": 37,
+      "order": 38,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1183,7 +1208,7 @@
     },
     {
       "id": "07.intelligence.fit.value",
-      "order": 38,
+      "order": 39,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1217,7 +1242,7 @@
     },
     {
       "id": "07.intelligence.cvd.label",
-      "order": 39,
+      "order": 40,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1251,7 +1276,7 @@
     },
     {
       "id": "07.intelligence.cvd.value",
-      "order": 40,
+      "order": 41,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1285,7 +1310,7 @@
     },
     {
       "id": "07.intelligence.contrast.label",
-      "order": 41,
+      "order": 42,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1319,7 +1344,7 @@
     },
     {
       "id": "07.intelligence.contrast.value",
-      "order": 42,
+      "order": 43,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1353,7 +1378,7 @@
     },
     {
       "id": "07.intelligence.rule",
-      "order": 43,
+      "order": 44,
       "parent": "07.intelligence",
       "component": null,
       "box": {
@@ -1380,7 +1405,7 @@
     },
     {
       "id": "07.substitutions.warmer",
-      "order": 44,
+      "order": 45,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1411,7 +1436,7 @@
     },
     {
       "id": "07.substitutions.contrast",
-      "order": 45,
+      "order": 46,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1442,7 +1467,7 @@
     },
     {
       "id": "07.substitutions.monochrome",
-      "order": 46,
+      "order": 47,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1473,9 +1498,9 @@
     },
     {
       "id": "07.actions",
-      "order": 47,
+      "order": 48,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 103,
         "y": 1249,
@@ -1500,7 +1525,7 @@
     },
     {
       "id": "07.actions.save",
-      "order": 48,
+      "order": 49,
       "parent": "07.actions",
       "component": "ui:Button",
       "box": {
@@ -1531,7 +1556,7 @@
     },
     {
       "id": "07.actions.export",
-      "order": 49,
+      "order": 50,
       "parent": "07.actions",
       "component": "ui:Button",
       "box": {

@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "10.create",
+      "id": "10.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 168
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 84
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "10.create",
+      "order": 2,
+      "parent": "10.header",
       "component": "ui:Button",
       "box": {
         "x": 474,
@@ -53,8 +78,8 @@
     },
     {
       "id": "10.back",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "10.header",
       "component": "ui:Button",
       "box": {
         "x": 44,
@@ -81,7 +106,7 @@
     },
     {
       "id": "10.art",
-      "order": 3,
+      "order": 4,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -106,8 +131,8 @@
     },
     {
       "id": "10.title",
-      "order": 4,
-      "parent": null,
+      "order": 5,
+      "parent": "10.header",
       "component": "ui:Text",
       "box": {
         "x": 42,
@@ -140,7 +165,7 @@
     },
     {
       "id": "10.source",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:ChoiceGroup",
       "box": {
@@ -168,7 +193,7 @@
     },
     {
       "id": "10.source.selected",
-      "order": 6,
+      "order": 7,
       "parent": "10.source",
       "component": null,
       "box": {
@@ -196,7 +221,7 @@
     },
     {
       "id": "10.source.selected.dot",
-      "order": 7,
+      "order": 8,
       "parent": "10.source.selected",
       "component": null,
       "box": {
@@ -223,7 +248,7 @@
     },
     {
       "id": "10.source.curated",
-      "order": 8,
+      "order": 9,
       "parent": "10.source",
       "component": "ui:Text",
       "box": {
@@ -257,7 +282,7 @@
     },
     {
       "id": "10.source.custom",
-      "order": 9,
+      "order": 10,
       "parent": "10.source",
       "component": "ui:Text",
       "box": {
@@ -291,7 +316,7 @@
     },
     {
       "id": "10.palette-1",
-      "order": 10,
+      "order": 11,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -326,7 +351,7 @@
     },
     {
       "id": "10.palette-1.title",
-      "order": 11,
+      "order": 12,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -360,7 +385,7 @@
     },
     {
       "id": "10.palette-1.description",
-      "order": 12,
+      "order": 13,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -394,7 +419,7 @@
     },
     {
       "id": "10.palette-1.provenance",
-      "order": 13,
+      "order": 14,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -428,7 +453,7 @@
     },
     {
       "id": "10.palette-1.strip",
-      "order": 14,
+      "order": 15,
       "parent": "10.palette-1",
       "component": "ui:Strip",
       "box": {
@@ -462,7 +487,7 @@
     },
     {
       "id": "10.palette-1.colour-1.role",
-      "order": 15,
+      "order": 16,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -496,7 +521,7 @@
     },
     {
       "id": "10.palette-1.colour-2.role",
-      "order": 16,
+      "order": 17,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -530,7 +555,7 @@
     },
     {
       "id": "10.palette-1.colour-3.role",
-      "order": 17,
+      "order": 18,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -564,7 +589,7 @@
     },
     {
       "id": "10.palette-1.colour-4.role",
-      "order": 18,
+      "order": 19,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -598,7 +623,7 @@
     },
     {
       "id": "10.palette-1.colour-1.hex",
-      "order": 19,
+      "order": 20,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -633,7 +658,7 @@
     },
     {
       "id": "10.palette-1.colour-2.hex",
-      "order": 20,
+      "order": 21,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -668,7 +693,7 @@
     },
     {
       "id": "10.palette-1.colour-3.hex",
-      "order": 21,
+      "order": 22,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -703,7 +728,7 @@
     },
     {
       "id": "10.palette-1.colour-4.hex",
-      "order": 22,
+      "order": 23,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -738,7 +763,7 @@
     },
     {
       "id": "10.palette-1.colour-1.name",
-      "order": 23,
+      "order": 24,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -773,7 +798,7 @@
     },
     {
       "id": "10.palette-1.colour-2.name",
-      "order": 24,
+      "order": 25,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -808,7 +833,7 @@
     },
     {
       "id": "10.palette-1.colour-3.name",
-      "order": 25,
+      "order": 26,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -843,7 +868,7 @@
     },
     {
       "id": "10.palette-1.colour-4.name",
-      "order": 26,
+      "order": 27,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -878,7 +903,7 @@
     },
     {
       "id": "10.palette-1.badges-label",
-      "order": 27,
+      "order": 28,
       "parent": "10.palette-1",
       "component": "ui:Text",
       "box": {
@@ -912,7 +937,7 @@
     },
     {
       "id": "10.palette-1.badge-contrast",
-      "order": 28,
+      "order": 29,
       "parent": "10.palette-1",
       "component": "ui:Chip",
       "box": {
@@ -943,7 +968,7 @@
     },
     {
       "id": "10.palette-1.badge-cvd",
-      "order": 29,
+      "order": 30,
       "parent": "10.palette-1",
       "component": "ui:Chip",
       "box": {
@@ -974,7 +999,7 @@
     },
     {
       "id": "10.palette-1.apply",
-      "order": 30,
+      "order": 31,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -1005,7 +1030,7 @@
     },
     {
       "id": "10.palette-1.export",
-      "order": 31,
+      "order": 32,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -1036,7 +1061,7 @@
     },
     {
       "id": "10.palette-2",
-      "order": 32,
+      "order": 33,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1068,7 +1093,7 @@
     },
     {
       "id": "10.palette-2.kind",
-      "order": 33,
+      "order": 34,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1102,7 +1127,7 @@
     },
     {
       "id": "10.palette-2.title",
-      "order": 34,
+      "order": 35,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1136,7 +1161,7 @@
     },
     {
       "id": "10.palette-2.swatch-1",
-      "order": 35,
+      "order": 36,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1164,7 +1189,7 @@
     },
     {
       "id": "10.palette-2.swatch-2",
-      "order": 36,
+      "order": 37,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1195,7 +1220,7 @@
     },
     {
       "id": "10.palette-2.swatch-3",
-      "order": 37,
+      "order": 38,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1223,7 +1248,7 @@
     },
     {
       "id": "10.palette-2.swatch-4",
-      "order": 38,
+      "order": 39,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1251,7 +1276,7 @@
     },
     {
       "id": "10.palette-2.swatch-1.hex",
-      "order": 39,
+      "order": 40,
       "parent": "10.palette-2.swatch-1",
       "component": "ui:Text",
       "box": {
@@ -1284,7 +1309,7 @@
     },
     {
       "id": "10.palette-2.swatch-2.hex",
-      "order": 40,
+      "order": 41,
       "parent": "10.palette-2.swatch-2",
       "component": "ui:Text",
       "box": {
@@ -1317,7 +1342,7 @@
     },
     {
       "id": "10.palette-2.swatch-3.hex",
-      "order": 41,
+      "order": 42,
       "parent": "10.palette-2.swatch-3",
       "component": "ui:Text",
       "box": {
@@ -1350,7 +1375,7 @@
     },
     {
       "id": "10.palette-2.swatch-4.hex",
-      "order": 42,
+      "order": 43,
       "parent": "10.palette-2.swatch-4",
       "component": "ui:Text",
       "box": {
@@ -1383,7 +1408,7 @@
     },
     {
       "id": "10.palette-2.tag-layering",
-      "order": 43,
+      "order": 44,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1414,7 +1439,7 @@
     },
     {
       "id": "10.palette-2.tag-provenance",
-      "order": 44,
+      "order": 45,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1445,9 +1470,9 @@
     },
     {
       "id": "10.export-bar",
-      "order": 45,
+      "order": 46,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 0,
         "y": 1225,
@@ -1472,7 +1497,7 @@
     },
     {
       "id": "10.export-bar.button",
-      "order": 46,
+      "order": 47,
       "parent": "10.export-bar",
       "component": "ui:Button",
       "box": {
@@ -1488,7 +1513,7 @@
         "h": 29
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "border.strong",
         "radius": "md"
       },
       "type": null,
@@ -1497,7 +1522,7 @@
       "binding": "static:palettes.exportSelected",
       "action": "navigate:/profile/export",
       "measured": {
-        "bg": "#454F58"
+        "bg": "#464F58"
       },
       "copy": {
         "shape": "label",

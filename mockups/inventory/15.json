@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "15.title",
+      "id": "15.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 36,
+        "w": 768,
+        "h": 89
+      },
+      "dp": {
+        "x": 0,
+        "y": 18,
+        "w": 384,
+        "h": 44.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.title",
+      "order": 2,
+      "parent": "15.header",
       "component": "ui:Text",
       "box": {
         "x": 28,
@@ -56,8 +81,8 @@
     },
     {
       "id": "15.mark",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "15.header",
       "component": "ui:Mark",
       "box": {
         "x": 693,
@@ -83,7 +108,7 @@
     },
     {
       "id": "15.art",
-      "order": 3,
+      "order": 4,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -108,7 +133,7 @@
     },
     {
       "id": "15.section-1.heading",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -142,7 +167,7 @@
     },
     {
       "id": "15.section-1",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -174,7 +199,7 @@
     },
     {
       "id": "15.themes.sumi",
-      "order": 6,
+      "order": 7,
       "parent": "15.section-1",
       "component": "new:ThemeTile",
       "box": {
@@ -202,7 +227,7 @@
     },
     {
       "id": "15.themes.sumi.swatch",
-      "order": 7,
+      "order": 8,
       "parent": "15.themes.sumi",
       "component": "ui:Swatch",
       "box": {
@@ -232,7 +257,7 @@
     },
     {
       "id": "15.themes.slate",
-      "order": 8,
+      "order": 9,
       "parent": "15.section-1",
       "component": "new:ThemeTile",
       "box": {
@@ -260,7 +285,7 @@
     },
     {
       "id": "15.themes.slate.swatch",
-      "order": 9,
+      "order": 10,
       "parent": "15.themes.slate",
       "component": "ui:Swatch",
       "box": {
@@ -290,7 +315,7 @@
     },
     {
       "id": "15.themes.obsidian",
-      "order": 10,
+      "order": 11,
       "parent": "15.section-1",
       "component": "new:ThemeTile",
       "box": {
@@ -321,7 +346,7 @@
     },
     {
       "id": "15.themes.obsidian.swatch",
-      "order": 11,
+      "order": 12,
       "parent": "15.themes.obsidian",
       "component": "ui:Swatch",
       "box": {
@@ -351,7 +376,7 @@
     },
     {
       "id": "15.themes.washi",
-      "order": 12,
+      "order": 13,
       "parent": "15.section-1",
       "component": "new:ThemeTile",
       "box": {
@@ -379,7 +404,7 @@
     },
     {
       "id": "15.themes.washi.swatch",
-      "order": 13,
+      "order": 14,
       "parent": "15.themes.washi",
       "component": "ui:Swatch",
       "box": {
@@ -409,7 +434,7 @@
     },
     {
       "id": "15.themes.sumi.selected",
-      "order": 14,
+      "order": 15,
       "parent": "15.themes.sumi",
       "component": null,
       "box": {
@@ -436,7 +461,7 @@
     },
     {
       "id": "15.themes.sumi.name",
-      "order": 15,
+      "order": 16,
       "parent": "15.themes.sumi",
       "component": "ui:Text",
       "box": {
@@ -470,7 +495,7 @@
     },
     {
       "id": "15.themes.slate.name",
-      "order": 16,
+      "order": 17,
       "parent": "15.themes.slate",
       "component": "ui:Text",
       "box": {
@@ -504,7 +529,7 @@
     },
     {
       "id": "15.themes.obsidian.name",
-      "order": 17,
+      "order": 18,
       "parent": "15.themes.obsidian",
       "component": "ui:Text",
       "box": {
@@ -538,7 +563,7 @@
     },
     {
       "id": "15.themes.washi.name",
-      "order": 18,
+      "order": 19,
       "parent": "15.themes.washi",
       "component": "ui:Text",
       "box": {
@@ -572,7 +597,7 @@
     },
     {
       "id": "15.themes.sumi.detail",
-      "order": 19,
+      "order": 20,
       "parent": "15.themes.sumi",
       "component": "ui:Text",
       "box": {
@@ -607,7 +632,7 @@
     },
     {
       "id": "15.themes.slate.detail",
-      "order": 20,
+      "order": 21,
       "parent": "15.themes.slate",
       "component": "ui:Text",
       "box": {
@@ -642,7 +667,7 @@
     },
     {
       "id": "15.themes.obsidian.detail",
-      "order": 21,
+      "order": 22,
       "parent": "15.themes.obsidian",
       "component": "ui:Text",
       "box": {
@@ -677,7 +702,7 @@
     },
     {
       "id": "15.themes.washi.detail",
-      "order": 22,
+      "order": 23,
       "parent": "15.themes.washi",
       "component": "ui:Text",
       "box": {
@@ -712,7 +737,7 @@
     },
     {
       "id": "15.section-2.heading",
-      "order": 23,
+      "order": 24,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -746,7 +771,7 @@
     },
     {
       "id": "15.section-2",
-      "order": 24,
+      "order": 25,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -775,7 +800,7 @@
     },
     {
       "id": "15.cvd.standard",
-      "order": 25,
+      "order": 26,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -810,7 +835,7 @@
     },
     {
       "id": "15.cvd.protanopia",
-      "order": 26,
+      "order": 27,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -841,7 +866,7 @@
     },
     {
       "id": "15.cvd.deuteranopia",
-      "order": 27,
+      "order": 28,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -872,7 +897,7 @@
     },
     {
       "id": "15.cvd.tritanopia",
-      "order": 28,
+      "order": 29,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -903,7 +928,7 @@
     },
     {
       "id": "15.cvd.standard.dot",
-      "order": 29,
+      "order": 30,
       "parent": "15.cvd.standard",
       "component": null,
       "box": {
@@ -930,7 +955,7 @@
     },
     {
       "id": "15.cvd.badge",
-      "order": 30,
+      "order": 31,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -961,7 +986,7 @@
     },
     {
       "id": "15.section-3.heading",
-      "order": 31,
+      "order": 32,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -995,7 +1020,7 @@
     },
     {
       "id": "15.section-3",
-      "order": 32,
+      "order": 33,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1024,7 +1049,7 @@
     },
     {
       "id": "15.engine.tabular.label",
-      "order": 33,
+      "order": 34,
       "parent": "15.section-3",
       "component": "ui:Text",
       "box": {
@@ -1058,7 +1083,7 @@
     },
     {
       "id": "15.engine.tabular.switch",
-      "order": 34,
+      "order": 35,
       "parent": "15.section-3",
       "component": "ui:Switch",
       "box": {
@@ -1094,7 +1119,7 @@
     },
     {
       "id": "15.engine.tabular.state",
-      "order": 35,
+      "order": 36,
       "parent": "15.section-3",
       "component": null,
       "box": {
@@ -1121,7 +1146,7 @@
     },
     {
       "id": "15.engine.haptics.label",
-      "order": 36,
+      "order": 37,
       "parent": "15.section-3",
       "component": "ui:Text",
       "box": {
@@ -1155,7 +1180,7 @@
     },
     {
       "id": "15.engine.haptics.state",
-      "order": 37,
+      "order": 38,
       "parent": "15.section-3",
       "component": null,
       "box": {
@@ -1182,7 +1207,7 @@
     },
     {
       "id": "15.engine.haptics.switch",
-      "order": 38,
+      "order": 39,
       "parent": "15.section-3",
       "component": "ui:Switch",
       "box": {
@@ -1218,7 +1243,7 @@
     },
     {
       "id": "15.engine.provenance.label",
-      "order": 39,
+      "order": 40,
       "parent": "15.section-3",
       "component": "ui:Text",
       "box": {
@@ -1252,7 +1277,7 @@
     },
     {
       "id": "15.engine.provenance.state",
-      "order": 40,
+      "order": 41,
       "parent": "15.section-3",
       "component": null,
       "box": {
@@ -1279,7 +1304,7 @@
     },
     {
       "id": "15.engine.provenance.switch",
-      "order": 41,
+      "order": 42,
       "parent": "15.section-3",
       "component": "ui:Switch",
       "box": {
@@ -1315,7 +1340,7 @@
     },
     {
       "id": "15.section-4.heading",
-      "order": 42,
+      "order": 43,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1349,7 +1374,7 @@
     },
     {
       "id": "15.section-4",
-      "order": 43,
+      "order": 44,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1378,7 +1403,7 @@
     },
     {
       "id": "15.weights.reset",
-      "order": 44,
+      "order": 45,
       "parent": "15.section-4",
       "component": "ui:Button",
       "box": {
@@ -1409,7 +1434,7 @@
     },
     {
       "id": "15.weights.pair",
-      "order": 45,
+      "order": 46,
       "parent": "15.section-4",
       "component": "ui:Text",
       "box": {
@@ -1445,7 +1470,7 @@
     },
     {
       "id": "15.section-5.heading",
-      "order": 46,
+      "order": 47,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1479,7 +1504,7 @@
     },
     {
       "id": "15.section-5",
-      "order": 47,
+      "order": 48,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1508,7 +1533,7 @@
     },
     {
       "id": "15.security.badge",
-      "order": 48,
+      "order": 49,
       "parent": "15.section-5",
       "component": "ui:Chip",
       "box": {
@@ -1536,9 +1561,9 @@
     },
     {
       "id": "15.tabs",
-      "order": 49,
+      "order": 50,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1288,
@@ -1567,7 +1592,7 @@
     },
     {
       "id": "15.tabs.indicator",
-      "order": 50,
+      "order": 51,
       "parent": "15.tabs",
       "component": null,
       "box": {
@@ -1594,7 +1619,7 @@
     },
     {
       "id": "15.tabs.profile",
-      "order": 51,
+      "order": 52,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1622,7 +1647,7 @@
     },
     {
       "id": "15.tabs.home",
-      "order": 52,
+      "order": 53,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1647,7 +1672,7 @@
     },
     {
       "id": "15.tabs.compass",
-      "order": 53,
+      "order": 54,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1672,7 +1697,7 @@
     },
     {
       "id": "15.tabs.bell",
-      "order": 54,
+      "order": 55,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {

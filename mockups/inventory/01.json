@@ -971,7 +971,7 @@
       "id": "01.tabs",
       "order": 32,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1222,
@@ -993,6 +993,10 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "rulePx": 2,
+        "belowLabelsPx": 71
+      },
       "copy": null
     },
     {
@@ -1039,12 +1043,17 @@
         "w": 16.5,
         "h": 17.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.primary"
+      },
       "type": null,
       "icon": "home",
       "illustration": null,
       "binding": null,
       "action": "navigate:/",
+      "raw": {
+        "filled": true
+      },
       "copy": null
     },
     {
@@ -1064,7 +1073,9 @@
         "w": 17.5,
         "h": 18
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "atlas",
       "illustration": null,
@@ -1089,7 +1100,9 @@
         "w": 18,
         "h": 16.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "lens",
       "illustration": null,
@@ -1114,7 +1127,9 @@
         "w": 19.5,
         "h": 17
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "wardrobe",
       "illustration": null,
@@ -1139,7 +1154,9 @@
         "w": 15.5,
         "h": 17.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "profile",
       "illustration": null,

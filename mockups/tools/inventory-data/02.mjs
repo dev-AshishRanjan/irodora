@@ -41,7 +41,10 @@ export default {
     screens: [{ id: '02.screen', box: B(0, 0, 768, 1376), dpPerPx: 0.5 }],
   },
   elements: [
+    // The app bar (F-234): a container for the header, 54 dp, bounded by the first content below.
+    el('02.header', 'ui:AppBar', B(0, 0, 768, 108)),
     el('02.title', 'ui:Text', B(220, 47, 328, 31), {
+      parent: '02.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 500),
       binding: 'static:lens.title',
@@ -211,7 +214,7 @@ export default {
       raw: { emDp: 11.3 },
     }),
     // ---- 02's own tab bar — three items; C1 puts 01's five in its place
-    el('02.tabs', 'app:TabBar', B(0, 1256, 768, 120), {
+    el('02.tabs', 'ui:TabBar', B(0, 1256, 768, 120), {
       tokens: { bg: 'ground', border: 'border.subtle' },
     }),
     el('02.tabs.indicator', null, B(340, 1259, 88, 5), {

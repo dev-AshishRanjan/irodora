@@ -24,7 +24,7 @@
       "id": "18.header",
       "order": 1,
       "parent": null,
-      "component": null,
+      "component": "ui:AppBar",
       "box": {
         "x": 0,
         "y": 0,
@@ -53,7 +53,7 @@
     {
       "id": "18.back",
       "order": 2,
-      "parent": null,
+      "parent": "18.header",
       "component": "ui:Button",
       "box": {
         "x": 23,
@@ -81,7 +81,7 @@
     {
       "id": "18.title",
       "order": 3,
-      "parent": null,
+      "parent": "18.header",
       "component": "ui:Text",
       "box": {
         "x": 210,
@@ -115,7 +115,7 @@
     {
       "id": "18.help",
       "order": 4,
-      "parent": null,
+      "parent": "18.header",
       "component": "ui:Button",
       "box": {
         "x": 668,
@@ -143,7 +143,7 @@
     {
       "id": "18.header-rule",
       "order": 5,
-      "parent": null,
+      "parent": "18.header",
       "component": null,
       "box": {
         "x": 0,
@@ -1558,7 +1558,7 @@
       "id": "18.tabs",
       "order": 50,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1292,

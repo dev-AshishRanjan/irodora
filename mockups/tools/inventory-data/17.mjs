@@ -129,7 +129,10 @@ export default {
     screens: [{ id: '17.screen', box: B(0, 0, 768, 1376), dpPerPx: 0.5 }],
   },
   elements: [
+    // The app bar (F-234): a container for the header, 55.5 dp, bounded by the first content below.
+    el('17.header', 'ui:AppBar', B(0, 0, 768, 111)),
     el('17.title', 'ui:Text', B(92, 64, 585, 28), {
+      parent: '17.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
       binding: 'static:profile.title',
@@ -244,7 +247,7 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'sm' },
     }),
     // ---- the action
-    el('17.actions', 'app:ActionBar', B(0, 1257, 768, 119), {
+    el('17.actions', 'ui:ActionBar', B(0, 1257, 768, 119), {
       tokens: { border: 'border.subtle' },
       measured: { bg: '#1D2027' },
     }),

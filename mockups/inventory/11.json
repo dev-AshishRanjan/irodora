@@ -21,8 +21,33 @@
   },
   "elements": [
     {
-      "id": "11.art",
+      "id": "11.header",
       "order": 1,
+      "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 117
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 58.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "11.art",
+      "order": 2,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -47,8 +72,8 @@
     },
     {
       "id": "11.title",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "11.header",
       "component": "ui:Text",
       "box": {
         "x": 233,
@@ -81,7 +106,7 @@
     },
     {
       "id": "11.actions.add",
-      "order": 3,
+      "order": 4,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -112,7 +137,7 @@
     },
     {
       "id": "11.actions.lab",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -143,7 +168,7 @@
     },
     {
       "id": "11.actions.shopping",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -174,7 +199,7 @@
     },
     {
       "id": "11.coverage",
-      "order": 6,
+      "order": 7,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -209,7 +234,7 @@
     },
     {
       "id": "11.coverage.ring",
-      "order": 7,
+      "order": 8,
       "parent": "11.coverage",
       "component": "new:RingGauge",
       "box": {
@@ -237,7 +262,7 @@
     },
     {
       "id": "11.coverage.figure",
-      "order": 8,
+      "order": 9,
       "parent": "11.coverage",
       "component": "ui:Text",
       "box": {
@@ -272,7 +297,7 @@
     },
     {
       "id": "11.coverage.figure-label",
-      "order": 9,
+      "order": 10,
       "parent": "11.coverage",
       "component": "ui:Text",
       "box": {
@@ -307,7 +332,7 @@
     },
     {
       "id": "11.coverage.heading",
-      "order": 10,
+      "order": 11,
       "parent": "11.coverage",
       "component": "ui:Text",
       "box": {
@@ -341,7 +366,7 @@
     },
     {
       "id": "11.coverage.counts",
-      "order": 11,
+      "order": 12,
       "parent": "11.coverage",
       "component": "ui:Text",
       "box": {
@@ -375,7 +400,7 @@
     },
     {
       "id": "11.gap",
-      "order": 12,
+      "order": 13,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -407,7 +432,7 @@
     },
     {
       "id": "11.gap.icon",
-      "order": 13,
+      "order": 14,
       "parent": "11.gap",
       "component": null,
       "box": {
@@ -432,7 +457,7 @@
     },
     {
       "id": "11.gap.title",
-      "order": 14,
+      "order": 15,
       "parent": "11.gap",
       "component": "ui:Text",
       "box": {
@@ -466,7 +491,7 @@
     },
     {
       "id": "11.gap.body",
-      "order": 15,
+      "order": 16,
       "parent": "11.gap",
       "component": "ui:Text",
       "box": {
@@ -500,7 +525,7 @@
     },
     {
       "id": "11.gap.explore",
-      "order": 16,
+      "order": 17,
       "parent": "11.gap",
       "component": "ui:Button",
       "box": {
@@ -531,7 +556,7 @@
     },
     {
       "id": "11.grid.garment-1",
-      "order": 17,
+      "order": 18,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -560,7 +585,7 @@
     },
     {
       "id": "11.grid.garment-2",
-      "order": 18,
+      "order": 19,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -589,7 +614,7 @@
     },
     {
       "id": "11.grid.garment-1.photo",
-      "order": 19,
+      "order": 20,
       "parent": "11.grid.garment-1",
       "component": "app:GarmentPhoto",
       "box": {
@@ -619,7 +644,7 @@
     },
     {
       "id": "11.grid.garment-2.photo",
-      "order": 20,
+      "order": 21,
       "parent": "11.grid.garment-2",
       "component": "app:GarmentPhoto",
       "box": {
@@ -646,7 +671,7 @@
     },
     {
       "id": "11.grid.garment-1.caption",
-      "order": 21,
+      "order": 22,
       "parent": "11.grid.garment-1",
       "component": "ui:Text",
       "box": {
@@ -681,7 +706,7 @@
     },
     {
       "id": "11.grid.garment-2.caption",
-      "order": 22,
+      "order": 23,
       "parent": "11.grid.garment-2",
       "component": "ui:Text",
       "box": {
@@ -716,7 +741,7 @@
     },
     {
       "id": "11.grid.garment-1.name",
-      "order": 23,
+      "order": 24,
       "parent": "11.grid.garment-1",
       "component": "ui:Text",
       "box": {
@@ -750,7 +775,7 @@
     },
     {
       "id": "11.grid.garment-2.name",
-      "order": 24,
+      "order": 25,
       "parent": "11.grid.garment-2",
       "component": "ui:Text",
       "box": {
@@ -784,7 +809,7 @@
     },
     {
       "id": "11.grid.garment-1.meta",
-      "order": 25,
+      "order": 26,
       "parent": "11.grid.garment-1",
       "component": "ui:Text",
       "box": {
@@ -818,7 +843,7 @@
     },
     {
       "id": "11.grid.garment-2.meta",
-      "order": 26,
+      "order": 27,
       "parent": "11.grid.garment-2",
       "component": "ui:Text",
       "box": {
@@ -852,7 +877,7 @@
     },
     {
       "id": "11.grid.garment-3",
-      "order": 27,
+      "order": 28,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -881,7 +906,7 @@
     },
     {
       "id": "11.grid.garment-4",
-      "order": 28,
+      "order": 29,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -910,7 +935,7 @@
     },
     {
       "id": "11.grid.garment-3.photo",
-      "order": 29,
+      "order": 30,
       "parent": "11.grid.garment-3",
       "component": "app:GarmentPhoto",
       "box": {
@@ -937,7 +962,7 @@
     },
     {
       "id": "11.grid.garment-4.photo",
-      "order": 30,
+      "order": 31,
       "parent": "11.grid.garment-4",
       "component": "app:GarmentPhoto",
       "box": {
@@ -964,7 +989,7 @@
     },
     {
       "id": "11.grid.garment-3.caption",
-      "order": 31,
+      "order": 32,
       "parent": "11.grid.garment-3",
       "component": "ui:Text",
       "box": {
@@ -999,7 +1024,7 @@
     },
     {
       "id": "11.grid.garment-4.caption",
-      "order": 32,
+      "order": 33,
       "parent": "11.grid.garment-4",
       "component": "ui:Text",
       "box": {
@@ -1034,7 +1059,7 @@
     },
     {
       "id": "11.grid.garment-3.name",
-      "order": 33,
+      "order": 34,
       "parent": "11.grid.garment-3",
       "component": "ui:Text",
       "box": {
@@ -1068,7 +1093,7 @@
     },
     {
       "id": "11.grid.garment-4.name",
-      "order": 34,
+      "order": 35,
       "parent": "11.grid.garment-4",
       "component": "ui:Text",
       "box": {
@@ -1102,7 +1127,7 @@
     },
     {
       "id": "11.grid.garment-3.meta",
-      "order": 35,
+      "order": 36,
       "parent": "11.grid.garment-3",
       "component": "ui:Text",
       "box": {
@@ -1136,7 +1161,7 @@
     },
     {
       "id": "11.grid.garment-4.meta",
-      "order": 36,
+      "order": 37,
       "parent": "11.grid.garment-4",
       "component": "ui:Text",
       "box": {
@@ -1170,7 +1195,7 @@
     },
     {
       "id": "11.grid.garment-5",
-      "order": 37,
+      "order": 38,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1199,7 +1224,7 @@
     },
     {
       "id": "11.grid.garment-6",
-      "order": 38,
+      "order": 39,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1228,9 +1253,9 @@
     },
     {
       "id": "11.tabs",
-      "order": 39,
+      "order": 40,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1288,
@@ -1259,7 +1284,7 @@
     },
     {
       "id": "11.tabs.wardrobe.icon",
-      "order": 40,
+      "order": 41,
       "parent": "11.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1284,7 +1309,7 @@
     },
     {
       "id": "11.tabs.home.icon",
-      "order": 41,
+      "order": 42,
       "parent": "11.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1309,7 +1334,7 @@
     },
     {
       "id": "11.tabs.grid.icon",
-      "order": 42,
+      "order": 43,
       "parent": "11.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1334,7 +1359,7 @@
     },
     {
       "id": "11.tabs.settings.icon",
-      "order": 43,
+      "order": 44,
       "parent": "11.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1359,7 +1384,7 @@
     },
     {
       "id": "11.tabs.wardrobe.label",
-      "order": 44,
+      "order": 45,
       "parent": "11.tabs",
       "component": "ui:Text",
       "box": {

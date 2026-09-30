@@ -87,8 +87,15 @@ export default {
   },
   elements: [
     // ---- header
-    el('22.back', 'ui:Button', B(153, 171, 26, 23), { icon: 'back', action: 'navigate:/wardrobe' }),
+    // The app bar (F-234): a container for the header, 80.9 dp, bounded by symmetric about its elements.
+    el('22.header', 'ui:AppBar', B(122, 130, 522, 110)),
+    el('22.back', 'ui:Button', B(153, 171, 26, 23), {
+      parent: '22.header',
+      icon: 'back',
+      action: 'navigate:/wardrobe',
+    }),
     el('22.title', 'ui:Text', B(300, 162, 168, 23), {
+      parent: '22.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
       binding: 'static:shopping.title',
@@ -96,12 +103,16 @@ export default {
       raw: { emDp: 18.2 },
     }),
     el('22.subtitle', 'ui:Text', B(316, 188, 135, 20), {
+      parent: '22.header',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'body'),
       binding: 'static:shopping.titleJa',
       copy: { shape: 'label', script: 'japanese' },
     }),
-    el('22.mark', 'ui:Mark', B(583, 165, 35, 34), { tokens: { fg: 'text.tertiary' } }),
+    el('22.mark', 'ui:Mark', B(583, 165, 35, 34), {
+      parent: '22.header',
+      tokens: { fg: 'text.tertiary' },
+    }),
     // ---- the candidate
     el('22.capture', 'app:CaptureImage', B(148, 241, 473, 227), {
       tokens: { radius: 'md' },
@@ -209,13 +220,18 @@ export default {
       name: B(539, 1052, 81, 20),
     }),
     // ---- actions
+    // The action bar (F-234): a column of two, no container drawn; its band runs from the first
+    // action to the screen's bottom.
+    el('22.actions', 'ui:ActionBar', B(122, 1140, 522, 194)),
     el('22.save', 'ui:Button', B(147, 1140, 474, 60), {
+      parent: '22.actions',
       tokens: { bg: 'action.primary', radius: 'md' },
       binding: 'static:shopping.save',
       action: 'submit:garment.save',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('22.scan', 'ui:Button', B(149, 1210, 470, 58), {
+      parent: '22.actions',
       tokens: { border: 'border.subtle', radius: 'md' },
       binding: 'static:shopping.scanAnother',
       action: 'navigate:/lens',

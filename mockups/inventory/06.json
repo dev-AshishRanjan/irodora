@@ -35,9 +35,34 @@
   ],
   "elements": [
     {
-      "id": "06.back.icon",
+      "id": "06.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 53,
+        "y": 99,
+        "w": 474,
+        "h": 71
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 57.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.back.icon",
+      "order": 2,
+      "parent": "06.header",
       "component": null,
       "box": {
         "x": 72,
@@ -61,8 +86,8 @@
     },
     {
       "id": "06.back.label",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "06.header",
       "component": "ui:Text",
       "box": {
         "x": 101,
@@ -98,8 +123,8 @@
     },
     {
       "id": "06.bookmark",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "06.header",
       "component": "ui:Button",
       "box": {
         "x": 405,
@@ -123,8 +148,8 @@
     },
     {
       "id": "06.share",
-      "order": 4,
-      "parent": null,
+      "order": 5,
+      "parent": "06.header",
       "component": "ui:Button",
       "box": {
         "x": 446,
@@ -148,8 +173,8 @@
     },
     {
       "id": "06.export",
-      "order": 5,
-      "parent": null,
+      "order": 6,
+      "parent": "06.header",
       "component": "ui:Button",
       "box": {
         "x": 487,
@@ -173,8 +198,8 @@
     },
     {
       "id": "06.header-rule",
-      "order": 6,
-      "parent": null,
+      "order": 7,
+      "parent": "06.header",
       "component": null,
       "box": {
         "x": 54,
@@ -200,7 +225,7 @@
     },
     {
       "id": "06.swatch",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -233,7 +258,7 @@
     },
     {
       "id": "06.swatch.stack",
-      "order": 8,
+      "order": 9,
       "parent": "06.swatch",
       "component": null,
       "box": {
@@ -258,7 +283,7 @@
     },
     {
       "id": "06.kanji",
-      "order": 9,
+      "order": 10,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -295,7 +320,7 @@
     },
     {
       "id": "06.kana",
-      "order": 10,
+      "order": 11,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -329,7 +354,7 @@
     },
     {
       "id": "06.name",
-      "order": 11,
+      "order": 12,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -366,7 +391,7 @@
     },
     {
       "id": "06.taxonomy",
-      "order": 12,
+      "order": 13,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -397,7 +422,7 @@
     },
     {
       "id": "06.readout",
-      "order": 13,
+      "order": 14,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -428,7 +453,7 @@
     },
     {
       "id": "06.readout.title",
-      "order": 14,
+      "order": 15,
       "parent": "06.readout",
       "component": "ui:Text",
       "box": {
@@ -465,7 +490,7 @@
     },
     {
       "id": "06.readout.table",
-      "order": 15,
+      "order": 16,
       "parent": "06.readout",
       "component": "new:DataTable",
       "box": {
@@ -492,7 +517,7 @@
     },
     {
       "id": "06.readout.table.hex",
-      "order": 16,
+      "order": 17,
       "parent": "06.readout.table",
       "component": "app:ReadoutRow",
       "box": {
@@ -519,7 +544,7 @@
     },
     {
       "id": "06.readout.table.hex.label",
-      "order": 17,
+      "order": 18,
       "parent": "06.readout.table.hex",
       "component": "ui:Text",
       "box": {
@@ -553,7 +578,7 @@
     },
     {
       "id": "06.readout.table.hex.value",
-      "order": 18,
+      "order": 19,
       "parent": "06.readout.table.hex",
       "component": "ui:Text",
       "box": {
@@ -588,7 +613,7 @@
     },
     {
       "id": "06.readout.table.oklch",
-      "order": 19,
+      "order": 20,
       "parent": "06.readout.table",
       "component": "app:ReadoutRow",
       "box": {
@@ -615,7 +640,7 @@
     },
     {
       "id": "06.readout.table.oklch.label",
-      "order": 20,
+      "order": 21,
       "parent": "06.readout.table.oklch",
       "component": "ui:Text",
       "box": {
@@ -649,7 +674,7 @@
     },
     {
       "id": "06.readout.table.oklch.value",
-      "order": 21,
+      "order": 22,
       "parent": "06.readout.table.oklch",
       "component": "ui:Text",
       "box": {
@@ -684,7 +709,7 @@
     },
     {
       "id": "06.readout.table.cielab",
-      "order": 22,
+      "order": 23,
       "parent": "06.readout.table",
       "component": "app:ReadoutRow",
       "box": {
@@ -711,7 +736,7 @@
     },
     {
       "id": "06.readout.table.cielab.label",
-      "order": 23,
+      "order": 24,
       "parent": "06.readout.table.cielab",
       "component": "ui:Text",
       "box": {
@@ -745,7 +770,7 @@
     },
     {
       "id": "06.readout.table.cielab.value",
-      "order": 24,
+      "order": 25,
       "parent": "06.readout.table.cielab",
       "component": "ui:Text",
       "box": {
@@ -780,7 +805,7 @@
     },
     {
       "id": "06.readout.table.srgb",
-      "order": 25,
+      "order": 26,
       "parent": "06.readout.table",
       "component": "app:ReadoutRow",
       "box": {
@@ -807,7 +832,7 @@
     },
     {
       "id": "06.readout.table.srgb.label",
-      "order": 26,
+      "order": 27,
       "parent": "06.readout.table.srgb",
       "component": "ui:Text",
       "box": {
@@ -841,7 +866,7 @@
     },
     {
       "id": "06.readout.table.srgb.value",
-      "order": 27,
+      "order": 28,
       "parent": "06.readout.table.srgb",
       "component": "ui:Text",
       "box": {
@@ -876,7 +901,7 @@
     },
     {
       "id": "06.provenance",
-      "order": 28,
+      "order": 29,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -907,7 +932,7 @@
     },
     {
       "id": "06.provenance.art",
-      "order": 29,
+      "order": 30,
       "parent": "06.provenance",
       "component": "ui:Illustration",
       "box": {
@@ -932,7 +957,7 @@
     },
     {
       "id": "06.provenance.title",
-      "order": 30,
+      "order": 31,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -969,7 +994,7 @@
     },
     {
       "id": "06.provenance.body",
-      "order": 31,
+      "order": 32,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -1004,7 +1029,7 @@
     },
     {
       "id": "06.provenance.review",
-      "order": 32,
+      "order": 33,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -1038,7 +1063,7 @@
     },
     {
       "id": "06.combinations",
-      "order": 33,
+      "order": 34,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1069,7 +1094,7 @@
     },
     {
       "id": "06.combinations.title",
-      "order": 34,
+      "order": 35,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1106,7 +1131,7 @@
     },
     {
       "id": "06.combinations.item-1.photo",
-      "order": 35,
+      "order": 36,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1133,7 +1158,7 @@
     },
     {
       "id": "06.combinations.item-1.rank",
-      "order": 36,
+      "order": 37,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1164,7 +1189,7 @@
     },
     {
       "id": "06.combinations.item-2.photo",
-      "order": 37,
+      "order": 38,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1191,7 +1216,7 @@
     },
     {
       "id": "06.combinations.item-2.rank",
-      "order": 38,
+      "order": 39,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1222,7 +1247,7 @@
     },
     {
       "id": "06.combinations.item-3.photo",
-      "order": 39,
+      "order": 40,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1249,7 +1274,7 @@
     },
     {
       "id": "06.combinations.item-3.rank",
-      "order": 40,
+      "order": 41,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1280,7 +1305,7 @@
     },
     {
       "id": "06.combinations.item-1.caption",
-      "order": 41,
+      "order": 42,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1315,7 +1340,7 @@
     },
     {
       "id": "06.combinations.item-2.caption",
-      "order": 42,
+      "order": 43,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1350,7 +1375,7 @@
     },
     {
       "id": "06.combinations.item-3.caption",
-      "order": 43,
+      "order": 44,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1385,9 +1410,9 @@
     },
     {
       "id": "06.actions",
-      "order": 44,
+      "order": 45,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 51,
         "y": 1222,
@@ -1416,7 +1441,7 @@
     },
     {
       "id": "06.actions.wear",
-      "order": 45,
+      "order": 46,
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
@@ -1446,7 +1471,7 @@
     },
     {
       "id": "06.actions.hold",
-      "order": 46,
+      "order": 47,
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
@@ -1476,7 +1501,7 @@
     },
     {
       "id": "06.actions.hold.icon",
-      "order": 47,
+      "order": 48,
       "parent": "06.actions.hold",
       "component": null,
       "box": {

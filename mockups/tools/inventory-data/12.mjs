@@ -67,25 +67,33 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 52.5 dp, bounded by the rule.
+    el('12.header', 'ui:AppBar', B(0, 0, 768, 105)),
     el('12.cancel', 'ui:Button', B(28, 40, 109, 21), {
+      parent: '12.header',
       icon: 'back',
       binding: 'static:garment.cancel',
       action: 'dismiss:garment',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('12.title', 'ui:Text', B(243, 38, 281, 24), {
+      parent: '12.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
       binding: 'static:garment.addTitle',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('12.save', 'ui:Button', B(655, 22, 94, 56), {
+      parent: '12.header',
       tokens: { bg: 'action.primary', radius: 'md' },
       binding: 'static:garment.save',
       action: 'submit:garment.save',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('12.header-rule', null, B(0, 99, 768, 6), { tokens: { fg: 'border.subtle' } }),
+    el('12.header-rule', null, B(0, 99, 768, 6), {
+      parent: '12.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- leaf sprays on the right margin, inside the screen (§2: design)
     el('12.art-top', 'ui:Illustration', B(732, 122, 36, 269), { illustration: 'leaves' }),
     el('12.art-bottom', 'ui:Illustration', B(732, 1011, 36, 184), { illustration: 'leaves' }),
@@ -241,7 +249,7 @@ export default {
       copy: { shape: 'value', script: 'latin' },
     }),
     // ---- the save bar
-    el('12.bar', 'app:ActionBar', B(0, 1238, 768, 138), { tokens: { border: 'border.subtle' } }),
+    el('12.bar', 'ui:ActionBar', B(0, 1238, 768, 138), { tokens: { border: 'border.subtle' } }),
     el('12.bar.save', 'ui:Button', B(36, 1273, 696, 66), {
       parent: '12.bar',
       tokens: { bg: 'action.primary', radius: 'md' },

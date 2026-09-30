@@ -83,29 +83,35 @@ export default {
   },
   elements: [
     // ---- header
-    el('18.header', null, B(0, 0, 768, 89), {
+    el('18.header', 'ui:AppBar', B(0, 0, 768, 89), {
       tokens: { bg: 'level1' },
       measured: { bg: '#1A1D24' },
     }),
     el('18.back', 'ui:Button', B(23, 34, 94, 19), {
+      parent: '18.header',
       icon: 'back',
       binding: 'static:export.back',
       action: 'navigate:/profile',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('18.title', 'ui:Text', B(210, 30, 346, 27), {
+      parent: '18.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'label', 600),
       binding: 'static:export.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('18.help', 'ui:Button', B(668, 30, 79, 26), {
+      parent: '18.header',
       icon: 'help',
       binding: 'static:export.help',
       action: 'open:export.help',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('18.header-rule', null, B(0, 86, 768, 2), { tokens: { fg: 'border.subtle' } }),
+    el('18.header-rule', null, B(0, 86, 768, 2), {
+      parent: '18.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- the report
     heading('report', B(30, 129, 468, 29)),
     el('18.report', 'ui:Card', B(28, 177, 712, 395), {
@@ -254,7 +260,7 @@ export default {
       'open:backup.restore',
     ),
     // ---- 18's own tab bar — four items; C1 puts 01's five in its place
-    el('18.tabs', 'app:TabBar', B(0, 1292, 768, 84), {
+    el('18.tabs', 'ui:TabBar', B(0, 1292, 768, 84), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#1B1E24' },
     }),

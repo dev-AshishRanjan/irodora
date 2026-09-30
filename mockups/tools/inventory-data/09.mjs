@@ -77,19 +77,24 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 57.5 dp, bounded by symmetric about its elements.
+    el('09.header', 'ui:AppBar', B(0, 0, 768, 115)),
     el('09.back', 'ui:Button', B(31, 45, 117, 27), {
+      parent: '09.header',
       icon: 'back',
       binding: 'static:atlas.back',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('09.title', 'ui:Text', B(235, 41, 298, 33), {
+      parent: '09.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:finder.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('09.clear', 'ui:Button', B(622, 44, 119, 28), {
+      parent: '09.header',
       icon: 'close',
       binding: 'static:finder.clear',
       action: 'submit:finder.clear',
@@ -202,7 +207,7 @@ export default {
       '#575840',
     ),
     // ---- 09's own tab bar — four items; C1 puts 01's five in its place
-    el('09.tabs', 'app:TabBar', B(0, 1266, 768, 110), {
+    el('09.tabs', 'ui:TabBar', B(0, 1266, 768, 110), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#1C2127' },
     }),

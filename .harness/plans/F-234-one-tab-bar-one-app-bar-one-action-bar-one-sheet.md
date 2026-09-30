@@ -493,3 +493,10 @@ There is one evaluator review at the end. Its findings are fixed or recorded as 
 - 05's chip row contents, 23's avatar data and 06's bookmark (F-246, F-260, F-237).
 - Pressed states (F-304).
 - Any colour value, golden dataset or corpus change.
+
+## Status (implementing session)
+
+| inc | commit | what landed |
+|---|---|---|
+| 0 | `e92870c` | Claimed, and this plan. |
+| 1 | this commit | Every header recorded as a `ui:AppBar` container on 21 screens, its elements re-parented; the band from each screen's own elements (top: the status bar's bottom or the frame's; bottom: the rule or fill where drawn, else symmetric about the elements, clipped at the content below). Tab bars `ui:TabBar`, action bars `ui:ActionBar`, with containers added for 03 (inside the sheet), 16 and 22. 01's bar measured: the rule 2 px (one dp of `border`), the indicator 4.5 px of #FAFBFD directly under it, active glyph ink #FAFDFF and inactive #ACAFB4–#AFB2B5, home's glyph filled (70 % of its box bright against 37 %), 35.5 dp under the labels. 10's tonal fill re-read: #464F58 is `border.strong` (ΔE00 3.43), not `level2`. OQ-47 (on F-267) and OQ-48 (on F-265) raised. **Changed from the plan:** each chrome button's `glyphAt` is not recorded per element; the drawn set follows one rule (an arrow trails its label, every other glyph leads), which 03's child boxes show and increment 2's test holds. |

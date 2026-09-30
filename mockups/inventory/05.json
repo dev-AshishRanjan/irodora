@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "05.title",
+      "id": "05.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 140
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 70
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.title",
+      "order": 2,
+      "parent": "05.header",
       "component": "ui:Text",
       "box": {
         "x": 35,
@@ -59,8 +84,8 @@
     },
     {
       "id": "05.more",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "05.header",
       "component": "ui:Button",
       "box": {
         "x": 704,
@@ -84,8 +109,8 @@
     },
     {
       "id": "05.count",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "05.header",
       "component": "ui:Chip",
       "box": {
         "x": 35,
@@ -114,8 +139,8 @@
     },
     {
       "id": "05.compare",
-      "order": 4,
-      "parent": null,
+      "order": 5,
+      "parent": "05.header",
       "component": "ui:Button",
       "box": {
         "x": 412,
@@ -144,8 +169,8 @@
     },
     {
       "id": "05.finder",
-      "order": 5,
-      "parent": null,
+      "order": 6,
+      "parent": "05.header",
       "component": "ui:Button",
       "box": {
         "x": 534,
@@ -174,8 +199,8 @@
     },
     {
       "id": "05.palettes",
-      "order": 6,
-      "parent": null,
+      "order": 7,
+      "parent": "05.header",
       "component": "ui:Button",
       "box": {
         "x": 628,
@@ -204,8 +229,8 @@
     },
     {
       "id": "05.header-rule",
-      "order": 7,
-      "parent": null,
+      "order": 8,
+      "parent": "05.header",
       "component": null,
       "box": {
         "x": 0,
@@ -231,7 +256,7 @@
     },
     {
       "id": "05.search",
-      "order": 8,
+      "order": 9,
       "parent": null,
       "component": "ui:SearchField",
       "box": {
@@ -265,7 +290,7 @@
     },
     {
       "id": "05.filters.season.all",
-      "order": 9,
+      "order": 10,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -296,7 +321,7 @@
     },
     {
       "id": "05.filters.season.spring",
-      "order": 10,
+      "order": 11,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -330,7 +355,7 @@
     },
     {
       "id": "05.filters.season.summer",
-      "order": 11,
+      "order": 12,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -361,7 +386,7 @@
     },
     {
       "id": "05.filters.season.autumn",
-      "order": 12,
+      "order": 13,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -392,7 +417,7 @@
     },
     {
       "id": "05.filters.season.winter",
-      "order": 13,
+      "order": 14,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -423,7 +448,7 @@
     },
     {
       "id": "05.filters.family-label",
-      "order": 14,
+      "order": 15,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -460,7 +485,7 @@
     },
     {
       "id": "05.filters.family.ao",
-      "order": 15,
+      "order": 16,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -498,7 +523,7 @@
     },
     {
       "id": "05.filters.family.aka",
-      "order": 16,
+      "order": 17,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -533,7 +558,7 @@
     },
     {
       "id": "05.filters.family.midori",
-      "order": 17,
+      "order": 18,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -565,7 +590,7 @@
     },
     {
       "id": "05.filters.family.murasaki",
-      "order": 18,
+      "order": 19,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -597,7 +622,7 @@
     },
     {
       "id": "05.filters.family.cha",
-      "order": 19,
+      "order": 20,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -629,7 +654,7 @@
     },
     {
       "id": "05.filters.family.kuro",
-      "order": 20,
+      "order": 21,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -661,7 +686,7 @@
     },
     {
       "id": "05.filters.family.ao.dot",
-      "order": 21,
+      "order": 22,
       "parent": "05.filters.family.ao",
       "component": null,
       "box": {
@@ -686,7 +711,7 @@
     },
     {
       "id": "05.filters.family.aka.dot",
-      "order": 22,
+      "order": 23,
       "parent": "05.filters.family.aka",
       "component": null,
       "box": {
@@ -711,7 +736,7 @@
     },
     {
       "id": "05.filters.family.midori.dot",
-      "order": 23,
+      "order": 24,
       "parent": "05.filters.family.midori",
       "component": null,
       "box": {
@@ -736,7 +761,7 @@
     },
     {
       "id": "05.filters.family.murasaki.dot",
-      "order": 24,
+      "order": 25,
       "parent": "05.filters.family.murasaki",
       "component": null,
       "box": {
@@ -761,7 +786,7 @@
     },
     {
       "id": "05.filters.family.cha.dot",
-      "order": 25,
+      "order": 26,
       "parent": "05.filters.family.cha",
       "component": null,
       "box": {
@@ -786,7 +811,7 @@
     },
     {
       "id": "05.filters.family.kuro.dot",
-      "order": 26,
+      "order": 27,
       "parent": "05.filters.family.kuro",
       "component": null,
       "box": {
@@ -811,7 +836,7 @@
     },
     {
       "id": "05.filters-rule",
-      "order": 27,
+      "order": 28,
       "parent": null,
       "component": null,
       "box": {
@@ -838,7 +863,7 @@
     },
     {
       "id": "05.heading",
-      "order": 28,
+      "order": 29,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -872,7 +897,7 @@
     },
     {
       "id": "05.card-1",
-      "order": 29,
+      "order": 30,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -907,7 +932,7 @@
     },
     {
       "id": "05.card-2",
-      "order": 30,
+      "order": 31,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -936,7 +961,7 @@
     },
     {
       "id": "05.card-1.swatch",
-      "order": 31,
+      "order": 32,
       "parent": "05.card-1",
       "component": "ui:Swatch",
       "box": {
@@ -967,7 +992,7 @@
     },
     {
       "id": "05.card-2.swatch",
-      "order": 32,
+      "order": 33,
       "parent": "05.card-2",
       "component": "ui:Swatch",
       "box": {
@@ -995,7 +1020,7 @@
     },
     {
       "id": "05.card-1.kanji",
-      "order": 33,
+      "order": 34,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1032,7 +1057,7 @@
     },
     {
       "id": "05.card-1.hex",
-      "order": 34,
+      "order": 35,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1070,7 +1095,7 @@
     },
     {
       "id": "05.card-2.kanji",
-      "order": 35,
+      "order": 36,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1107,7 +1132,7 @@
     },
     {
       "id": "05.card-2.hex",
-      "order": 36,
+      "order": 37,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1145,7 +1170,7 @@
     },
     {
       "id": "05.card-1.romaji",
-      "order": 37,
+      "order": 38,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1179,7 +1204,7 @@
     },
     {
       "id": "05.card-2.romaji",
-      "order": 38,
+      "order": 39,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1213,7 +1238,7 @@
     },
     {
       "id": "05.card-1.oklch",
-      "order": 39,
+      "order": 40,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1251,7 +1276,7 @@
     },
     {
       "id": "05.card-2.oklch",
-      "order": 40,
+      "order": 41,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1289,7 +1314,7 @@
     },
     {
       "id": "05.card-1.era",
-      "order": 41,
+      "order": 42,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1326,7 +1351,7 @@
     },
     {
       "id": "05.card-2.era",
-      "order": 42,
+      "order": 43,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1363,7 +1388,7 @@
     },
     {
       "id": "05.card-3",
-      "order": 43,
+      "order": 44,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1392,7 +1417,7 @@
     },
     {
       "id": "05.card-4",
-      "order": 44,
+      "order": 45,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1421,7 +1446,7 @@
     },
     {
       "id": "05.card-3.swatch",
-      "order": 45,
+      "order": 46,
       "parent": "05.card-3",
       "component": "ui:Swatch",
       "box": {
@@ -1449,7 +1474,7 @@
     },
     {
       "id": "05.card-4.swatch",
-      "order": 46,
+      "order": 47,
       "parent": "05.card-4",
       "component": "ui:Swatch",
       "box": {
@@ -1477,7 +1502,7 @@
     },
     {
       "id": "05.card-3.kanji",
-      "order": 47,
+      "order": 48,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1514,7 +1539,7 @@
     },
     {
       "id": "05.card-3.hex",
-      "order": 48,
+      "order": 49,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1552,7 +1577,7 @@
     },
     {
       "id": "05.card-4.kanji",
-      "order": 49,
+      "order": 50,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1589,7 +1614,7 @@
     },
     {
       "id": "05.card-4.hex",
-      "order": 50,
+      "order": 51,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1627,7 +1652,7 @@
     },
     {
       "id": "05.card-3.romaji",
-      "order": 51,
+      "order": 52,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1661,7 +1686,7 @@
     },
     {
       "id": "05.card-4.romaji",
-      "order": 52,
+      "order": 53,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1695,7 +1720,7 @@
     },
     {
       "id": "05.card-3.oklch",
-      "order": 53,
+      "order": 54,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1733,7 +1758,7 @@
     },
     {
       "id": "05.card-4.era",
-      "order": 54,
+      "order": 55,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1770,9 +1795,9 @@
     },
     {
       "id": "05.tabs",
-      "order": 55,
+      "order": 56,
       "parent": null,
-      "component": "app:TabBar",
+      "component": "ui:TabBar",
       "box": {
         "x": 0,
         "y": 1276,
@@ -1801,7 +1826,7 @@
     },
     {
       "id": "05.card-3.era",
-      "order": 56,
+      "order": 57,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1838,7 +1863,7 @@
     },
     {
       "id": "05.tabs.indicator",
-      "order": 57,
+      "order": 58,
       "parent": "05.tabs",
       "component": null,
       "box": {
@@ -1865,7 +1890,7 @@
     },
     {
       "id": "05.tabs.atlas.icon",
-      "order": 58,
+      "order": 59,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1890,7 +1915,7 @@
     },
     {
       "id": "05.tabs.compass.icon",
-      "order": 59,
+      "order": 60,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1915,7 +1940,7 @@
     },
     {
       "id": "05.tabs.search.icon",
-      "order": 60,
+      "order": 61,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1940,7 +1965,7 @@
     },
     {
       "id": "05.tabs.profile.icon",
-      "order": 61,
+      "order": 62,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1965,7 +1990,7 @@
     },
     {
       "id": "05.tabs.atlas.label",
-      "order": 62,
+      "order": 63,
       "parent": "05.tabs",
       "component": "ui:Text",
       "box": {

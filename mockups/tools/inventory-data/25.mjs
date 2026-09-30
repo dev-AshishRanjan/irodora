@@ -173,7 +173,7 @@ export default {
       'label',
     ),
     // ---- 25's own tab bar — four items, no Profile; C1 puts 01's five in its place
-    el('25.tabs', 'app:TabBar', B(149, 1195, 470, 104), {
+    el('25.tabs', 'ui:TabBar', B(149, 1195, 470, 104), {
       tokens: { bg: 'level1', border: 'border.subtle' },
       measured: { bg: '#FEFEFE' },
     }),

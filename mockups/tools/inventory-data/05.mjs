@@ -147,39 +147,53 @@ export default {
   },
   elements: [
     // ---- header
+    // The app bar (F-234): a container for the header, 70 dp, bounded by the rule.
+    el('05.header', 'ui:AppBar', B(0, 0, 768, 140)),
     el('05.title', 'ui:Text', B(35, 27, 392, 48), {
+      parent: '05.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600),
       binding: 'static:atlas.title',
       copy: { shape: 'heading', script: 'mixed' },
       raw: { emDp: 26 },
     }),
-    el('05.more', 'ui:Button', B(704, 45, 24, 6), { icon: 'more', action: 'open:atlas.menu' }),
+    el('05.more', 'ui:Button', B(704, 45, 24, 6), {
+      parent: '05.header',
+      icon: 'more',
+      action: 'open:atlas.menu',
+    }),
     el('05.count', 'ui:Chip', B(35, 77, 211, 42), {
+      parent: '05.header',
       tokens: { bg: 'level2' },
       icon: 'list',
       binding: 'corpus:entries.count',
       copy: { shape: 'badge', script: 'latin' },
     }),
     el('05.compare', 'ui:Button', B(412, 79, 112, 40), {
+      parent: '05.header',
       tokens: { border: 'border.subtle' },
       binding: 'static:atlas.compare',
       action: 'navigate:/atlas/compare',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('05.finder', 'ui:Button', B(534, 82, 88, 37), {
+      parent: '05.header',
       tokens: { border: 'border.subtle' },
       binding: 'static:atlas.finder',
       action: 'navigate:/atlas/finder',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('05.palettes', 'ui:Button', B(628, 82, 105, 37), {
+      parent: '05.header',
       tokens: { border: 'border.subtle' },
       binding: 'static:atlas.palettes',
       action: 'navigate:/atlas/palettes',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('05.header-rule', null, B(0, 139, 768, 1), { tokens: { fg: 'border.subtle' } }),
+    el('05.header-rule', null, B(0, 139, 768, 1), {
+      parent: '05.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     // ---- search and filters
     el('05.search', 'ui:SearchField', B(35, 203, 698, 53), {
       tokens: { border: 'border.subtle', radius: 'md' },
@@ -245,7 +259,7 @@ export default {
     c4.era,
     // ---- 05's own tab bar — four items; C1 puts 01's five in its place. Its top (1276) chains with
     // card 3's cut-off era line (1272), so the two read as one row, the tab bar first.
-    el('05.tabs', 'app:TabBar', B(0, 1276, 768, 100), {
+    el('05.tabs', 'ui:TabBar', B(0, 1276, 768, 100), {
       tokens: { bg: 'ground', border: 'border.subtle' },
       measured: { bg: '#1D2027' },
     }),

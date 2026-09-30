@@ -69,24 +69,30 @@ export default {
   },
   elements: [
     // ---- header
-    el('19.header', null, B(70, 62, 627, 77), {
+    el('19.header', 'ui:AppBar', B(70, 62, 627, 77), {
       tokens: { bg: 'level1' },
       measured: { bg: '#1C1F26' },
     }),
     el('19.back', 'ui:Button', B(97, 91, 96, 23), {
+      parent: '19.header',
       icon: 'back',
       binding: 'static:with.back',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('19.header-divider', null, B(210, 84, 3, 35), { tokens: { fg: 'border.subtle' } }),
+    el('19.header-divider', null, B(210, 84, 3, 35), {
+      parent: '19.header',
+      tokens: { fg: 'border.subtle' },
+    }),
     el('19.title', 'ui:Text', B(228, 89, 340, 26), {
+      parent: '19.header',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
       binding: 'static:with.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('19.filter', 'ui:Button', B(640, 88, 33, 28), {
+      parent: '19.header',
       icon: 'filter',
       action: 'open:with.filter',
     }),
@@ -185,7 +191,7 @@ export default {
       wear: B(530, 1120, 132, 43),
     }),
     // ---- the action
-    el('19.bar', 'app:ActionBar', B(72, 1208, 624, 104), { tokens: { border: 'border.subtle' } }),
+    el('19.bar', 'ui:ActionBar', B(72, 1208, 624, 104), { tokens: { border: 'border.subtle' } }),
     el('19.bar.build', 'ui:Button', B(88, 1230, 592, 67), {
       parent: '19.bar',
       tokens: { bg: 'level3', radius: 'md' },

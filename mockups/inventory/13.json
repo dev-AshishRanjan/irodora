@@ -21,9 +21,34 @@
   },
   "elements": [
     {
-      "id": "13.capsule-solver",
+      "id": "13.header",
       "order": 1,
       "parent": null,
+      "component": "ui:AppBar",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 95
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 47.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "13.capsule-solver",
+      "order": 2,
+      "parent": "13.header",
       "component": "ui:Button",
       "box": {
         "x": 548,
@@ -53,8 +78,8 @@
     },
     {
       "id": "13.back",
-      "order": 2,
-      "parent": null,
+      "order": 3,
+      "parent": "13.header",
       "component": "ui:Button",
       "box": {
         "x": 27,
@@ -81,8 +106,8 @@
     },
     {
       "id": "13.title",
-      "order": 3,
-      "parent": null,
+      "order": 4,
+      "parent": "13.header",
       "component": "ui:Text",
       "box": {
         "x": 247,
@@ -115,8 +140,8 @@
     },
     {
       "id": "13.header-rule",
-      "order": 4,
-      "parent": null,
+      "order": 5,
+      "parent": "13.header",
       "component": null,
       "box": {
         "x": 0,
@@ -142,7 +167,7 @@
     },
     {
       "id": "13.art-left",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -167,7 +192,7 @@
     },
     {
       "id": "13.art-right",
-      "order": 6,
+      "order": 7,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -192,7 +217,7 @@
     },
     {
       "id": "13.slots",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "component": null,
       "box": {
@@ -220,7 +245,7 @@
     },
     {
       "id": "13.slots.slot-1",
-      "order": 8,
+      "order": 9,
       "parent": "13.slots",
       "component": "app:OutfitSlot",
       "box": {
@@ -250,7 +275,7 @@
     },
     {
       "id": "13.slots.slot-1.thumbnail",
-      "order": 9,
+      "order": 10,
       "parent": "13.slots.slot-1",
       "component": "app:GarmentThumbnail",
       "box": {
@@ -277,7 +302,7 @@
     },
     {
       "id": "13.slots.slot-1.locked",
-      "order": 10,
+      "order": 11,
       "parent": "13.slots.slot-1",
       "component": "ui:Chip",
       "box": {
@@ -308,7 +333,7 @@
     },
     {
       "id": "13.slots.slot-1.hex",
-      "order": 11,
+      "order": 12,
       "parent": "13.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -343,7 +368,7 @@
     },
     {
       "id": "13.slots.slot-1.name",
-      "order": 12,
+      "order": 13,
       "parent": "13.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -377,7 +402,7 @@
     },
     {
       "id": "13.slots.slot-2",
-      "order": 13,
+      "order": 14,
       "parent": "13.slots",
       "component": "app:OutfitSlot",
       "box": {
@@ -404,7 +429,7 @@
     },
     {
       "id": "13.slots.slot-2.thumbnail",
-      "order": 14,
+      "order": 15,
       "parent": "13.slots.slot-2",
       "component": "app:GarmentThumbnail",
       "box": {
@@ -431,7 +456,7 @@
     },
     {
       "id": "13.slots.slot-2.swap",
-      "order": 15,
+      "order": 16,
       "parent": "13.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -462,7 +487,7 @@
     },
     {
       "id": "13.slots.slot-2.lock",
-      "order": 16,
+      "order": 17,
       "parent": "13.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -490,7 +515,7 @@
     },
     {
       "id": "13.slots.slot-2.hex",
-      "order": 17,
+      "order": 18,
       "parent": "13.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -525,7 +550,7 @@
     },
     {
       "id": "13.slots.slot-2.name",
-      "order": 18,
+      "order": 19,
       "parent": "13.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -559,7 +584,7 @@
     },
     {
       "id": "13.slots.slot-3",
-      "order": 19,
+      "order": 20,
       "parent": "13.slots",
       "component": "app:OutfitSlot",
       "box": {
@@ -586,7 +611,7 @@
     },
     {
       "id": "13.slots.slot-3.thumbnail",
-      "order": 20,
+      "order": 21,
       "parent": "13.slots.slot-3",
       "component": "app:GarmentThumbnail",
       "box": {
@@ -613,7 +638,7 @@
     },
     {
       "id": "13.slots.slot-3.swap",
-      "order": 21,
+      "order": 22,
       "parent": "13.slots.slot-3",
       "component": "ui:Button",
       "box": {
@@ -644,7 +669,7 @@
     },
     {
       "id": "13.slots.slot-3.lock",
-      "order": 22,
+      "order": 23,
       "parent": "13.slots.slot-3",
       "component": "ui:Button",
       "box": {
@@ -672,7 +697,7 @@
     },
     {
       "id": "13.slots.slot-3.hex",
-      "order": 23,
+      "order": 24,
       "parent": "13.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -707,7 +732,7 @@
     },
     {
       "id": "13.slots.slot-3.name",
-      "order": 24,
+      "order": 25,
       "parent": "13.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -741,7 +766,7 @@
     },
     {
       "id": "13.slots.slot-4",
-      "order": 25,
+      "order": 26,
       "parent": "13.slots",
       "component": "app:OutfitSlot",
       "box": {
@@ -771,7 +796,7 @@
     },
     {
       "id": "13.slots.slot-4.thumbnail",
-      "order": 26,
+      "order": 27,
       "parent": "13.slots.slot-4",
       "component": "app:GarmentThumbnail",
       "box": {
@@ -798,7 +823,7 @@
     },
     {
       "id": "13.slots.slot-4.swap",
-      "order": 27,
+      "order": 28,
       "parent": "13.slots.slot-4",
       "component": "ui:Button",
       "box": {
@@ -829,7 +854,7 @@
     },
     {
       "id": "13.slots.slot-4.lock",
-      "order": 28,
+      "order": 29,
       "parent": "13.slots.slot-4",
       "component": "ui:Button",
       "box": {
@@ -857,7 +882,7 @@
     },
     {
       "id": "13.slots.slot-4.hex",
-      "order": 29,
+      "order": 30,
       "parent": "13.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -892,7 +917,7 @@
     },
     {
       "id": "13.slots.slot-4.name",
-      "order": 30,
+      "order": 31,
       "parent": "13.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -926,7 +951,7 @@
     },
     {
       "id": "13.score",
-      "order": 31,
+      "order": 32,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -961,7 +986,7 @@
     },
     {
       "id": "13.score.pill",
-      "order": 32,
+      "order": 33,
       "parent": "13.score",
       "component": "ui:Chip",
       "box": {
@@ -989,7 +1014,7 @@
     },
     {
       "id": "13.score.figure",
-      "order": 33,
+      "order": 34,
       "parent": "13.score.pill",
       "component": "ui:Text",
       "box": {
@@ -1024,7 +1049,7 @@
     },
     {
       "id": "13.score.verdict",
-      "order": 34,
+      "order": 35,
       "parent": "13.score.pill",
       "component": "ui:Text",
       "box": {
@@ -1058,7 +1083,7 @@
     },
     {
       "id": "13.score.harmony.icon",
-      "order": 35,
+      "order": 36,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1083,7 +1108,7 @@
     },
     {
       "id": "13.score.harmony.label",
-      "order": 36,
+      "order": 37,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1117,7 +1142,7 @@
     },
     {
       "id": "13.score.harmony.value",
-      "order": 37,
+      "order": 38,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1152,7 +1177,7 @@
     },
     {
       "id": "13.score.harmony.note",
-      "order": 38,
+      "order": 39,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1186,7 +1211,7 @@
     },
     {
       "id": "13.score.rule-1",
-      "order": 39,
+      "order": 40,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1213,7 +1238,7 @@
     },
     {
       "id": "13.score.fit.icon",
-      "order": 40,
+      "order": 41,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1238,7 +1263,7 @@
     },
     {
       "id": "13.score.fit.label",
-      "order": 41,
+      "order": 42,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1272,7 +1297,7 @@
     },
     {
       "id": "13.score.fit.value",
-      "order": 42,
+      "order": 43,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1307,7 +1332,7 @@
     },
     {
       "id": "13.score.fit.note",
-      "order": 43,
+      "order": 44,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1341,7 +1366,7 @@
     },
     {
       "id": "13.score.rule-2",
-      "order": 44,
+      "order": 45,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1368,7 +1393,7 @@
     },
     {
       "id": "13.score.contrast.icon",
-      "order": 45,
+      "order": 46,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1393,7 +1418,7 @@
     },
     {
       "id": "13.score.contrast.label",
-      "order": 46,
+      "order": 47,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1427,7 +1452,7 @@
     },
     {
       "id": "13.score.contrast.value",
-      "order": 47,
+      "order": 48,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1462,7 +1487,7 @@
     },
     {
       "id": "13.score.contrast.note",
-      "order": 48,
+      "order": 49,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1496,7 +1521,7 @@
     },
     {
       "id": "13.score.rule-3",
-      "order": 49,
+      "order": 50,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1523,7 +1548,7 @@
     },
     {
       "id": "13.score.balance.icon",
-      "order": 50,
+      "order": 51,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1548,7 +1573,7 @@
     },
     {
       "id": "13.score.balance.label",
-      "order": 51,
+      "order": 52,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1582,7 +1607,7 @@
     },
     {
       "id": "13.score.balance.value",
-      "order": 52,
+      "order": 53,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1617,7 +1642,7 @@
     },
     {
       "id": "13.score.balance.note",
-      "order": 53,
+      "order": 54,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1651,7 +1676,7 @@
     },
     {
       "id": "13.score.rule-4",
-      "order": 54,
+      "order": 55,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1678,7 +1703,7 @@
     },
     {
       "id": "13.score.cvd.icon",
-      "order": 55,
+      "order": 56,
       "parent": "13.score",
       "component": null,
       "box": {
@@ -1703,7 +1728,7 @@
     },
     {
       "id": "13.score.cvd.label",
-      "order": 56,
+      "order": 57,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1737,7 +1762,7 @@
     },
     {
       "id": "13.score.cvd.value",
-      "order": 57,
+      "order": 58,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1772,7 +1797,7 @@
     },
     {
       "id": "13.score.cvd.note",
-      "order": 58,
+      "order": 59,
       "parent": "13.score",
       "component": "ui:Text",
       "box": {
@@ -1806,7 +1831,7 @@
     },
     {
       "id": "13.capsule",
-      "order": 59,
+      "order": 60,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1838,7 +1863,7 @@
     },
     {
       "id": "13.capsule.title",
-      "order": 60,
+      "order": 61,
       "parent": "13.capsule",
       "component": "ui:Text",
       "box": {
@@ -1872,7 +1897,7 @@
     },
     {
       "id": "13.capsule.icon",
-      "order": 61,
+      "order": 62,
       "parent": "13.capsule",
       "component": null,
       "box": {
@@ -1897,7 +1922,7 @@
     },
     {
       "id": "13.capsule.body",
-      "order": 62,
+      "order": 63,
       "parent": "13.capsule",
       "component": "ui:Text",
       "box": {
@@ -1932,9 +1957,9 @@
     },
     {
       "id": "13.actions",
-      "order": 63,
+      "order": 64,
       "parent": null,
-      "component": "app:ActionBar",
+      "component": "ui:ActionBar",
       "box": {
         "x": 0,
         "y": 1250,
@@ -1959,7 +1984,7 @@
     },
     {
       "id": "13.actions.next",
-      "order": 64,
+      "order": 65,
       "parent": "13.actions",
       "component": "ui:Button",
       "box": {
@@ -1990,7 +2015,7 @@
     },
     {
       "id": "13.actions.save",
-      "order": 65,
+      "order": 66,
       "parent": "13.actions",
       "component": "ui:Button",
       "box": {
