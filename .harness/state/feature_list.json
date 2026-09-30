@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-24",
+  "updated": "2026-09-29",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7694,7 +7694,7 @@
         "cvd"
       ],
       "notes": "DONE. DEPARTS (F-219): the caption board 00 draws under its ΔE00 badge is an absolute colour-vision safety claim; the sample family never carries it — a separation shows the computed figure and its model (E2). FROM F-239 (2026-09-21): 15 draws a \"Show Provenance Badges on Swatches\" switch and F-239 shipped the setting, the key and the provider — but the chip this fourth criterion gives to the component does not exist yet, so the setting has NO READER until this feature lands. When the chip is built it reads useDisplaySettings().provenanceBadges and draws nothing when that is false. THE BADGE IS HIDEABLE; THE PROVENANCE IS NOT: swatchAccessibleName takes a name, a hex and a colour and no setting, and display-settings.test.tsx asserts that signature, so a chip that honoured the switch by dropping the source from the accessible name would break ADR-0005 and that test. FROM F-225 (2026-09-25, ADR-0111): `swatch.keyline` exists (#FFFFFF22 on Sumi, #1A1B1E18 on Washi, `usage: nonText`) and is recorded in unreached-tokens.json as `closedBy: F-233`: this feature draws it and removes that entry. The old `swatch.hairline` / `swatch.hairline.inverse` keep every sample's edge until then. swatch-edge.test.ts records that the README keyline ALONE cannot keep a sample's edge against every colour. So whether the keyline replaces the hairline, or joins it as an E3 departure, is this feature's decision, measured rather than assumed.\n`swatch.well` is level 1's value (C11): a sample sits on its card, as drawn.\nTertiary text on a card is `foreground.3.card`, and on the ground it is `foreground.3`.\nCriterion 3's 'whichever text colour passes 4.5:1' chooses between `foreground` and `accent.foreground`, which is the ground. FROM F-232 (2026-09-28): text set ON a colour sample takes its ink from `inkOnSample(hex, colors)` (packages/ui/src/inkOnSample.ts, C8): the better of foreground / inverse.foreground, with `passes` saying whether it clears 4.5:1. Reuse it rather than choosing an ink by eye; a mid-tone clears it with neither, and the result says so (E-158). A sample is passed as `{ hex, color }` (the `Sample` type), so its provenance travels with it (ADR-0005). HOW CRITERION 4 IS READ (F-233's review, S4): \"the provenance chip belongs to the component\" is met by ProvenanceChip being a member of the sample family — it takes the sample itself (a Sample, the same value the Swatch takes), so its words can only be that sample's provenance — and not by the chip being rendered inside a sample component: no mockup draws a chip on a sample, and 03, 12 and 24 place it beside or above the sample in the same card, so the surface places it (P1). A surface can still leave it out; F-284's first criterion holds the surfaces that draw one to placing it.",
-      "plan": ".harness/plans/F-233-cards-and-the-sample-family-are-the-mockups.md",
+      "plan": "plans/F-233-cards-and-the-sample-family-are-the-mockups.md",
       "attested": [
         {
           "criterion": "Cards at levels 1, 2 and 3 with the mockups’ radius, border and fill",
@@ -7720,7 +7720,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-225",
         "F-226",
@@ -7747,7 +7747,8 @@
         "cvd",
         "e2e"
       ],
-      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1). FROM F-228 (2026-09-16): the glyph registry has filled drawings only where a mockup draws one — home (01), lens (02), profile (02 15 18), compass (09). CORRECTED 2026-09-21 after the F-228 review: 01 — the governing tab bar — draws ONLY home active. The filled lens, profile and compass come from the tab bars of 02, 15, 18 and 09, which C1 supersedes, and a superseded element never sets a shape a governing one draws; atlas and wardrobe are drawn filled nowhere at all. So what 01's bar does for any active tab but Home is undrawn, and is an open question for a person rather than a drawing to invent. NavIcon takes no `filled` prop yet; this feature adds it with the treatment."
+      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1). FROM F-228 (2026-09-16): the glyph registry has filled drawings only where a mockup draws one — home (01), lens (02), profile (02 15 18), compass (09). CORRECTED 2026-09-21 after the F-228 review: 01 — the governing tab bar — draws ONLY home active. The filled lens, profile and compass come from the tab bars of 02, 15, 18 and 09, which C1 supersedes, and a superseded element never sets a shape a governing one draws; atlas and wardrobe are drawn filled nowhere at all. So what 01's bar does for any active tab but Home is undrawn, and is an open question for a person rather than a drawing to invent. NavIcon takes no `filled` prop yet; this feature adds it with the treatment.",
+      "plan": "plans/F-234-one-tab-bar-one-app-bar-one-action-bar-one-sheet.md"
     },
     {
       "id": "F-235",
