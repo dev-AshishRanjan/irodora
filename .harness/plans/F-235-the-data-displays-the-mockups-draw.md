@@ -441,3 +441,33 @@ F-253/F-258/F-260 (carousel forms, OQ-13, OQ-24/25), F-255, F-257, F-242/F-267 (
 | inc | commit | what landed |
 |---|---|---|
 | 0 | this commit | Claimed, and this plan. |
+
+### Increment 1 readings taken so far (not yet recorded in the inventories)
+
+Read with `mockups/tools/measure.ps1`, `corner.ps1` and a pixel dump fitted in Node (2026-10-05).
+
+- **11 dial** (`11.coverage.ring`, 0.5 dp/px): centre (385.3, 306.0) px; centre-line radius 83.4 px;
+  stroke about 12.4 px, round caps; the open arc runs about 276° on its centre line, with an 84° gap at
+  the bottom. The fill runs about 249° (≈ 0.90 of the sweep) for a printed 84 %, so the drawing's arc
+  and number disagree. Fill ink #EDF0F3 (`text.primary`); track #515860, nearer `border.strong` than
+  the recorded `border.subtle`.
+- **17 radar** (`17.radar.chart`, 0.5 dp/px, centre ≈ (223, 858) px): six evenly spaced rings (vertices
+  at about 15, 30, 46, 61, 75 and 90 px), 1 px, #3D4247; spokes on both axes, 2 px, #2E343F; markers
+  9 px; polygon edge about 2.5 px; fill #5E6675 over #1D2027. Two vertex inks: blue at Temperature and
+  Depth (#94B5E0, #89ADE0), grey at Muted Tolerance and Chroma (#C2C1C5, #CDCDD1), the edge blending
+  between them — this goes into OQ-24's text.
+- **25 dots** (0.817 dp/px): the active dot 9 px (#242525), two inactive 8 px (≈ #BFBFB9), the small
+  fourth 4 px, pitch 18 px. The active dot's extra px may be its higher contrast through the same
+  threshold (±1 px).
+- **04 deltas** (0.7342 dp/px): bar inks lightness #566673, chroma #5EC382, hue #89939D — three inks,
+  so OQ-50 must also ask what each means. The labels (#CCCDCF) and figures (#CDCED0) are the
+  headline's ink (#CED0D1, `text.primary`), not the recorded `text.secondary`; only the bracketed
+  readings are `text.secondary` (#9A9CA0). Each bar's outer end has a 3 px radius, and the axis end is
+  square.
+- **20 carousel**: the ground is #17181C; the left neighbour's edge (x 70–83 px) runs from row 213 to
+  1286, so the neighbours are outlines about 1074 px (537 dp) tall, not the carousel's 584 dp or the
+  card's 424.5 dp.
+
+**Still to read:** 22's tile widths (137 vs 128.5) and carousel gaps; 23's clip edge; `17.step.label`.
+**Then:** every re-record listed under Increments, the schema, OQ-50, OQ-51 and OQ-52, and `13` in
+F-235's `mockups`.
