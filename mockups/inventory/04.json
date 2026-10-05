@@ -567,7 +567,7 @@
         "h": 15.5
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -578,6 +578,9 @@
       "illustration": null,
       "binding": "static:lens.delta.lightness",
       "action": null,
+      "measured": {
+        "fg": "#CCCDCF"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -606,6 +609,12 @@
       "illustration": null,
       "binding": "engine:delta.lightness",
       "action": null,
+      "measured": {
+        "fg": "#566673"
+      },
+      "raw": {
+        "cornerPx": 3
+      },
       "copy": null
     },
     {
@@ -642,18 +651,18 @@
       "component": "ui:Text",
       "box": {
         "x": 511,
-        "y": 918,
-        "w": 181,
-        "h": 20
+        "y": 919,
+        "w": 35,
+        "h": 15
       },
       "dp": {
         "x": 279,
-        "y": 562.5,
-        "w": 133,
-        "h": 14.5
+        "y": 563,
+        "w": 25.5,
+        "h": 11
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -667,12 +676,49 @@
       "action": null,
       "copy": {
         "shape": "value",
-        "script": "mixed"
+        "script": "figures"
+      }
+    },
+    {
+      "id": "04.gauge.lightness.reading",
+      "order": 23,
+      "parent": "04.gauge",
+      "component": "ui:Text",
+      "box": {
+        "x": 554,
+        "y": 918,
+        "w": 138,
+        "h": 19
+      },
+      "dp": {
+        "x": 310.5,
+        "y": 562.5,
+        "w": 101.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "measured": {
+        "fg": "#9A9CA0"
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
       }
     },
     {
       "id": "04.gauge.chroma.label",
-      "order": 23,
+      "order": 24,
       "parent": "04.gauge",
       "component": "ui:Text",
       "box": {
@@ -688,7 +734,7 @@
         "h": 11.5
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -699,6 +745,9 @@
       "illustration": null,
       "binding": "static:lens.delta.chroma",
       "action": null,
+      "measured": {
+        "fg": "#CCCDCF"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -706,7 +755,7 @@
     },
     {
       "id": "04.gauge.chroma.bar",
-      "order": 24,
+      "order": 25,
       "parent": "04.gauge",
       "component": "ui:Bands",
       "box": {
@@ -727,27 +776,33 @@
       "illustration": null,
       "binding": "engine:delta.chroma",
       "action": null,
+      "measured": {
+        "fg": "#5EC382"
+      },
+      "raw": {
+        "cornerPx": 3
+      },
       "copy": null
     },
     {
       "id": "04.gauge.chroma.value",
-      "order": 25,
+      "order": 26,
       "parent": "04.gauge",
       "component": "ui:Text",
       "box": {
-        "x": 510,
-        "y": 952,
-        "w": 182,
-        "h": 21
+        "x": 511,
+        "y": 954,
+        "w": 37,
+        "h": 14
       },
       "dp": {
-        "x": 278.5,
-        "y": 587.5,
-        "w": 133.5,
-        "h": 15.5
+        "x": 279,
+        "y": 589,
+        "w": 27,
+        "h": 10.5
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -761,12 +816,49 @@
       "action": null,
       "copy": {
         "shape": "value",
-        "script": "mixed"
+        "script": "figures"
+      }
+    },
+    {
+      "id": "04.gauge.chroma.reading",
+      "order": 27,
+      "parent": "04.gauge",
+      "component": "ui:Text",
+      "box": {
+        "x": 556,
+        "y": 952,
+        "w": 136,
+        "h": 20
+      },
+      "dp": {
+        "x": 312,
+        "y": 587.5,
+        "w": 100,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "measured": {
+        "fg": "#9A9CA0"
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
       }
     },
     {
       "id": "04.gauge.hue.label",
-      "order": 26,
+      "order": 28,
       "parent": "04.gauge",
       "component": "ui:Text",
       "box": {
@@ -782,7 +874,7 @@
         "h": 12.5
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -793,6 +885,9 @@
       "illustration": null,
       "binding": "static:lens.delta.hue",
       "action": null,
+      "measured": {
+        "fg": "#CCCDCF"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -800,7 +895,7 @@
     },
     {
       "id": "04.gauge.hue.bar",
-      "order": 27,
+      "order": 29,
       "parent": "04.gauge",
       "component": "ui:Bands",
       "box": {
@@ -821,27 +916,33 @@
       "illustration": null,
       "binding": "engine:delta.hue",
       "action": null,
+      "measured": {
+        "fg": "#89939D"
+      },
+      "raw": {
+        "cornerPx": 3
+      },
       "copy": null
     },
     {
       "id": "04.gauge.hue.value",
-      "order": 28,
+      "order": 30,
       "parent": "04.gauge",
       "component": "ui:Text",
       "box": {
-        "x": 514,
-        "y": 987,
-        "w": 178,
-        "h": 19
+        "x": 515,
+        "y": 988,
+        "w": 44,
+        "h": 15
       },
       "dp": {
-        "x": 281,
-        "y": 613,
-        "w": 130.5,
-        "h": 14
+        "x": 282,
+        "y": 614,
+        "w": 32.5,
+        "h": 11
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -855,12 +956,49 @@
       "action": null,
       "copy": {
         "shape": "value",
-        "script": "mixed"
+        "script": "figures"
+      }
+    },
+    {
+      "id": "04.gauge.hue.reading",
+      "order": 31,
+      "parent": "04.gauge",
+      "component": "ui:Text",
+      "box": {
+        "x": 567,
+        "y": 987,
+        "w": 125,
+        "h": 19
+      },
+      "dp": {
+        "x": 320,
+        "y": 613,
+        "w": 92,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "measured": {
+        "fg": "#9A9CA0"
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
       }
     },
     {
       "id": "04.sheet",
-      "order": 29,
+      "order": 32,
       "parent": null,
       "component": "ui:Sheet",
       "box": {
@@ -891,7 +1029,7 @@
     },
     {
       "id": "04.sheet.handle",
-      "order": 30,
+      "order": 33,
       "parent": "04.sheet",
       "component": null,
       "box": {
@@ -919,7 +1057,7 @@
     },
     {
       "id": "04.sheet.tolerance",
-      "order": 31,
+      "order": 34,
       "parent": "04.sheet",
       "component": "ui:Chip",
       "box": {
@@ -949,7 +1087,7 @@
     },
     {
       "id": "04.sheet.save",
-      "order": 32,
+      "order": 35,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -977,7 +1115,7 @@
     },
     {
       "id": "04.sheet.save.label",
-      "order": 33,
+      "order": 36,
       "parent": "04.sheet.save",
       "component": "ui:Text",
       "box": {
@@ -1011,7 +1149,7 @@
     },
     {
       "id": "04.sheet.outfits",
-      "order": 34,
+      "order": 37,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -1039,7 +1177,7 @@
     },
     {
       "id": "04.sheet.outfits.label",
-      "order": 35,
+      "order": 38,
       "parent": "04.sheet.outfits",
       "component": "ui:Text",
       "box": {
@@ -1073,7 +1211,7 @@
     },
     {
       "id": "04.sheet.outfits.icon",
-      "order": 36,
+      "order": 39,
       "parent": "04.sheet.outfits",
       "component": null,
       "box": {
@@ -1098,7 +1236,7 @@
     },
     {
       "id": "04.sheet.reset",
-      "order": 37,
+      "order": 40,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -1126,7 +1264,7 @@
     },
     {
       "id": "04.sheet.reset.label",
-      "order": 38,
+      "order": 41,
       "parent": "04.sheet.reset",
       "component": "ui:Text",
       "box": {
@@ -1299,7 +1437,7 @@
     },
     {
       "rule": "E2",
-      "element": "04.gauge.hue.value",
+      "element": "04.gauge.hue.reading",
       "why": "the ΔH figure keeps its descriptor band and loses the claim of an identical hue — FR-74 never asserts identity"
     }
   ],

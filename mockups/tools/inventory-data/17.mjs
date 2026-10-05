@@ -138,10 +138,16 @@ export default {
       binding: 'static:profile.title',
       copy: { shape: 'heading', script: 'mixed' },
     }),
-    el('17.step', 'ui:Chip', B(164, 111, 441, 38), {
+    el('17.step', 'ui:StepPill', B(164, 111, 441, 38), {
       tokens: { bg: 'level2', radius: 'pill' },
       measured: { bg: '#343C46' },
       binding: 'store:profile.session.step',
+    }),
+    // F-235 (2026-10-05): the pill's one line, its ink box read against the pill's #343C46 (edges, t 120).
+    t('17.step.label', B(181, 123, 406, 18), '17.step', 'store:profile.session.step', {
+      tokens: { fg: 'text.primary' },
+      measured: { fg: '#E2E5E9' },
+      ...cap(9.3),
       copy: { shape: 'badge', script: 'latin' },
     }),
     // ---- the draping comparison
@@ -195,9 +201,23 @@ export default {
       ...cap(10.8),
       copy: { shape: 'body', script: 'latin' },
     }),
-    el('17.radar.chart', 'new:RadarChart', B(132, 767, 182, 182), {
+    // F-235 (2026-10-05), read along the spokes and diagonals from the centre (223, 858) px: six evenly
+    // spaced rings (vertices at about 15, 30, 46, 61, 75 and 90 px), 1 px wide; spokes on both axes,
+    // 2 px; a filled polygon with a 2.5 px edge; 9 px vertex markers. Two vertex inks: blue at
+    // Temperature and Depth, grey at Muted Tolerance and Chroma, the edge blending between them (OQ-24).
+    el('17.radar.chart', 'ui:Radar', B(132, 767, 182, 182), {
       parent: '17.radar',
       tokens: { track: 'border.subtle' },
+      measured: {
+        ring: '#3D4247',
+        spoke: '#2E343F',
+        fill: '#5E6675',
+        top: '#94B5E0',
+        right: '#89ADE0',
+        bottom: '#C2C1C5',
+        left: '#CDCDD1',
+      },
+      raw: { rings: 6, ringPx: 1, spokePx: 2, edgePx: 2.5, markerPx: 9 },
       binding: 'engine:profile.dimensions',
     }),
     axis('temperature', B(183, 749, 81, 16), 8.6, 'static:profile.dimension.temperature'),

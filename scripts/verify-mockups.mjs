@@ -1020,9 +1020,13 @@ if (process.argv.includes('--prove')) {
       },
       {
         name: 'gate 0: a UI feature with an empty list and no open question',
+        // Both halves of the name are planted: F-242 has carried an open question (OQ-13) since F-226,
+        // and with it an empty list is rightly accepted, so the case must clear that too to say what
+        // it claims (found by F-235).
         plant: () =>
           withFeatures((f) => {
             f['F-242'].mockups = [];
+            delete f['F-242'].openQuestions;
           }),
         expect: 'F-242 names no mockup and no open question',
       },

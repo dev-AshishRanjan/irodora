@@ -54,7 +54,9 @@ describe('the defaults are the inventories’, recomputed', () => {
     const heights = elements
       .filter((e) => e.component === 'ui:Chip' && e.action === null && e.dp !== null)
       .map((e) => e.dp?.h ?? NaN);
-    expect(heights).toHaveLength(38);
+    // 37 since F-235 re-recorded 17's step pill as `ui:StepPill`, which composes the badge at its own
+    // drawn 19 dp (STEP_PILL_HEIGHT) rather than this default.
+    expect(heights).toHaveLength(37);
     expect(half(median(heights))).toBe(BADGE_HEIGHT);
   });
 

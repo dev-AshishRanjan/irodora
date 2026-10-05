@@ -136,9 +136,13 @@ export default {
       copy: { shape: 'label', script: 'mixed', lines: 2 },
     }),
     el('25.art-blossom', 'ui:Illustration', B(440, 955, 176, 110), { illustration: 'blossom' }),
-    el('25.dots', 'new:PageDots', B(361, 988, 61, 9), {
+    // F-235 (2026-10-05), blobs against the ground (lum 237, t 25): the active dot 9 px, two inactive
+    // 8 px, a fourth 4 px, centres 18 px apart. The active dot's extra px is within its higher contrast
+    // through the same threshold (±1 px). It is marked by ink alone (rule 13).
+    el('25.dots', 'ui:PageDots', B(361, 988, 61, 9), {
       tokens: { fg: 'text.primary' },
-      measured: { fg: '#191A1A' },
+      measured: { fg: '#191A1A', inactive: '#BFBFB9' },
+      raw: { activePx: 9, dotPx: 8, smallPx: 4, pitchPx: 18 },
     }),
     // ---- the wardrobe strip (the tiles run on under the tab bar; the third runs off the screen's edge)
     t('25.wardrobe.title', B(184, 1032, 276, 24), null, 'static:home.wardrobeQuickAccess', {

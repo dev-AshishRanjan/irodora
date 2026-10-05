@@ -83,7 +83,7 @@
       "id": "17.step",
       "order": 3,
       "parent": null,
-      "component": "ui:Chip",
+      "component": "ui:StepPill",
       "box": {
         "x": 164,
         "y": 111,
@@ -108,6 +108,43 @@
       "measured": {
         "bg": "#343C46"
       },
+      "copy": null
+    },
+    {
+      "id": "17.step.label",
+      "order": 4,
+      "parent": "17.step",
+      "component": "ui:Text",
+      "box": {
+        "x": 181,
+        "y": 123,
+        "w": 406,
+        "h": 18
+      },
+      "dp": {
+        "x": 90.5,
+        "y": 61.5,
+        "w": 203,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:profile.session.step",
+      "action": null,
+      "measured": {
+        "fg": "#E2E5E9"
+      },
+      "raw": {
+        "emDp": 9.3
+      },
       "copy": {
         "shape": "badge",
         "script": "latin"
@@ -115,7 +152,7 @@
     },
     {
       "id": "17.draping",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -147,7 +184,7 @@
     },
     {
       "id": "17.draping.title",
-      "order": 5,
+      "order": 6,
       "parent": "17.draping",
       "component": "ui:Text",
       "box": {
@@ -181,7 +218,7 @@
     },
     {
       "id": "17.draping.prompt",
-      "order": 6,
+      "order": 7,
       "parent": "17.draping",
       "component": "ui:Text",
       "box": {
@@ -219,7 +256,7 @@
     },
     {
       "id": "17.draping.option-a",
-      "order": 7,
+      "order": 8,
       "parent": "17.draping",
       "component": "ui:Card",
       "box": {
@@ -247,7 +284,7 @@
     },
     {
       "id": "17.draping.option-a.swatch",
-      "order": 8,
+      "order": 9,
       "parent": "17.draping.option-a",
       "component": "ui:Swatch",
       "box": {
@@ -277,7 +314,7 @@
     },
     {
       "id": "17.draping.option-b",
-      "order": 9,
+      "order": 10,
       "parent": "17.draping",
       "component": "ui:Card",
       "box": {
@@ -305,7 +342,7 @@
     },
     {
       "id": "17.draping.option-b.swatch",
-      "order": 10,
+      "order": 11,
       "parent": "17.draping.option-b",
       "component": "ui:Swatch",
       "box": {
@@ -335,7 +372,7 @@
     },
     {
       "id": "17.draping.option-a.label",
-      "order": 11,
+      "order": 12,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -369,7 +406,7 @@
     },
     {
       "id": "17.draping.option-b.label",
-      "order": 12,
+      "order": 13,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -403,7 +440,7 @@
     },
     {
       "id": "17.draping.option-a.name",
-      "order": 13,
+      "order": 14,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -440,7 +477,7 @@
     },
     {
       "id": "17.draping.option-b.name",
-      "order": 14,
+      "order": 15,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -477,7 +514,7 @@
     },
     {
       "id": "17.draping.option-a.hex",
-      "order": 15,
+      "order": 16,
       "parent": "17.draping.option-a",
       "component": "ui:Text",
       "box": {
@@ -514,7 +551,7 @@
     },
     {
       "id": "17.draping.option-b.hex",
-      "order": 16,
+      "order": 17,
       "parent": "17.draping.option-b",
       "component": "ui:Text",
       "box": {
@@ -551,7 +588,7 @@
     },
     {
       "id": "17.draping.option-a.select",
-      "order": 17,
+      "order": 18,
       "parent": "17.draping.option-a",
       "component": "ui:Chip",
       "box": {
@@ -582,7 +619,7 @@
     },
     {
       "id": "17.draping.option-b.select",
-      "order": 18,
+      "order": 19,
       "parent": "17.draping.option-b",
       "component": "ui:Chip",
       "box": {
@@ -613,7 +650,7 @@
     },
     {
       "id": "17.draping.option-b.select.selected",
-      "order": 19,
+      "order": 20,
       "parent": "17.draping.option-b.select",
       "component": null,
       "box": {
@@ -640,7 +677,7 @@
     },
     {
       "id": "17.radar",
-      "order": 20,
+      "order": 21,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -672,7 +709,7 @@
     },
     {
       "id": "17.radar.title",
-      "order": 21,
+      "order": 22,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -706,7 +743,7 @@
     },
     {
       "id": "17.radar.subtitle",
-      "order": 22,
+      "order": 23,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -743,7 +780,7 @@
     },
     {
       "id": "17.radar.axis-temperature",
-      "order": 23,
+      "order": 24,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -780,7 +817,7 @@
     },
     {
       "id": "17.radar.temperature.label",
-      "order": 24,
+      "order": 25,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -817,7 +854,7 @@
     },
     {
       "id": "17.radar.temperature.value",
-      "order": 25,
+      "order": 26,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -854,9 +891,9 @@
     },
     {
       "id": "17.radar.chart",
-      "order": 26,
+      "order": 27,
       "parent": "17.radar",
-      "component": "new:RadarChart",
+      "component": "ui:Radar",
       "box": {
         "x": 132,
         "y": 767,
@@ -877,11 +914,27 @@
       "illustration": null,
       "binding": "engine:profile.dimensions",
       "action": null,
+      "measured": {
+        "ring": "#3D4247",
+        "spoke": "#2E343F",
+        "fill": "#5E6675",
+        "top": "#94B5E0",
+        "right": "#89ADE0",
+        "bottom": "#C2C1C5",
+        "left": "#CDCDD1"
+      },
+      "raw": {
+        "rings": 6,
+        "ringPx": 1,
+        "spokePx": 2,
+        "edgePx": 2.5,
+        "markerPx": 9
+      },
       "copy": null
     },
     {
       "id": "17.radar.temperature.range",
-      "order": 27,
+      "order": 28,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -917,7 +970,7 @@
     },
     {
       "id": "17.radar.depth.label",
-      "order": 28,
+      "order": 29,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -954,7 +1007,7 @@
     },
     {
       "id": "17.radar.depth.value",
-      "order": 29,
+      "order": 30,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -991,7 +1044,7 @@
     },
     {
       "id": "17.radar.depth.range",
-      "order": 30,
+      "order": 31,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1019,7 +1072,7 @@
     },
     {
       "id": "17.radar.axis-muted-tolerance",
-      "order": 31,
+      "order": 32,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1057,7 +1110,7 @@
     },
     {
       "id": "17.radar.axis-depth",
-      "order": 32,
+      "order": 33,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1094,7 +1147,7 @@
     },
     {
       "id": "17.radar.chroma.label",
-      "order": 33,
+      "order": 34,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1131,7 +1184,7 @@
     },
     {
       "id": "17.radar.chroma.value",
-      "order": 34,
+      "order": 35,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1168,7 +1221,7 @@
     },
     {
       "id": "17.radar.chroma.range",
-      "order": 35,
+      "order": 36,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1196,7 +1249,7 @@
     },
     {
       "id": "17.radar.contrast.label",
-      "order": 36,
+      "order": 37,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1233,7 +1286,7 @@
     },
     {
       "id": "17.radar.contrast.value",
-      "order": 37,
+      "order": 38,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1270,7 +1323,7 @@
     },
     {
       "id": "17.radar.axis-chroma",
-      "order": 38,
+      "order": 39,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1307,7 +1360,7 @@
     },
     {
       "id": "17.radar.contrast.range",
-      "order": 39,
+      "order": 40,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1335,7 +1388,7 @@
     },
     {
       "id": "17.palette",
-      "order": 40,
+      "order": 41,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1367,7 +1420,7 @@
     },
     {
       "id": "17.palette.title",
-      "order": 41,
+      "order": 42,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1401,7 +1454,7 @@
     },
     {
       "id": "17.palette.subtitle",
-      "order": 42,
+      "order": 43,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1438,7 +1491,7 @@
     },
     {
       "id": "17.palette.swatch-1",
-      "order": 43,
+      "order": 44,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1468,7 +1521,7 @@
     },
     {
       "id": "17.palette.swatch-2",
-      "order": 44,
+      "order": 45,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1498,7 +1551,7 @@
     },
     {
       "id": "17.palette.swatch-3",
-      "order": 45,
+      "order": 46,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1528,7 +1581,7 @@
     },
     {
       "id": "17.palette.swatch-4",
-      "order": 46,
+      "order": 47,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1558,7 +1611,7 @@
     },
     {
       "id": "17.palette.swatch-5",
-      "order": 47,
+      "order": 48,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1588,7 +1641,7 @@
     },
     {
       "id": "17.palette.swatch-1.name",
-      "order": 48,
+      "order": 49,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1625,7 +1678,7 @@
     },
     {
       "id": "17.palette.swatch-2.name",
-      "order": 49,
+      "order": 50,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1662,7 +1715,7 @@
     },
     {
       "id": "17.palette.swatch-3.name",
-      "order": 50,
+      "order": 51,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1699,7 +1752,7 @@
     },
     {
       "id": "17.palette.swatch-4.name",
-      "order": 51,
+      "order": 52,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1736,7 +1789,7 @@
     },
     {
       "id": "17.palette.swatch-5.name",
-      "order": 52,
+      "order": 53,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1773,7 +1826,7 @@
     },
     {
       "id": "17.next-card",
-      "order": 53,
+      "order": 54,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1802,7 +1855,7 @@
     },
     {
       "id": "17.actions",
-      "order": 54,
+      "order": 55,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1832,7 +1885,7 @@
     },
     {
       "id": "17.actions.continue",
-      "order": 55,
+      "order": 56,
       "parent": "17.actions",
       "component": "ui:Button",
       "box": {

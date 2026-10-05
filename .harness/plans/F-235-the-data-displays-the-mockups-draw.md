@@ -250,6 +250,15 @@ palettes (light, dark, slate.dark, obsidian.dark) and both locales.
    component F-235 does not build, that is recorded as backlog with its file and line rather than
    fixed here; the rule ships green over F-235's displays and the screens it already scanned.
 
+3. **Each component's increment re-records the inventory elements it builds against** (containers,
+   re-parenting, component names, the 06 P3 segment), beside the code and the recompute test that read
+   them, so a re-record and its reader land in one commit. Increment 1 records the pixel readings
+   and the ink corrections, which several increments share.
+4. **OQ-50, OQ-51 and OQ-52 are decided in F-235, not raised** (the person's delegation of
+   2026-10-05, R9 §11): each shapes a component F-235 builds — `DeltaBars`' scale and inks
+   (increment 4), its notation (increment 4), `PageDots`' second channel (increment 7) — so each is
+   researched and closed by an ADR in the increment that needs it.
+
 ### Increments (each ends green)
 
 1. **Measure and record. No product code.**
@@ -440,7 +449,8 @@ F-253/F-258/F-260 (carousel forms, OQ-13, OQ-24/25), F-255, F-257, F-242/F-267 (
 
 | inc | commit | what landed |
 |---|---|---|
-| 0 | this commit | Claimed, and this plan. |
+| 0 | `0c53c72` | Claimed, and this plan. |
+| 1 | this commit | The pixel readings recorded: 11's dial (`ui:CoverageDial`; `raw.sweepDeg` 276, `gapDeg` 84, `fillDeg` 249 beside a printed 84 %, `radiusPx` 83.4, `strokePx` 12.4; the track re-read as `border.strong`, #515860); 17's radar (`ui:Radar`; six rings, spokes, a 2.5 px edge, 9 px markers, the fill and the two vertex inks as `measured`); 17's step pill (`ui:StepPill`) with its one-line `17.step.label` (#E2E5E9, ≈ 9.3 dp em); 25's dots (`ui:PageDots`; 9/8/4 px, pitch 18, the inactive ink); 04's rows (labels re-read `text.primary`; each value split into its figure and its bracketed `.reading`, the E2 departure moving to `04.gauge.hue.reading`; each bar's own ink and its 3 px outer corner); 20's neighbours end 1079 px down, not at the frame's bottom. 22's cards re-measured 136.8 and 128.0 dp with 5.9 and 6.6 dp gaps (as recorded), and 23's third strip confirmed to run past its card to the screen's edge. The schema names the new `raw` keys; `13` joins F-235's `mockups`; OQ-24 gains the two-ink finding. `badges.test` re-states its static-chip count (38 → 37, the step pill). **Found on the way:** `verify-mockups --prove`'s "empty list and no open question" case had planted only half its name since F-226 gave F-242 an open question (OQ-13), so it reported a gate that was right; the plant now clears both. |
 
 ### Increment 1 readings taken so far (not yet recorded in the inventories)
 

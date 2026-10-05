@@ -468,7 +468,7 @@
       "id": "25.dots",
       "order": 15,
       "parent": null,
-      "component": "new:PageDots",
+      "component": "ui:PageDots",
       "box": {
         "x": 361,
         "y": 988,
@@ -490,7 +490,14 @@
       "binding": null,
       "action": null,
       "measured": {
-        "fg": "#191A1A"
+        "fg": "#191A1A",
+        "inactive": "#BFBFB9"
+      },
+      "raw": {
+        "activePx": 9,
+        "dotPx": 8,
+        "smallPx": 4,
+        "pitchPx": 18
       },
       "copy": null
     },

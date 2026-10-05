@@ -666,7 +666,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-19** | `06` draws two screen widths (479 px above, 667 px below). Which is the screen? | `F-247` |
 | **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
 | **OQ-23** | `13 16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-257` `F-260` `F-263` |
-| **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? | `F-260` |
+| **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? F-235 measured more: the vertices take two inks — blue at Temperature and Depth (#94B5E0, #89ADE0), grey at Muted Tolerance and Chroma (#C2C1C5, #CDCDD1) — and the edge blends between them, over a #5E6675 fill. | `F-260` |
 | **OQ-25** | `17`'s radar axes and its ranges name different dimensions. Which four, and what does *Muted Tolerance* plot? | `F-260` |
 | **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
 | **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |

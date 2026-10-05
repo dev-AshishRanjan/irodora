@@ -236,7 +236,7 @@
       "id": "11.coverage.ring",
       "order": 8,
       "parent": "11.coverage",
-      "component": "new:RingGauge",
+      "component": "ui:CoverageDial",
       "box": {
         "x": 295,
         "y": 216,
@@ -251,13 +251,24 @@
       },
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "border.strong"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:coverage",
       "action": null,
+      "measured": {
+        "fg": "#EDF0F3",
+        "track": "#515860"
+      },
+      "raw": {
+        "sweepDeg": 276,
+        "gapDeg": 84,
+        "fillDeg": 249,
+        "radiusPx": 83.4,
+        "strokePx": 12.4
+      },
       "copy": null
     },
     {

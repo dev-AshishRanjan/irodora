@@ -15,29 +15,66 @@ const el = (id, component, box, extra = {}) => ({
   ...extra,
 });
 const text = (face, size, weight = 400, extra = {}) => ({ face, size, weight, ...extra });
-const delta = (key, label, bar, value, parentBar = '04.gauge') => ({
+// F-235 (2026-10-05) re-read each row: the label and the figure are the headline's ink (#CCCDCF and
+// #CDCED0 against the distance's #CED0D1, all text.primary), and only the bracketed reading is
+// text.secondary (#9A9CA0) — so each value is two elements, the figure and its reading, split at the
+// 9 px gap between them. Each bar has its own ink, read from its interior, and a 3 px radius on its
+// outer end only (corner.ps1: left 3.0, right 0.5).
+const delta = (key, label, bar, barInk, figure, reading, parentBar = '04.gauge') => ({
   label: el(`04.gauge.${key}.label`, 'ui:Text', label, {
     parent: parentBar,
-    tokens: { fg: 'text.secondary' },
+    tokens: { fg: 'text.primary' },
+    measured: { fg: '#CCCDCF' },
     type: text('sans', 'label'),
     binding: `static:lens.delta.${key}`,
     copy: { shape: 'label', script: 'latin' },
   }),
   bar: el(`04.gauge.${key}.bar`, 'ui:Bands', bar, {
     parent: parentBar,
+    measured: { fg: barInk },
+    raw: { cornerPx: 3 },
     binding: `engine:delta.${key}`,
   }),
-  value: el(`04.gauge.${key}.value`, 'ui:Text', value, {
+  value: el(`04.gauge.${key}.value`, 'ui:Text', figure, {
     parent: parentBar,
-    tokens: { fg: 'text.secondary' },
+    tokens: { fg: 'text.primary' },
     type: text('sans', 'label', 400, { tabular: true }),
     binding: `engine:delta.${key}`,
-    copy: { shape: 'value', script: 'mixed' },
+    copy: { shape: 'value', script: 'figures' },
+  }),
+  reading: el(`04.gauge.${key}.reading`, 'ui:Text', reading, {
+    parent: parentBar,
+    tokens: { fg: 'text.secondary' },
+    measured: { fg: '#9A9CA0' },
+    type: text('sans', 'label'),
+    binding: 'derived:F-222',
+    copy: { shape: 'label', script: 'latin' },
   }),
 });
-const L = delta('lightness', B(186, 918, 84, 21), B(310, 917, 130, 19), B(511, 918, 181, 20));
-const C = delta('chroma', B(185, 953, 68, 16), B(439, 951, 49, 20), B(510, 952, 182, 21));
-const H = delta('hue', B(186, 987, 35, 17), B(403, 987, 37, 19), B(514, 987, 178, 19));
+const L = delta(
+  'lightness',
+  B(186, 918, 84, 21),
+  B(310, 917, 130, 19),
+  '#566673',
+  B(511, 919, 35, 15),
+  B(554, 918, 138, 19),
+);
+const C = delta(
+  'chroma',
+  B(185, 953, 68, 16),
+  B(439, 951, 49, 20),
+  '#5EC382',
+  B(511, 954, 37, 14),
+  B(556, 952, 136, 20),
+);
+const H = delta(
+  'hue',
+  B(186, 987, 35, 17),
+  B(403, 987, 37, 19),
+  '#89939D',
+  B(515, 988, 44, 15),
+  B(567, 987, 125, 19),
+);
 
 export default {
   kind: 'screen',
@@ -132,12 +169,15 @@ export default {
       tokens: { fg: 'text.secondary' },
     }),
     L.value,
+    L.reading,
     C.label,
     C.bar,
     C.value,
+    C.reading,
     H.label,
     H.bar,
     H.value,
+    H.reading,
     // ---- the action sheet (drawn past the frame's right edge, and off the image's bottom)
     el('04.sheet', 'ui:Sheet', B(144, 1060, 533, 316), {
       tokens: { bg: 'level1', radius: 'lg' },
@@ -226,7 +266,7 @@ export default {
     },
     {
       rule: 'E2',
-      element: '04.gauge.hue.value',
+      element: '04.gauge.hue.reading',
       why: 'the ΔH figure keeps its descriptor band and loses the claim of an identical hue — FR-74 never asserts identity',
     },
   ],

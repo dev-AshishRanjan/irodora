@@ -91,9 +91,16 @@ export default {
       measured: { bg: '#1E2128' },
       raw: { cornerPx: 12.5 },
     }),
-    el('11.coverage.ring', 'new:RingGauge', B(295, 216, 181, 160), {
+    // F-235 (2026-10-05): the arc fitted to its pixels (a least-squares circle over the bright ring):
+    // centre (385.3, 306.0) px, centre-line radius 83.4 px, stroke 12.4 px with round caps; the open
+    // arc spans 276° on its centre line, the gap 84° at the bottom. The fill reaches 249° (0.90 of the
+    // sweep) beside a printed 84 % — the drawing's arc and number disagree, and the dial draws one from
+    // the other. The track reads #515860: border.strong, not the border.subtle first recorded.
+    el('11.coverage.ring', 'ui:CoverageDial', B(295, 216, 181, 160), {
       parent: '11.coverage',
-      tokens: { fg: 'text.primary', track: 'border.subtle' },
+      tokens: { fg: 'text.primary', track: 'border.strong' },
+      measured: { fg: '#EDF0F3', track: '#515860' },
+      raw: { sweepDeg: 276, gapDeg: 84, fillDeg: 249, radiusPx: 83.4, strokePx: 12.4 },
       binding: 'engine:coverage',
     }),
     t('11.coverage.figure', B(341, 282, 90, 36), '11.coverage', 'engine:coverage.percent', {

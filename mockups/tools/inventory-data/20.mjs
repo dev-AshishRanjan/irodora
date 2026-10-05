@@ -70,7 +70,9 @@ export default {
     }),
     // ---- the carousel: the neighbours' edges either side of the card
     el('20.carousel', 'new:Carousel', B(0, 208, 768, 1168), { binding: 'corpus:entries' }),
-    el('20.carousel.previous', 'ui:Card', B(0, 208, 78, 1168), {
+    // F-235 (2026-10-05): each neighbour is an outline whose side edge runs rows 213–1286 (edges, t 30),
+    // so it ends 1079 px down — not at the frame's bottom, where it was first recorded.
+    el('20.carousel.previous', 'ui:Card', B(0, 208, 78, 1079), {
       parent: '20.carousel',
       tokens: { border: 'border.subtle', radius: 'md' },
       action: 'select:card.previous',
@@ -81,7 +83,7 @@ export default {
       measured: { bg: '#1F2128' },
       raw: { cornerPx: 19.25 },
     }),
-    el('20.carousel.next', 'ui:Card', B(689, 208, 79, 1168), {
+    el('20.carousel.next', 'ui:Card', B(689, 208, 79, 1079), {
       parent: '20.carousel',
       tokens: { border: 'border.subtle', radius: 'md' },
       action: 'select:card.next',
