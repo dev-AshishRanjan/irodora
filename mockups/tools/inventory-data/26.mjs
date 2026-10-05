@@ -35,13 +35,21 @@ const heading = (id, box, key, emDp) =>
     copy: { shape: 'heading', script: 'japanese' },
     ...em(emDp),
   });
+// F-235 (2026-10-05): the readout is a ui:ReadoutTable (the grid form) filling its card, each cell a
+// ui:ReadoutRow spanning its label and value, and the divider and rules belong to the grid.
+const union = (a, b) => {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return B(x, y, Math.max(a.x + a.w, b.x + b.w) - x, Math.max(a.y + a.h, b.y + b.h) - y);
+};
 const cell = (key, label, labelEm, value, valueEm, binding, script = 'japanese') => [
-  t(`26.readout.${key}.label`, label, '26.readout', `static:notation.${key}Ja`, {
+  el(`26.readout.${key}`, 'ui:ReadoutRow', union(label, value), { parent: '26.readout.grid' }),
+  t(`26.readout.${key}.label`, label, `26.readout.${key}`, `static:notation.${key}Ja`, {
     tokens: { fg: 'text.secondary' },
     copy: { shape: 'label', script },
     ...em(labelEm),
   }),
-  t(`26.readout.${key}.value`, value, '26.readout', binding, {
+  t(`26.readout.${key}.value`, value, `26.readout.${key}`, binding, {
     tokens: { fg: 'text.primary' },
     type: text('sans', 'body', 400, { tabular: true }),
     copy: { shape: 'value', script: 'figures' },
@@ -108,8 +116,9 @@ export default {
       tokens: { bg: 'level1', radius: 'md' },
       measured: { bg: '#1D2027' },
     }),
+    el('26.readout.grid', 'ui:ReadoutTable', B(151, 637, 466, 228), { parent: '26.readout' }),
     el('26.readout.divider', null, B(383, 637, 2, 228), {
-      parent: '26.readout',
+      parent: '26.readout.grid',
       tokens: { fg: 'border.subtle' },
     }),
     ...cell(
@@ -131,7 +140,7 @@ export default {
       'mixed',
     ),
     el('26.readout.rule-1', null, B(151, 712, 466, 2), {
-      parent: '26.readout',
+      parent: '26.readout.grid',
       tokens: { fg: 'border.subtle' },
     }),
     ...cell(
@@ -153,7 +162,7 @@ export default {
       'mixed',
     ),
     el('26.readout.rule-2', null, B(151, 788, 466, 2), {
-      parent: '26.readout',
+      parent: '26.readout.grid',
       tokens: { fg: 'border.subtle' },
     }),
     ...cell(

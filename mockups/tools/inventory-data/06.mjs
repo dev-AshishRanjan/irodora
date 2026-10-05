@@ -23,26 +23,58 @@ const rows = [
   ['cielab', 802, 'engine:cielab'],
   ['srgb', 830, 'engine:srgb'],
 ];
+// F-235 (2026-10-05): the labels read #CDCED2 and the values #C1C3C6 (ink above lum 120) — both the
+// primary ink, the label heavier — where the labels were first recorded text.secondary.
 const tableRows = rows.flatMap(([key, y, binding]) => [
-  el(`06.readout.table.${key}`, 'app:ReadoutRow', B(74, y, 430, 26), {
+  el(`06.readout.table.${key}`, 'ui:ReadoutRow', B(74, y, 430, 26), {
     parent: '06.readout.table',
     tokens: { border: 'border.subtle' },
   }),
   el(`06.readout.table.${key}.label`, 'ui:Text', B(74, y, 86, 26), {
     parent: `06.readout.table.${key}`,
-    tokens: { fg: 'text.secondary' },
+    tokens: { fg: 'text.primary' },
+    measured: { fg: '#CDCED2' },
     type: text('sans', 'label', 500),
     binding: `static:notation.${key}`,
     copy: { shape: 'label', script: 'latin' },
   }),
-  el(`06.readout.table.${key}.value`, 'ui:Text', B(161, y, 343, 26), {
-    parent: `06.readout.table.${key}`,
+  el(
+    `06.readout.table.${key}.value`,
+    'ui:Text',
+    // The sRGB row's value is its own triple; the Display-P3 pair after the bar is recorded below.
+    key === 'srgb' ? B(170, 837, 77, 14) : B(161, y, 343, 26),
+    {
+      parent: `06.readout.table.${key}`,
+      tokens: { fg: 'text.primary' },
+      measured: { fg: '#C1C3C6' },
+      type: text('sans', 'label', 400, { tabular: true }),
+      binding,
+      copy: { shape: 'value', script: 'figures' },
+    },
+  ),
+]);
+// F-235: the sRGB row carries a second value — a 1 px bar, the bold "Display-P3:" and its triple — read
+// by the gaps between ink columns (x 170–246 | 255 | 264–343 | 349–476 px).
+const p3 = [
+  el('06.readout.table.srgb.separator', null, B(255, 834, 1, 18), {
+    parent: '06.readout.table.srgb',
+    tokens: { fg: 'border.subtle' },
+  }),
+  el('06.readout.table.srgb.p3-label', 'ui:Text', B(264, 837, 80, 14), {
+    parent: '06.readout.table.srgb',
+    tokens: { fg: 'text.primary' },
+    type: text('sans', 'label', 500),
+    binding: 'static:notation.displayP3',
+    copy: { shape: 'label', script: 'latin' },
+  }),
+  el('06.readout.table.srgb.p3-value', 'ui:Text', B(349, 837, 128, 14), {
+    parent: '06.readout.table.srgb',
     tokens: { fg: 'text.primary' },
     type: text('sans', 'label', 400, { tabular: true }),
-    binding,
+    binding: 'engine:displayP3',
     copy: { shape: 'value', script: 'figures' },
   }),
-]);
+];
 const garment = (n, photo, badge, caption) => [
   el(`06.combinations.item-${n}.photo`, 'app:GarmentPhoto', photo, {
     parent: '06.combinations',
@@ -170,11 +202,20 @@ export default {
       copy: { shape: 'heading', script: 'latin' },
       raw: { emDp: 19.2 },
     }),
-    el('06.readout.table', 'new:DataTable', B(73, 746, 432, 111), {
+    // F-235: the table's corner fits 6 px (corner.ps1); its column divider is a 1 px line at x 160.
+    el('06.readout.table', 'ui:ReadoutTable', B(73, 746, 432, 111), {
       parent: '06.readout',
       tokens: { border: 'border.subtle' },
+      // Ink starts 9 px in from the table's edge and 10 px in from the divider; rows pitch 27.25 px
+      // between 1 px rules (edges at x 73–504 and y 746–856, t 60 and 25).
+      raw: { cornerPx: 6, labelInsetPx: 9, valueInsetPx: 10, rowPitchPx: 27.25 },
+    }),
+    el('06.readout.table.divider', null, B(160, 746, 1, 111), {
+      parent: '06.readout.table',
+      tokens: { fg: 'border.subtle' },
     }),
     ...tableRows,
+    ...p3,
     // ---- provenance (drawn wider than the upper frame)
     el('06.provenance', 'ui:Card', B(51, 889, 667, 146), {
       tokens: { bg: 'level1', border: 'border.subtle' },

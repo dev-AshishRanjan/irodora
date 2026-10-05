@@ -24,6 +24,7 @@ import {
   Chip,
   FabricSwatch,
   FigureValue,
+  ReadoutTable,
   ChoiceGroup,
   Dialog,
   DisplaySettingsProvider,
@@ -63,6 +64,8 @@ import {
   Wordmark,
   type ActionBarProps,
   type AppBarProps,
+  type ReadoutTableProps,
+  type ReadoutValue,
 } from '../src/index.js';
 import {
   checkAll,
@@ -185,6 +188,55 @@ const SAMPLE_B = fromSpace('oklch', [0.44, 0.08, 258], { source: 'declared', con
  */
 const AVATAR_FIXTURE =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+/** Readout fixtures (F-235): figures that name their quantity and space, as a readout's do. */
+const READOUT_OKLCH: ReadoutValue = {
+  kind: 'figures',
+  separator: ' • ',
+  parts: [
+    { figure: { kind: 'measure', value: 0.49, places: 3, quantity: 'L', space: 'OKLCh' } },
+    { figure: { kind: 'measure', value: 0.035, places: 3, quantity: 'C', space: 'OKLCh' } },
+    {
+      figure: {
+        kind: 'measure',
+        value: 240.2,
+        places: 1,
+        quantity: 'h',
+        unit: '°',
+        space: 'OKLCh',
+      },
+    },
+  ],
+};
+const READOUT_SRGB: ReadoutValue = {
+  kind: 'figures',
+  separator: ', ',
+  parts: [91, 107, 120].map((value, i) => ({
+    figure: {
+      kind: 'measure' as const,
+      value,
+      places: 0,
+      quantity: ['R', 'G', 'B'][i] ?? '',
+      space: 'sRGB',
+    },
+  })),
+};
+const READOUT_DELTA: ReadoutValue = {
+  kind: 'figures',
+  separator: '',
+  parts: [
+    {
+      figure: {
+        kind: 'measure',
+        value: 4.8,
+        places: 1,
+        signed: true,
+        quantity: 'ΔL*',
+        space: 'CIELAB',
+      },
+    },
+  ],
+};
 
 const SUBJECTS: readonly ConformanceSubject[] = [
   {
@@ -1312,6 +1364,93 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE READOUT TABLE (F-235), in the three forms its drawings draw: 06's table with its second
+   * value, 08's ruled rows in both layouts, and 26's grid with Japanese labels and an empty cell.
+   */
+  ...(
+    [
+      [
+        'ReadoutTable (table, 06)',
+        {
+          form: 'table',
+          rows: [
+            {
+              key: 'hex',
+              label: 'Hex',
+              value: { kind: 'code', text: '#5B6B78', spoken: 'hex 5B6B78' },
+            },
+            { key: 'oklch', label: 'OKLCh', value: READOUT_OKLCH },
+            {
+              key: 'srgb',
+              label: 'sRGB',
+              value: READOUT_SRGB,
+              also: { label: 'Display-P3:', value: READOUT_OKLCH },
+            },
+          ],
+        },
+      ],
+      [
+        'ReadoutTable (ruled columns, 08)',
+        {
+          form: 'ruled',
+          layout: 'columns',
+          rows: [
+            {
+              key: 'delta-e00',
+              label: 'ΔE00',
+              formula: '(CIEDE2000)',
+              value: READOUT_DELTA,
+              reading: 'Perceptible shift',
+            },
+            {
+              key: 'lightness',
+              label: 'Lightness',
+              notation: 'ΔL*',
+              value: READOUT_DELTA,
+              reading: 'B is lighter',
+            },
+          ],
+        },
+      ],
+      [
+        'ReadoutTable (ruled stacked, 08)',
+        {
+          form: 'ruled',
+          layout: 'stacked',
+          rows: [
+            {
+              key: 'wcag',
+              label: 'WCAG 2.2 Ratio',
+              value: READOUT_DELTA,
+              reading: 'Non-text',
+              note: '(APCA Lc: 16.2)',
+            },
+          ],
+        },
+      ],
+      [
+        'ReadoutTable (grid, 26)',
+        {
+          form: 'grid',
+          script: 'japanese',
+          rows: [
+            { key: 'oklch', label: 'OKLCh表色系', value: READOUT_OKLCH },
+            { key: 'srgb', label: 'sRGB値', value: READOUT_SRGB },
+            {
+              key: 'hex',
+              label: '16進数（Hex）',
+              value: { kind: 'code', text: '#5B6B78', spoken: '16進数 5B6B78' },
+            },
+          ],
+        },
+      ],
+    ] as const satisfies readonly (readonly [string, ReadoutTableProps])[]
+  ).map(([name, props]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    render: (_state, theme) => draw(<ReadoutTable {...props} />, theme),
+  })),
   {
     /*
      * ALL FIVE AT ONCE, because the property that matters is that they DIFFER. A subject

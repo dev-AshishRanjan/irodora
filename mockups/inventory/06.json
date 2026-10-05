@@ -492,7 +492,7 @@
       "id": "06.readout.table",
       "order": 16,
       "parent": "06.readout",
-      "component": "new:DataTable",
+      "component": "ui:ReadoutTable",
       "box": {
         "x": 73,
         "y": 746,
@@ -513,13 +513,19 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 6,
+        "labelInsetPx": 9,
+        "valueInsetPx": 10,
+        "rowPitchPx": 27.25
+      },
       "copy": null
     },
     {
       "id": "06.readout.table.hex",
       "order": 17,
       "parent": "06.readout.table",
-      "component": "app:ReadoutRow",
+      "component": "ui:ReadoutRow",
       "box": {
         "x": 74,
         "y": 747,
@@ -560,7 +566,7 @@
         "h": 21
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -571,14 +577,44 @@
       "illustration": null,
       "binding": "static:notation.hex",
       "action": null,
+      "measured": {
+        "fg": "#CDCED2"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
       }
     },
     {
-      "id": "06.readout.table.hex.value",
+      "id": "06.readout.table.divider",
       "order": 19,
+      "parent": "06.readout.table",
+      "component": null,
+      "box": {
+        "x": 160,
+        "y": 746,
+        "w": 1,
+        "h": 111
+      },
+      "dp": {
+        "x": 86.5,
+        "y": 524,
+        "w": 1,
+        "h": 90
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.hex.value",
+      "order": 20,
       "parent": "06.readout.table.hex",
       "component": "ui:Text",
       "box": {
@@ -606,6 +642,9 @@
       "illustration": null,
       "binding": "engine:reading.hex",
       "action": null,
+      "measured": {
+        "fg": "#C1C3C6"
+      },
       "copy": {
         "shape": "value",
         "script": "figures"
@@ -613,9 +652,9 @@
     },
     {
       "id": "06.readout.table.oklch",
-      "order": 20,
+      "order": 21,
       "parent": "06.readout.table",
-      "component": "app:ReadoutRow",
+      "component": "ui:ReadoutRow",
       "box": {
         "x": 74,
         "y": 775,
@@ -640,7 +679,7 @@
     },
     {
       "id": "06.readout.table.oklch.label",
-      "order": 21,
+      "order": 22,
       "parent": "06.readout.table.oklch",
       "component": "ui:Text",
       "box": {
@@ -656,7 +695,7 @@
         "h": 21
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -667,6 +706,9 @@
       "illustration": null,
       "binding": "static:notation.oklch",
       "action": null,
+      "measured": {
+        "fg": "#CDCED2"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -674,7 +716,7 @@
     },
     {
       "id": "06.readout.table.oklch.value",
-      "order": 22,
+      "order": 23,
       "parent": "06.readout.table.oklch",
       "component": "ui:Text",
       "box": {
@@ -702,6 +744,9 @@
       "illustration": null,
       "binding": "engine:oklch",
       "action": null,
+      "measured": {
+        "fg": "#C1C3C6"
+      },
       "copy": {
         "shape": "value",
         "script": "figures"
@@ -709,9 +754,9 @@
     },
     {
       "id": "06.readout.table.cielab",
-      "order": 23,
+      "order": 24,
       "parent": "06.readout.table",
-      "component": "app:ReadoutRow",
+      "component": "ui:ReadoutRow",
       "box": {
         "x": 74,
         "y": 802,
@@ -736,7 +781,7 @@
     },
     {
       "id": "06.readout.table.cielab.label",
-      "order": 24,
+      "order": 25,
       "parent": "06.readout.table.cielab",
       "component": "ui:Text",
       "box": {
@@ -752,7 +797,7 @@
         "h": 21
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -763,6 +808,9 @@
       "illustration": null,
       "binding": "static:notation.cielab",
       "action": null,
+      "measured": {
+        "fg": "#CDCED2"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -770,7 +818,7 @@
     },
     {
       "id": "06.readout.table.cielab.value",
-      "order": 25,
+      "order": 26,
       "parent": "06.readout.table.cielab",
       "component": "ui:Text",
       "box": {
@@ -798,6 +846,9 @@
       "illustration": null,
       "binding": "engine:cielab",
       "action": null,
+      "measured": {
+        "fg": "#C1C3C6"
+      },
       "copy": {
         "shape": "value",
         "script": "figures"
@@ -805,9 +856,9 @@
     },
     {
       "id": "06.readout.table.srgb",
-      "order": 26,
+      "order": 27,
       "parent": "06.readout.table",
-      "component": "app:ReadoutRow",
+      "component": "ui:ReadoutRow",
       "box": {
         "x": 74,
         "y": 830,
@@ -832,7 +883,7 @@
     },
     {
       "id": "06.readout.table.srgb.label",
-      "order": 27,
+      "order": 28,
       "parent": "06.readout.table.srgb",
       "component": "ui:Text",
       "box": {
@@ -848,7 +899,7 @@
         "h": 21
       },
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -859,6 +910,9 @@
       "illustration": null,
       "binding": "static:notation.srgb",
       "action": null,
+      "measured": {
+        "fg": "#CDCED2"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -866,20 +920,20 @@
     },
     {
       "id": "06.readout.table.srgb.value",
-      "order": 28,
+      "order": 29,
       "parent": "06.readout.table.srgb",
       "component": "ui:Text",
       "box": {
-        "x": 161,
-        "y": 830,
-        "w": 343,
-        "h": 26
+        "x": 170,
+        "y": 837,
+        "w": 77,
+        "h": 14
       },
       "dp": {
-        "x": 87.5,
-        "y": 592,
-        "w": 278,
-        "h": 21
+        "x": 95,
+        "y": 598,
+        "w": 62.5,
+        "h": 11.5
       },
       "tokens": {
         "fg": "text.primary"
@@ -894,6 +948,105 @@
       "illustration": null,
       "binding": "engine:srgb",
       "action": null,
+      "measured": {
+        "fg": "#C1C3C6"
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.readout.table.srgb.separator",
+      "order": 30,
+      "parent": "06.readout.table.srgb",
+      "component": null,
+      "box": {
+        "x": 255,
+        "y": 834,
+        "w": 1,
+        "h": 18
+      },
+      "dp": {
+        "x": 163.5,
+        "y": 595.5,
+        "w": 1,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.srgb.p3-label",
+      "order": 31,
+      "parent": "06.readout.table.srgb",
+      "component": "ui:Text",
+      "box": {
+        "x": 264,
+        "y": 837,
+        "w": 80,
+        "h": 14
+      },
+      "dp": {
+        "x": 171,
+        "y": 598,
+        "w": 65,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.displayP3",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table.srgb.p3-value",
+      "order": 32,
+      "parent": "06.readout.table.srgb",
+      "component": "ui:Text",
+      "box": {
+        "x": 349,
+        "y": 837,
+        "w": 128,
+        "h": 14
+      },
+      "dp": {
+        "x": 240,
+        "y": 598,
+        "w": 103.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:displayP3",
+      "action": null,
       "copy": {
         "shape": "value",
         "script": "figures"
@@ -901,7 +1054,7 @@
     },
     {
       "id": "06.provenance",
-      "order": 29,
+      "order": 33,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -932,7 +1085,7 @@
     },
     {
       "id": "06.provenance.art",
-      "order": 30,
+      "order": 34,
       "parent": "06.provenance",
       "component": "ui:Illustration",
       "box": {
@@ -957,7 +1110,7 @@
     },
     {
       "id": "06.provenance.title",
-      "order": 31,
+      "order": 35,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -994,7 +1147,7 @@
     },
     {
       "id": "06.provenance.body",
-      "order": 32,
+      "order": 36,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -1029,7 +1182,7 @@
     },
     {
       "id": "06.provenance.review",
-      "order": 33,
+      "order": 37,
       "parent": "06.provenance",
       "component": "ui:Text",
       "box": {
@@ -1063,7 +1216,7 @@
     },
     {
       "id": "06.combinations",
-      "order": 34,
+      "order": 38,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1094,7 +1247,7 @@
     },
     {
       "id": "06.combinations.title",
-      "order": 35,
+      "order": 39,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1131,7 +1284,7 @@
     },
     {
       "id": "06.combinations.item-1.photo",
-      "order": 36,
+      "order": 40,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1158,7 +1311,7 @@
     },
     {
       "id": "06.combinations.item-1.rank",
-      "order": 37,
+      "order": 41,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1189,7 +1342,7 @@
     },
     {
       "id": "06.combinations.item-2.photo",
-      "order": 38,
+      "order": 42,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1216,7 +1369,7 @@
     },
     {
       "id": "06.combinations.item-2.rank",
-      "order": 39,
+      "order": 43,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1247,7 +1400,7 @@
     },
     {
       "id": "06.combinations.item-3.photo",
-      "order": 40,
+      "order": 44,
       "parent": "06.combinations",
       "component": "app:GarmentPhoto",
       "box": {
@@ -1274,7 +1427,7 @@
     },
     {
       "id": "06.combinations.item-3.rank",
-      "order": 41,
+      "order": 45,
       "parent": "06.combinations",
       "component": "ui:Chip",
       "box": {
@@ -1305,7 +1458,7 @@
     },
     {
       "id": "06.combinations.item-1.caption",
-      "order": 42,
+      "order": 46,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1340,7 +1493,7 @@
     },
     {
       "id": "06.combinations.item-2.caption",
-      "order": 43,
+      "order": 47,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1375,7 +1528,7 @@
     },
     {
       "id": "06.combinations.item-3.caption",
-      "order": 44,
+      "order": 48,
       "parent": "06.combinations",
       "component": "ui:Text",
       "box": {
@@ -1410,7 +1563,7 @@
     },
     {
       "id": "06.actions",
-      "order": 45,
+      "order": 49,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1441,7 +1594,7 @@
     },
     {
       "id": "06.actions.wear",
-      "order": 46,
+      "order": 50,
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
@@ -1471,7 +1624,7 @@
     },
     {
       "id": "06.actions.hold",
-      "order": 47,
+      "order": 51,
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
@@ -1501,7 +1654,7 @@
     },
     {
       "id": "06.actions.hold.icon",
-      "order": 48,
+      "order": 52,
       "parent": "06.actions.hold",
       "component": null,
       "box": {

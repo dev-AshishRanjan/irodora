@@ -161,3 +161,16 @@ export function FigureValue<S extends TypeSize>({
     </Text>
   );
 }
+
+/**
+ * The spoken name of several figures read together — a readout row's components. Measures that
+ * share a space name it once, at the end (`L 0.490, C 0.035, h 240.2°, OKLCh`), rather than after
+ * every value; anything else is each figure's own name.
+ */
+export function figuresName(figures: readonly Figure[]): string {
+  const measures = figures.filter((f): f is MeasureFigure => f.kind === 'measure');
+  const spaces = new Set(measures.map((f) => f.space));
+  if (measures.length === figures.length && spaces.size === 1)
+    return `${measures.map((f) => `${f.quantity} ${figureText(f)}`).join(', ')}, ${measures[0]?.space ?? ''}`;
+  return figures.map(figureName).join('; ');
+}

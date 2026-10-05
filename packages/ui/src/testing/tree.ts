@@ -726,7 +726,7 @@ export function brokenFlexChains(root: TestNode): readonly FlexChainFinding[] {
  * figure.
  */
 const NAMED_DIGITS =
-  /ΔE00|\b(?:D65|D50|sRGB|Display-P3|WCAG\s?\d(?:\.\d)?)\b|\b[A-Za-z]+(?:-[A-Za-z]+)*-\d+\b/gu;
+  /ΔE00|\b(?:CIEDE2000|CIE\s?(?:1931|1976|94|76)|D65|D50|sRGB|Display-P3|WCAG\s?\d(?:\.\d)?)\b|\b[A-Za-z]+(?:-[A-Za-z]+)*-\d+\b/gu;
 
 /**
  * Running prose: eight or more words. A figure in a sentence is read, not scanned down a column.

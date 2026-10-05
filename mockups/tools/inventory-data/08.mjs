@@ -48,18 +48,34 @@ const side = (key, s) => [
     copy: { shape: 'label', script: 'latin' },
   }),
 ];
-const metric = (key, label, value, reading) => [
-  t(`08.metrics.${key}.label`, label, '08.metrics', `static:compare.${key}`, {
+// F-235 (2026-10-05): each card's rows are a ui:ReadoutTable (the ruled form), each row a
+// ui:ReadoutRow spanning its members, and the rules belong to the table.
+const union = (...boxes) => {
+  const xs = boxes.filter(Boolean);
+  const x = Math.min(...xs.map((b) => b.x));
+  const y = Math.min(...xs.map((b) => b.y));
+  return B(
+    x,
+    y,
+    Math.max(...xs.map((b) => b.x + b.w)) - x,
+    Math.max(...xs.map((b) => b.y + b.h)) - y,
+  );
+};
+const metric = (key, label, value, reading, formula = null) => [
+  el(`08.metrics.${key}`, 'ui:ReadoutRow', union(label, value, reading, formula), {
+    parent: '08.metrics.table',
+  }),
+  t(`08.metrics.${key}.label`, label, `08.metrics.${key}`, `static:compare.${key}`, {
     tokens: { fg: 'text.primary' },
   }),
-  t(`08.metrics.${key}.value`, value, '08.metrics', `engine:compare.${key}`, {
+  t(`08.metrics.${key}.value`, value, `08.metrics.${key}`, `engine:compare.${key}`, {
     tokens: { fg: 'text.primary' },
     type: text('sans', 'label', 500, { tabular: true }),
     copy: { shape: 'value', script: 'figures' },
   }),
   ...(reading
     ? [
-        t(`08.metrics.${key}.reading`, reading, '08.metrics', 'derived:F-222', {
+        t(`08.metrics.${key}.reading`, reading, `08.metrics.${key}`, 'derived:F-222', {
           tokens: { fg: 'text.secondary' },
           type: text('sans', 'caption'),
           raw: { emDp: 10.3 },
@@ -67,11 +83,14 @@ const metric = (key, label, value, reading) => [
       ]
     : []),
 ];
-const access = (key, label, value, binding) => [
-  t(`08.access.${key}.label`, label, '08.access', `static:compare.${key}`, {
+const access = (key, label, value, binding, note = null) => [
+  el(`08.access.${key}`, 'ui:ReadoutRow', union(label, value, note), {
+    parent: '08.access.table',
+  }),
+  t(`08.access.${key}.label`, label, `08.access.${key}`, `static:compare.${key}`, {
     tokens: { fg: 'text.primary' },
   }),
-  t(`08.access.${key}.value`, value, '08.access', binding, {
+  t(`08.access.${key}.value`, value, `08.access.${key}`, binding, {
     tokens: { fg: 'text.secondary' },
     copy: { shape: 'value', script: 'mixed' },
   }),
@@ -144,12 +163,19 @@ export default {
       type: text('sans', 'label', 500),
       copy: { shape: 'heading', script: 'latin', lines: 2 },
     }),
-    rule('08.metrics.rule-1', B(58, 850, 290, 2), '08.metrics'),
-    ...metric('delta-e00', B(59, 867, 54, 19), B(191, 868, 46, 18), B(191, 895, 130, 19)),
+    el('08.metrics.table', 'ui:ReadoutTable', B(58, 850, 291, 345), { parent: '08.metrics' }),
+    rule('08.metrics.rule-1', B(58, 850, 290, 2), '08.metrics.table'),
+    ...metric(
+      'delta-e00',
+      B(59, 867, 54, 19),
+      B(191, 868, 46, 18),
+      B(191, 895, 130, 19),
+      B(59, 895, 101, 18),
+    ),
     t(
       '08.metrics.delta-e00.formula',
       B(59, 895, 101, 18),
-      '08.metrics',
+      '08.metrics.delta-e00',
       'static:compare.ciede2000',
       {
         tokens: { fg: 'text.secondary' },
@@ -157,13 +183,13 @@ export default {
         raw: { emDp: 10.3 },
       },
     ),
-    rule('08.metrics.rule-2', B(59, 926, 289, 2), '08.metrics'),
+    rule('08.metrics.rule-2', B(59, 926, 289, 2), '08.metrics.table'),
     ...metric('delta-eok', B(59, 945, 50, 20), B(191, 943, 58, 20), null),
-    rule('08.metrics.rule-3', B(59, 978, 289, 2), '08.metrics'),
+    rule('08.metrics.rule-3', B(59, 978, 289, 2), '08.metrics.table'),
     ...metric('lightness', B(58, 995, 97, 45), B(191, 995, 45, 19), B(191, 1023, 83, 19)),
-    rule('08.metrics.rule-4', B(58, 1054, 290, 2), '08.metrics'),
+    rule('08.metrics.rule-4', B(58, 1054, 290, 2), '08.metrics.table'),
     ...metric('chroma', B(58, 1071, 79, 45), B(191, 1071, 44, 19), B(191, 1100, 156, 15)),
-    rule('08.metrics.rule-5', B(59, 1130, 289, 2), '08.metrics'),
+    rule('08.metrics.rule-5', B(59, 1130, 289, 2), '08.metrics.table'),
     ...metric('hue', B(58, 1147, 41, 45), B(192, 1147, 59, 19), B(192, 1176, 136, 15)),
     // ---- contrast and colour vision
     el('08.access', 'ui:Card', B(395, 756, 339, 463), {
@@ -175,18 +201,25 @@ export default {
       type: text('sans', 'label', 500),
       copy: { shape: 'heading', script: 'latin', lines: 2 },
     }),
-    rule('08.access.rule-1', B(420, 850, 289, 2), '08.access'),
-    ...access('wcag', B(420, 866, 158, 20), B(420, 893, 181, 47), 'engine:contrast'),
-    t('08.access.wcag.apca', B(421, 943, 120, 17), '08.access', 'engine:apca', {
+    el('08.access.table', 'ui:ReadoutTable', B(420, 850, 290, 345), { parent: '08.access' }),
+    rule('08.access.rule-1', B(420, 850, 289, 2), '08.access.table'),
+    ...access(
+      'wcag',
+      B(420, 866, 158, 20),
+      B(420, 893, 181, 47),
+      'engine:contrast',
+      B(421, 943, 120, 17),
+    ),
+    t('08.access.wcag.apca', B(421, 943, 120, 17), '08.access.wcag', 'engine:apca', {
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'caption', 400, { tabular: true }),
       copy: { shape: 'value', script: 'figures' },
     }),
-    rule('08.access.rule-2', B(420, 972, 290, 2), '08.access'),
+    rule('08.access.rule-2', B(420, 972, 290, 2), '08.access.table'),
     ...access('protan', B(421, 989, 107, 23), B(420, 1016, 202, 22), 'engine:separation.protan'),
-    rule('08.access.rule-3', B(420, 1050, 289, 1), '08.access'),
+    rule('08.access.rule-3', B(420, 1050, 289, 1), '08.access.table'),
     ...access('deutan', B(421, 1066, 133, 22), B(420, 1093, 202, 22), 'engine:separation.deutan'),
-    rule('08.access.rule-4', B(420, 1127, 289, 2), '08.access'),
+    rule('08.access.rule-4', B(420, 1127, 289, 2), '08.access.table'),
     ...access('tritan', B(421, 1143, 98, 23), B(420, 1171, 201, 22), 'engine:separation.tritan'),
     // ---- actions
     el('08.actions', 'ui:ActionBar', B(0, 1235, 768, 141), {

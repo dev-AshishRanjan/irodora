@@ -136,6 +136,7 @@ describe('the ragged-figure rule', () => {
   it('does not count a name with digits, or prose, as a figure', () => {
     expect(carriesFigure('CIELAB (D65)')).toBe(false);
     expect(carriesFigure('ΔE00')).toBe(false);
+    expect(carriesFigure('(CIEDE2000)')).toBe(false);
     expect(carriesFigure('IRO-ED-001')).toBe(false);
     expect(carriesFigure('ΔE00 0.42')).toBe(true);
     // Japanese prose has no spaces; it is counted in kana and kanji (20 ≈ eight words).

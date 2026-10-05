@@ -662,9 +662,34 @@
       }
     },
     {
-      "id": "08.metrics.rule-1",
+      "id": "08.metrics.table",
       "order": 22,
       "parent": "08.metrics",
+      "component": "ui:ReadoutTable",
+      "box": {
+        "x": 58,
+        "y": 850,
+        "w": 291,
+        "h": 345
+      },
+      "dp": {
+        "x": 29,
+        "y": 425,
+        "w": 145.5,
+        "h": 172.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "08.metrics.rule-1",
+      "order": 23,
+      "parent": "08.metrics.table",
       "component": null,
       "box": {
         "x": 58,
@@ -689,9 +714,34 @@
       "copy": null
     },
     {
-      "id": "08.access.rule-1",
-      "order": 23,
+      "id": "08.access.table",
+      "order": 24,
       "parent": "08.access",
+      "component": "ui:ReadoutTable",
+      "box": {
+        "x": 420,
+        "y": 850,
+        "w": 290,
+        "h": 345
+      },
+      "dp": {
+        "x": 210,
+        "y": 425,
+        "w": 145,
+        "h": 172.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "08.access.rule-1",
+      "order": 25,
+      "parent": "08.access.table",
       "component": null,
       "box": {
         "x": 420,
@@ -716,9 +766,34 @@
       "copy": null
     },
     {
+      "id": "08.metrics.delta-e00",
+      "order": 26,
+      "parent": "08.metrics.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 59,
+        "y": 867,
+        "w": 262,
+        "h": 47
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 433.5,
+        "w": 131,
+        "h": 23.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.metrics.delta-e00.label",
-      "order": 24,
-      "parent": "08.metrics",
+      "order": 27,
+      "parent": "08.metrics.delta-e00",
       "component": "ui:Text",
       "box": {
         "x": 59,
@@ -751,8 +826,8 @@
     },
     {
       "id": "08.metrics.delta-e00.value",
-      "order": 25,
-      "parent": "08.metrics",
+      "order": 28,
+      "parent": "08.metrics.delta-e00",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -785,9 +860,34 @@
       }
     },
     {
+      "id": "08.access.wcag",
+      "order": 29,
+      "parent": "08.access.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 420,
+        "y": 866,
+        "w": 181,
+        "h": 94
+      },
+      "dp": {
+        "x": 210,
+        "y": 433,
+        "w": 90.5,
+        "h": 47
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.access.wcag.label",
-      "order": 26,
-      "parent": "08.access",
+      "order": 30,
+      "parent": "08.access.wcag",
       "component": "ui:Text",
       "box": {
         "x": 420,
@@ -820,7 +920,7 @@
     },
     {
       "id": "08.art-left",
-      "order": 27,
+      "order": 31,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -845,8 +945,8 @@
     },
     {
       "id": "08.metrics.delta-e00.formula",
-      "order": 28,
-      "parent": "08.metrics",
+      "order": 32,
+      "parent": "08.metrics.delta-e00",
       "component": "ui:Text",
       "box": {
         "x": 59,
@@ -882,8 +982,8 @@
     },
     {
       "id": "08.metrics.delta-e00.reading",
-      "order": 29,
-      "parent": "08.metrics",
+      "order": 33,
+      "parent": "08.metrics.delta-e00",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -919,8 +1019,8 @@
     },
     {
       "id": "08.access.wcag.value",
-      "order": 30,
-      "parent": "08.access",
+      "order": 34,
+      "parent": "08.access.wcag",
       "component": "ui:Text",
       "box": {
         "x": 420,
@@ -953,8 +1053,8 @@
     },
     {
       "id": "08.metrics.rule-2",
-      "order": 31,
-      "parent": "08.metrics",
+      "order": 35,
+      "parent": "08.metrics.table",
       "component": null,
       "box": {
         "x": 59,
@@ -979,9 +1079,34 @@
       "copy": null
     },
     {
+      "id": "08.metrics.delta-eok",
+      "order": 36,
+      "parent": "08.metrics.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 59,
+        "y": 943,
+        "w": 190,
+        "h": 22
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 471.5,
+        "w": 95,
+        "h": 11
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.metrics.delta-eok.label",
-      "order": 32,
-      "parent": "08.metrics",
+      "order": 37,
+      "parent": "08.metrics.delta-eok",
       "component": "ui:Text",
       "box": {
         "x": 59,
@@ -1014,8 +1139,8 @@
     },
     {
       "id": "08.metrics.delta-eok.value",
-      "order": 33,
-      "parent": "08.metrics",
+      "order": 38,
+      "parent": "08.metrics.delta-eok",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -1049,8 +1174,8 @@
     },
     {
       "id": "08.access.wcag.apca",
-      "order": 34,
-      "parent": "08.access",
+      "order": 39,
+      "parent": "08.access.wcag",
       "component": "ui:Text",
       "box": {
         "x": 421,
@@ -1084,8 +1209,8 @@
     },
     {
       "id": "08.metrics.rule-3",
-      "order": 35,
-      "parent": "08.metrics",
+      "order": 40,
+      "parent": "08.metrics.table",
       "component": null,
       "box": {
         "x": 59,
@@ -1111,8 +1236,8 @@
     },
     {
       "id": "08.access.rule-2",
-      "order": 36,
-      "parent": "08.access",
+      "order": 41,
+      "parent": "08.access.table",
       "component": null,
       "box": {
         "x": 420,
@@ -1137,9 +1262,34 @@
       "copy": null
     },
     {
+      "id": "08.metrics.lightness",
+      "order": 42,
+      "parent": "08.metrics.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 58,
+        "y": 995,
+        "w": 216,
+        "h": 47
+      },
+      "dp": {
+        "x": 29,
+        "y": 497.5,
+        "w": 108,
+        "h": 23.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.metrics.lightness.label",
-      "order": 37,
-      "parent": "08.metrics",
+      "order": 43,
+      "parent": "08.metrics.lightness",
       "component": "ui:Text",
       "box": {
         "x": 58,
@@ -1172,8 +1322,8 @@
     },
     {
       "id": "08.metrics.lightness.value",
-      "order": 38,
-      "parent": "08.metrics",
+      "order": 44,
+      "parent": "08.metrics.lightness",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -1206,9 +1356,34 @@
       }
     },
     {
+      "id": "08.access.protan",
+      "order": 45,
+      "parent": "08.access.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 420,
+        "y": 989,
+        "w": 202,
+        "h": 49
+      },
+      "dp": {
+        "x": 210,
+        "y": 494.5,
+        "w": 101,
+        "h": 24.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.access.protan.label",
-      "order": 39,
-      "parent": "08.access",
+      "order": 46,
+      "parent": "08.access.protan",
       "component": "ui:Text",
       "box": {
         "x": 421,
@@ -1241,8 +1416,8 @@
     },
     {
       "id": "08.metrics.lightness.reading",
-      "order": 40,
-      "parent": "08.metrics",
+      "order": 47,
+      "parent": "08.metrics.lightness",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -1278,8 +1453,8 @@
     },
     {
       "id": "08.access.protan.value",
-      "order": 41,
-      "parent": "08.access",
+      "order": 48,
+      "parent": "08.access.protan",
       "component": "ui:Text",
       "box": {
         "x": 420,
@@ -1312,8 +1487,8 @@
     },
     {
       "id": "08.metrics.rule-4",
-      "order": 42,
-      "parent": "08.metrics",
+      "order": 49,
+      "parent": "08.metrics.table",
       "component": null,
       "box": {
         "x": 58,
@@ -1339,8 +1514,8 @@
     },
     {
       "id": "08.access.rule-3",
-      "order": 43,
-      "parent": "08.access",
+      "order": 50,
+      "parent": "08.access.table",
       "component": null,
       "box": {
         "x": 420,
@@ -1365,9 +1540,34 @@
       "copy": null
     },
     {
+      "id": "08.metrics.chroma",
+      "order": 51,
+      "parent": "08.metrics.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 58,
+        "y": 1071,
+        "w": 289,
+        "h": 45
+      },
+      "dp": {
+        "x": 29,
+        "y": 535.5,
+        "w": 144.5,
+        "h": 22.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.metrics.chroma.label",
-      "order": 44,
-      "parent": "08.metrics",
+      "order": 52,
+      "parent": "08.metrics.chroma",
       "component": "ui:Text",
       "box": {
         "x": 58,
@@ -1400,8 +1600,8 @@
     },
     {
       "id": "08.metrics.chroma.value",
-      "order": 45,
-      "parent": "08.metrics",
+      "order": 53,
+      "parent": "08.metrics.chroma",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -1434,9 +1634,34 @@
       }
     },
     {
+      "id": "08.access.deutan",
+      "order": 54,
+      "parent": "08.access.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 420,
+        "y": 1066,
+        "w": 202,
+        "h": 49
+      },
+      "dp": {
+        "x": 210,
+        "y": 533,
+        "w": 101,
+        "h": 24.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.access.deutan.label",
-      "order": 46,
-      "parent": "08.access",
+      "order": 55,
+      "parent": "08.access.deutan",
       "component": "ui:Text",
       "box": {
         "x": 421,
@@ -1469,8 +1694,8 @@
     },
     {
       "id": "08.metrics.chroma.reading",
-      "order": 47,
-      "parent": "08.metrics",
+      "order": 56,
+      "parent": "08.metrics.chroma",
       "component": "ui:Text",
       "box": {
         "x": 191,
@@ -1506,8 +1731,8 @@
     },
     {
       "id": "08.access.deutan.value",
-      "order": 48,
-      "parent": "08.access",
+      "order": 57,
+      "parent": "08.access.deutan",
       "component": "ui:Text",
       "box": {
         "x": 420,
@@ -1540,8 +1765,8 @@
     },
     {
       "id": "08.metrics.rule-5",
-      "order": 49,
-      "parent": "08.metrics",
+      "order": 58,
+      "parent": "08.metrics.table",
       "component": null,
       "box": {
         "x": 59,
@@ -1567,8 +1792,8 @@
     },
     {
       "id": "08.access.rule-4",
-      "order": 50,
-      "parent": "08.access",
+      "order": 59,
+      "parent": "08.access.table",
       "component": null,
       "box": {
         "x": 420,
@@ -1593,9 +1818,34 @@
       "copy": null
     },
     {
+      "id": "08.metrics.hue",
+      "order": 60,
+      "parent": "08.metrics.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 58,
+        "y": 1147,
+        "w": 270,
+        "h": 45
+      },
+      "dp": {
+        "x": 29,
+        "y": 573.5,
+        "w": 135,
+        "h": 22.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.metrics.hue.label",
-      "order": 51,
-      "parent": "08.metrics",
+      "order": 61,
+      "parent": "08.metrics.hue",
       "component": "ui:Text",
       "box": {
         "x": 58,
@@ -1628,8 +1878,8 @@
     },
     {
       "id": "08.metrics.hue.value",
-      "order": 52,
-      "parent": "08.metrics",
+      "order": 62,
+      "parent": "08.metrics.hue",
       "component": "ui:Text",
       "box": {
         "x": 192,
@@ -1662,9 +1912,34 @@
       }
     },
     {
+      "id": "08.access.tritan",
+      "order": 63,
+      "parent": "08.access.table",
+      "component": "ui:ReadoutRow",
+      "box": {
+        "x": 420,
+        "y": 1143,
+        "w": 201,
+        "h": 50
+      },
+      "dp": {
+        "x": 210,
+        "y": 571.5,
+        "w": 100.5,
+        "h": 25
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "08.access.tritan.label",
-      "order": 53,
-      "parent": "08.access",
+      "order": 64,
+      "parent": "08.access.tritan",
       "component": "ui:Text",
       "box": {
         "x": 421,
@@ -1697,8 +1972,8 @@
     },
     {
       "id": "08.metrics.hue.reading",
-      "order": 54,
-      "parent": "08.metrics",
+      "order": 65,
+      "parent": "08.metrics.hue",
       "component": "ui:Text",
       "box": {
         "x": 192,
@@ -1734,8 +2009,8 @@
     },
     {
       "id": "08.access.tritan.value",
-      "order": 55,
-      "parent": "08.access",
+      "order": 66,
+      "parent": "08.access.tritan",
       "component": "ui:Text",
       "box": {
         "x": 420,
@@ -1768,7 +2043,7 @@
     },
     {
       "id": "08.actions",
-      "order": 56,
+      "order": 67,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1795,7 +2070,7 @@
     },
     {
       "id": "08.actions.pdf",
-      "order": 57,
+      "order": 68,
       "parent": "08.actions",
       "component": "ui:Button",
       "box": {
@@ -1826,7 +2101,7 @@
     },
     {
       "id": "08.actions.studio",
-      "order": 58,
+      "order": 69,
       "parent": "08.actions",
       "component": "ui:Button",
       "box": {

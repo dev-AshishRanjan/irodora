@@ -47,7 +47,29 @@ export {
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
 export { Bilingual, BILINGUAL_SEPARATOR, type BilingualProps } from './bilingual.js';
 export {
+  READOUT_BAR,
+  READOUT_GRID_INSET,
+  READOUT_GRID_PAD,
+  READOUT_GRID_RULE,
+  READOUT_INSET,
+  READOUT_LABEL,
+  READOUT_ROW,
+  READOUT_RULE,
+  READOUT_RULED_LABEL,
+  READOUT_RULED_PAD,
+  ReadoutTable,
+  valueSpoken,
+  valueText,
+  type GridRow,
+  type ReadoutPart,
+  type ReadoutTableProps,
+  type ReadoutValue,
+  type RuledRow,
+  type TableRow,
+} from './ReadoutTable.js';
+export {
   figureName,
+  figuresName,
   figureText,
   FigureValue,
   MINUS,
