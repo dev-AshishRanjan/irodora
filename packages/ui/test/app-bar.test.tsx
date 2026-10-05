@@ -3,8 +3,8 @@
  *
  * - **Its defaults are the inventories'**, recomputed with the values they could have been as decoys.
  * - **A title is one heading node** holding both scripts, the Japanese run in the Japanese face.
- * - **Every control in it is named**: a drawn word names the back control, and a glyph alone takes
- *   the name it is given.
+ * - **Every control in it is named**: a back control by where it goes (*Back to Atlas*), the drawn
+ *   word inside that name (WCAG 2.5.3); a trailing icon by what it does.
  * - **The type refuses what no mockup draws**: a back control with a lead, four icons, a stacked
  *   title without its Japanese step.
  * - **A centred title is centred on the bar**, not on the space between its controls.
@@ -172,12 +172,26 @@ describe('a title is one heading node, holding both scripts', () => {
 });
 
 describe('every control in it is named', () => {
-  it('a drawn word names the back control, and it presses', () => {
+  it('names the back control by where it goes, and it presses', () => {
     const onPress = jest.fn();
-    draw(<AppBar back={{ glyph: 'back', label: 'Atlas', onPress, testID: 'back' }} />);
-    expect(screen.getByTestId('back').props['accessibilityLabel']).toBe('Atlas');
+    draw(
+      <AppBar
+        back={{ glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress, testID: 'back' }}
+      />,
+    );
+    // DECOY in the assertion: the drawn word alone is the Atlas tab's name too.
+    expect(screen.getByTestId('back').props['accessibilityLabel']).toBe('Back to Atlas');
     fireEvent.press(screen.getByTestId('back'));
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses a name that leaves out the drawn word (WCAG 2.5.3)', () => {
+    // React logs the render error before the throw reaches the test; it is the expected outcome.
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() => {
+      draw(<AppBar back={{ glyph: 'back', label: 'Atlas', name: 'Go back', onPress: noop }} />);
+    }).toThrow(/does not contain the visible label/u);
+    quiet.mockRestore();
   });
 
   it('a glyph alone takes the name it is given (22)', () => {
@@ -201,7 +215,7 @@ describe('every control in it is named', () => {
   });
 
   it('refuses what no mockup draws', () => {
-    const back = { glyph: 'back' as const, label: 'Back', onPress: noop };
+    const back = { glyph: 'back' as const, label: 'Back', name: 'Back to Back', onPress: noop };
     const icon = { glyph: 'share' as const, label: 'Share', onPress: noop };
     // @ts-expect-error — a back control and a lead are drawn in the same place; never both.
     const both = <AppBar back={back} lead={<View />} />;
@@ -233,7 +247,7 @@ describe('a centred title is centred on the bar', () => {
     const tree = render(
       <ThemeProvider theme="dark">
         <AppBar
-          back={{ glyph: 'back', label: 'Atlas', onPress: noop }}
+          back={{ glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: noop }}
           title={{
             text: 'Compare',
             layout: 'inline',
@@ -297,7 +311,7 @@ describe('Screen pins it above the scroller, and the inset moves into it (E-084)
       </SafeAreaInsetsContext.Provider>,
     );
   const bar = {
-    back: { glyph: 'back' as const, label: 'Atlas', onPress: noop },
+    back: { glyph: 'back' as const, label: 'Atlas', name: 'Back to Atlas', onPress: noop },
     fill: 'surface.1' as const,
     rule: true,
     testID: 'bar',

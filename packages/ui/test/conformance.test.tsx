@@ -1331,6 +1331,43 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     }),
   ),
   /*
+   * AND IN JAPANESE (F-234's review, M6): the catalogue's words, in the Japanese scale, so the gothic
+   * face and its taller line are checked as the Latin ones are.
+   */
+  {
+    name: 'TabBar (Japanese, atlas active)',
+    kind: 'navigation',
+    selectable: true,
+    treatment: 'indicator',
+    forbiddenNames: ['tab', 'tab bar'],
+    render: (state, theme) =>
+      draw(
+        <TabBar
+          script="japanese"
+          items={(
+            [
+              ['home', 'ホーム'],
+              ['atlas', '色図鑑'],
+              ['lens', 'レンズ'],
+              ['wardrobe', '衣装'],
+              ['profile', 'プロフィール'],
+            ] as const
+          ).map(([key, label]) => ({
+            key,
+            label,
+            icon: key,
+            activeGlyph: key === 'home' ? 'filled' : 'outline',
+          }))}
+          active={state === 'active' ? 'atlas' : 'home'}
+          onSelect={() => undefined}
+          bottomInset={34}
+          {...(state === 'focus' ? { focused: 'atlas' } : {})}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  /*
    * THE APP BARS THE MOCKUPS DRAW (F-234, ADR-0118), each the arrangement its screen's inventory
    * records: its members, their type, glyphs and tokens. The copy is a fixture; the screens' own
    * words arrive with their features (F-242 onward). Static: each control in a bar is a subject of
@@ -1381,7 +1418,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '06 (back and word, three icons, no title)',
         {
-          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
           trailing: {
             icons: [
               { glyph: 'bookmark', label: 'Bookmark this colour', onPress: () => undefined },
@@ -1396,7 +1433,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '08 (back, inline title, one icon)',
         {
-          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
           title: {
             text: 'Compare',
             ja: '比較',
@@ -1413,7 +1450,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '10 (the title on its own row, a button)',
         {
-          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
           title: {
             text: 'Palette Studio',
             ja: 'パレット',
@@ -1439,7 +1476,12 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '12 (cancel, a primary save)',
         {
-          back: { glyph: 'back', label: 'Cancel', onPress: () => undefined },
+          back: {
+            glyph: 'back',
+            label: 'Cancel',
+            name: 'Cancel and go back',
+            onPress: () => undefined,
+          },
           title: {
             text: 'Add garment',
             ja: '衣装を追加',
@@ -1457,7 +1499,12 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '16 (an outlined save)',
         {
-          back: { glyph: 'back', label: 'Palettes', onPress: () => undefined },
+          back: {
+            glyph: 'back',
+            label: 'Palettes',
+            name: 'Back to Palettes',
+            onPress: () => undefined,
+          },
           title: {
             text: 'New palette',
             layout: 'inline',
@@ -1482,7 +1529,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '19 (a fill, a divider)',
         {
-          back: { glyph: 'back', label: 'Atlas', onPress: () => undefined },
+          back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
           divider: 21.5,
           title: {
             text: 'What goes with this',
@@ -1539,7 +1586,12 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '24 (a fill behind the status bar, stacked)',
         {
-          back: { glyph: 'chevron-left', label: 'Wardrobe', onPress: () => undefined },
+          back: {
+            glyph: 'chevron-left',
+            label: 'Wardrobe',
+            name: 'Back to Wardrobe',
+            onPress: () => undefined,
+          },
           title: {
             text: 'Linen shirt',
             ja: '麻のシャツ',

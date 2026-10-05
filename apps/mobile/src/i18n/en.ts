@@ -295,7 +295,7 @@ export const en = {
   'lens.sheetTitle': 'This reading',
   'lens.sheetClose': 'Close the reading and go back to the frame',
   'lens.sheetHandle': 'Reading panel',
-  'lens.sheetHandleHint': 'Drag up to see more of the reading, or down to close it',
+  'lens.sheetHandleHint': 'Makes the reading panel larger or smaller',
   'lens.quality': 'Capture',
   'lens.quality.excellent': 'Excellent',
   'lens.quality.good': 'Good',

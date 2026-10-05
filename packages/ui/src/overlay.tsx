@@ -32,8 +32,9 @@
  * root exports it again, and these two arrived with that ([ADR-0089](../../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
  */
 
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { useWindowDimensions, View } from 'react-native';
+import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import {
   BottomSheetFooter,
   BottomSheetScrollView,
@@ -441,13 +442,34 @@ export type SheetProps = SheetForm & {
   readonly closeLabel: string;
   /** The handle's accessible name, replacing gorhom's English default (ADR-0056). */
   readonly handleLabel: string;
-  /** What the handle does, for a screen reader, replacing gorhom's English default. */
+  /**
+   * What the handle does, for a screen reader, replacing gorhom's English default. It is adjustable:
+   * describe the resize, not a drag a screen-reader user cannot make.
+   */
   readonly handleHint: string;
   /** Pinned under the content, over it as it scrolls: `03`'s actions (F-244). */
   readonly footer?: React.ReactNode;
   readonly children?: React.ReactNode;
   readonly testID?: string;
 };
+
+/** What the handle's screen-reader actions move: gorhom's sheet, or anything that resizes like it. */
+export interface SheetResize {
+  readonly expand: () => void;
+  readonly collapse: () => void;
+}
+
+/**
+ * The handle's two accessibility actions (F-234's review, S2). A handle that announces itself as
+ * `adjustable` must adjust: `increment` opens the sheet to its larger detent, `decrement` returns it
+ * to its smaller one. Closing stays the dismiss layer's, a named button, so no action closes by
+ * surprise. An unknown action, or a sheet not yet mounted, does nothing.
+ */
+export function resizeSheet(action: string, sheet: SheetResize | null): void {
+  if (sheet === null) return;
+  if (action === 'increment') sheet.expand();
+  else if (action === 'decrement') sheet.collapse();
+}
 
 /**
  * A panel that rises from the bottom edge and can be dragged away, in the two forms the screens
@@ -518,6 +540,8 @@ export function Sheet({
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 };
   const { reduced, timing } = useMotion();
   const [footerHeight, setFooterHeight] = useState(0);
+  // The library's sheet, for the handle's screen-reader actions.
+  const sheet = useRef<ComponentRef<typeof GorhomBottomSheet>>(null);
 
   // ONE DECLARED DETENT; the second is the content's own (F-177). Memoised: this sheet re-renders
   // at camera frame rate behind the Lens, and a new array re-derives every detent.
@@ -530,6 +554,12 @@ export function Sheet({
   const floating = form === 'floating';
   const drawn = floating ? SHEET_FORMS.floating : SHEET_FORMS.docked;
   const ground = floating ? colors.background : colors['surface.1'];
+  /*
+   * WHAT THE DOCKED SHEET KEEPS CLEAR AT THE BOTTOM (F-234's review, S4). It reaches the frame's
+   * edge, so its last content and its footer end above the home indicator. The floating sheet is
+   * already lifted clear of it by its gap.
+   */
+  const clear = floating ? 0 : insets.bottom;
 
   /*
    * THE FORM, AS GORHOM TAKES IT. A floating sheet is gorhom's `detached` sheet: its margins are the
@@ -558,6 +588,7 @@ export function Sheet({
           style={{ backgroundColor: 'transparent' }}
         />
         <HeroBottomSheet.Content
+          ref={sheet}
           enablePanDownToClose
           snapPoints={snapPoints}
           maxDynamicContentSize={height * SHEET_CONTENT_CEILING}
@@ -588,9 +619,9 @@ export function Sheet({
             or down to extend or minimize the bottom sheet" in English whatever the locale, and
             HeroUI keeps them (ADR-0056); its indicator is 7.5 % of the window wide, in a box padded
             10 dp all round. So the handle is drawn here: the caller's words, the role gorhom gives
-            its own (`adjustable`), and the drawn bar at the form's drawn offset, in
-            `border.indicator`, the handle's E3 move (F-225). gorhom wraps it in its drag region
-            exactly as it wraps its own.
+            its own (`adjustable`) with the two actions that role promises (`resizeSheet`), and the
+            drawn bar at the form's drawn offset, in `border.indicator`, the handle's E3 move
+            (F-225). gorhom wraps it in its drag region exactly as it wraps its own.
           */
           handleComponent={() => (
             <View
@@ -598,6 +629,10 @@ export function Sheet({
               accessibilityRole="adjustable"
               accessibilityLabel={handleLabel}
               accessibilityHint={handleHint}
+              accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+              onAccessibilityAction={(event) => {
+                resizeSheet(event.nativeEvent.actionName, sheet.current);
+              }}
               style={{ paddingTop: drawn.handleTop, alignItems: 'center' }}
             >
               <View
@@ -622,7 +657,7 @@ export function Sheet({
                       style={{
                         backgroundColor: ground,
                         paddingHorizontal: drawn.inset,
-                        paddingBottom: drawn.inset,
+                        paddingBottom: drawn.inset + clear,
                       }}
                     >
                       {footer}
@@ -635,7 +670,8 @@ export function Sheet({
             THE CONTENT SCROLLS, and that is what makes the ceiling safe: `BottomSheetScrollView`
             reports its height into gorhom's dynamic sizing, so the rest position is still measured.
             It carries the sheet's name, which nothing draws; and it ends a footer's height lower,
-            so the last of it is never under the pinned footer.
+            so the last of it is never under the pinned footer, or, with no footer, above the home
+            indicator where the sheet is docked.
           */}
           <BottomSheetScrollView
             {...(testID === undefined ? {} : { testID })}
@@ -643,7 +679,7 @@ export function Sheet({
             contentContainerStyle={{
               paddingHorizontal: drawn.inset,
               paddingTop: drawn.contentTop,
-              paddingBottom: drawn.inset + footerHeight,
+              paddingBottom: drawn.inset + (footer === undefined ? clear : footerHeight),
               gap: nativeSpacing.sm,
             }}
           >

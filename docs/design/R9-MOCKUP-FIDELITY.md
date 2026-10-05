@@ -256,7 +256,11 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   sits above it in flow (`F-234`,
   [ADR-0118](../adr/0118-the-app-bar-and-the-action-bar-are-placed-by-screen-and-the-sheet-by-its-form.md)). Hiding
   it on pushed screens would change FR-71 — a PRD change, not a layout one, and not an agent's
-  (the reasoning of OQ-10). The reading is named on `F-267` for the person comparing screens.
+  (the reasoning of OQ-10). **It covers a tab root as well**: `17` and `23` are `profile/index`, the
+  Profile tab's own screen, drawn with an action bar and no tab bar. There the tab bar is the only
+  way to the other four tabs, so hiding it would leave the root with no navigation at all; it stays
+  (found by F-234's review). The reading is named on `F-260` and `F-267` for the person comparing
+  screens.
 
 ---
 
@@ -670,6 +674,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 | **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
+| **OQ-49** | `01` draws each tab's word on one line, and A7 asks for 200 % text without loss of content. A tab item is 61.9 dp wide on a 384 dp phone and 57.1 dp on a 360 dp one, so `プロフィール` truncates at 1× on 360 dp, and by arithmetic *Wardrobe* from about 130 % text and *Profile* near 200 %. What does a label that does not fit do: (a) truncate, the accessible name keeping the whole word; (b) shrink to fit its item, down to a floor; (c) wrap to two lines and grow the bar (what F-168 removed); or (d) take a shorter word where the catalogue's is too long, a copy change? (a) ships until it is answered (F-234, ADR-0117). | `F-265`, `F-267` |
 | **OQ-48** | In the Japanese locale, what does an "English • 日本語" title show (`02 05 08 09 11 12 13`), and the two-line English-over-Japanese title (`22 23 24`)? `26` draws a Japanese-only title, but `06`, its English original, draws no title, so no pair exists to compare. Until it is answered each title shows the catalogue's words for the locale (F-234). | `F-265` |
 | **OQ-47** | `01`, the governing tab bar (C1), draws only Home active, its glyph filled. What does an active Atlas, Lens, Wardrobe or Profile tab draw: (a) its outline glyph with `01`'s indicator and ink; (b) a filled glyph — lens and profile have filled drawings only on the tab bars C1 supersedes (`02`, `15`, `18`), and atlas and wardrobe have none; or (c) no fill on any tab, Home included, departing from `01`? (a) ships until it is answered (F-234). | `F-267` |
 | **OQ-46** | The line around a sample rests on the product's own promise (ACCESSIBILITY.md §5), not on WCAG, and ADR-0116 keeps it per sample. It draws **a line where the mockups draw none**: where an element binds no keyline (19, 21, 09, 17, 23, 15, three of five strips) a line appears on 44 · 57 · 58 · 42 of 120 corpus colours. And its direction follows the step count: on the heroes' own colour it moves **dark** where `01` and `06` draw a light line. Keep the promise as ADR-0116 applies it, drop it where the mockup draws no line, or move the line toward the drawn lightness? | `F-267` |

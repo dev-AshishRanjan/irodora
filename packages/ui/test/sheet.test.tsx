@@ -23,9 +23,17 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
+import { BottomSheetHandle } from '@gorhom/bottom-sheet';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeColors } from '@irodora/design-tokens';
-import { Sheet, SHEET_FORMS, SHEET_HANDLE, ThemeProvider, type SheetProps } from '../src/index.js';
+import {
+  resizeSheet,
+  Sheet,
+  SHEET_FORMS,
+  SHEET_HANDLE,
+  ThemeProvider,
+  type SheetProps,
+} from '../src/index.js';
 import { flattenStyle, type TestNode } from '../src/testing/index.js';
 
 /**
@@ -247,6 +255,8 @@ describe('each form is the drawing’s, recomputed (F-234)', () => {
     expect(FRAME.h - sheet.y - sheet.h).toBe(SHEET_FORMS.floating.below);
     expect(card.x - sheet.x).toBe(SHEET_FORMS.floating.inset);
     expect(handle.y - sheet.y).toBe(SHEET_FORMS.floating.handleTop);
+    // DECOY: gorhom's own handle sits in a box padded 10 dp all round.
+    expect(SHEET_FORMS.floating.handleTop).not.toBe(10);
     expect(chips.y - (handle.y + handle.h)).toBe(SHEET_FORMS.floating.contentTop);
   });
 
@@ -349,13 +359,33 @@ describe('what a sheet draws, and what it only names (F-234)', () => {
     expect(named.length).toBeGreaterThan(0);
   });
 
+  /** Whether a dismiss layer dims what is behind it: it paints anything but nothing. */
+  const dims = (style: unknown): boolean => {
+    const painted = flattenStyle(style)['backgroundColor'];
+    return painted !== undefined && painted !== 'transparent';
+  };
+
   it('dims nothing, and the dismiss layer is still a named button', () => {
     const layer = hosts(open()).find((n) => n.props['accessibilityLabel'] === NAMED.closeLabel);
     expect(layer?.props['accessibilityRole']).toBe('button');
-    const painted = flattenStyle(layer?.props['style'])['backgroundColor'];
-    expect(painted).toBe('transparent');
-    // DECOY: the scrim the shipped sheet drew.
-    expect(painted).not.toBe(nativeColors.dark.backdrop);
+    expect(dims(layer?.props['style'])).toBe(false);
+  });
+
+  it('DECOY: the scrim the shipped sheet drew is reported as dimming', () => {
+    expect(dims({ backgroundColor: nativeColors.dark.backdrop })).toBe(true);
+  });
+
+  /** Whether a handle is named and described in the caller's words, not the library's. */
+  const speaksCallersWords = (props: Record<string, unknown>): boolean =>
+    props['accessibilityLabel'] === NAMED.handleLabel &&
+    props['accessibilityHint'] === NAMED.handleHint;
+
+  it('DECOY: gorhom’s own handle, which reached the Lens before F-234, is reported', () => {
+    const tree = render(
+      <BottomSheetHandle animatedIndex={{} as never} animatedPosition={{} as never} />,
+    ).toJSON() as TestNode;
+    expect(tree.props['accessibilityLabel']).toBe('Bottom sheet handle');
+    expect(speaksCallersWords(tree.props)).toBe(false);
   });
 
   it('the handle is the drawn bar, in border.indicator, named in the caller’s words', () => {
@@ -367,10 +397,13 @@ describe('what a sheet draws, and what it only names (F-234)', () => {
       children: readonly { props: Record<string, unknown> }[];
     };
     expect(tree.props['accessibilityRole']).toBe('adjustable');
-    expect(tree.props['accessibilityLabel']).toBe(NAMED.handleLabel);
-    expect(tree.props['accessibilityHint']).toBe(NAMED.handleHint);
-    // DECOY: gorhom's English, which reached the Lens before this (ADR-0056).
-    expect(tree.props['accessibilityLabel']).not.toBe('Bottom sheet handle');
+    expect(speaksCallersWords(tree.props)).toBe(true);
+    // An adjustable control must adjust (the review's S2): it offers both actions and handles them.
+    expect(tree.props['accessibilityActions']).toStrictEqual([
+      { name: 'increment' },
+      { name: 'decrement' },
+    ]);
+    expect(typeof tree.props['onAccessibilityAction']).toBe('function');
     const bar = flattenStyle(tree.children[0]?.props['style']);
     expect({ width: bar['width'], height: bar['height'] }).toStrictEqual(SHEET_HANDLE);
     expect(bar['backgroundColor']).toBe(nativeColors.dark['border.indicator']);
@@ -388,5 +421,56 @@ describe('what a sheet draws, and what it only names (F-234)', () => {
 
   it('pins nothing when given none', () => {
     expect(footerOf({ form: 'floating', ...NAMED })).toBeUndefined();
+  });
+});
+
+describe('the handle adjusts, and the docked sheet clears the home indicator (F-234’s review)', () => {
+  const sheetDouble = () => {
+    const calls: string[] = [];
+    return {
+      calls,
+      sheet: {
+        expand: () => {
+          calls.push('expand');
+        },
+        collapse: () => {
+          calls.push('collapse');
+        },
+      },
+    };
+  };
+
+  it('increment opens the sheet further, decrement returns it, and nothing closes it', () => {
+    const { calls, sheet } = sheetDouble();
+    resizeSheet('increment', sheet);
+    resizeSheet('decrement', sheet);
+    resizeSheet('activate', sheet);
+    expect(calls).toStrictEqual(['expand', 'collapse']);
+  });
+
+  it('does nothing before the sheet is mounted', () => {
+    expect(() => {
+      resizeSheet('increment', null);
+    }).not.toThrow();
+  });
+
+  const contentPadding = (form: SheetProps, bottom: number): unknown => {
+    const content = open(form, bottom).findAll(
+      (n) =>
+        typeof n.type === 'string' &&
+        n.props['accessibilityLabel'] === NAMED.title &&
+        n.props['contentContainerStyle'] !== undefined,
+    )[0];
+    return flattenStyle(content?.props['contentContainerStyle'])['paddingBottom'];
+  };
+
+  it('ends a docked sheet’s content above the home indicator', () => {
+    expect(contentPadding({ form: 'docked', sideInset: 9.5, ...NAMED }, 34)).toBe(
+      SHEET_FORMS.docked.inset + 34,
+    );
+  });
+
+  it('DECOY: the floating sheet is already lifted clear, so it adds nothing', () => {
+    expect(contentPadding({ form: 'floating', ...NAMED }, 34)).toBe(SHEET_FORMS.floating.inset);
   });
 });

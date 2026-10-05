@@ -92,19 +92,22 @@ export type AppBarTitle = TitleBase &
   );
 
 /**
- * The back control: a glyph and the word beside it, or the glyph alone, named. A drawn word is the
- * control's name; where none is drawn, `name` is.
+ * The back control: a glyph and the word beside it, or the glyph alone. Either way it is NAMED by
+ * where it goes — *Back to Atlas* — because the drawn word is only the destination, the same word
+ * the Atlas tab says, and "back" lives in a decorative glyph (F-234's review). Where a word is drawn
+ * the name must contain it (WCAG 2.5.3); `Button` refuses one that does not.
  */
-export type AppBarBack = {
+export interface AppBarBack {
   readonly glyph: 'back' | 'chevron-left';
   readonly onPress: () => void;
+  /** What a screen reader says: *Back to Atlas*. */
+  readonly name: string;
+  /** The word drawn beside the glyph, where the mockup draws one (`22` draws none). */
+  readonly label?: string;
   /** The ink: `foreground`, or `foreground.2` where the drawing sets it secondary. */
   readonly ink?: 'foreground' | 'foreground.2';
   readonly testID?: string;
-} & (
-  | { readonly label: string; readonly name?: never }
-  | { readonly name: string; readonly label?: never }
-);
+}
 
 /** A trailing icon: a glyph, what it does, and its drawn size. */
 export interface AppBarIcon {
@@ -328,6 +331,7 @@ function BackControl({
     <Button
       variant="plain"
       label={back.label}
+      name={back.name}
       glyph={back.glyph}
       ink={ink}
       script={script}

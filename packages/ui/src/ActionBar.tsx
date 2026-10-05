@@ -86,7 +86,8 @@ export function ActionBar({
       }}
     >
       {actions.map((action) => (
-        // In a row each action takes an equal share, as every two-action row draws them.
+        // In a row each action takes an equal share, as the screens' two-action bars draw them (06 07 08
+        // 13 20 26, within 2 dp). 03's footer draws 149 and 136 dp; that is F-244's to settle.
         <View key={action.label} style={layout === 'row' ? { flex: 1 } : {}}>
           <Button {...action} />
         </View>

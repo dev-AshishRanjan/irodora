@@ -65,6 +65,11 @@ export type ComponentKind = 'interactive' | 'navigation' | 'data' | 'static';
  * something must respond, and every target must reach the tap target. The kind is not taken on a
  * subject's word: a `navigation` subject that draws no tablist of tabs is reported, so a button
  * cannot shed its disabled state by calling itself one.
+ *
+ * WHAT THE TREE CANNOT TELL (F-234's review, M9): an in-page tab set — `Tabs` on the colour detail —
+ * also draws a tablist of tabs, and moves nobody anywhere. Registered as `navigation` it would pass.
+ * Which kind a tab set is, the registry says and a reviewer reads; `chrome.test` names the one
+ * in-page tab set the app has, so a second is a decision somebody sees.
  */
 export const REQUIRED_STATES: Readonly<Record<ComponentKind, readonly string[]>> = {
   interactive: ['default', 'focus', 'active', 'disabled', 'loading'],

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Accepted; the glyph of an active tab other than Home is OQ-47, a person's |
+| **Status** | Accepted; the glyph of an active tab other than Home is OQ-47, and what a label does when it does not fit is OQ-49 — both a person's |
 | **Date** | 2026-09-30 |
 | **Feature** | F-234 |
 | **Applies** | R9-MOCKUP-FIDELITY §6 C1 (P5 → `01`); the 2026-09-24 delegation, for the measured inset |
@@ -63,8 +63,12 @@ and puts labels beside the icon on wide screens.
    a person answers it each keeps the only drawing `01` gives it, and no superseded bar sets a shape.
 6. **The words return (F-168 reversed)** in `01`'s type: the caption step, weight 500, without the
    uppercase and the 0.16 em tracking that made them wrap. The part of F-168 that is kept is the one
-   that mattered: a label is one line and never wraps. It truncates instead. A Japanese label is set in
-   the Japanese scale, its taller line moved up so its centre stays at `01`'s.
+   that mattered: a label is one line and never wraps. A Japanese label is set in the Japanese scale,
+   its taller line moved up so its centre stays at `01`'s. **What a label does when it does not fit**
+   — at larger text, or in Japanese on a narrower phone — is undrawn, and it trades `01`'s one line
+   against A7's "200 % without loss of content": that is **OQ-49**, a person's (F-234's review, B1).
+   Until it is answered the label truncates, which keeps the drawing and loses the end of the word on
+   screen, and the accessible name keeps the whole word.
 7. **The rule returns (F-163's criterion 3 reversed, for the tab bar only)**, in `border` on the page's
    own ground, not the `border.strong` on `surface.1` F-163 removed. **The indicator is `foreground`**,
    not F-175's `accent`, because `01` draws it in the ink colour.
@@ -89,11 +93,15 @@ and puts labels beside the icon on wide screens.
   the contrast gate did not measure.
 
 **Bad.**
-- **A long word can truncate.** `プロフィール` at the caption step is about 61.8 dp against a 61.9 dp item
-  on a 384 dp screen: it fits there, truncates on a narrower phone, and truncates at 200 % text. The
-  accessible name keeps the whole word, so a screen reader loses nothing; a sighted reader of Japanese
-  on a small phone sees `プロフィ…`. It is stated rather than hidden, and it is owed as an attestation on
-  a device.
+- **Labels truncate, and earlier than this ADR first said** (corrected after F-234's review). An item is
+  (width − 2 × 37.3) / 5: 61.9 dp on a 384 dp phone, 57.1 dp on a 360 dp one. `プロフィール` at the
+  caption step is about 61.8 dp, so it **truncates at 1× on a 360 dp phone**. By arithmetic with the
+  system font's widths (inferred, not measured), *Wardrobe* truncates from roughly 130 % text and
+  *Profile* near 200 %. A7 asks for 200 % without loss of content: the accessible name keeps the whole
+  word, so a screen reader loses nothing, but a sighted reader sees `プロフィ…` or `Wardr…`. Whether to
+  keep truncating, shrink the word to fit, let it wrap and grow the bar, or shorten the copy is
+  OQ-49. Where each label truncates, in both locales at 360 and 384 dp and at 1× to 200 %, is owed as
+  an attestation on a device.
 - **Four active glyphs are an outline beside Home's fill** until OQ-47 is answered. That is what `01`
   draws; it is not a choice made here.
 - **The bar no longer follows React Navigation's layout** — a landscape label beside its glyph, or a

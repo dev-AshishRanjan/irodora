@@ -237,6 +237,8 @@ export {
   Sheet,
   SHEET_FORMS,
   SHEET_HANDLE,
+  resizeSheet,
+  type SheetResize,
   Tabs,
   type DialogProps,
   type PopoverProps,

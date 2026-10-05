@@ -40,6 +40,9 @@ and neither is about how they look:
    must sit in the tree that feature's conformance sweep reads. `chrome.test` pins the 16 routes still
    on the platform header, each with the feature that moves it, and the list may only shrink.
    `profile/measure` has no mockup and waits on OQ-7.
+4. **A back control is named by where it goes** — *Back to Atlas* — not by the drawn word alone,
+   which is the destination and the Atlas tab's name too; "back" lives in a decorative glyph (F-234's
+   review). The name must contain the drawn word (WCAG 2.5.3), and `Button` refuses one that does not.
 
 ### 2. The action bar
 
@@ -53,7 +56,9 @@ and neither is about how they look:
 3. **The tab bar stays under it** (R9 §4 E4). FR-71 and F-145's first criterion give every route a
    tab that owns it, and F-234's criterion places the action bar *above the tab bar*. Hiding the tab
    bar on pushed screens would change FR-71: a PRD change, not a layout one, and not an agent's to
-   make. The reading is named on `F-267` for the person comparing screens.
+   make. It holds on a tab root too: `17` and `23`, the Profile tab's own screen, draw an action bar
+   and no tab bar, and there the tab bar is the only way to the other four tabs. The reading is named
+   on `F-260` and `F-267` for the person comparing screens.
 
 ### 3. The sheet
 
@@ -62,7 +67,9 @@ and neither is about how they look:
    - **floating (`03`)**: gorhom's `detached` sheet, 28.5 dp in from each side, on `background` with a
      dp of `border` round it and `lg` on every corner, its content 9 dp in;
    - **docked (`04`)**: on `surface.1`, no edge, `lg` at the top, its content 12.5 dp in. Its side inset
-     is OQ-16's, so the type requires the caller to pass it (F-245).
+     is OQ-16's, so the type requires the caller to pass it (F-245). It reaches the frame's bottom
+     edge, so its last content and its footer end the device's bottom inset higher, above the home
+     indicator (F-234's review).
 2. **The floating sheet's gap under it is `max(29.5, bottom inset)`**: `03` draws 29.5 dp, and the
    home indicator is laid into that gap where it fits — the reading the tab bar makes (ADR-0117).
    Portalled, the sheet sits outside every `Screen`, so it reads the inset itself, the way `Screen`
@@ -76,7 +83,9 @@ and neither is about how they look:
    each form's drawn offset. gorhom's own handle announces *"Bottom sheet handle"* and an English hint
    in every locale, and HeroUI keeps them; that copy reached the Lens (ADR-0056). The handle is now
    drawn by the sheet — an `adjustable` view named by the caller's `handleLabel` and `handleHint` —
-   and gorhom wraps it in its drag region as it wrapped its own.
+   and gorhom wraps it in its drag region as it wrapped its own. An adjustable control must adjust:
+   its `increment` action opens the sheet to its larger detent and `decrement` returns it, so a
+   screen-reader user can do what a drag does. Closing stays the dismiss layer's (F-234's review).
 5. **A footer is pinned** (gorhom's `BottomSheetFooter`) on the sheet's ground, and the content is
    padded by its measured height, so its end is never under the footer. It is where `03`'s actions sit.
 

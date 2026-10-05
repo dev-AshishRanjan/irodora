@@ -71,12 +71,16 @@ describe('every number is 01’s, recomputed', () => {
     expect(bar.dp.y + bar.dp.h - labelBottom).toBe(TAB_BELOW);
     expect(TAB_CONTENT + TAB_BELOW).toBe(bar.dp.h);
     expect(TAB_CONTENT).not.toBe(56);
+    // DECOY: the space under the labels is drawn, not the iPhone's 34 dp inset.
+    expect(TAB_BELOW).not.toBe(34);
   });
 
   it('the side inset the five are evenly pitched in', () => {
     const centres = icons.map((i) => i.dp.x + i.dp.w / 2);
     const pitch = ((centres.at(-1) ?? NaN) - (centres[0] ?? NaN)) / 4;
     expect(Math.round(((centres[0] ?? NaN) - pitch / 2) * 10) / 10).toBe(TAB_SIDE_INSET);
+    // DECOY, read off the drawing: five equal fifths of the frame would centre the first at 38.4 dp.
+    expect(Math.abs((centres[0] ?? NaN) - bar.dp.w / 10)).toBeGreaterThan(10);
   });
 
   it('the indicator, and the rule it sits on', () => {
@@ -219,11 +223,14 @@ describe('the height absorbs the device inset into the drawn space (ADR-0117)', 
     expect(flattenStyle(bar?.props['style'])['height']).toBe(height);
   });
 
-  it('DECOY: on an iPhone it is 01’s 77 dp, not 56 + 34', () => {
-    const bar = nodes(draw('home', 'dark', 34)).find((n) => n.props['testID'] === 'bar');
-    expect(flattenStyle(bar?.props['style'])['height']).toBe(77);
-    expect(flattenStyle(bar?.props['style'])['height']).not.toBe(90);
-  });
+  it.each([20, 35])(
+    'absorbs an inset of %s dp into the drawn space rather than stacking it under the bar',
+    (inset) => {
+      // A bar that stacked the inset (the shipped 56 + inset) grows here; 01's does not.
+      const bar = nodes(draw('home', 'dark', inset)).find((n) => n.props['testID'] === 'bar');
+      expect(flattenStyle(bar?.props['style'])['height']).toBe(TAB_CONTENT + TAB_BELOW);
+    },
+  );
 });
 
 describe('the `indicator` treatment reads the picture off the tree', () => {

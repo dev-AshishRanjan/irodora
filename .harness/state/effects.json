@@ -2821,6 +2821,14 @@
         {
           "kind": "gate",
           "ref": "lint"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/overlay.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/tabBar.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2829,7 +2837,7 @@
         "packages/ui"
       ],
       "severity": "high",
-      "guard": "gate:lint — `verify-viewport.mjs` fails a screen that reads insets anywhere but the files that own them (`layout.tsx`, and since F-234 `overlay.tsx` for the floating sheet's gap; the tab layout left the list when the bar began taking the navigator's own insets), fails an owner that reads none, and fails a layout constant larger than the narrowest supported viewport can hold. Eight --prove cases, a stale owner among them, both directions, including a comment that mentions a large width and must stay green: this repository discusses its own numbers by name, and a check that fires on prose is removed within a day.",
+      "guard": "gate:lint — `verify-viewport.mjs` fails a screen that reads insets anywhere but the files that own them (`layout.tsx`, and since F-234 `overlay.tsx` for the floating sheet's gap; the tab layout left the list when the bar began taking the navigator's own insets), fails an owner that reads none, and fails a layout constant larger than the narrowest supported viewport can hold. Eight --prove cases, a stale owner among them, both directions, including a comment that mentions a large width and must stay green: this repository discusses its own numbers by name, and a check that fires on prose is removed within a day. SINCE F-234'S REVIEW its endpoints name the inset's readers as they are now: overlay.tsx reads the bottom inset for the floating sheet, and src/tabBar.tsx takes the navigator's own insets for the tab bar; the tab layout, its `from`, still turns the header off and reads none.",
       "memory": "memory/effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md",
       "rationale": "F-145 SET `headerShown: false` AND THE APP STARTED PAINTING UNDER THE STATUS BAR. The decision was right — a navigation bar above a tab bar is two headers for one page — and it had a consequence nobody could see from the diff: react-navigation INSETS A HEADER FOR YOU, so the header had been the only thing holding content off the hardware. Nothing in our source claimed that job; `grep -rn \"SafeArea|useSafeAreaInsets\"` over the app and the UI package returned NOTHING, and `react-native-safe-area-context` was a declared dependency whose provider was in every rendered tree with no consumer. THE REPORTER NAMED THE COMMIT WITHOUT KNOWING IT: \"we were not having this issue previously\". THE TAB BAR HAD THE SAME SHAPE OF DEFECT ONE LAYER DOWN, and its comment stated it out loud — `height: Platform.OS === \"ios\" ? 88 : 68` with \"iOS adds its own safe-area inset below this\". An explicit height is precisely what STOPS react-navigation applying the inset, and Android with gesture navigation has a bottom inset that 68 knows nothing about. It is derived now, with no platform branch: the inset already differs per device, so branching on the platform is guessing at the thing the API reports. THE GENERAL SHAPE: a framework default can be load-bearing without appearing anywhere in your source, and turning it off is a change to something you never wrote. The only durable answer is to make the responsibility explicit — one file owns insets, and a gate says so.",
       "confidence": 0.9,
@@ -3132,6 +3140,14 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/tabBar.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/AppBar.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3140,7 +3156,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:test — `layout.test.tsx` asserts STRUCTURALLY that the inset is on an ancestor of the scroller and absent from its content container, which is the exact property F-159 got wrong; planted against the F-159 shape it fails two cases. The behaviour itself is unobservable here and always will be — react-test-renderer has no viewport. SINCE F-234 the inset can live on the app bar: with `Screen appBar` it moves into the bar (`topInset`) and the ground carries none; app-bar.test asserts the bar is outside the scroller, padded by the inset, its fill on the same node, and that no ancestor of the scroller also carries it, with an in-content bar as the decoy.",
+      "guard": "gate:test — `layout.test.tsx` asserts STRUCTURALLY that the inset is on an ancestor of the scroller and absent from its content container, which is the exact property F-159 got wrong; planted against the F-159 shape it fails two cases. The behaviour itself is unobservable here and always will be — react-test-renderer has no viewport. SINCE F-234 the inset can live on the app bar: with `Screen appBar` it moves into the bar (`topInset`) and the ground carries none; app-bar.test asserts the bar is outside the scroller, padded by the inset, its fill on the same node, and that no ancestor of the scroller also carries it, with an in-content bar as the decoy. SINCE F-234'S REVIEW its `to` names src/tabBar.tsx, where the bottom inset now reaches the tab bar, and AppBar.tsx, where the top one can live.",
       "memory": "memory/effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md",
       "rationale": "A BOUNDARY APPLIED AS SPACING IS CORRECT AT EXACTLY ONE SCROLL POSITION. F-159 read the safe area, added it to the token padding, and put the sum on `contentContainerStyle` — which pads the content INSIDE the scroller. The first screenful sits in the right place, which is why it was accepted, and every pixel after it travels under the status bar; reported from the next build as \"the battery and all native data is coming as a patch over our UI\". Two things had been merged that are not the same kind of thing: `nativeSpacing[padding]` is a design value that sets the rhythm, and `insets.top` is the shape of the hardware saying where the app may draw at all. A ScrollView clips to its FRAME, so the boundary has to move the frame — an ancestor carries it and the content container keeps only the rhythm. THE WORST KIND OF WRONG, because the one position it is right at is the one everybody looks at. TWO NEAR-MISSES: `paddingTop` on the ScrollView own `style` is the tempting one-liner and is React Native documented trap, which is indirectly why the bug existed at all; and `SafeAreaView` is the idiomatic answer and throws without a provider, which `Screen` is rendered without by the conformance suite, three dozen screen tests and the a11y gate. WHY NO TEST CAUGHT IT: react-test-renderer has no viewport, no scrolling and no status bar, so \"content stops at the boundary\" is not observable and never will be. The new assertion is STRUCTURAL — the inset is on an ancestor of the scroller, not inside its content — which is the property that was wrong rather than a proxy for it. When the behaviour is invisible to the harness, assert the structure that causes it. SAME REPORT, SAME SHAPE, ONE LINE UP: F-162 drew a glyph AND a word in each tab arguing NFR-9, and five words at the 10px label step wrapped to a second line across a phone width. The argument was about information and the failure was about space. A channel that overflows is not a channel.",
       "confidence": 0.95,

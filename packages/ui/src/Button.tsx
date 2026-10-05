@@ -174,6 +174,13 @@ type LabelledBase = Shared & {
    * only `03`'s two button glyphs are measured, and a surface passes its own where it differs.
    */
   readonly glyphSize?: number;
+  /**
+   * The accessible name, where the visible word is not the whole of what the control does: a back
+   * control drawn as *Atlas* is announced *Back to Atlas* (F-234's review). It must contain the
+   * visible label — WCAG 2.5.3, so a person who speaks the word they see still reaches it — and a
+   * name that does not is refused at render. Without it the label is the name.
+   */
+  readonly name?: string;
   readonly icon?: never;
   readonly plate?: never;
   readonly shape?: never;
@@ -228,6 +235,7 @@ type IconOnlyProps = Shared & {
   readonly height?: never;
   readonly radius?: never;
   readonly script?: never;
+  readonly name?: never;
 };
 
 export type ButtonProps = LabelledProps | IconOnlyProps;
@@ -310,12 +318,17 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     glyph,
     glyphAt,
     glyphSize,
+    name,
     edge,
     level,
     ink,
     ...rest
   } = props;
   const { colors } = useTheme();
+  if (name !== undefined && !name.toLocaleLowerCase().includes(label.toLocaleLowerCase()))
+    throw new TypeError(
+      `Button: the name "${name}" does not contain the visible label "${label}" (WCAG 2.5.3)`,
+    );
   const inert = disabled || loading;
   const paint = labelledPaint({ variant, edge, level, ink }, colors);
   const side = glyph === undefined ? undefined : (glyphAt ?? glyphSide(glyph));
@@ -335,7 +348,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
       // HeroUI defaults this to 'button' already; stated because the accessible name below
       // only means anything alongside a role, and a default is a thing that can change.
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={name ?? label}
       // Both flags, from the same two props. HeroUI sets `disabled` and nothing else, so a
       // visually-busy control would be silent to a screen reader without this.
       accessibilityState={{ disabled: inert, busy: loading }}

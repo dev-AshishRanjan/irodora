@@ -100,6 +100,8 @@ describe('the defaults are the full-bleed bars’ medians (08 10 12 13 17)', () 
       );
     expect(gaps).toHaveLength(2);
     expect(half(median(gaps))).toBe(ACTION_BAR_GAP);
+    // DECOY: 03's footer draws its two actions 5 dp apart, inside a sheet; the screens' bars do not.
+    expect(ACTION_BAR_GAP).not.toBe(5);
   });
 });
 
