@@ -530,7 +530,7 @@ each stays covered once (`F-232`, ADR-0110's amendment).
 | elements | kind | measured | minted by |
 |---|---|---|---|
 | `02.conditions` (and its icon and text): the gold HUD | tint | `#9E9374` | `F-243` |
-| `04.gauge.band`, `.sparkle`, `.chroma.bar`, `04.sheet.tolerance`: the green verdict | tints | `#538666` `#47795F` `#5BB27C` `#385847` | `F-245` |
+| `04.gauge.band`, `.sparkle`, `04.sheet.tolerance`: the green verdict. The chroma bar left in `F-235`: it carries no words, so its green would be a per-axis pass said by colour alone ([ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md)) | tints | `#538666` `#47795F` `#385847` | `F-245` |
 | `12.intelligence` (and its icon, title, check, body): the green card | tints | `#345D47` `#336649` `#376B4C` | `F-256` |
 | `13.slots.slot-1`, `slot-4`: rows tinted by their garment | sample | — (slot 1 reads `#556574` under a `#5B6B78` shirt) | `F-257` |
 | `23.profile.temperature.range`: cool-to-warm track | gradient | — | `F-260` |
@@ -693,6 +693,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-50** | `04`'s delta bars share one unit — the smaller side's room — in every row and on both sides, scaled by F-245's tolerance over each axis's weighted CIEDE2000 term; every bar takes the hue bar's drawn ink, `text.tertiary` on a card. The slate fails 3:1 (E3) and the green is a per-axis verdict by colour alone (E2, rule 13) | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
+| **OQ-51** | `04`'s rows print what `04` prints; each row's accessible name carries the quantity and the space. FR-61 governs the professional surfaces, where `08` prints the notation | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-15**, **OQ-20**, **OQ-21**, **OQ-37** | The multicoloured icons are followed as drawn, each colour a declared exception, over the one-ink silhouette F-228 registered; each already reads by shape and by the text beside it | [ADR-0110](../adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) |
 | **OQ-12** | A `caption` step at 10.3 dp: the median of the 92 ems the mockups draw below 12 dp, recomputed by a test. 14 as a floor would enlarge 121 drawn elements and nothing forces it | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
 | **OQ-29** | The serif is **Gelasio** (OFL), Georgia’s metric-compatible counterpart: first of 109 over the eight serif crops the mockups draw (§5) | [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) |

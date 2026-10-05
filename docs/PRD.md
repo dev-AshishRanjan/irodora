@@ -461,6 +461,8 @@ two people and it is labelled as such rather than hidden.
 
 **OQ-15, OQ-20, OQ-21 and OQ-37 are closed by [ADR-0110](adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md)** (2026-09-24, decided on the person's delegation). The multicoloured icons are followed as drawn, each colour a declared chroma exception. Each keeps its one-ink silhouette under the colour, so `13`'s harmony circles and `15`'s split badge still read without it. Every one already carries its meaning by shape and by the text beside it, so colour is never the only channel.
 
+**OQ-50 and OQ-51 are closed by [ADR-0119](adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md)** (2026-10-05, decided on the person's delegation; both arose in F-235 and were decided there rather than raised). Mockup 04's delta bars share one unit, the smaller of the two sides' room, so equal magnitudes draw equal lengths on either side; F-245 scales them by its tolerance over each axis's weighted CIEDE2000 term. Every bar takes the hue bar's drawn ink, `text.tertiary` on a card: the lightness bar's slate fails 3:1, and the chroma bar's green would state a per-axis pass by colour alone. The rows print what 04 prints, the quantity and space in each row's accessible name: FR-61 governs the professional surfaces, where mockup 08 prints the notation.
+
 **Closed, not answered.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which
 vendor to choose for capabilities the product no longer has. **OQ-4 is settled at ~120
 entries** — depth over breadth.

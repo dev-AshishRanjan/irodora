@@ -47,6 +47,28 @@ export {
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
 export { Bilingual, BILINGUAL_SEPARATOR, type BilingualProps } from './bilingual.js';
 export {
+  deltaBar,
+  DeltaBars,
+  DELTA_AXIS,
+  DELTA_AXIS_WIDTH,
+  DELTA_BAR,
+  DELTA_BAR_RADIUS,
+  DELTA_GAP,
+  DELTA_LABEL_END,
+  DELTA_ROW,
+  deltaUnit,
+  type DeltaBarsProps,
+  type DeltaRow,
+} from './DeltaBars.js';
+export {
+  HEADLINE_CAPTION_GAP,
+  HEADLINE_GAP,
+  HEADLINE_PAIR_GAP,
+  HEADLINE_SEAL,
+  ProximityHeadline,
+  type ProximityHeadlineProps,
+} from './ProximityHeadline.js';
+export {
   READOUT_BAR,
   READOUT_GRID_INSET,
   READOUT_GRID_PAD,

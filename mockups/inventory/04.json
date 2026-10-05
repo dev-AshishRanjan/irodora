@@ -368,9 +368,34 @@
       "copy": null
     },
     {
-      "id": "04.gauge.sparkle",
+      "id": "04.gauge.headline",
       "order": 13,
       "parent": "04.gauge",
+      "component": "ui:ProximityHeadline",
+      "box": {
+        "x": 185,
+        "y": 705,
+        "w": 510,
+        "h": 179
+      },
+      "dp": {
+        "x": 39.5,
+        "y": 406,
+        "w": 374.5,
+        "h": 131.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "04.gauge.sparkle",
+      "order": 14,
+      "parent": "04.gauge.headline",
       "component": null,
       "box": {
         "x": 606,
@@ -394,8 +419,8 @@
     },
     {
       "id": "04.gauge.distance",
-      "order": 14,
-      "parent": "04.gauge",
+      "order": 15,
+      "parent": "04.gauge.headline",
       "component": "ui:Text",
       "box": {
         "x": 243,
@@ -429,8 +454,8 @@
     },
     {
       "id": "04.gauge.band",
-      "order": 15,
-      "parent": "04.gauge",
+      "order": 16,
+      "parent": "04.gauge.headline",
       "component": "ui:Text",
       "box": {
         "x": 380,
@@ -461,8 +486,8 @@
     },
     {
       "id": "04.gauge.pair",
-      "order": 16,
-      "parent": "04.gauge",
+      "order": 17,
+      "parent": "04.gauge.headline",
       "component": "ui:Strip",
       "box": {
         "x": 185,
@@ -489,8 +514,8 @@
     },
     {
       "id": "04.gauge.caption",
-      "order": 17,
-      "parent": "04.gauge",
+      "order": 18,
+      "parent": "04.gauge.headline",
       "component": "ui:Text",
       "box": {
         "x": 208,
@@ -524,7 +549,7 @@
     },
     {
       "id": "04.gauge.divider",
-      "order": 18,
+      "order": 19,
       "parent": "04.gauge",
       "component": null,
       "box": {
@@ -550,9 +575,34 @@
       "copy": null
     },
     {
-      "id": "04.gauge.lightness.label",
-      "order": 19,
+      "id": "04.gauge.deltas",
+      "order": 20,
       "parent": "04.gauge",
+      "component": "ui:DeltaBars",
+      "box": {
+        "x": 185,
+        "y": 909,
+        "w": 509,
+        "h": 106
+      },
+      "dp": {
+        "x": 39.5,
+        "y": 556,
+        "w": 373.5,
+        "h": 78
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "04.gauge.lightness.label",
+      "order": 21,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 186,
@@ -588,9 +638,9 @@
     },
     {
       "id": "04.gauge.lightness.bar",
-      "order": 20,
-      "parent": "04.gauge",
-      "component": "ui:Bands",
+      "order": 22,
+      "parent": "04.gauge.deltas",
+      "component": null,
       "box": {
         "x": 310,
         "y": 917,
@@ -603,7 +653,9 @@
         "w": 95.5,
         "h": 14
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.tertiary"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
@@ -619,8 +671,8 @@
     },
     {
       "id": "04.gauge.axis",
-      "order": 21,
-      "parent": "04.gauge",
+      "order": 23,
+      "parent": "04.gauge.deltas",
       "component": null,
       "box": {
         "x": 439,
@@ -646,8 +698,8 @@
     },
     {
       "id": "04.gauge.lightness.value",
-      "order": 22,
-      "parent": "04.gauge",
+      "order": 24,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 511,
@@ -681,8 +733,8 @@
     },
     {
       "id": "04.gauge.lightness.reading",
-      "order": 23,
-      "parent": "04.gauge",
+      "order": 25,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 554,
@@ -718,8 +770,8 @@
     },
     {
       "id": "04.gauge.chroma.label",
-      "order": 24,
-      "parent": "04.gauge",
+      "order": 26,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 185,
@@ -755,9 +807,9 @@
     },
     {
       "id": "04.gauge.chroma.bar",
-      "order": 25,
-      "parent": "04.gauge",
-      "component": "ui:Bands",
+      "order": 27,
+      "parent": "04.gauge.deltas",
+      "component": null,
       "box": {
         "x": 439,
         "y": 951,
@@ -770,7 +822,9 @@
         "w": 36,
         "h": 14.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.tertiary"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
@@ -786,8 +840,8 @@
     },
     {
       "id": "04.gauge.chroma.value",
-      "order": 26,
-      "parent": "04.gauge",
+      "order": 28,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 511,
@@ -821,8 +875,8 @@
     },
     {
       "id": "04.gauge.chroma.reading",
-      "order": 27,
-      "parent": "04.gauge",
+      "order": 29,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 556,
@@ -858,8 +912,8 @@
     },
     {
       "id": "04.gauge.hue.label",
-      "order": 28,
-      "parent": "04.gauge",
+      "order": 30,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 186,
@@ -895,9 +949,9 @@
     },
     {
       "id": "04.gauge.hue.bar",
-      "order": 29,
-      "parent": "04.gauge",
-      "component": "ui:Bands",
+      "order": 31,
+      "parent": "04.gauge.deltas",
+      "component": null,
       "box": {
         "x": 403,
         "y": 987,
@@ -910,7 +964,9 @@
         "w": 27,
         "h": 14
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.tertiary"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
@@ -926,8 +982,8 @@
     },
     {
       "id": "04.gauge.hue.value",
-      "order": 30,
-      "parent": "04.gauge",
+      "order": 32,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 515,
@@ -961,8 +1017,8 @@
     },
     {
       "id": "04.gauge.hue.reading",
-      "order": 31,
-      "parent": "04.gauge",
+      "order": 33,
+      "parent": "04.gauge.deltas",
       "component": "ui:Text",
       "box": {
         "x": 567,
@@ -998,7 +1054,7 @@
     },
     {
       "id": "04.sheet",
-      "order": 32,
+      "order": 34,
       "parent": null,
       "component": "ui:Sheet",
       "box": {
@@ -1029,7 +1085,7 @@
     },
     {
       "id": "04.sheet.handle",
-      "order": 33,
+      "order": 35,
       "parent": "04.sheet",
       "component": null,
       "box": {
@@ -1057,7 +1113,7 @@
     },
     {
       "id": "04.sheet.tolerance",
-      "order": 34,
+      "order": 36,
       "parent": "04.sheet",
       "component": "ui:Chip",
       "box": {
@@ -1087,7 +1143,7 @@
     },
     {
       "id": "04.sheet.save",
-      "order": 35,
+      "order": 37,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -1115,7 +1171,7 @@
     },
     {
       "id": "04.sheet.save.label",
-      "order": 36,
+      "order": 38,
       "parent": "04.sheet.save",
       "component": "ui:Text",
       "box": {
@@ -1149,7 +1205,7 @@
     },
     {
       "id": "04.sheet.outfits",
-      "order": 37,
+      "order": 39,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -1177,7 +1233,7 @@
     },
     {
       "id": "04.sheet.outfits.label",
-      "order": 38,
+      "order": 40,
       "parent": "04.sheet.outfits",
       "component": "ui:Text",
       "box": {
@@ -1211,7 +1267,7 @@
     },
     {
       "id": "04.sheet.outfits.icon",
-      "order": 39,
+      "order": 41,
       "parent": "04.sheet.outfits",
       "component": null,
       "box": {
@@ -1236,7 +1292,7 @@
     },
     {
       "id": "04.sheet.reset",
-      "order": 40,
+      "order": 42,
       "parent": "04.sheet",
       "component": "ui:Button",
       "box": {
@@ -1264,7 +1320,7 @@
     },
     {
       "id": "04.sheet.reset.label",
-      "order": 41,
+      "order": 43,
       "parent": "04.sheet.reset",
       "component": "ui:Text",
       "box": {
@@ -1431,6 +1487,16 @@
   ],
   "departures": [
     {
+      "rule": "E3",
+      "element": "04.gauge.lightness.bar",
+      "why": "the drawn slate (#566673) is 2.72:1 on the card, under the 3:1 a graphic needs (WCAG 1.4.11), and lies 9.4 ΔE00 from any token; it takes the ink its sibling, the hue bar, draws (ADR-0119)"
+    },
+    {
+      "rule": "E2",
+      "element": "04.gauge.chroma.bar",
+      "why": "the drawn green (#5EC382) is the verdict colour on a mark with no words: a per-axis pass the engine does not compute and no figure states, carried by colour alone (golden rule 13). It takes the hue bar’s ink (ADR-0119)"
+    },
+    {
       "rule": "E2",
       "element": "04.gauge.band",
       "why": "the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — bands defined in F-222"
@@ -1455,12 +1521,7 @@
     },
     {
       "id": "C10",
-      "elements": [
-        "04.gauge.band",
-        "04.gauge.sparkle",
-        "04.gauge.chroma.bar",
-        "04.sheet.tolerance"
-      ],
+      "elements": ["04.gauge.band", "04.gauge.sparkle", "04.sheet.tolerance"],
       "resolution": "followed: the green verdict colour carries text or an icon (golden rule 13) and is declared a chroma-ceiling exception by F-225",
       "flippedByUser": false
     }

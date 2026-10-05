@@ -1603,17 +1603,15 @@
       "elements": [
         "04.gauge.band",
         "04.gauge.sparkle",
-        "04.gauge.chroma.bar",
         "04.sheet.tolerance"
       ],
       "kind": "tints",
       "measured": [
         "#538666",
         "#47795F",
-        "#5BB27C",
         "#385847"
       ],
-      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 04's proximity verdict is drawn in greens: the gauge band, its star, the chroma bar and the tolerance sheet.",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 04's proximity verdict is drawn in greens: the gauge band, its star and the tolerance sheet. The chroma bar left this list in F-235 (ADR-0119): a bar carries neither text nor an icon, so it takes the one neutral ink every delta bar takes.",
       "owner": "design",
       "recordedAt": "2026-09-25",
       "mintedBy": "F-245"

@@ -20,7 +20,7 @@ const text = (face, size, weight = 400, extra = {}) => ({ face, size, weight, ..
 // text.secondary (#9A9CA0) — so each value is two elements, the figure and its reading, split at the
 // 9 px gap between them. Each bar has its own ink, read from its interior, and a 3 px radius on its
 // outer end only (corner.ps1: left 3.0, right 0.5).
-const delta = (key, label, bar, barInk, figure, reading, parentBar = '04.gauge') => ({
+const delta = (key, label, bar, barInk, figure, reading, parentBar = '04.gauge.deltas') => ({
   label: el(`04.gauge.${key}.label`, 'ui:Text', label, {
     parent: parentBar,
     tokens: { fg: 'text.primary' },
@@ -29,8 +29,12 @@ const delta = (key, label, bar, barInk, figure, reading, parentBar = '04.gauge')
     binding: `static:lens.delta.${key}`,
     copy: { shape: 'label', script: 'latin' },
   }),
-  bar: el(`04.gauge.${key}.bar`, 'ui:Bands', bar, {
+  // ADR-0119 (OQ-50): every bar takes the hue bar's drawn ink, text.tertiary on a card (ΔE00 4.7).
+  // The lightness bar's slate is 2.72:1 on the card (E3), and the chroma bar's green is the verdict
+  // colour on a mark with no words (E2, golden rule 13). Each drawn ink stays in `measured`.
+  bar: el(`04.gauge.${key}.bar`, null, bar, {
     parent: parentBar,
+    tokens: { fg: 'text.tertiary' },
     measured: { fg: barInk },
     raw: { cornerPx: 3 },
     binding: `engine:delta.${key}`,
@@ -131,28 +135,34 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1F2126' },
     }),
-    el('04.gauge.sparkle', null, B(606, 705, 44, 45), { parent: '04.gauge', icon: 'seal-star' }),
+    // F-235: the headline (distance, band, seal, the two samples, the caption) is a ui:ProximityHeadline,
+    // and the delta rows with their axis a ui:DeltaBars.
+    el('04.gauge.headline', 'ui:ProximityHeadline', B(185, 705, 510, 179), { parent: '04.gauge' }),
+    el('04.gauge.sparkle', null, B(606, 705, 44, 45), {
+      parent: '04.gauge.headline',
+      icon: 'seal-star',
+    }),
     el('04.gauge.distance', 'ui:Text', B(243, 716, 129, 22), {
-      parent: '04.gauge',
+      parent: '04.gauge.headline',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600, { tabular: true }),
       binding: 'engine:deltaE00',
       copy: { shape: 'value', script: 'figures' },
     }),
     el('04.gauge.band', 'ui:Text', B(380, 715, 215, 28), {
-      parent: '04.gauge',
+      parent: '04.gauge.headline',
       type: text('sans', 'body', 500),
       binding: 'derived:F-222',
       copy: { shape: 'label', script: 'latin' },
     }),
     // Two samples that touch: a Strip with two members (F-233), where it was recorded as its own kind.
     el('04.gauge.pair', 'ui:Strip', B(185, 763, 510, 63), {
-      parent: '04.gauge',
+      parent: '04.gauge.headline',
       tokens: { keyline: 'keyline', radius: 'sm' },
       binding: 'engine:reading.hex',
     }),
     el('04.gauge.caption', 'ui:Text', B(208, 838, 467, 46), {
-      parent: '04.gauge',
+      parent: '04.gauge.headline',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'caption'),
       binding: 'engine:reading.hex',
@@ -162,10 +172,11 @@ export default {
       parent: '04.gauge',
       tokens: { fg: 'border.subtle' },
     }),
+    el('04.gauge.deltas', 'ui:DeltaBars', B(185, 909, 509, 106), { parent: '04.gauge' }),
     L.label,
     L.bar,
     el('04.gauge.axis', null, B(439, 909, 2, 106), {
-      parent: '04.gauge',
+      parent: '04.gauge.deltas',
       tokens: { fg: 'text.secondary' },
     }),
     L.value,
@@ -260,6 +271,16 @@ export default {
   ],
   departures: [
     {
+      rule: 'E3',
+      element: '04.gauge.lightness.bar',
+      why: 'the drawn slate (#566673) is 2.72:1 on the card, under the 3:1 a graphic needs (WCAG 1.4.11), and lies 9.4 ΔE00 from any token; it takes the ink its sibling, the hue bar, draws (ADR-0119)',
+    },
+    {
+      rule: 'E2',
+      element: '04.gauge.chroma.bar',
+      why: 'the drawn green (#5EC382) is the verdict colour on a mark with no words: a per-axis pass the engine does not compute and no figure states, carried by colour alone (golden rule 13). It takes the hue bar’s ink (ADR-0119)',
+    },
+    {
       rule: 'E2',
       element: '04.gauge.band',
       why: 'the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — bands defined in F-222',
@@ -285,7 +306,7 @@ export default {
     },
     {
       id: 'C10',
-      elements: ['04.gauge.band', '04.gauge.sparkle', '04.gauge.chroma.bar', '04.sheet.tolerance'],
+      elements: ['04.gauge.band', '04.gauge.sparkle', '04.sheet.tolerance'],
       resolution:
         'followed: the green verdict colour carries text or an icon (golden rule 13) and is declared a chroma-ceiling exception by F-225',
       flippedByUser: false,

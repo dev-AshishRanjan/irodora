@@ -8,7 +8,7 @@
  */
 
 import { Pressable, View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
 import type { Theme } from '@irodora/design-tokens';
@@ -23,7 +23,9 @@ import {
   Card,
   Chip,
   FabricSwatch,
+  DeltaBars,
   FigureValue,
+  ProximityHeadline,
   ReadoutTable,
   ChoiceGroup,
   Dialog,
@@ -64,6 +66,7 @@ import {
   Wordmark,
   type ActionBarProps,
   type AppBarProps,
+  type DeltaRow,
   type ReadoutTableProps,
   type ReadoutValue,
 } from '../src/index.js';
@@ -237,6 +240,53 @@ const READOUT_DELTA: ReadoutValue = {
     },
   ],
 };
+
+/** 04's three delta rows, as drawn; the readings are sample words (a test fixture). */
+const DELTA_ROWS: readonly DeltaRow[] = [
+  {
+    key: 'lightness',
+    label: 'Lightness',
+    delta: {
+      kind: 'measure',
+      value: -0.8,
+      places: 1,
+      signed: true,
+      quantity: 'ΔL*',
+      space: 'CIELAB',
+    },
+    reading: 'Slightly Darker',
+    magnitude: -0.8,
+  },
+  {
+    key: 'chroma',
+    label: 'Chroma',
+    delta: {
+      kind: 'measure',
+      value: 0.3,
+      places: 1,
+      signed: true,
+      quantity: 'ΔC*',
+      space: 'CIELAB',
+    },
+    reading: 'Slightly Richer',
+    magnitude: 0.3,
+  },
+  {
+    key: 'hue',
+    label: 'Hue',
+    delta: {
+      kind: 'measure',
+      value: -0.4,
+      places: 1,
+      signed: true,
+      quantity: 'Δh',
+      unit: '°',
+      space: 'CIELAB',
+    },
+    reading: 'Slightly Cooler',
+    magnitude: -0.4,
+  },
+];
 
 const SUBJECTS: readonly ConformanceSubject[] = [
   {
@@ -1451,6 +1501,55 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     kind: 'static',
     render: (_state, theme) => draw(<ReadoutTable {...props} />, theme),
   })),
+  {
+    /*
+     * THE DELTA ROWS (F-235, ADR-0119), laid out: a bar exists only once the rows and every figure
+     * are measured, so the subject fires those layouts before it reads the tree. Without them the
+     * suite would check rows with no bars, and the bars' ink is the point.
+     */
+    name: 'DeltaBars (04)',
+    kind: 'static',
+    render: (_state, theme) => {
+      const rendered = render(
+        <ThemeProvider theme={theme}>
+          <DeltaBars rows={DELTA_ROWS} scale={1} testID="deltas" />
+        </ThemeProvider>,
+      );
+      const layout = (width: number) => ({
+        nativeEvent: { layout: { x: 0, y: 0, width, height: 26 } },
+      });
+      fireEvent(rendered.getByTestId('deltas'), 'layout', layout(373.5));
+      for (const row of DELTA_ROWS) {
+        fireEvent(rendered.getByText(`(${row.reading})`, { exact: false }), 'layout', layout(133));
+      }
+      const json = rendered.toJSON() as TestNode;
+      rendered.unmount();
+      return json;
+    },
+  },
+  {
+    // The headline (F-235): the band's ink is the caller's, so the subject passes one that exists.
+    name: 'ProximityHeadline (04)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <ProximityHeadline
+          distance={{
+            kind: 'measure',
+            value: 1.42,
+            places: 2,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          band="Very Close Match"
+          ink="foreground"
+          seal
+          pair={<View style={{ height: 46.5 }} />}
+          caption="Left [Target: #5B6B78] | Right [Live Garment: #566774]"
+        />,
+        theme,
+      ),
+  },
   {
     /*
      * ALL FIVE AT ONCE, because the property that matters is that they DIFFER. A subject
