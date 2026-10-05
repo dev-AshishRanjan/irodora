@@ -39,10 +39,14 @@ jest.mock('expo-localization', () => ({
 import { Text, ThemeProvider, swatchAccessibleName } from '@irodora/ui';
 import {
   brokenFlexChains,
+  carriesFigure,
   checkAll,
+  figureNodes,
   flattenStyle,
   checkStatusAdjacency,
   formatFindings,
+  raggedFigures,
+  tabularNodes,
   type ConformanceSubject,
   type TestNode,
 } from '@irodora/ui/testing';
@@ -2559,29 +2563,8 @@ describe('compare shows every metric with its unit and its space (FR-48)', () =>
  * releases. This is the assertion that it reaches the nodes that carry numbers.
  */
 describe('the numbers are tabular and copyable (FR-48)', () => {
-  function styleOf(node: TestNode): Record<string, unknown> {
-    const raw: unknown = node.props['style'];
-    // `reduce` rather than `Object.assign({}, ...raw)`: the spread widens to `any`, and a
-    // React Native style array legitimately contains `null` and `false` layers that
-    // `Object.assign` would happily skip while the types pretended otherwise.
-    if (Array.isArray(raw))
-      return (raw as unknown[]).reduce<Record<string, unknown>>(
-        (acc, layer) =>
-          typeof layer === 'object' && layer !== null
-            ? { ...acc, ...(layer as Record<string, unknown>) }
-            : acc,
-        {},
-      );
-    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
-  }
-
-  function numericNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
-    const v = styleOf(node)['fontVariant'];
-    if (Array.isArray(v) && (v as unknown[]).includes(nativeNumericFeature)) out.push(node);
-    for (const child of node.children ?? [])
-      if (typeof child !== 'string') numericNodes(child, out);
-    return out;
-  }
+  // The scan lives in @irodora/ui/testing since F-235, where the conformance suite reads it too.
+  const numericNodes = (node: TestNode): TestNode[] => tabularNodes(node, nativeNumericFeature);
 
   const tree = (): TestNode => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light');
 
@@ -2644,30 +2627,11 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
   //   - inside running PROSE: eight or more words. A figure in a sentence is read, not scanned down
   //     a column, which is the case C9 is about — and a translation that happens to contain a
   //     digit ("Android 12 and later") must not make its Text a column of figures.
-  const NAMED_DIGITS =
-    /ΔE00|\b(?:D65|D50|sRGB|Display-P3|WCAG\s?\d(?:\.\d)?)\b|\b[A-Za-z]+(?:-[A-Za-z]+)*-\d+\b/gu;
-  const isProse = (s: string): boolean => (s.match(/\p{L}{2,}/gu) ?? []).length >= 8;
-  const carriesFigure = (s: string): boolean => {
-    const rest = s.replace(NAMED_DIGITS, '');
-    return /\d/u.test(rest) && !isProse(rest);
-  };
-
-  function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
-    // The node that OWNS the text, not the string itself — the `numeric` prop and the font
-    // variant both live on the element, and a string has no props to check.
-    if ((node.children ?? []).some((c) => typeof c === 'string' && carriesFigure(c)))
-      out.push(node);
-    for (const child of node.children ?? []) if (typeof child !== 'string') figureNodes(child, out);
-    return out;
-  }
-
+  // The definitions above live in @irodora/ui/testing since F-235 (carriesFigure, figureNodes),
+  // shared with the conformance suite's `ragged-figure` rule.
   /** Every bare figure on a screen that is NOT drawn with tabular digits. */
-  const ragged = (screen: TestNode): readonly string[] => {
-    const tabular = new Set(numericNodes(screen));
-    return figureNodes(screen)
-      .filter((n) => !tabular.has(n))
-      .flatMap((n) => (n.children ?? []).filter((c): c is string => typeof c === 'string'));
-  };
+  const ragged = (screen: TestNode): readonly string[] =>
+    raggedFigures(screen, nativeNumericFeature);
 
   it('marks every bare figure as tabular, on every surface that carries readings', () => {
     /*

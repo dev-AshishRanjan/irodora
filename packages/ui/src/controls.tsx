@@ -891,8 +891,9 @@ function ReadoutSlider({
             {ends.low}
           </Text>
           {ends.note === undefined ? null : (
-            // 23 draws its confidence note at `label` (`23.profile.*.confidence`).
-            <Text size="label" color="foreground.2" script={script}>
+            // 23 draws its confidence note at `label` (`23.profile.*.confidence`). It counts trials, so
+            // its figures are tabular (F-235).
+            <Text size="label" color="foreground.2" script={script} numeric>
               {ends.note}
             </Text>
           )}

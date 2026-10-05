@@ -87,7 +87,8 @@ export function Bands({ bands, unit, script = 'latin', testID }: BandsProps): Re
       {shown.map((band, index) => (
         <Stack key={band.label} gap="xs">
           <Row gap="sm">
-            <Text size="label" color="foreground" script={script}>
+            {/* The caller's band name can carry figures ("In 1 to 3"): tabular, as every figure is (F-235). */}
+            <Text size="label" color="foreground" script={script} numeric>
               {band.label}
             </Text>
             {/*

@@ -34,6 +34,7 @@ import {
   LARGE_TEXT_TOKENS,
   nativeColors,
   nativeLargeTextMinPx,
+  nativeNumericFeature,
 } from '@irodora/design-tokens';
 import { wcagContrast } from '@irodora/color-difference';
 import { platformTapTarget } from '../hitArea.js';
@@ -44,6 +45,7 @@ import {
   flattenStyle,
   paintedColors,
   pressableNodes,
+  raggedFigures,
   renderedPairs,
   resolveTextNodes,
   type ResolvedPressableNode,
@@ -485,6 +487,18 @@ export function checkSubject(
               `${node.colorResolution.tokens.join('/')}, restricted to >= ${String(nativeLargeTextMinPx)}px`,
           );
       }
+
+      // --- every figure is tabular (F-235, criterion 4; FR-48, C9) -----------------------
+      //
+      // A figure in proportional digits cannot be scanned down a column, which is the case C9 is
+      // about. The scan is the screens' (F-226's review shaped it): a name with digits (D65, ΔE00,
+      // IRO-ED-001) and running prose are not figures. It reads the rendered font variant, so a
+      // component that forgot `numeric` is reported whatever its source says.
+      for (const figure of raggedFigures(tree, nativeNumericFeature))
+        at(
+          'ragged-figure',
+          `"${figure}" carries a figure in proportional digits — set it numeric (FR-48, C9)`,
+        );
 
       // --- anything pressable ------------------------------------------------------------
       const pressables = pressableNodes(tree);

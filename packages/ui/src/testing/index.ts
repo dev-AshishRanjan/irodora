@@ -9,14 +9,18 @@
 
 export {
   brokenFlexChains,
+  carriesFigure,
+  figureNodes,
   flattenStyle,
   type FlexChainFinding,
   paintedColors,
   announcedStates,
   pressableNodes,
+  raggedFigures,
   renderedPairs,
   resolveTextNodes,
   RN_DEFAULT_FONT_SIZE,
+  tabularNodes,
   type RenderedPair,
   type ResolvedPressableNode,
   type ResolvedTextNode,

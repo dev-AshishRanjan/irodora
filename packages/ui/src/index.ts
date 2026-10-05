@@ -45,6 +45,19 @@ export {
   type GlyphProps,
 } from './Glyph.js';
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
+export { Bilingual, BILINGUAL_SEPARATOR, type BilingualProps } from './bilingual.js';
+export {
+  figureName,
+  figureText,
+  FigureValue,
+  MINUS,
+  signed,
+  type CountFigure,
+  type Figure,
+  type FigureValueProps,
+  type MeasureFigure,
+  type ShareFigure,
+} from './figures.js';
 export {
   TabBar,
   TAB_BELOW,

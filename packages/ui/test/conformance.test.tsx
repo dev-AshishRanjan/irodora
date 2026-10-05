@@ -23,6 +23,7 @@ import {
   Card,
   Chip,
   FabricSwatch,
+  FigureValue,
   ChoiceGroup,
   Dialog,
   DisplaySettingsProvider,
@@ -1270,6 +1271,44 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             { label: 'In 25 or more', value: 0 },
           ]}
         />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * FIGURES (F-235): one of each kind, so `ragged-figure` and the tabular cases see every shape a
+     * data display prints — a signed measure with a unit, a share, a count — each named in full.
+     */
+    name: 'FigureValue',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Stack gap="xs">
+          <FigureValue
+            figure={{
+              kind: 'measure',
+              value: -0.4,
+              places: 1,
+              signed: true,
+              quantity: 'Δh',
+              unit: '°',
+              space: 'OKLCh',
+            }}
+            size="label"
+            color="foreground"
+          />
+          <FigureValue
+            figure={{ kind: 'share', fraction: 0.84, of: 'Wardrobe coverage' }}
+            size="title"
+            color="foreground"
+            weight={600}
+          />
+          <FigureValue
+            figure={{ kind: 'count', value: 12, noun: 'pairings' }}
+            size="body"
+            color="foreground.2"
+          />
+        </Stack>,
         theme,
       ),
   },

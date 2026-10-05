@@ -49,6 +49,7 @@ import {
   Swatch,
   Text,
   useTheme,
+  signed,
 } from '@irodora/ui';
 import {
   compare,
@@ -70,10 +71,6 @@ const CVD_KEYS = {
 
 /** How many matches a slot offers. Enough to choose from, few enough to scan. */
 const MATCH_LIMIT = 8;
-
-/** A signed number, with its sign shown. A delta without its direction is half a fact. */
-const signed = (n: number, places = 2): string =>
-  `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(places)}`;
 
 function matches(query: string): readonly PublishedEntry[] {
   const q = query.trim().toLowerCase();

@@ -711,3 +711,69 @@ export function brokenFlexChains(root: TestNode): readonly FlexChainFinding[] {
   walk(root, null, {}, []);
   return out;
 }
+
+/*
+ * ============================================================================== FIGURES (F-235)
+ *
+ * Moved here from `apps/mobile/test/screens.test.tsx`'s FR-48 block, where F-226's review shaped
+ * them, so the conformance suite can hold every registered component to "every figure is tabular"
+ * (criterion 4) and the screens' sweep reads the same definition rather than a copy of it.
+ */
+
+/**
+ * Digits that are part of a NAME, not a quantity: a standard space or unit (D65, ΔE00, WCAG 2.2,
+ * sRGB, Display-P3) or a hyphenated identifier (IRO-ED-001, F-019). Nobody reads "65" in D65 as a
+ * figure.
+ */
+const NAMED_DIGITS =
+  /ΔE00|\b(?:D65|D50|sRGB|Display-P3|WCAG\s?\d(?:\.\d)?)\b|\b[A-Za-z]+(?:-[A-Za-z]+)*-\d+\b/gu;
+
+/**
+ * Running prose: eight or more words. A figure in a sentence is read, not scanned down a column.
+ *
+ * Japanese writes no spaces between words, so a sentence there is one long run and the word count
+ * says nothing. It is counted in kana and kanji instead: a Japanese word averages two to three
+ * characters, so twenty is about eight words (found by F-235, when the rule first ran over the
+ * Japanese sweep and read Preferences' "Android 12 以降は…" sentence as a column of figures).
+ */
+const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/gu;
+const isProse = (s: string): boolean =>
+  (s.match(/\p{L}{2,}/gu) ?? []).length >= 8 || (s.match(CJK) ?? []).length >= 20;
+
+/**
+ * A numeral bound to a Japanese counter — 2色 (two colours), 1型 (type 1), 16進数 (hexadecimal),
+ * 1つ以上 (one or more) — is part of a word, as "two" is in English: nobody scans it down a column.
+ * Only a numeral FOLLOWED by kana or kanji is a counter; a value after a word (網羅率84%) is still
+ * a figure (F-235, when the rule first ran over the Japanese sweep).
+ */
+const COUNTER = /\d+(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])/gu;
+
+/** Whether a string CARRIES a figure: any digit left once names and counters are removed, outside prose. */
+export function carriesFigure(s: string): boolean {
+  const rest = s.replace(NAMED_DIGITS, '').replace(COUNTER, '');
+  return /\d/u.test(rest) && !isProse(rest);
+}
+
+/** The nodes that own a figure-carrying string: the element, because `numeric` lives on it. */
+export function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
+  if ((node.children ?? []).some((c) => typeof c === 'string' && carriesFigure(c))) out.push(node);
+  for (const child of node.children ?? []) if (typeof child !== 'string') figureNodes(child, out);
+  return out;
+}
+
+/** The nodes set in tabular digits: their font variant carries the manifest's numeric feature. */
+export function tabularNodes(node: TestNode, feature: string, out: TestNode[] = []): TestNode[] {
+  const variant = flattenStyle(node.props['style'])['fontVariant'];
+  if (Array.isArray(variant) && (variant as unknown[]).includes(feature)) out.push(node);
+  for (const child of node.children ?? [])
+    if (typeof child !== 'string') tabularNodes(child, feature, out);
+  return out;
+}
+
+/** Every figure-carrying string on a tree that is NOT set in tabular digits. */
+export function raggedFigures(node: TestNode, feature: string): readonly string[] {
+  const tabular = new Set(tabularNodes(node, feature));
+  return figureNodes(node)
+    .filter((n) => !tabular.has(n))
+    .flatMap((n) => (n.children ?? []).filter((c): c is string => typeof c === 'string'));
+}

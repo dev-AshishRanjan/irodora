@@ -43,6 +43,7 @@ import { nativeSpacing } from '@irodora/design-tokens';
 import { Mark, type MarkProps } from './brand.js';
 import { Button, type ButtonProps } from './Button.js';
 import type { GlyphName } from './Glyph.js';
+import { Bilingual } from './bilingual.js';
 import { IconButton } from './IconButton.js';
 import type { Script } from './layout.js';
 import { Text, type TextWeight, type TypeSize } from './Text.js';
@@ -298,21 +299,16 @@ function Title({
       </Text>
     );
   return (
-    <Text
+    <Bilingual
       heading
+      text={title.text}
+      {...(title.ja === undefined ? {} : { ja: title.ja })}
       size={title.size}
       weight={title.weight}
       color="foreground"
       script={script}
       numberOfLines={1}
-    >
-      {title.text}
-      {title.ja === undefined ? null : (
-        <Text size={title.size} weight={title.weight} color="foreground" script="japanese">
-          {` • ${title.ja}`}
-        </Text>
-      )}
-    </Text>
+    />
   );
 }
 
