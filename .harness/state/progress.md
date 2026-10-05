@@ -8,6 +8,68 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-05 — F-234 The navigation chrome is one tab bar, one app bar, one action bar and one sheet
+
+**Done.** The tab bar is `01`'s, drawn by our own component and wired through the navigator; the app
+bar, the action bar and the sheet's two forms exist as components and as `Screen` slots, ready for the
+screen features. It shipped in eleven commits, `e92870c` through this one
+([ADR-0117](../../docs/adr/0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md),
+[ADR-0118](../../docs/adr/0118-the-app-bar-and-the-action-bar-are-placed-by-screen-and-the-sheet-by-its-form.md)).
+
+- **Measured, then recorded.** 21 headers re-recorded as `ui:AppBar` containers; action bars added for
+  03, 16 and 22; 01's rule (2 px), indicator, inks and filled Home glyph; 10's tonal fill re-read as
+  `border.strong`. OQ-47 (the non-Home active glyph) and OQ-48 (bilingual titles in Japanese) raised.
+- **The tab bar (ADR-0117).** `TabBar` in `@irodora/ui`, every number recomputed from 01 with decoys:
+  41.5 dp of content, the 35.5 dp under the labels absorbing the device inset (77 dp on an iPhone, not
+  56 + 34), the 37.3 dp side inset, the 47.5 × 2.5 indicator on a one-dp rule, a 24 dp glyph, the
+  caption label. The route hands the whole bar to `src/tabBar.tsx`, which keeps React Navigation's
+  `tabPress` contract. F-168 is reversed: the words are back, one line each.
+- **The app bar, the action bar, the sheet (ADR-0118).** `AppBar` draws every header arrangement the
+  mockups draw; `Screen appBar` pins it above the scroller with the status bar's inset moved into it.
+  `ActionBar` takes one or two actions in the caller's order (20 is the one bar that draws its primary
+  second); `Screen actionBar` puts it after the scroller in flow. `Sheet` takes a required `form`:
+  floating (03) or docked (04, its side inset OQ-16's). No title and no scrim drawn; the handle is ours,
+  named and adjustable in the caller's words. 16 pushed routes stay on the platform header, pinned by a
+  ratchet in `chrome.test` that each screen feature shrinks.
+- **The gates learned two things.** The conformance suite has a `navigation` kind (default, focus,
+  active), earned by drawing a tablist of tabs, and an `indicator` treatment. `verify-viewport` lists
+  `overlay.tsx` as an inset owner and reports an owner that reads none, which found the tab layout.
+- **Found on the way.** gorhom's English handle copy reached the Lens (ADR-0056); its 10 dp handle
+  padding was in the inset pin and is gone from it, with the reason recorded.
+
+**Review (once, on `e34a016`): FAIL**, every gate green: 1 blocking, 6 should-fix, 10 minor. Fixed,
+raised or recorded in the next commit, and the gates re-run.
+- **B1 → OQ-49:** a tab label that does not fit truncates — `プロフィール` at 1× on a 360 dp phone,
+  *Wardrobe* from about 130 % text. Truncate, shrink, wrap or shorten is a person's call against A7;
+  ADR-0117's understated cost is corrected and the attestation declared.
+- **Fixed:** S1 (attestations declared), S2 (the handle resizes the sheet for a screen reader), S3
+  (back controls named "Back to …", the drawn word inside the name), S4 (the docked sheet clears the
+  home indicator), S6 (E4 covers the Profile tab root), M1, M3, M6, M7, M9, M10, and M2 in part.
+- **Recorded:** F-309 (the spacing gate's unread count rose 26 → 40 with the chrome's named
+  constants), F-310 (the chrome's rules, derived bands and right inset measured), F-311 (`Button` takes
+  each element's drawn type step and weight).
+
+**Gates run on the final tree, each exit 0:** `node scripts/verify-state.mjs` · `pnpm typecheck` ·
+`pnpm format:check` · `pnpm build` · `pnpm lint` · `pnpm test` · `pnpm test:a11y` ·
+`pnpm test:contrast` · `pnpm test:cvd` · `node scripts/verify-mockups.mjs` ·
+`node scripts/verify-viewport.mjs --prove`; `generate-e2e-flows --check`, `verify-reachability` and
+`verify-guards` when the adapter moved. Along the way `pnpm test` failed three times without a defect —
+twice a jest suite failed to load on Windows (`UNKNOWN: unknown error, read`), once an `afterEach`
+timed out while my own commands competed for the CPU — and each time the gate was re-run whole and
+alone (the lesson `a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole`).
+
+**Not run:** `e2e` (gate 7 pending; no device), `artifact` (no JDK), any Hermes run.
+**Attested, outstanding (F-234's `attested`):** on a device — the tabs announced "tab, n of 5" with the
+selected one; where each label truncates in both locales at 360 and 384 dp from 1× to 200 %; the
+bar's height with the iPhone home indicator and Android's two navigation modes; the Atlas journey
+through the bar; the floating sheet clearing the home indicator, dragging, dismissing, and its handle's
+actions; once screens compose them, the back control's name, the bilingual heading, and the end of a
+scroll never under an action bar.
+
+**Next:** F-235 (the data displays the mockups draw). F-230 waits on OQ-13; F-221 and F-222 are blocked.
+
+---
+
 ## 2026-09-29 — F-233 Cards and the sample family are the mockups'
 
 **Done.** Cards and every sample form draw as the mockups draw them, text on a sample and the line
