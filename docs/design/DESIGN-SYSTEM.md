@@ -292,7 +292,8 @@ Every component in `@irodora/ui` must:
 
 1. Consume tokens. No literal values.
 2. Define every state its **kind** requires — `interactive` (default · focus · active ·
-   disabled · loading), `data` (default · loading · error · empty), `static` (default).
+   disabled · loading), `navigation` (default · focus · active: a tab bar, earned by drawing a
+   tablist of tabs, since F-234), `data` (default · loading · error · empty), `static` (default).
    The kind is the only lever: a component cannot shorten its own list. There is no
    `hover` on a touch surface, and the conformance suite asserts that two declared states
    **render differently**, because a state that returns an identical tree exists in name only.
@@ -315,6 +316,19 @@ Every component in `@irodora/ui` must:
    through `Text on={sample}` ([ADR-0116](../adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).
    A token on a sample is the pairing nothing declares, and the conformance rule `sample-ink`
    reports it where it fails.
+
+### The chrome is drawn once, and placed by `Screen` (F-234)
+
+- **`TabBar`** — `01`'s, the only one ([ADR-0117](../adr/0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md)):
+  glyph and word, the indicator on the rule, every number recomputed from `01`. The app hands it the
+  whole bar through `tabBar`; the adapter keeps React Navigation's `tabPress` contract.
+- **`AppBar`** and **`ActionBar`** — the arrangements the screens draw, passed by each screen as its
+  mockup draws them, and placed by `Screen appBar` (above the scroller, the status bar's inset moved
+  into it) and `Screen actionBar` (after the scroller, in flow, never over the content)
+  ([ADR-0118](../adr/0118-the-app-bar-and-the-action-bar-are-placed-by-screen-and-the-sheet-by-its-form.md)).
+  A surface never reads an inset to place either.
+- **`Sheet`** — `form` is required: `floating` (`03`) or `docked` (`04`, its side inset OQ-16's). No
+  drawn title, no scrim; the handle and the dismiss layer are named in the caller's words.
 
 ---
 

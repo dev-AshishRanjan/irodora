@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-29",
+  "updated": "2026-10-05",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2988,7 +2988,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:a11y — the rule fires only where a subject declares `selectable: true`, and three cases prove it discriminates: a highlight-only component is reported, the same component passes once it announces, and a non-selectable one is left alone. That third case is the one the first draft failed.",
+      "guard": "gate:a11y — the rule fires only where a subject declares `selectable: true`, and three cases prove it discriminates: a highlight-only component is reported, the same component passes once it announces, and a non-selectable one is left alone. That third case is the one the first draft failed. SINCE F-234 selection-treatment also knows `indicator` (01's tab: the indicator and the word in foreground), with a colour-only tab as the decoy, and a `navigation` kind owes default, focus and active, earned by drawing a tablist of tabs.",
       "memory": "memory/effects/active-means-two-different-things.md",
       "rationale": "THE SUITE CHECKED `disabled` AND `loading` AND SAID NOTHING ABOUT `active`, so a component could render a selected state that a screen reader could not tell from the default. The tree-difference assertion did not help: it requires SOME difference between states, and a changed background satisfies it while telling a non-sighted user nothing. THE FIRST DRAFT OF THE RULE WAS WRONG AND THE SUITE CAUGHT IT IMMEDIATELY — requiring `accessibilityState.selected` for every active subject flagged `Button`, `SearchField` and `TextField`, because `active` means \"being pressed or typed into\" there rather than \"chosen\". Three false positives on components doing nothing wrong, which is exactly how a rule gets deleted rather than fixed. `active` IS OVERLOADED AND NO TREE CAN DISAMBIGUATE IT, so the registry declares which subjects it means selection for — one word, beside the component, the same shape as `sampleValues` and `forbiddenNames`, both of which are also facts a rendered tree cannot report. A SECOND CORRECTION IN THE SAME FEATURE: I first marked the wardrobe gallery cell as selected, and that state can NEVER BE SEEN — tapping a cell renders the editor, which replaces the grid. It would have been unreachable code with a passing test. What the cell was actually missing was press feedback, which is a different report entirely. F-232 (2026-09-28): `selection-treatment` now has three pictures, each read off the tree: `chooser` (00's accent.muted + accent edge), `pill` (a chosen pill is filled or edged in foreground AND draws a leading dot; a fill alone is reported — 05's open case, OQ-43), and `segment` (a chosen segment is filled; an unchosen segment draws no shape, so the fill is a shape appearing). A dot painted in a declared sample does not count. Decoys: pill-selection.test, segmented-choice.test, badges.test.",
       "confidence": 0.85,
@@ -3140,7 +3140,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:test — `layout.test.tsx` asserts STRUCTURALLY that the inset is on an ancestor of the scroller and absent from its content container, which is the exact property F-159 got wrong; planted against the F-159 shape it fails two cases. The behaviour itself is unobservable here and always will be — react-test-renderer has no viewport.",
+      "guard": "gate:test — `layout.test.tsx` asserts STRUCTURALLY that the inset is on an ancestor of the scroller and absent from its content container, which is the exact property F-159 got wrong; planted against the F-159 shape it fails two cases. The behaviour itself is unobservable here and always will be — react-test-renderer has no viewport. SINCE F-234 the inset can live on the app bar: with `Screen appBar` it moves into the bar (`topInset`) and the ground carries none; app-bar.test asserts the bar is outside the scroller, padded by the inset, its fill on the same node, and that no ancestor of the scroller also carries it, with an in-content bar as the decoy.",
       "memory": "memory/effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md",
       "rationale": "A BOUNDARY APPLIED AS SPACING IS CORRECT AT EXACTLY ONE SCROLL POSITION. F-159 read the safe area, added it to the token padding, and put the sum on `contentContainerStyle` — which pads the content INSIDE the scroller. The first screenful sits in the right place, which is why it was accepted, and every pixel after it travels under the status bar; reported from the next build as \"the battery and all native data is coming as a patch over our UI\". Two things had been merged that are not the same kind of thing: `nativeSpacing[padding]` is a design value that sets the rhythm, and `insets.top` is the shape of the hardware saying where the app may draw at all. A ScrollView clips to its FRAME, so the boundary has to move the frame — an ancestor carries it and the content container keeps only the rhythm. THE WORST KIND OF WRONG, because the one position it is right at is the one everybody looks at. TWO NEAR-MISSES: `paddingTop` on the ScrollView own `style` is the tempting one-liner and is React Native documented trap, which is indirectly why the bug existed at all; and `SafeAreaView` is the idiomatic answer and throws without a provider, which `Screen` is rendered without by the conformance suite, three dozen screen tests and the a11y gate. WHY NO TEST CAUGHT IT: react-test-renderer has no viewport, no scrolling and no status bar, so \"content stops at the boundary\" is not observable and never will be. The new assertion is STRUCTURAL — the inset is on an ancestor of the scroller, not inside its content — which is the property that was wrong rather than a proxy for it. When the behaviour is invisible to the harness, assert the structure that causes it. SAME REPORT, SAME SHAPE, ONE LINE UP: F-162 drew a glyph AND a word in each tab arguing NFR-9, and five words at the 10px label step wrapped to a second line across a phone width. The argument was about information and the failure was about space. A channel that overflows is not a channel.",
       "confidence": 0.95,
@@ -5620,7 +5620,7 @@
         "mobile"
       ],
       "severity": "medium",
-      "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34).",
+      "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34). SINCE F-234 Screen has two more slots, appBar and actionBar, both absent by default, so no screen changed by their arrival.",
       "memory": "memory/effects/a-screen-header-is-a-slot-not-a-screens-business.md",
       "rationale": "Mockup 23 draws the avatar in the screen header, left of the title, so the arrangement belongs to Screen rather than to the profile screen — and putting the picture above the first card instead would have been reordering what a mockup draws, which is the mistake F-239's review caught in a smaller form. Medium rather than high: the slot is additive and absent by default, so the blast radius is a header that gains a row wrapper only where a caller asks for one. It reaches every screen because every screen renders this component, which is also why the guard is the sweep rather than the profile screen's own test.",
       "confidence": 0.9,
@@ -6353,7 +6353,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings).",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6602,6 +6602,155 @@
       "guard": "test:packages/ui/test/sample-family.test.tsx, cards.test.tsx and fabric-swatch.test.tsx recompute SWATCH_SIZE, SWATCH_KEYLINE, the swatch corner, STRIP_CORNER, STRIP_KEYLINE, CARD_RADIUS, the card edge and the fabric teeth from the inventories, with the counts asserted and the old values as decoys; illustrations.test counts every sample component by name.",
       "memory": "memory/effects/a-sample-renamed-in-the-inventory-must-be-renamed-in-the-scans.md",
       "rationale": "The sample family's defaults are counted off the inventories by component name (ui:Swatch, ui:Strip, ui:Card, ui:FabricSwatch) and by element id (12.source.swatch). Re-record an element under another name, add one, or change a token it binds, and a count moves: the default tests fail on purpose, and illustrations.test's SAMPLE_COMPONENTS stops seeing a sample unless its name is listed. F-233 renamed five (04, 10, 23 to ui:Strip; 09, 17 to ui:Swatch; 12 to ui:FabricSwatch) and moved each list in the same change."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-234",
+      "id": "E-164",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/AppBar.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ActionBar.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/chrome.test.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/app-bar.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/action-bar.test.tsx"
+        }
+      ],
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes.",
+      "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
+      "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-234",
+      "id": "E-165",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/tabBar.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/TabBar.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-e2e-flows.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/tab-bar.test.tsx"
+        }
+      ],
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "guard": "test:apps/mobile/test/tab-bar.test.tsx drives the adapter with plain objects: an inactive press emits tabPress and navigates, an active press emits only, a prevented press does not navigate (the decoy), a long press emits tabLongPress; every drawn tab carries the registry's testID, and `node scripts/generate-e2e-flows.mjs --check` resolves tab-atlas. chrome.test finds one file building the navigator and one drawing the bar.",
+      "memory": "memory/effects/the-tab-bar-is-ours-and-must-keep-react-navigations-contract.md",
+      "rationale": "The route hands the whole bar to our adapter, so React Navigation's own bar no longer emits tabPress or navigates: the adapter must, exactly as the library would, or a screen listening for a second press (scroll to top) goes deaf and a prevented press navigates anyway. The e2e ids moved from tabBarButtonTestID to the drawn tabs, and the journeys select on them."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-234",
+      "id": "E-166",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/overlay.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-viewport.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/sheet.test.tsx"
+        }
+      ],
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "test:packages/ui/test/sheet.test.tsx recomputes SHEET_FORMS and SHEET_HANDLE from 03 and 04, reads detached, bottomInset and the margins off gorhom's own node, renders the background and handle components the sheet hands it (gorhom's English label as the decoy), and keeps every F-177 detent case; `form` and the docked `sideInset` are required by type. `node scripts/verify-viewport.mjs --prove` lists overlay.tsx as an inset owner and rejects an owner that reads none.",
+      "memory": "memory/effects/a-portalled-sheet-reads-its-own-inset.md",
+      "rationale": "Sheet now has two forms, and the Lens (F-243, F-244) passes floating while F-245 will pass docked with OQ-16's side inset. The floating form reads the bottom inset itself, because a portal sits outside every Screen; that is a third inset reader, so the viewport gate had to learn it, and with a stale-owner rule it found the tab layout no longer reads one. The handle's words are the caller's: gorhom's English reached the Lens until now."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-234",
+      "id": "E-167",
+      "from": {
+        "kind": "content",
+        "ref": "mockups/inventory/01.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/tabs.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/tab-bar.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/tab-bar.test.tsx"
+        }
+      ],
+      "scope": [
+        "mockups",
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "test:apps/mobile/test/tab-bar.test.tsx holds TABS[].activeGlyph to 01.json's raw.filled for each tab (Home alone filled is the decoy for filling all five); packages/ui/test/tab-bar.test.tsx recomputes every TAB_* constant from 01.json with the replaced values as decoys.",
+      "memory": "memory/effects/oq-47s-answer-is-data-not-code.md",
+      "rationale": "What an active Atlas, Lens, Wardrobe or Profile tab draws is OQ-47, a person's. The glyph's shape is data — 01's raw.filled read into TABS[].activeGlyph — so the answer changes the inventory and the registry, and the test moves with them; and every number the bar draws is 01's, so re-measuring 01 moves the bar."
     }
   ]
 }

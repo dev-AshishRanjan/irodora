@@ -40,6 +40,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Engineering discipline
 
+- [lessons/a-failed-identity-match-between-render-instances-exhausts-the-heap.md](lessons/a-failed-identity-match-between-render-instances-exhausts-the-heap.md) — a failing `toBe` between two test instances makes jest serialise both fibre trees and die out of memory; compare instances as a boolean.
 - [lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md](lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md) — F-226 closed OQ-13 on "§2 was approved on 2026-09-10"; `git log -S` showed an agent wrote §2 on 09-14. A header date is not every sentence's date.
 - [lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md](lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md) — `Extract<>` and `@ts-expect-error` let three renamed type steps through a "it type-checks" rewrite; delete an old name before giving it a new meaning.
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
@@ -87,6 +88,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Environment
 
+- [lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md](lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md) — `UNKNOWN: unknown error, read` under turbo's parallel jest is a file read failing under load, a different suite each time; re-run the whole gate alone, never count passes past it.
 - [lessons/powershell-51-round-trips-utf8-into-mojibake.md](lessons/powershell-51-round-trips-utf8-into-mojibake.md) — read and write UTF-8 explicitly at both ends, or Japanese names and ΔE notation corrupt silently.
 
 ### Content and licensing
@@ -292,4 +294,8 @@ which is after they exist, not before.*
 - [effects/text-on-a-sample-is-measured-whatever-chose-its-ink.md](effects/text-on-a-sample-is-measured-whatever-chose-its-ink.md) — **E-161** · the `sample-ink` rule measures text on a declared sample; a moved ink or line is exempt by value, derived from the samples.
 - [effects/the-provenance-chip-reads-the-switch-and-the-name-does-not.md](effects/the-provenance-chip-reads-the-switch-and-the-name-does-not.md) — **E-162** · 15's provenance switch reaches the screen through ProvenanceChip alone; the sample's accessible name never changes with it.
 - [effects/a-sample-renamed-in-the-inventory-must-be-renamed-in-the-scans.md](effects/a-sample-renamed-in-the-inventory-must-be-renamed-in-the-scans.md) — **E-163** · the sample family's defaults and the illustration scan count inventory elements by name; a rename moves every list in the same change.
+- [effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md](effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md) — **E-164** · `Screen` places the app bar above the scroller and the action bar after it; each screen feature moves its route off the platform header and out of `chrome.test`'s ratchet.
+- [effects/the-tab-bar-is-ours-and-must-keep-react-navigations-contract.md](effects/the-tab-bar-is-ours-and-must-keep-react-navigations-contract.md) — **E-165** · our tab bar must emit `tabPress` and navigate only when nobody prevented it, as React Navigation's would; the e2e ids moved to the drawn tabs.
+- [effects/a-portalled-sheet-reads-its-own-inset.md](effects/a-portalled-sheet-reads-its-own-inset.md) — **E-166** · the sheet's `form` is every caller's choice; the floating sheet reads the bottom inset itself, so `verify-viewport` lists it, and a second render in one test finds the first sheet.
+- [effects/oq-47s-answer-is-data-not-code.md](effects/oq-47s-answer-is-data-not-code.md) — **E-167** · `01`'s `raw.filled` sets which tab's glyph fills, and every `TAB_*` number is `01`'s, recomputed.
 - [lessons/a-package-gate-is-not-the-repository-gate.md](lessons/a-package-gate-is-not-the-repository-gate.md) — F-223's increments were committed on the changed packages' eslint and the new test files while the root lint chain and the app suite were red; iterate on subsets, commit on the root commands.

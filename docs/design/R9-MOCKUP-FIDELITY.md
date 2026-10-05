@@ -493,7 +493,7 @@ themes and **both** locales — a screen never has two layouts.
 
 | | conflict | decision |
 |---|---|---|
-| **C1** | The tab bar is drawn nine ways — `01` five labelled; `02` three; `05 09 11 15 18` four, all different; `21` three; `25` four labelled, no Profile | **P5 → `01`**: Home · Atlas · Lens · Wardrobe · Profile, icon **and** label. The label reads *Lens* (`02` and `25` both say so; `01` says *Lens Camera*). The current order already matches; labels return, which reverses `F-168` |
+| **C1** | The tab bar is drawn nine ways — `01` five labelled; `02` three; `05 09 11 15 18` four, all different; `21` three; `25` four labelled, no Profile | **P5 → `01`**: Home · Atlas · Lens · Wardrobe · Profile, icon **and** label. The label reads *Lens* (`02` and `25` both say so; `01` says *Lens Camera*). The current order already matches; labels return, which reverses `F-168` — done by `F-234` ([ADR-0117](../adr/0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md)) |
 | **C2** ⇄ | Home `01` and Home-light `25` are different designs — lockup, hero shape, where the text sits, the CTA, the wardrobe strip, the tab bar | **P1 + P2**: `01`'s layout, `25`'s palette. The README itself calls `25` a *"light mode translation"* |
 | **C3** ⇄ | Colour detail `06` and its Japanese `26` are different designs | **P1 + P2**: `06`'s layout; `26`'s headings (測色値と表色系 · 着こなしの配色調和 · コーパス典拠と査読) and Japanese typography. `26`-only elements — the hanko seal, the kasane bar — are not adopted by default |
 | **C4** | The lockup is drawn four ways — `00` coral outline mark; `01` filled white mark + *Irodora*; `14` silver mark + *Irodora* + 彩り・色の知性; `25` *IRODORA 彩度* + outline mark | mark geometry from `14`; in-app lockup from `01`; splash lockup from `14`. Monochrome everywhere, including the icon — supersedes [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md). `00`'s and `25`'s variants are not used |
@@ -632,7 +632,7 @@ Each needs its ADR, written by the feature named, before that feature is done
 - [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) — colour on the icon (`F-230`)
 - [ADR-0096](../adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) and [ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) — the neutral ground, the one gold accent, the theme recipes (`F-225`)
 - [ADR-0010](../adr/0010-personal-colour-is-a-profile-not-a-skin-rgb.md) and [ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) — no seasonal label (`F-223`); amended by [ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)
-- `F-168` — the tab bar is icons alone (`F-234`)
+- `F-168` — the tab bar is icons alone (`F-234`, [ADR-0117](../adr/0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md)); with it, `F-163`'s missing rule and `F-175`'s accent indicator, for the tab bar only
 - the spacing, radius and type values in the manifest (`F-226`, `F-227`)
 
 **No golden rule is superseded.** E1 – E3 exist because they cannot be.
