@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-29",
+  "updated": "2026-10-05",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7787,7 +7787,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-225",
         "F-226",
@@ -7824,7 +7824,8 @@
         "a11y",
         "contrast",
         "cvd"
-      ]
+      ],
+      "plan": "plans/F-235-the-data-displays-the-mockups-draw.md"
     },
     {
       "id": "F-236",
