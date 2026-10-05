@@ -22,10 +22,12 @@ import {
   Button,
   Card,
   Chip,
+  CoverageDial,
   FabricSwatch,
   DeltaBars,
   FigureValue,
   ProximityHeadline,
+  Radar,
   ReadoutTable,
   ChoiceGroup,
   Dialog,
@@ -1526,6 +1528,48 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       rendered.unmount();
       return json;
     },
+  },
+  {
+    // The coverage dial (F-235): one image, its arc and figure drawn from one fraction.
+    name: 'CoverageDial (11)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<CoverageDial fraction={0.84} label="Wardrobe Coverage" />, theme),
+  },
+  {
+    // The radar (F-235): four axes; its ink is the caller's until OQ-24 (F-260).
+    name: 'Radar (17)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Radar
+          name="Colour profile"
+          ink="foreground"
+          axes={[
+            {
+              label: 'Temperature',
+              fraction: 0.4,
+              figure: { kind: 'share', fraction: 0.4, of: 'Temperature' },
+            },
+            {
+              label: 'Depth',
+              fraction: 0.6,
+              figure: { kind: 'share', fraction: 0.6, of: 'Depth' },
+            },
+            {
+              label: 'Chroma',
+              fraction: 0.3,
+              figure: { kind: 'share', fraction: 0.3, of: 'Chroma' },
+            },
+            {
+              label: 'Muted Tolerance',
+              fraction: 0.65,
+              figure: { kind: 'share', fraction: 0.65, of: 'Muted Tolerance' },
+            },
+          ]}
+        />,
+        theme,
+      ),
   },
   {
     // The headline (F-235): the band's ink is the caller's, so the subject passes one that exists.

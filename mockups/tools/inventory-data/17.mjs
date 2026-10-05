@@ -81,7 +81,7 @@ const option = (key, o) => {
   ];
 };
 const axis = (key, box, emDp, binding, lines = 1) =>
-  t(`17.radar.axis-${key}`, box, '17.radar', binding, {
+  t(`17.radar.axis-${key}`, box, '17.radar.plot', binding, {
     tokens: { fg: 'text.secondary' },
     ...cap(emDp),
     copy: { shape: 'label', script: 'latin', ...(lines > 1 ? { lines } : {}) },
@@ -205,9 +205,14 @@ export default {
     // spaced rings (vertices at about 15, 30, 46, 61, 75 and 90 px), 1 px wide; spokes on both axes,
     // 2 px; a filled polygon with a 2.5 px edge; 9 px vertex markers. Two vertex inks: blue at
     // Temperature and Depth, grey at Muted Tolerance and Chroma, the edge blending between them (OQ-24).
-    el('17.radar.chart', 'ui:Radar', B(132, 767, 182, 182), {
-      parent: '17.radar',
-      tokens: { track: 'border.subtle' },
+    // F-235: a ui:Radar is the chart and the four labels beyond its axes. The rings read lighter than
+    // the spokes although they are half as wide, which only a lighter ink does (antialiasing darkens
+    // a thin line toward the card): border.strong at about 75 % coverage gives #3C424E; the spokes
+    // read border (ΔE00 0.65).
+    el('17.radar.plot', 'ui:Radar', B(71, 749, 285, 220), { parent: '17.radar' }),
+    el('17.radar.chart', null, B(132, 767, 182, 182), {
+      parent: '17.radar.plot',
+      tokens: { ring: 'border.strong', spoke: 'border.subtle' },
       measured: {
         ring: '#3D4247',
         spoke: '#2E343F',

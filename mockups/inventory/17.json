@@ -779,9 +779,34 @@
       }
     },
     {
-      "id": "17.radar.axis-temperature",
+      "id": "17.radar.plot",
       "order": 24,
       "parent": "17.radar",
+      "component": "ui:Radar",
+      "box": {
+        "x": 71,
+        "y": 749,
+        "w": 285,
+        "h": 220
+      },
+      "dp": {
+        "x": 35.5,
+        "y": 374.5,
+        "w": 142.5,
+        "h": 110
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar.axis-temperature",
+      "order": 25,
+      "parent": "17.radar.plot",
       "component": "ui:Text",
       "box": {
         "x": 183,
@@ -817,7 +842,7 @@
     },
     {
       "id": "17.radar.temperature.label",
-      "order": 25,
+      "order": 26,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -854,7 +879,7 @@
     },
     {
       "id": "17.radar.temperature.value",
-      "order": 26,
+      "order": 27,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -891,9 +916,9 @@
     },
     {
       "id": "17.radar.chart",
-      "order": 27,
-      "parent": "17.radar",
-      "component": "ui:Radar",
+      "order": 28,
+      "parent": "17.radar.plot",
+      "component": null,
       "box": {
         "x": 132,
         "y": 767,
@@ -907,7 +932,8 @@
         "h": 91
       },
       "tokens": {
-        "track": "border.subtle"
+        "ring": "border.strong",
+        "spoke": "border.subtle"
       },
       "type": null,
       "icon": null,
@@ -934,7 +960,7 @@
     },
     {
       "id": "17.radar.temperature.range",
-      "order": 28,
+      "order": 29,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -970,7 +996,7 @@
     },
     {
       "id": "17.radar.depth.label",
-      "order": 29,
+      "order": 30,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1007,7 +1033,7 @@
     },
     {
       "id": "17.radar.depth.value",
-      "order": 30,
+      "order": 31,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1044,7 +1070,7 @@
     },
     {
       "id": "17.radar.depth.range",
-      "order": 31,
+      "order": 32,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1072,8 +1098,8 @@
     },
     {
       "id": "17.radar.axis-muted-tolerance",
-      "order": 32,
-      "parent": "17.radar",
+      "order": 33,
+      "parent": "17.radar.plot",
       "component": "ui:Text",
       "box": {
         "x": 71,
@@ -1110,8 +1136,8 @@
     },
     {
       "id": "17.radar.axis-depth",
-      "order": 33,
-      "parent": "17.radar",
+      "order": 34,
+      "parent": "17.radar.plot",
       "component": "ui:Text",
       "box": {
         "x": 318,
@@ -1147,7 +1173,7 @@
     },
     {
       "id": "17.radar.chroma.label",
-      "order": 34,
+      "order": 35,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1184,7 +1210,7 @@
     },
     {
       "id": "17.radar.chroma.value",
-      "order": 35,
+      "order": 36,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1221,7 +1247,7 @@
     },
     {
       "id": "17.radar.chroma.range",
-      "order": 36,
+      "order": 37,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1249,7 +1275,7 @@
     },
     {
       "id": "17.radar.contrast.label",
-      "order": 37,
+      "order": 38,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1286,7 +1312,7 @@
     },
     {
       "id": "17.radar.contrast.value",
-      "order": 38,
+      "order": 39,
       "parent": "17.radar",
       "component": "ui:Text",
       "box": {
@@ -1323,8 +1349,8 @@
     },
     {
       "id": "17.radar.axis-chroma",
-      "order": 39,
-      "parent": "17.radar",
+      "order": 40,
+      "parent": "17.radar.plot",
       "component": "ui:Text",
       "box": {
         "x": 197,
@@ -1360,7 +1386,7 @@
     },
     {
       "id": "17.radar.contrast.range",
-      "order": 40,
+      "order": 41,
       "parent": "17.radar",
       "component": "ui:Slider",
       "box": {
@@ -1388,7 +1414,7 @@
     },
     {
       "id": "17.palette",
-      "order": 41,
+      "order": 42,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1420,7 +1446,7 @@
     },
     {
       "id": "17.palette.title",
-      "order": 42,
+      "order": 43,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1454,7 +1480,7 @@
     },
     {
       "id": "17.palette.subtitle",
-      "order": 43,
+      "order": 44,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1491,7 +1517,7 @@
     },
     {
       "id": "17.palette.swatch-1",
-      "order": 44,
+      "order": 45,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1521,7 +1547,7 @@
     },
     {
       "id": "17.palette.swatch-2",
-      "order": 45,
+      "order": 46,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1551,7 +1577,7 @@
     },
     {
       "id": "17.palette.swatch-3",
-      "order": 46,
+      "order": 47,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1581,7 +1607,7 @@
     },
     {
       "id": "17.palette.swatch-4",
-      "order": 47,
+      "order": 48,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1611,7 +1637,7 @@
     },
     {
       "id": "17.palette.swatch-5",
-      "order": 48,
+      "order": 49,
       "parent": "17.palette",
       "component": "ui:Swatch",
       "box": {
@@ -1641,7 +1667,7 @@
     },
     {
       "id": "17.palette.swatch-1.name",
-      "order": 49,
+      "order": 50,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1678,7 +1704,7 @@
     },
     {
       "id": "17.palette.swatch-2.name",
-      "order": 50,
+      "order": 51,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1715,7 +1741,7 @@
     },
     {
       "id": "17.palette.swatch-3.name",
-      "order": 51,
+      "order": 52,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1752,7 +1778,7 @@
     },
     {
       "id": "17.palette.swatch-4.name",
-      "order": 52,
+      "order": 53,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1789,7 +1815,7 @@
     },
     {
       "id": "17.palette.swatch-5.name",
-      "order": 53,
+      "order": 54,
       "parent": "17.palette",
       "component": "ui:Text",
       "box": {
@@ -1826,7 +1852,7 @@
     },
     {
       "id": "17.next-card",
-      "order": 54,
+      "order": 55,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1855,7 +1881,7 @@
     },
     {
       "id": "17.actions",
-      "order": 55,
+      "order": 56,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1885,7 +1911,7 @@
     },
     {
       "id": "17.actions.continue",
-      "order": 56,
+      "order": 57,
       "parent": "17.actions",
       "component": "ui:Button",
       "box": {

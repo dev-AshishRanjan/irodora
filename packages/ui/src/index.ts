@@ -47,6 +47,31 @@ export {
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
 export { Bilingual, BILINGUAL_SEPARATOR, type BilingualProps } from './bilingual.js';
 export {
+  CoverageDial,
+  DIAL_RADIUS,
+  DIAL_STROKE,
+  DIAL_SWEEP,
+  DIAL_TEXT_DROP,
+  dialArc,
+  dialSize,
+  type CoverageDialProps,
+} from './CoverageDial.js';
+export {
+  Radar,
+  RADAR_EDGE,
+  RADAR_FILL_OPACITY,
+  RADAR_LABEL_GAP,
+  RADAR_LABEL_OUT,
+  RADAR_MARKER,
+  RADAR_RING,
+  RADAR_RINGS,
+  RADAR_SIZE,
+  RADAR_SPOKE,
+  radarName,
+  type RadarAxis,
+  type RadarProps,
+} from './Radar.js';
+export {
   deltaBar,
   DeltaBars,
   DELTA_AXIS,

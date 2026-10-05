@@ -103,16 +103,23 @@ export default {
       raw: { sweepDeg: 276, gapDeg: 84, fillDeg: 249, radiusPx: 83.4, strokePx: 12.4 },
       binding: 'engine:coverage',
     }),
-    t('11.coverage.figure', B(341, 282, 90, 36), '11.coverage', 'engine:coverage.percent', {
+    // F-235: the figure and its label are inside the dial's box and drawn by it, from one fraction.
+    t('11.coverage.figure', B(341, 282, 90, 36), '11.coverage.ring', 'engine:coverage.percent', {
       tokens: { fg: 'text.primary' },
       type: text('sans', 'title', 600, { tabular: true }),
       copy: { shape: 'value', script: 'figures' },
     }),
-    t('11.coverage.figure-label', B(347, 329, 78, 37), '11.coverage', 'static:wardrobe.coverage', {
-      tokens: { fg: 'text.secondary' },
-      type: text('sans', 'caption'),
-      copy: { shape: 'label', script: 'latin', lines: 2 },
-    }),
+    t(
+      '11.coverage.figure-label',
+      B(347, 329, 78, 37),
+      '11.coverage.ring',
+      'static:wardrobe.coverage',
+      {
+        tokens: { fg: 'text.secondary' },
+        type: text('sans', 'caption'),
+        copy: { shape: 'label', script: 'latin', lines: 2 },
+      },
+    ),
     t('11.coverage.heading', B(247, 395, 279, 21), '11.coverage', 'engine:coverage', {
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 500),

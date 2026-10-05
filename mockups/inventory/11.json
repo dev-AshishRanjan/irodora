@@ -274,7 +274,7 @@
     {
       "id": "11.coverage.figure",
       "order": 9,
-      "parent": "11.coverage",
+      "parent": "11.coverage.ring",
       "component": "ui:Text",
       "box": {
         "x": 341,
@@ -309,7 +309,7 @@
     {
       "id": "11.coverage.figure-label",
       "order": 10,
-      "parent": "11.coverage",
+      "parent": "11.coverage.ring",
       "component": "ui:Text",
       "box": {
         "x": 347,
