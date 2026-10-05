@@ -83,8 +83,22 @@ const MAX_PADDING = Math.max(
 );
 const CEILING = NARROWEST_WIDTH - MAX_PADDING * 2;
 
-/** Where insets may be read. One file, and the reason is in its own docblock. */
-const INSET_OWNERS = ['packages/ui/src/layout.tsx', 'apps/mobile/app/(tabs)/_layout.tsx'];
+/**
+ * Where insets may be read, each for a reason in its own docblock.
+ *
+ * - `layout.tsx` — `Screen`, the page root: the status bar's inset, on the scroller's ancestor or in
+ *   the app bar (E-084).
+ * - The tab bar owns the bottom edge, and since F-234 it reads no inset itself: the navigator hands
+ *   its own `insets` to `src/tabBar.tsx`, so `(tabs)/_layout.tsx` left this list when the stale-owner
+ *   rule below found it.
+ * - `overlay.tsx` — the floating sheet (F-234, ADR-0118): `03` lifts it 29.5 dp off the frame, and
+ *   the device's home indicator is laid into that gap where it fits. Portalled, it sits outside
+ *   every `Screen`, so no owner above can pass the inset down to it.
+ *
+ * An owner that stops reading insets is reported too: an exemption nobody needs is a hole somebody
+ * will use.
+ */
+const INSET_OWNERS = ['packages/ui/src/layout.tsx', 'packages/ui/src/overlay.tsx'];
 
 const INSET_READ = /useSafeAreaInsets\s*\(|SafeAreaInsetsContext|<SafeAreaView/u;
 
@@ -126,9 +140,10 @@ function stripComments(source) {
   return source.replace(/\/\*[\s\S]*?\*\//gu, '').replace(/\/\/[^\n]*/gu, '');
 }
 
-export function findProblems() {
+export function findProblems(owners = INSET_OWNERS) {
   const problems = [];
   let scanned = 0;
+  const reads = new Set();
 
   for (const scope of SCOPES)
     for (const file of sourceFiles(scope)) {
@@ -136,13 +151,14 @@ export function findProblems() {
       const rel = posix(file);
       const source = stripComments(readFileSync(file, 'utf8'));
 
-      if (INSET_READ.test(source) && !INSET_OWNERS.includes(rel))
+      if (INSET_READ.test(source)) reads.add(rel);
+      if (INSET_READ.test(source) && !owners.includes(rel))
         problems.push({
           file: rel,
           what: 'reads safe-area insets',
           detail:
             'Insets are read in one place so that every screen gets the same treatment without ' +
-            `every screen deciding. The owners are ${INSET_OWNERS.join(' and ')}.`,
+            `every screen deciding. The owners are ${owners.join(', ')}.`,
         });
 
       for (const match of source.matchAll(SIZE_LITERAL)) {
@@ -158,6 +174,15 @@ export function findProblems() {
         });
       }
     }
+
+  for (const owner of owners)
+    if (!reads.has(owner))
+      problems.push({
+        file: owner,
+        what: 'is an inset owner that reads no insets',
+        detail:
+          'Remove it from INSET_OWNERS: an exemption nobody needs is a hole somebody will use.',
+      });
 
   return { problems, scanned };
 }
@@ -227,6 +252,18 @@ if (process.argv.includes('--prove')) {
     },
   ];
 
+  {
+    // A STALE OWNER: a file listed as an owner that reads no insets is reported. Nothing is planted;
+    // the list is widened by one real file that reads none.
+    const ok = findProblems([...INSET_OWNERS, 'packages/ui/src/Text.tsx']).problems.some(
+      (p) => p.file === 'packages/ui/src/Text.tsx',
+    );
+    if (!ok) bad += 1;
+    console.log(
+      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} an owner that reads no insets ${DIM}rejected${OFF}`,
+    );
+  }
+
   for (const c of cases) {
     writeFileSync(planted, c.body, 'utf8');
     const found = findProblems().problems.length > 0;
@@ -256,7 +293,7 @@ const { problems, scanned } = findProblems();
 console.log(
   `${DIM}  ${String(scanned)} file(s) scanned. Narrowest supported screen ${String(NARROWEST_WIDTH)}pt, ` +
     `so a layout constant may not exceed ${String(CEILING)}pt. Insets are read in ` +
-    `${INSET_OWNERS.join(' and ')} and nowhere else.${OFF}`,
+    `${INSET_OWNERS.join(', ')} and nowhere else.${OFF}`,
 );
 console.log(
   `${DIM}  NOT CHECKED HERE: actual layout. Nothing runs a layout engine, so overflow through ` +

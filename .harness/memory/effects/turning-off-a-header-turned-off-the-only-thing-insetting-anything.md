@@ -53,4 +53,13 @@ is zero insets, which is exactly what a phone with no notch reports. It is a rea
 stand-in. The place a missing provider genuinely *is* a defect is the app root, and that renders
 one explicitly rather than trusting the router.
 
+## Since F-234
+
+The owners changed, and the gate found one of the changes itself. The app bar takes the status bar's
+inset from `Screen` (`topInset`), so `layout.tsx` still reads it once. The floating sheet is
+portalled outside every `Screen` and lifts itself off the frame by `max(29.5, bottom inset)`, so
+`overlay.tsx` became an owner for that read. And `verify-viewport` learned to fail an owner that reads
+no insets: the first run found the tab layout, which stopped reading one when the bar began taking
+the navigator's own `insets` — an exemption nobody needed, kept by nobody noticing.
+
 Related: [[a-size-chosen-against-one-screen-is-wrong-on-every-other]]

@@ -235,6 +235,8 @@ export {
   Dialog,
   Popover,
   Sheet,
+  SHEET_FORMS,
+  SHEET_HANDLE,
   Tabs,
   type DialogProps,
   type PopoverProps,

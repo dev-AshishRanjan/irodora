@@ -277,20 +277,63 @@ const SUBJECTS: readonly ConformanceSubject[] = [
      * colour read against a ground nobody picked is the simultaneous-contrast problem the whole
      * `swatch.well` rule exists to prevent — and this subject is what makes the contrast gate
      * measure the ground that is actually there.
+     *
+     * BOTH FORMS (F-234): `03`'s floating sheet with its pinned footer — *wear* and *add* in an
+     * action bar with no rule, and the full-width *hold* under them, which F-244 places — and `04`'s
+     * docked sheet, whose side inset is OQ-16's: 9.5 dp here is `04`'s drawn left inset mirrored,
+     * a test fixture, not a decision.
      */
-    name: 'Sheet',
+    name: 'Sheet (floating, 03)',
     kind: 'static',
     sampleValues: ['#526A6B'],
     render: (_state, theme) =>
       draw(
         <Sheet
+          form="floating"
           open
           onOpenChange={() => undefined}
           title="This reading"
-          description="An estimate, taken in the light you were standing in."
           closeLabel="Close"
+          handleLabel="Reading"
+          handleHint="Drag to resize the reading"
+          footer={
+            <Stack gap="sm">
+              <ActionBar
+                rule={false}
+                padding={{ top: 0, bottom: 0, side: 0 }}
+                gap={5}
+                actions={[
+                  { label: 'Wear it', glyph: 'arrow-right', height: 32 },
+                  { variant: 'secondary', label: 'Add to wardrobe', glyph: 'plus', height: 31.5 },
+                ]}
+              />
+              <Button variant="tonal" level={2} label="Hold as target" radius="md" height={30.5} />
+            </Stack>
+          }
         >
           <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} />
+        </Sheet>,
+        theme,
+      ),
+  },
+  {
+    name: 'Sheet (docked, 04)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Sheet
+          form="docked"
+          sideInset={9.5}
+          open
+          onOpenChange={() => undefined}
+          title="Held as target"
+          closeLabel="Close"
+          handleLabel="Target"
+          handleHint="Drag to resize the target"
+        >
+          <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} />
+          <Button label="Save comparison" radius="md" height={38} />
         </Sheet>,
         theme,
       ),

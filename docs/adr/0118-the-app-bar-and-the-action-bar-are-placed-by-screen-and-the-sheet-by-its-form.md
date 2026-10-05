@@ -6,7 +6,7 @@
 | **Date** | 2026-09-30 |
 | **Feature** | F-234 |
 | **Applies** | R9-MOCKUP-FIDELITY §4 E4 (the tab bar under an action bar); E-084 (the status bar's inset) |
-| **Supersedes** | the stack's platform header on pushed routes, route by route, as each screen feature moves to `AppBar` |
+| **Supersedes** | the stack’s platform header on pushed routes, route by route, as each screen feature moves to `AppBar`; the sheet’s drawn title, scrim and gorhom’s handle copy (F-158, F-177) |
 
 ---
 
@@ -55,6 +55,31 @@ and neither is about how they look:
    bar on pushed screens would change FR-71: a PRD change, not a layout one, and not an agent's to
    make. The reading is named on `F-267` for the person comparing screens.
 
+### 3. The sheet
+
+1. **`form` is required**, because no board draws a sheet to default from, and the two the screens
+   draw differ in every number (`SHEET_FORMS`, recomputed by `sheet.test`):
+   - **floating (`03`)**: gorhom's `detached` sheet, 28.5 dp in from each side, on `background` with a
+     dp of `border` round it and `lg` on every corner, its content 9 dp in;
+   - **docked (`04`)**: on `surface.1`, no edge, `lg` at the top, its content 12.5 dp in. Its side inset
+     is OQ-16's, so the type requires the caller to pass it (F-245).
+2. **The floating sheet's gap under it is `max(29.5, bottom inset)`**: `03` draws 29.5 dp, and the
+   home indicator is laid into that gap where it fits — the reading the tab bar makes (ADR-0117).
+   Portalled, the sheet sits outside every `Screen`, so it reads the inset itself, the way `Screen`
+   does; `verify-viewport` lists `overlay.tsx` as an owner for that read. The same change gave the
+   gate a stale-owner rule, which found that the tab layout no longer reads an inset (the navigator
+   hands `insets` to the adapter since F-234) and took it off the list.
+3. **No title and no scrim are drawn**, because `03` and `04` draw neither. The title is still the
+   sheet's accessible name, carried by its content container. The dismiss layer stays, transparent,
+   a button named by `closeLabel`, so a tap outside and a screen reader still close the sheet.
+4. **The handle is the drawn bar, named in the caller's words.** 40 × 4 dp in `border.indicator`, at
+   each form's drawn offset. gorhom's own handle announces *"Bottom sheet handle"* and an English hint
+   in every locale, and HeroUI keeps them; that copy reached the Lens (ADR-0056). The handle is now
+   drawn by the sheet — an `adjustable` view named by the caller's `handleLabel` and `handleHint` —
+   and gorhom wraps it in its drag region as it wrapped its own.
+5. **A footer is pinned** (gorhom's `BottomSheetFooter`) on the sheet's ground, and the content is
+   padded by its measured height, so its end is never under the footer. It is where `03`'s actions sit.
+
 ## Consequences
 
 **Good.**
@@ -70,6 +95,15 @@ and neither is about how they look:
   forces, stated here and on `F-267`, and attested on a device.
 - **The keyboard is not avoided** by the action bar, as nothing in the app avoids it today. A note
   goes to F-256, whose screen has the first text field under an action bar.
+- **Nothing shows that a tap outside a sheet closes it**, because nothing dims the frame. It is what
+  `03` and `04` draw; the drag handle and the screen reader's named dismiss layer remain.
+- **The handle's drag region is its drawn box**, about 9 dp tall on `03`. gorhom drags by the box it
+  wraps, and padding that box to the tap target would push the content about 27 dp lower than `03`
+  draws.
+  The whole sheet body drags too, so the sheet is not hard to move; the handle's own target goes to
+  F-305 with the other controls drawn smaller than the target.
+- **An untitled sheet's name depends on the platform reading its container's label.** VoiceOver and
+  TalkBack announcing it is owed as an attestation on a device.
 
 ## Alternatives rejected
 

@@ -864,13 +864,16 @@ export function Lens({
         controls stay out, because they are about the next capture rather than this one.
       */}
       <Sheet
+        // 03's sheet floats over the live frame (F-234). Its contents are F-244's.
+        form="floating"
         open={capture !== null}
         onOpenChange={(open) => {
           if (!open) onDismiss?.();
         }}
         title={t('lens.sheetTitle')}
         closeLabel={t('lens.sheetClose')}
-        script={script}
+        handleLabel={t('lens.sheetHandle')}
+        handleHint={t('lens.sheetHandleHint')}
       >
         {/*
           GUARDED, AND NOT BECAUSE OF THE SHEET'S OWN STATE. `open` decides what is VISIBLE;

@@ -32,9 +32,14 @@
  * root exports it again, and these two arrived with that ([ADR-0089](../../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
  */
 
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetFooter,
+  BottomSheetScrollView,
+  type BottomSheetFooterProps,
+} from '@gorhom/bottom-sheet';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import {
   BottomSheet as HeroBottomSheet,
   Dialog as HeroDialog,
@@ -373,9 +378,9 @@ export function Dialog({
 /**
  * The largest a sheet may ever be, as a fraction of the window.
  *
- * **This is the "space at the top", and it is a ceiling rather than an inset.** An inset would
- * mean reading a safe area, which `verify-viewport` reserves for `layout.tsx` and the tab
- * layout — and a fraction holds on every device without asking.
+ * **This is the "space at the top", and it is a ceiling rather than an inset.** A fraction holds on
+ * every device without asking. The one inset this file reads is the bottom one, for the floating
+ * sheet's gap, and `verify-viewport` lists it as an owner for that read alone.
  */
 const SHEET_LARGE_DETENT = 0.9;
 
@@ -392,195 +397,256 @@ const SHEET_CONTENT_CEILING = 0.8;
 /** How long the sheet takes to settle, and how tightly. Position only, which is a transform. */
 const SHEET_SPRING = { damping: 28, stiffness: 260, mass: 1 } as const;
 
-export interface SheetProps {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  /** The sheet's accessible name. Required, for the reason `Dialog`'s is. */
-  readonly title: string;
-  readonly description?: string;
-  /** What the scrim announces. Caller-supplied: `@irodora/ui` owns no copy (ADR-0056). */
-  readonly closeLabel: string;
-  readonly script?: Script;
-  readonly children?: React.ReactNode;
-  readonly testID?: string;
-}
+/**
+ * The drag handle, in dp: `03`'s, drawn at 2 px per dp (40 × 4). `04`'s, drawn on a spec card, is
+ * 39.5 × 4.5, within the half dp a reading carries. Recomputed by `sheet.test`; the decoy is
+ * gorhom's own, 7.5 % of the window by 4.
+ */
+export const SHEET_HANDLE = { width: 40, height: 4 } as const;
 
 /**
- * A panel that rises from the bottom edge, over a scrim, and can be dragged away.
+ * Each form as its mockup draws it, in dp (F-234, ADR-0118), recomputed by `sheet.test`.
+ *
+ * - **floating** (`03`): `side` either side of it and `below` under it, off the frame's edges;
+ *   `inset` either side of the content; the handle `handleTop` below the sheet's top; the content
+ *   `contentTop` below the handle.
+ * - **docked** (`04`): the same reading, with nothing beside or below it — its side inset is OQ-16's.
+ */
+export const SHEET_FORMS = {
+  floating: { side: 28.5, below: 29.5, inset: 9, handleTop: 5, contentTop: 7.5 },
+  docked: { inset: 12.5, handleTop: 9.5, contentTop: 11 },
+} as const;
+
+/**
+ * Which sheet the surface draws. **Required**: no board draws a sheet to default from, and the two
+ * the screens draw differ in every number.
+ */
+type SheetForm =
+  | { readonly form: 'floating'; readonly sideInset?: never }
+  | {
+      readonly form: 'docked';
+      /** The docked sheet's side inset, in dp: OQ-16's, passed by its caller (F-245). */
+      readonly sideInset: number;
+    };
+
+export type SheetProps = SheetForm & {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  /**
+   * The sheet's accessible name. Required, for the reason `Dialog`'s is — and NOT drawn: neither
+   * `03` nor `04` draws a title, so the name is carried by the sheet's content container.
+   */
+  readonly title: string;
+  /** What the dismiss layer announces. Caller-supplied: `@irodora/ui` owns no copy (ADR-0056). */
+  readonly closeLabel: string;
+  /** The handle's accessible name, replacing gorhom's English default (ADR-0056). */
+  readonly handleLabel: string;
+  /** What the handle does, for a screen reader, replacing gorhom's English default. */
+  readonly handleHint: string;
+  /** Pinned under the content, over it as it scrolls: `03`'s actions (F-244). */
+  readonly footer?: React.ReactNode;
+  readonly children?: React.ReactNode;
+  readonly testID?: string;
+};
+
+/**
+ * A panel that rises from the bottom edge and can be dragged away, in the two forms the screens
+ * draw: `03`'s, floating over the live frame, and `04`'s, docked to the bottom (F-234).
+ *
+ * ## What each form draws
+ *
+ * | | floating (`03`) | docked (`04`) |
+ * |---|---|---|
+ * | ground | `background`, a dp of `border` round it | `surface.1`, no edge |
+ * | corners | `lg`, all four | `lg`, the top two |
+ * | sides | {@link SHEET_FORMS} `side` | the caller's `sideInset` (OQ-16) |
+ * | bottom | `below` off the frame, or the device inset where larger | the frame's edge |
+ *
+ * **No title is drawn** and **nothing dims the frame**: `03` and `04` draw neither. The dismiss layer
+ * stays — transparent, a named button — so a tap outside and a screen reader can still close it.
+ *
+ * ## The floating sheet reads the bottom inset
+ *
+ * Its gap under the sheet is `max(below, inset)`: the device's home indicator is laid into the drawn
+ * space where it fits, the reading the tab bar makes (ADR-0117). It reads the inset the way
+ * `Screen` does — the context, never the throwing hook — and `verify-viewport` lists this file as an
+ * owner for that one read.
  *
  * ## The API is `Dialog`'s, deliberately
  *
- * Same prop names, same order, same meanings. Somebody who has used `Dialog` can use this
- * without reading it — and a reviewer comparing the two can see at a glance that the scrim, the
- * title level and the script handling are the SAME decisions rather than three independent ones
- * that happen to agree today.
+ * Same prop names, same order, same meanings, so a reviewer can see the dismiss layer and the
+ * naming are the SAME decisions. A dialog interrupts; a sheet coexists with the thing you are
+ * working on — the Lens is the case: a reading is about the frame it was taken from.
  *
- * ## What a sheet is for, and why the Lens needed one
+ * ## The background layer is ours
  *
- * A dialog INTERRUPTS: it takes the screen, and what is behind it is context you are done with.
- * A sheet COEXISTS: what is behind it is still the thing you are working on. The Lens is the
- * case that makes the difference concrete — a reading is about the frame it was taken from, and
- * acting on it used to mean scrolling the camera off the screen.
- *
- * ## The background layer is refused, and this one was found by probing rather than by reading
- *
- * `BottomSheet.Content` accepts gorhom's `backgroundStyle`. **It does not reach the tree.** A
- * style walk over a rendered sheet returns `rgba(0, 0, 0, 0.75)` instead — HeroUI's own
- * background layer, "decided by the active library theme", painting a colour nobody in this
- * repository chose.
- *
- * That is the hazard `background={null}` closes on `Dialog` and `Popover`, and it is worse
- * here: a sheet is where a colour READING is shown, so the ground behind the sample would be
- * decided by the theme. Simultaneous contrast is the whole reason `swatch.well` exists.
- *
- * So the background is a component of ours — a plain `View` painted from `surface.2` with the
- * top corners and an edge, all through `style`, where the contrast gate measures it.
+ * `BottomSheet.Content` accepts gorhom's `backgroundStyle` and does not let it reach the tree: a
+ * rendered sheet showed HeroUI's own `rgba(0, 0, 0, 0.75)`. A sheet is where a colour reading is
+ * shown, so the ground behind the sample must be a token the contrast gate measures. It is a plain
+ * `View`, painted through `style`.
  *
  * ## Height comes from the content, and stops before the top of the screen (F-177)
  *
- * F-158 wrote: *"No snap points. A result sheet fixed at a fraction of the screen is either
- * cropping the result or padding it, and the content is the only thing that knows which."*
- *
- * **The argument is right and the conclusion did not follow.** It rules out a FIXED fraction; it
- * does not rule out a second detent. What shipped was a sheet with exactly ONE detent — gorhom's
- * `enableDynamicSizing` defaults to `true`, and with no `snapPoints` the content height is
- * the only stop there is. So there was nothing to drag TO, and content taller than the screen
- * made the sheet the screen. Reported as *"we can't drag the bottom sheet up or down, and the
- * bottom sheet opens full screen"*, and both halves are that one cause.
- *
- * `useAnimatedDetents` computes the dynamic detent from the measured content, clamps it by
- * {@link SHEET_CONTENT_CEILING}, pushes it into the provided list if it is not already there,
- * and sorts. So one snap point plus dynamic sizing gives:
+ * One declared detent at {@link SHEET_LARGE_DETENT}, and the content's own, which gorhom measures
+ * and clamps by {@link SHEET_CONTENT_CEILING}:
  *
  * | content | detents | behaviour |
  * |---|---|---|
  * | short | `[content, 90%]` | rests small, drags up |
  * | tall | `[80%, 90%]` | rests at 80%, drags up, scrolls inside |
  *
- * **Neither case reaches the top.** That is the "little bit of space" as a property of the
- * ceiling rather than of an inset — which matters, because `verify-viewport` reserves
- * safe-area reads for two files and this is not one of them.
- *
- * The two numbers are deliberately apart: a ceiling equal to the snap point lets rounding
- * produce two detents a pixel apart, which drags like a stutter.
+ * Neither reaches the top. The two numbers are apart on purpose: equal, rounding would make two
+ * detents a pixel apart, which drags like a stutter.
  */
 export function Sheet({
+  form,
+  sideInset,
   open,
   onOpenChange,
   title,
-  description,
   closeLabel,
-  script = 'latin',
+  handleLabel,
+  handleHint,
+  footer,
   children,
   testID,
 }: SheetProps): React.JSX.Element {
   const { colors } = useTheme();
-  /*
-   * THE WINDOW, NOT AN INSET. `verify-viewport` names `useWindowDimensions()` as the right
-   * way to derive a size, and reserves `useSafeAreaInsets` for two files. The detents are
-   * fractions of the window; the safe area is somebody else's job.
-   */
+  // THE WINDOW for the detents, which are fractions of it.
   const { height } = useWindowDimensions();
+  // THE INSET, as `Screen` reads it: the context, with a flat phone's zero where none is provided.
+  const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 };
   const { reduced, timing } = useMotion();
+  const [footerHeight, setFooterHeight] = useState(0);
 
-  /*
-   * ONE DECLARED DETENT. The second one is the content's own, computed by gorhom and merged
-   * into this list — see the header. Memoised because a new array identity on every render
-   * re-derives every detent, and this sheet re-renders at camera frame rate behind the Lens.
-   */
+  // ONE DECLARED DETENT; the second is the content's own (F-177). Memoised: this sheet re-renders
+  // at camera frame rate behind the Lens, and a new array re-derives every detent.
   const snapPoints = useMemo(() => [`${String(Math.round(SHEET_LARGE_DETENT * 100))}%`], []);
 
-  /*
-   * REDUCED MOTION GETS NO ANIMATION, NOT A FASTER ONE (F-144). A spring with a shorter
-   * duration is still motion, and the setting is a request not to move things.
-   *
-   * THE ZERO COMES FROM `useMotion`, NOT FROM A LITERAL. The first draft wrote
-   * `{ duration: 0 }` and `verify-motion` refused it — *"a duration literal, which is how a
-   * scale stops being a scale"*. It is right even when the literal is zero: what reduced motion
-   * means is the motion system's to say, and `timing()` already collapses every step to 0 when
-   * the platform asks. A hand-written zero would be a second implementation of that rule,
-   * agreeing with it on the day it was written and never again.
-   */
-  // KEYED ON `reduced`, NOT ON `timing`. `useMotion` rebuilds `timing` every render, so
-  // listing it would rebuild this object every render to get the same answer — the same
-  // argument `Appear` makes in motion.tsx, where it reads the duration out first for exactly
-  // this reason. There is no exhaustive-deps rule configured here to disable; the list is
-  // honest rather than silenced.
+  // REDUCED MOTION GETS NO ANIMATION, and the zero is the motion system's (F-144). Keyed on
+  // `reduced`, because `timing` is rebuilt every render (the argument `Appear` makes).
   const animationConfigs = useMemo(() => (reduced ? timing('micro') : SHEET_SPRING), [reduced]);
+
+  const floating = form === 'floating';
+  const drawn = floating ? SHEET_FORMS.floating : SHEET_FORMS.docked;
+  const ground = floating ? colors.background : colors['surface.1'];
+
+  /*
+   * THE FORM, AS GORHOM TAKES IT. A floating sheet is gorhom's `detached` sheet: its margins are the
+   * container's `marginHorizontal`, and `bottomInset` lifts it off the frame's edge. A docked sheet
+   * takes only its side inset.
+   */
+  const shape = floating
+    ? {
+        detached: true,
+        bottomInset: Math.max(SHEET_FORMS.floating.below, insets.bottom),
+        style: { marginHorizontal: SHEET_FORMS.floating.side },
+      }
+    : { style: { marginHorizontal: sideInset } };
 
   return (
     <HeroBottomSheet isOpen={open} onOpenChange={onOpenChange}>
       <HeroBottomSheet.Portal>
+        {/*
+          THE DISMISS LAYER, DRAWN AS NOTHING. `03` and `04` show the frame undimmed, so it paints
+          no colour; it is still a named button, so a tap outside and a screen reader close the
+          sheet as they did when it drew a scrim.
+        */}
         <HeroBottomSheet.Overlay
           accessibilityRole="button"
           accessibilityLabel={closeLabel}
-          style={{ backgroundColor: colors.backdrop }}
+          style={{ backgroundColor: 'transparent' }}
         />
         <HeroBottomSheet.Content
-          // NO `testID` HERE: `BottomSheet.Content` does not accept one — it forwards a gorhom
-          // ref rather than view props. It goes on the content container below, which is the
-          // node a test would want anyway, because it is the one holding the children.
           enablePanDownToClose
-          /*
-           * THE DETENTS (F-177). One declared, one derived from the content, merged and sorted
-           * by gorhom — see the header for the table. Passed through HeroUI, which spreads
-           * `Partial<BottomSheetProps>` onto the gorhom sheet, so no wrapper shape changes.
-           */
           snapPoints={snapPoints}
           maxDynamicContentSize={height * SHEET_CONTENT_CEILING}
-          // The sheet SETTLES. A spring rather than a curve, because a panel a thumb is
-          // dragging should arrive where the thumb left it going.
           animationConfigs={animationConfigs}
-          /*
-            OUR GROUND, NOT THE LIBRARY'S. `backgroundStyle` is accepted and then ignored — the
-            docblock above records what a rendered tree actually contains without this. The
-            component paints the same three tokens `Dialog.Content` does, minus the bottom
-            corners, which a sheet does not have because its bottom edge is the screen.
-          */
+          {...shape}
           backgroundComponent={({ style }) => (
             <View
               style={[
                 style,
                 {
-                  backgroundColor: colors['surface.2'],
+                  backgroundColor: ground,
                   borderTopLeftRadius: nativeRadius.lg,
                   borderTopRightRadius: nativeRadius.lg,
-                  borderWidth: 1,
-                  borderColor: colors['border.strong'],
+                  ...(floating
+                    ? {
+                        borderBottomLeftRadius: nativeRadius.lg,
+                        borderBottomRightRadius: nativeRadius.lg,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      }
+                    : {}),
                 },
               ]}
             />
           )}
-          // The drag handle is the only affordance saying this panel moves, and it carries no
-          // label, so it is `border.indicator`: the README's strong border moved the E3 way where
-          // nothing else identifies the component, checked at 3:1 on every surface (F-225).
-          handleIndicatorStyle={{ backgroundColor: colors['border.indicator'] }}
+          /*
+            THE HANDLE, OURS IN NAME AND SIZE. gorhom's announces "Bottom sheet handle" and "Drag up
+            or down to extend or minimize the bottom sheet" in English whatever the locale, and
+            HeroUI keeps them (ADR-0056); its indicator is 7.5 % of the window wide, in a box padded
+            10 dp all round. So the handle is drawn here: the caller's words, the role gorhom gives
+            its own (`adjustable`), and the drawn bar at the form's drawn offset, in
+            `border.indicator`, the handle's E3 move (F-225). gorhom wraps it in its drag region
+            exactly as it wraps its own.
+          */
+          handleComponent={() => (
+            <View
+              accessible
+              accessibilityRole="adjustable"
+              accessibilityLabel={handleLabel}
+              accessibilityHint={handleHint}
+              style={{ paddingTop: drawn.handleTop, alignItems: 'center' }}
+            >
+              <View
+                style={{
+                  width: SHEET_HANDLE.width,
+                  height: SHEET_HANDLE.height,
+                  borderRadius: SHEET_HANDLE.height / 2,
+                  backgroundColor: colors['border.indicator'],
+                }}
+              />
+            </View>
+          )}
+          {...(footer === undefined
+            ? {}
+            : {
+                footerComponent: (props: BottomSheetFooterProps) => (
+                  <BottomSheetFooter {...props}>
+                    <View
+                      onLayout={(event) => {
+                        setFooterHeight(event.nativeEvent.layout.height);
+                      }}
+                      style={{
+                        backgroundColor: ground,
+                        paddingHorizontal: drawn.inset,
+                        paddingBottom: drawn.inset,
+                      }}
+                    >
+                      {footer}
+                    </View>
+                  </BottomSheetFooter>
+                ),
+              })}
         >
           {/*
-            THE CONTENT SCROLLS, AND THAT IS WHAT MAKES THE CEILING SAFE.
-
-            `BottomSheetScrollView` rather than HeroUI's plain container. It reports its own
-            content height into gorhom's dynamic sizing through `useBottomSheetContentSizeSetter`,
-            so the rest position is still MEASURED — the sheet has not stopped sizing to its
-            content, it has stopped being allowed to eat the screen doing it. Without this a
-            ceiling would crop rather than scroll, which is the failure F-158's docblock was
-            right to be afraid of.
-
-            The padding moved here with it: `contentContainerProps` styled HeroUI's container,
-            and that container is no longer the thing holding the children.
+            THE CONTENT SCROLLS, and that is what makes the ceiling safe: `BottomSheetScrollView`
+            reports its height into gorhom's dynamic sizing, so the rest position is still measured.
+            It carries the sheet's name, which nothing draws; and it ends a footer's height lower,
+            so the last of it is never under the pinned footer.
           */}
           <BottomSheetScrollView
             {...(testID === undefined ? {} : { testID })}
-            contentContainerStyle={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}
+            accessibilityLabel={title}
+            contentContainerStyle={{
+              paddingHorizontal: drawn.inset,
+              paddingTop: drawn.contentTop,
+              paddingBottom: drawn.inset + footerHeight,
+              gap: nativeSpacing.sm,
+            }}
           >
-            <Text size="title" color="foreground" script={script} heading>
-              {title}
-            </Text>
-            {description === undefined ? null : (
-              <Text size="body" color="foreground.2" script={script}>
-                {description}
-              </Text>
-            )}
             {children}
           </BottomSheetScrollView>
         </HeroBottomSheet.Content>

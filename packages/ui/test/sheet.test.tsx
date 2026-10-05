@@ -19,9 +19,14 @@
  * attested against F-177 rather than claimed here.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import { Sheet, ThemeProvider } from '../src/index.js';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { nativeColors } from '@irodora/design-tokens';
+import { Sheet, SHEET_FORMS, SHEET_HANDLE, ThemeProvider, type SheetProps } from '../src/index.js';
+import { flattenStyle, type TestNode } from '../src/testing/index.js';
 
 /**
  * A node in the rendered tree.
@@ -87,13 +92,31 @@ function gorhomSheet(root: Instance): Instance {
   return found;
 }
 
-const open = (): Instance =>
+/** The props every sheet here takes but its form. */
+const NAMED = {
+  open: true,
+  title: 'This reading',
+  closeLabel: 'Close the reading',
+  handleLabel: 'Reading',
+  handleHint: 'Drag to resize the reading',
+  onOpenChange: () => undefined,
+} as const;
+
+/**
+ * ONE SHEET PER TEST. The sheet is portalled, and while two renders are mounted the portal holds
+ * both: a second `open` in the same test would find the first sheet as well as its own (measured:
+ * the second root lists the first render's sheets before its own). RNTL unmounts between tests, so
+ * every test below opens exactly one.
+ */
+const open = (form: SheetProps = { form: 'floating', ...NAMED }, bottom = 0): Instance =>
   render(
-    <ThemeProvider theme="dark">
-      <Sheet open title="This reading" closeLabel="Close" onOpenChange={() => undefined}>
-        <Text>body</Text>
-      </Sheet>
-    </ThemeProvider>,
+    <SafeAreaInsetsContext.Provider value={{ top: 47, bottom, left: 0, right: 0 }}>
+      <ThemeProvider theme="dark">
+        <Sheet {...form}>
+          <Text>body</Text>
+        </Sheet>
+      </ThemeProvider>
+    </SafeAreaInsetsContext.Provider>,
   ).UNSAFE_root;
 
 describe('the sheet has more than one detent (F-177)', () => {
@@ -187,5 +210,183 @@ describe('the sheet has more than one detent (F-177)', () => {
   it('is reading the library sheet, not one of ours', () => {
     const props = gorhomSheet(open()).props as Record<string, unknown>;
     expect(props['backgroundStyle']).toBeDefined();
+  });
+});
+
+/* ========================================================================= the forms (F-234) */
+
+interface Box {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+interface InventoryElement {
+  readonly id: string;
+  readonly dp: Box;
+}
+const element = (n: string, id: string): InventoryElement => {
+  const j = JSON.parse(
+    readFileSync(join(__dirname, '..', '..', '..', 'mockups', 'inventory', `${n}.json`), 'utf8'),
+  ) as { readonly elements: readonly InventoryElement[] };
+  const e = j.elements.find((x) => x.id === id);
+  if (e === undefined) throw new Error(id);
+  return e;
+};
+
+describe('each form is the drawing’s, recomputed (F-234)', () => {
+  const FRAME = { w: 384, h: 688 };
+
+  it('03 floats: its margins, its gap, its content inset and where its handle sits', () => {
+    const sheet = element('03', '03.sheet').dp;
+    const handle = element('03', '03.sheet.handle').dp;
+    const card = element('03', '03.sample').dp;
+    const chips = element('03', '03.chips.conditions').dp;
+    expect(sheet.x).toBe(SHEET_FORMS.floating.side);
+    expect(FRAME.w - sheet.x - sheet.w).toBe(SHEET_FORMS.floating.side);
+    expect(FRAME.h - sheet.y - sheet.h).toBe(SHEET_FORMS.floating.below);
+    expect(card.x - sheet.x).toBe(SHEET_FORMS.floating.inset);
+    expect(handle.y - sheet.y).toBe(SHEET_FORMS.floating.handleTop);
+    expect(chips.y - (handle.y + handle.h)).toBe(SHEET_FORMS.floating.contentTop);
+  });
+
+  it('04 docks: its content inset and where its handle sits', () => {
+    const sheet = element('04', '04.sheet').dp;
+    const handle = element('04', '04.sheet.handle').dp;
+    const first = element('04', '04.sheet.tolerance').dp;
+    const save = element('04', '04.sheet.save').dp;
+    expect(save.x - sheet.x).toBe(SHEET_FORMS.docked.inset);
+    expect(handle.y - sheet.y).toBe(SHEET_FORMS.docked.handleTop);
+    expect(first.y - (handle.y + handle.h)).toBe(SHEET_FORMS.docked.contentTop);
+  });
+
+  it('the handle: 03’s, with 04’s within half a dp, and not gorhom’s', () => {
+    const drawn = element('03', '03.sheet.handle').dp;
+    const docked = element('04', '04.sheet.handle').dp;
+    expect({ width: drawn.w, height: drawn.h }).toStrictEqual(SHEET_HANDLE);
+    expect(Math.abs(docked.w - SHEET_HANDLE.width)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(docked.h - SHEET_HANDLE.height)).toBeLessThanOrEqual(0.5);
+    // DECOY: gorhom's indicator is 7.5 % of the window wide.
+    expect(SHEET_HANDLE.width).not.toBe(0.075 * FRAME.w);
+  });
+});
+
+describe('the floating and docked forms reach the library’s sheet', () => {
+  it('floats detached, at 03’s margins, lifted off the frame by 03’s gap', () => {
+    const flat = gorhomSheet(open({ form: 'floating', ...NAMED }, 0)).props as {
+      detached?: boolean;
+      bottomInset?: number;
+      style?: unknown;
+    };
+    expect(flat.detached).toBe(true);
+    expect(flat.bottomInset).toBe(SHEET_FORMS.floating.below);
+    expect(flattenStyle(flat.style)['marginHorizontal']).toBe(SHEET_FORMS.floating.side);
+  });
+
+  it('lifts it by the device inset instead where that is larger, and not by both', () => {
+    const notched = gorhomSheet(open({ form: 'floating', ...NAMED }, 34)).props as {
+      bottomInset?: number;
+    };
+    expect(notched.bottomInset).toBe(34);
+    // DECOY: the gap and the inset stacked.
+    expect(notched.bottomInset).not.toBe(SHEET_FORMS.floating.below + 34);
+  });
+
+  it('docks to the bottom at the caller’s side inset, not detached', () => {
+    const props = gorhomSheet(open({ form: 'docked', sideInset: 9.5, ...NAMED })).props as {
+      detached?: boolean;
+      bottomInset?: number;
+      style?: unknown;
+    };
+    expect(props.detached).toBeUndefined();
+    expect(props.bottomInset).toBeUndefined();
+    expect(flattenStyle(props.style)['marginHorizontal']).toBe(9.5);
+  });
+
+  it('requires a form, and a docked sheet’s side inset, by type', () => {
+    // @ts-expect-error — no board draws a sheet to default from.
+    const formless: SheetProps = { ...NAMED };
+    // @ts-expect-error — the docked sheet's side inset is OQ-16's, passed by its caller.
+    const unplaced: SheetProps = { form: 'docked', ...NAMED };
+    // @ts-expect-error — a floating sheet's margins are 03's.
+    const placed: SheetProps = { form: 'floating', sideInset: 4, ...NAMED };
+    expect([formless, unplaced, placed]).toHaveLength(3);
+  });
+
+  const ground = (form: SheetProps): Record<string, unknown> => {
+    const { backgroundComponent: Background } = gorhomSheet(open(form)).props as {
+      backgroundComponent: (p: { style: object }) => React.JSX.Element;
+    };
+    const tree = render(<Background style={{}} />).toJSON() as TestNode;
+    return flattenStyle(tree.props['style']);
+  };
+
+  it('paints 03’s ground: background, a dp of border round it, every corner rounded', () => {
+    const floating = ground({ form: 'floating', ...NAMED });
+    expect(floating['backgroundColor']).toBe(nativeColors.dark.background);
+    expect(floating['borderColor']).toBe(nativeColors.dark.border);
+    expect(floating['borderBottomLeftRadius']).toBeGreaterThan(0);
+  });
+
+  it('paints 04’s ground: surface.1, no edge, the top corners only', () => {
+    const docked = ground({ form: 'docked', sideInset: 9.5, ...NAMED });
+    expect(docked['backgroundColor']).toBe(nativeColors.dark['surface.1']);
+    expect(docked['borderWidth']).toBeUndefined();
+    expect(docked['borderBottomLeftRadius']).toBeUndefined();
+  });
+});
+
+describe('what a sheet draws, and what it only names (F-234)', () => {
+  const hosts = (root: Instance): readonly Instance[] =>
+    root.findAll((n) => typeof n.type === 'string');
+
+  it('draws no title, and its content carries the name', () => {
+    const root = open();
+    const texts = hosts(root).filter((n) => String(n.type) === 'Text');
+    // Only the content passed in: the sheet draws no words of its own.
+    expect(texts.map((t): unknown => t.props['children'])).toStrictEqual(['body']);
+    const named = hosts(root).filter((n) => n.props['accessibilityLabel'] === NAMED.title);
+    expect(named.length).toBeGreaterThan(0);
+  });
+
+  it('dims nothing, and the dismiss layer is still a named button', () => {
+    const layer = hosts(open()).find((n) => n.props['accessibilityLabel'] === NAMED.closeLabel);
+    expect(layer?.props['accessibilityRole']).toBe('button');
+    const painted = flattenStyle(layer?.props['style'])['backgroundColor'];
+    expect(painted).toBe('transparent');
+    // DECOY: the scrim the shipped sheet drew.
+    expect(painted).not.toBe(nativeColors.dark.backdrop);
+  });
+
+  it('the handle is the drawn bar, in border.indicator, named in the caller’s words', () => {
+    const { handleComponent: Handle } = gorhomSheet(open()).props as {
+      handleComponent: (p: object) => React.JSX.Element;
+    };
+    const tree = render(<Handle />).toJSON() as {
+      props: Record<string, unknown>;
+      children: readonly { props: Record<string, unknown> }[];
+    };
+    expect(tree.props['accessibilityRole']).toBe('adjustable');
+    expect(tree.props['accessibilityLabel']).toBe(NAMED.handleLabel);
+    expect(tree.props['accessibilityHint']).toBe(NAMED.handleHint);
+    // DECOY: gorhom's English, which reached the Lens before this (ADR-0056).
+    expect(tree.props['accessibilityLabel']).not.toBe('Bottom sheet handle');
+    const bar = flattenStyle(tree.children[0]?.props['style']);
+    expect({ width: bar['width'], height: bar['height'] }).toStrictEqual(SHEET_HANDLE);
+    expect(bar['backgroundColor']).toBe(nativeColors.dark['border.indicator']);
+    expect(flattenStyle(tree.props['style'])['paddingTop']).toBe(SHEET_FORMS.floating.handleTop);
+  });
+
+  const footerOf = (form: SheetProps): unknown =>
+    (gorhomSheet(open(form)).props as { footerComponent?: unknown }).footerComponent;
+
+  it('pins a footer when given one', () => {
+    expect(typeof footerOf({ form: 'floating', footer: <Text>act</Text>, ...NAMED })).toBe(
+      'function',
+    );
+  });
+
+  it('pins nothing when given none', () => {
+    expect(footerOf({ form: 'floating', ...NAMED })).toBeUndefined();
   });
 });
