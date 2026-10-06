@@ -219,7 +219,8 @@ export function Home({
       {/*
         THE PROPOSITION, and it is the whole of criterion 1.
 
-        `display.1` — 72px, the top of the scale, and the token whose exemption named F-146. Then
+        `01`'s lockup — the mark beside the name at the `wordmark` step, 31.6 dp, as `01` draws it
+        (F-230; it led at `display.1`, 72 px, until then, and F-242 rebuilds the rest of Home). Then
         three fragments at `title`, which are the brief's own questions rather than a slogan
         somebody wrote: what colour is this, what goes with it, does it suit me.
 
@@ -227,7 +228,7 @@ export function Home({
         least noticed and most damaging, and NFR-21's lint is binding here like everywhere else.
       */}
       <Stack gap="md">
-        <Wordmark size="display1" heading />
+        <Wordmark form="app" heading />
         <Stack gap="xs">
           <Text size="title" color="foreground" script={script}>
             {t('home.what1')}

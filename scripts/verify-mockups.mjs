@@ -669,9 +669,13 @@ if (process.argv.includes('--prove')) {
       },
       {
         name: 'two elements out of reading order',
+        // Named, not positional: a container and its first member share a top-left corner, so two
+        // neighbours can swap without breaking the order (F-230's lockup made the first two exactly that).
         plant: () =>
           withInventory((v) => {
-            [v.elements[1], v.elements[2]] = [v.elements[2], v.elements[1]];
+            const at = (id) => v.elements.findIndex((e) => e.id === id);
+            const [a, b] = [at('01.header.mark'), at('01.header.wordmark')];
+            [v.elements[a], v.elements[b]] = [v.elements[b], v.elements[a]];
             v.elements.forEach((e, i) => {
               e.order = i + 1;
             });

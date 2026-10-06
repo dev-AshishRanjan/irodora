@@ -47,8 +47,8 @@
  * requires {@link markShapes} to equal that file, so the two derivations cannot drift.
  */
 
-import { useId } from 'react';
-import { View, type ViewProps } from 'react-native';
+import { useId, useState } from 'react';
+import { View, type LayoutChangeEvent, type TextLayoutEvent, type ViewProps } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Path } from 'react-native-svg';
 import { nativeType } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
@@ -385,78 +385,411 @@ export function Mark({
 }
 
 /**
- * The type steps the wordmark may be set at.
+ * Gelasio Regular's vertical metrics and the name's extent, in font units, as the bundled
+ * `Gelasio-Regular.ttf` declares them — `apps/mobile/test/fonts.test.tsx` reads them again from its
+ * tables.
  *
- * **`display1` (72 px) was once deliberately absent, and the gate is why.** The first draft listed it
- * — a wordmark is the obvious home for the largest step — and `verify-token-reach.mjs` promptly
- * reported `display.1` as reached, because the string appears in this union and the check reads
- * string literals.
- *
- * It was right to complain and wrong about the fact, which is the interesting part: **a type
- * literal is not a painted pixel.** Nothing renders at 72 px; a union member merely says
- * something could. Leaving it would have closed F-146's exemption with a promise instead of a
- * surface — the exact laundering ADR-0088 exists to stop, arriving from a direction that ADR
- * does not anticipate.
- *
- * **F-146 widened it, and only then.** Home now leads with the wordmark at 72px, so the union
- * admits `display.1` because something renders one — not because something might. The exemption
- * in `unreached-tokens.json` went at the same time, and `verify-token-reach` fails on a
- * declaration that outlived its owner, so the two cannot drift apart.
+ * The ascender and descender are `hhea`'s, which equal `OS/2`'s typographic pair (the face sets
+ * USE_TYPO_METRICS), so both platforms lay a line out from the same two numbers. "Irodora" is set at
+ * no tracking (ADR-0112) and nothing kerns it: HarfBuzz shapes it to the sum of its seven advances.
  */
-export type WordmarkSize = Extract<keyof typeof nativeType.latin, 'display1' | 'title'>;
+export const GELASIO = {
+  unitsPerEm: 2048,
+  ascender: 1900,
+  descender: -700,
+  /** "Irodora": its advance, and its ink from the first glyph's origin, y up. */
+  name: { advance: 6892, inkLeft: 108, inkRight: 6860, inkTop: 1558, inkBottom: -29 },
+} as const;
 
-export interface WordmarkProps {
-  readonly size?: WordmarkSize;
-  /** Announce as a heading. A splash is not a heading; a screen header is. */
-  readonly heading?: boolean;
+/**
+ * Noto Sans JP's vertical metrics and its ideographic character face (`BASE`'s `icft` and `icfb`),
+ * in font units.
+ *
+ * The tagline is the caller's copy, so its ink is not known here. A line of kanji and kana fills the
+ * character face, which is what Japanese setting aligns to; `14`'s tagline reads within five units
+ * of it (−70 to 832).
+ */
+export const GOTHIC = {
+  unitsPerEm: 1000,
+  ascender: 1160,
+  descender: -288,
+  faceTop: 827,
+  faceBottom: -67,
+} as const;
+
+/**
+ * The in-app lockup, `01`'s (C4, P5): the mark's ink width, and the interval from its ink to the
+ * name's, each a ratio of the name's em (ADR-0123). `brand.test` recomputes both from
+ * `01.header.mark` and `01.header.wordmark`.
+ */
+export const LOCKUP_APP = { markInk: 1.206, interval: 0.317 } as const;
+
+/**
+ * The splash lockup, `14`'s (C4, P2): the mark's ink width, the interval from its ink to the name's,
+ * and from the name's ink to the tagline's — each a ratio of the name's em (ADR-0123), recomputed
+ * by `brand.test` from `14.splash.mark`, `14.splash.wordmark` and `14.splash.tagline`.
+ */
+export const LOCKUP_SPLASH = {
+  markInk: 2.508,
+  markInterval: 0.545,
+  taglineInterval: 0.266,
+} as const;
+
+/** The two lockups the mockups draw: `01`'s row on Home, and `14`'s stack on the splash. */
+export type WordmarkForm = 'app' | 'splash';
+
+/** A member's margins: what takes its box to its ink and puts the ink where the drawing has it. */
+export interface LockupMargins {
+  readonly marginTop: number;
+  readonly marginRight: number;
+  readonly marginBottom: number;
+  readonly marginLeft: number;
+}
+
+/** Where a member's ink lies, dp from the figure's top (and, for the mark and the name, its left). */
+export interface LockupInk {
+  readonly top: number;
+  readonly bottom: number;
+  readonly left?: number;
+  readonly right?: number;
+}
+
+/** A lockup at one scale: the mark's size, every member's margins, and where each one's ink lies. */
+export interface LockupGeometry {
+  readonly form: WordmarkForm;
+  /** The mark's box, dp. */
+  readonly mark: number;
+  readonly markMargins: LockupMargins;
+  readonly nameMargins: LockupMargins;
+  /** The splash's tagline, centred, so its vertical margins only; `undefined` on `app`. */
+  readonly taglineMargins: Pick<LockupMargins, 'marginTop' | 'marginBottom'> | undefined;
+  readonly ink: {
+    readonly mark: LockupInk;
+    readonly name: LockupInk;
+    readonly tagline: LockupInk | undefined;
+  };
+  /** The figure's ink box, dp — the tagline's width excepted, which is its copy's. */
+  readonly width: number;
+  readonly height: number;
+  /** The name's box (its advance), dp. */
+  readonly nameBox: number;
+}
+
+/** The baseline's distance from the top of a line box: the half-leading model both platforms follow. */
+function baselineIn(
+  face: { readonly unitsPerEm: number; readonly ascender: number; readonly descender: number },
+  em: number,
+  lineHeight: number,
+): number {
+  const unit = em / face.unitsPerEm;
+  return (lineHeight - (face.ascender - face.descender) * unit) / 2 + face.ascender * unit;
 }
 
 /**
- * The lockup: the mark, the interval, the name.
+ * A lockup's geometry at a scale (ADR-0123).
  *
- * The gap between them is F-165's, scaled to the type step, until F-230's increment 6 sets the
- * gap `01` draws.
+ * `scale` is the name's — the size the platform set it at over its step, which Dynamic Type and
+ * Android's font scale move (A7) — and the mark and every interval follow it, so the lockup scales
+ * as one figure. `taglineScale` is the tagline's own, which its own ramp sets; only its line metrics
+ * follow it.
  *
- * The mark is sized to the step's font size rather than its line height. Line height carries
- * leading, which is space around the letters rather than the letters themselves, and matching
- * it would leave the mark visibly larger than the word beside it.
+ * **A Text's line box is not its ink.** Each member's margins take its box to its ink, from the
+ * face's metrics above, so the figure's box IS its ink — a caller places the lockup where a mockup
+ * draws it by the ink, the way every inventory records it — and the members' inks sit as `01` and
+ * `14` draw them:
+ *
+ * - `app`: one row. The mark's ink, then the interval, then the name's ink, their centres on one
+ *   line (`01` draws them 0.16 dp apart).
+ * - `splash`: one column on one axis. The mark's ink, the interval, the name's ink, the interval,
+ *   the tagline's ink.
+ *
+ * Where each platform puts a line box's baseline is a device attestation: the jest tree has no
+ * layout, so this is the arithmetic both platforms are documented to follow.
+ */
+export function lockupGeometry(
+  form: WordmarkForm,
+  scale = 1,
+  taglineScale = scale,
+): LockupGeometry {
+  const step = form === 'app' ? nativeType.latin.wordmark : nativeType.latin.wordmarkSplash;
+  const em = step.fontSize * scale;
+  const line = step.lineHeight * scale;
+  const unit = em / GELASIO.unitsPerEm;
+  const baseline = baselineIn(GELASIO, em, line);
+  const name = {
+    top: baseline - GELASIO.name.inkTop * unit,
+    bottom: baseline - GELASIO.name.inkBottom * unit,
+    left: GELASIO.name.inkLeft * unit,
+    right: GELASIO.name.inkRight * unit,
+    advance: GELASIO.name.advance * unit,
+  };
+  const nameInkWidth = name.right - name.left;
+  const nameInkHeight = name.bottom - name.top;
+
+  // The mark is sized by its ink, which is narrower than its grid: the petals' sides fall short of
+  // the edges, and the blossom's notch leaves the grid's foot empty.
+  const box = markInkBox();
+  const markInk = (form === 'app' ? LOCKUP_APP.markInk : LOCKUP_SPLASH.markInk) * em;
+  const mark = (markInk * MARK.grid) / (box.right - box.left);
+  const inMark = {
+    left: (box.left / MARK.grid) * mark,
+    top: (box.top / MARK.grid) * mark,
+    right: (box.right / MARK.grid) * mark,
+    bottom: (box.bottom / MARK.grid) * mark,
+  };
+  const markInkHeight = inMark.bottom - inMark.top;
+
+  if (form === 'app') {
+    const gap = LOCKUP_APP.interval * em;
+    const height = Math.max(markInkHeight, nameInkHeight);
+    const markTop = (height - markInkHeight) / 2;
+    const nameTop = (height - nameInkHeight) / 2;
+    return {
+      form,
+      mark,
+      markMargins: {
+        marginTop: markTop - inMark.top,
+        marginRight: inMark.right - mark,
+        marginBottom: height - (markTop - inMark.top) - mark,
+        marginLeft: -inMark.left,
+      },
+      nameMargins: {
+        marginTop: nameTop - name.top,
+        marginRight: name.right - name.advance,
+        marginBottom: height - (nameTop - name.top) - line,
+        marginLeft: gap - name.left,
+      },
+      taglineMargins: undefined,
+      ink: {
+        mark: { top: markTop, bottom: markTop + markInkHeight, left: 0, right: markInk },
+        name: {
+          top: nameTop,
+          bottom: nameTop + nameInkHeight,
+          left: markInk + gap,
+          right: markInk + gap + nameInkWidth,
+        },
+        tagline: undefined,
+      },
+      width: markInk + gap + nameInkWidth,
+      height,
+      nameBox: name.advance,
+    };
+  }
+
+  const markGap = LOCKUP_SPLASH.markInterval * em;
+  const taglineGap = LOCKUP_SPLASH.taglineInterval * em;
+  const tagline = nativeType.japanese.title;
+  const taglineEm = tagline.fontSize * taglineScale;
+  const taglineLine = tagline.lineHeight * taglineScale;
+  const taglineBaseline = baselineIn(GOTHIC, taglineEm, taglineLine);
+  const taglineUnit = taglineEm / GOTHIC.unitsPerEm;
+  const taglineInk = {
+    top: taglineBaseline - GOTHIC.faceTop * taglineUnit,
+    bottom: taglineBaseline - GOTHIC.faceBottom * taglineUnit,
+  };
+  const width = Math.max(markInk, nameInkWidth);
+  const nameTop = markInkHeight + markGap;
+  const taglineTop = nameTop + nameInkHeight + taglineGap;
+  return {
+    form,
+    mark,
+    markMargins: {
+      marginTop: -inMark.top,
+      marginRight: inMark.right - mark,
+      marginBottom: inMark.bottom - mark,
+      marginLeft: -inMark.left,
+    },
+    nameMargins: {
+      marginTop: markGap - name.top,
+      marginRight: name.right - name.advance,
+      marginBottom: name.bottom - line,
+      marginLeft: -name.left,
+    },
+    taglineMargins: {
+      marginTop: taglineGap - taglineInk.top,
+      marginBottom: taglineInk.bottom - taglineLine,
+    },
+    ink: {
+      mark: {
+        top: 0,
+        bottom: markInkHeight,
+        left: (width - markInk) / 2,
+        right: (width + markInk) / 2,
+      },
+      name: {
+        top: nameTop,
+        bottom: nameTop + nameInkHeight,
+        left: (width - nameInkWidth) / 2,
+        right: (width + nameInkWidth) / 2,
+      },
+      tagline: { top: taglineTop, bottom: taglineTop + (taglineInk.bottom - taglineInk.top) },
+    },
+    width,
+    height: taglineTop + (taglineInk.bottom - taglineInk.top),
+    nameBox: name.advance,
+  };
+}
+
+/** The name's scale, from the width the platform laid its line out at (A7). */
+export function nameScaleOf(form: WordmarkForm, lineWidth: number): number {
+  const step = form === 'app' ? nativeType.latin.wordmark : nativeType.latin.wordmarkSplash;
+  return lineWidth / ((GELASIO.name.advance / GELASIO.unitsPerEm) * step.fontSize);
+}
+
+/** The tagline's scale, from the height of its first line — its copy is the caller's, so not its width. */
+export function taglineScaleOf(lineHeight: number): number {
+  return lineHeight / nativeType.japanese.title.lineHeight;
+}
+
+/**
+ * The widest the name's box may be in a lockup given `width`: the share of the figure the name
+ * takes, so the figure at the name's scale fits the width (A7 without loss of content).
+ */
+export function nameBoxFor(form: WordmarkForm, width: number): number {
+  const drawn = lockupGeometry(form);
+  return (drawn.nameBox * width) / drawn.width;
+}
+
+interface AppLockupProps {
+  readonly form: 'app';
+  /** Announce the name as a heading: Home's header is one. */
+  readonly heading?: boolean;
+  readonly tagline?: never;
+}
+
+interface SplashLockupProps {
+  readonly form: 'splash';
+  /**
+   * The line under the name, `14`'s 彩り・色の知性 — the caller's copy (ADR-0056), Japanese, set in
+   * the gothic at `title` as `14.splash.tagline` records it.
+   */
+  readonly tagline: string;
+  /** A splash is not a heading. */
+  readonly heading?: never;
+}
+
+/** Which lockup, and what it carries. `size` is gone: each form's size is its drawing's. */
+export type WordmarkProps = AppLockupProps | SplashLockupProps;
+
+/** The scale a member was laid out at, kept only when it moves by more than rounding. */
+function useScale(): [number, (next: number) => void] {
+  const [scale, setScale] = useState(1);
+  return [
+    scale,
+    (next: number) => {
+      if (Number.isFinite(next) && next > 0 && Math.abs(next - scale) > 0.001) setScale(next);
+    },
+  ];
+}
+
+/**
+ * The lockup: the mark, the name and, on the splash, the tagline — `01`'s row or `14`'s stack (C4),
+ * drawn as one figure whose box is its ink ({@link lockupGeometry}, ADR-0123).
+ *
+ * **The name is measured type** (ADR-0121): `wordmark` in the row and `wordmarkSplash` in the stack,
+ * the sizes `01` and `14` draw it at — the only component that may read either step. The mark and
+ * the intervals are ratios of that em, so they are the drawing's at the default text size.
+ *
+ * **It scales as one figure** (A7). The platform sets the name larger when a person has enlarged
+ * text — along iOS's Large Title ramp, or Android's font scale — and the name's laid-out line says
+ * by how much; the mark and the intervals follow it. The first frame is the drawing's, exact at the
+ * default size, so nothing moves unless a person has enlarged text.
+ *
+ * **It fits the width it is given** (A7: 200 % without loss of content). The name is one line that
+ * the platform shrinks rather than breaks or clips, so in the stack — where the name is the widest
+ * member — the figure fits its column. In the row the name's box is held to its share of the width
+ * the row is given, so the mark and the interval beside it fit too. The row takes its column's width
+ * to measure it: both drawn placements are columns.
  *
  * ## The name is set type, not drawn letterforms
  *
- * A drawn wordmark is the usual answer for a wordmark-led identity, and it is out of reach:
- * React Native has no path-text and this product has no type designer. Setting the name from
- * the scale in the mockups' serif — Gelasio, at the weight and tracking measured against 01's
- * and 14's drawn wordmarks (ADR-0112) — is honest and reversible — a drawn wordmark can replace this
- * without touching the lockup rule, because the rule is about the interval and not the glyphs.
+ * A drawn wordmark is the usual answer for a wordmark-led identity, and it is out of reach: React
+ * Native has no path-text and this product has no type designer. Setting the name in the mockups'
+ * serif — Gelasio, at the weight and tracking measured against `01`'s and `14`'s drawn wordmarks
+ * (ADR-0112) — is honest and reversible: a drawn wordmark can replace it without touching the
+ * lockup, whose rule is about the figure's proportions, not the glyphs.
  *
- * The mark carries no label here. The word beside it is real text, so a screen reader already
- * says "Irodora"; labelling the mark as well would say it twice.
+ * The mark carries no label here. The word beside it is real text, so a screen reader already says
+ * "Irodora"; labelling the mark as well would say it twice.
  */
-export function Wordmark({
-  size = 'title',
-  heading = false,
-}: WordmarkProps = {}): React.JSX.Element {
-  const step = nativeType.latin[size].fontSize;
+export function Wordmark(props: WordmarkProps): React.JSX.Element {
+  const { form } = props;
+  const [scale, setNameScale] = useScale();
+  const [taglineScale, setTaglineScale] = useScale();
+  const [given, setGiven] = useState<number | undefined>(undefined);
+  const g = lockupGeometry(form, scale, taglineScale);
+
+  const mark = (
+    <View style={g.markMargins}>
+      <Mark size={g.mark} />
+    </View>
+  );
+  const nameLayout = {
+    numberOfLines: 1,
+    adjustsFontSizeToFit: true,
+    onTextLayout: (event: TextLayoutEvent) => {
+      const line = event.nativeEvent.lines[0];
+      if (line !== undefined) setNameScale(nameScaleOf(form, line.width));
+    },
+  } as const;
+
+  if (props.form === 'app')
+    return (
+      <View
+        // The width the row is given, which its name's share is held to.
+        onLayout={(event: LayoutChangeEvent) => {
+          setGiven(event.nativeEvent.layout.width);
+        }}
+        style={{ alignSelf: 'stretch', flexDirection: 'row', alignItems: 'flex-start' }}
+      >
+        {mark}
+        <View
+          style={{
+            ...g.nameMargins,
+            ...(given === undefined ? {} : { maxWidth: nameBoxFor(form, given) }),
+          }}
+        >
+          {/*
+            LATIN IN BOTH LOCALES, and in the serif (ADR-0112): the product is called Irodora in
+            both, so the name is set as Latin text, and the brand face wins over the page's script.
+          */}
+          <Text
+            size="wordmark"
+            face="serif"
+            color="foreground"
+            heading={props.heading ?? false}
+            {...nameLayout}
+          >
+            Irodora
+          </Text>
+        </View>
+      </View>
+    );
+
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        // F-165's gap, three grid units in 24, until increment 6 sets 01's measured one.
-        gap: (3 / MARK.grid) * step,
-      }}
-    >
-      <Mark size={step} />
-      {/*
-        LATIN IN BOTH LOCALES, and in the serif (ADR-0112). The product is called Irodora in both
-        (a name is not translated), so the name is set as Latin text. Until F-226 the page script
-        was threaded through for its leading; once the name is set in the serif, a Japanese script
-        would route it to the gothic (C6, the rule for kanji in a serif element), so the brand
-        face wins over the page leading, and the prop is gone.
-      */}
-      <Text size={size} color="foreground" heading={heading} face="serif">
-        Irodora
-      </Text>
+    <View style={{ alignItems: 'center' }}>
+      {mark}
+      <View style={g.nameMargins}>
+        <Text size="wordmarkSplash" face="serif" color="foreground" {...nameLayout}>
+          Irodora
+        </Text>
+      </View>
+      <View style={g.taglineMargins}>
+        <Text
+          size="title"
+          script="japanese"
+          face="gothic"
+          weight={400}
+          color="foreground"
+          align="center"
+          onTextLayout={(event: TextLayoutEvent) => {
+            const line = event.nativeEvent.lines[0];
+            if (line !== undefined) setTaglineScale(taglineScaleOf(line.height));
+          }}
+        >
+          {props.tagline}
+        </Text>
+      </View>
     </View>
   );
 }

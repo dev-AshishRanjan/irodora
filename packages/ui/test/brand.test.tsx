@@ -13,15 +13,29 @@
  *    silhouette in any ink.
  * 4. It works at **16 px** — as five lobes; the cuts are sub-pixel there, and nothing is claimed
  *    about them.
+ * 5. **The lockups are 01's and 14's** (ADR-0123): the mark's ink and every interval recomputed
+ *    from the inventories as ratios of the name's em, with F-226's lockup and the spacing snap as
+ *    decoys; the figure's box is its ink, and it scales as one with the name.
  *
  * The rest is recorded as an attested criterion rather than pretended away.
  */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render } from '@testing-library/react-native';
-import { nativeColors, nativeFaces, nativeFamilies } from '@irodora/design-tokens';
+import { fireEvent, render } from '@testing-library/react-native';
 import {
+  nativeColors,
+  nativeFaces,
+  nativeFamilies,
+  nativeSpacing,
+  nativeType,
+} from '@irodora/design-tokens';
+import {
+  GELASIO,
+  GOTHIC,
+  LOCKUP_APP,
+  LOCKUP_SPLASH,
+  lockupGeometry,
   Mark,
   MARK,
   MARK_HUB,
@@ -35,8 +49,11 @@ import {
   markReach,
   markShapes,
   markSvg,
+  nameBoxFor,
+  nameScaleOf,
   narrowestFeature,
   svgNumber,
+  taglineScaleOf,
   ThemeProvider,
   Wordmark,
 } from '../src/index.js';
@@ -337,32 +354,407 @@ describe('it works at 16 px — as five lobes', () => {
   });
 });
 
-describe('the lockup', () => {
-  it('sets the name beside the mark', () => {
-    const tree = draw(<Wordmark />);
-    expect(tree.getByText('Irodora')).toBeTruthy();
+/* The lockups' readings: 01's row and 14's stack (F-230 increment 1). */
+const ONE = join(__dirname, '..', '..', '..', 'mockups', 'inventory', '01.json');
+
+interface Inventory {
+  readonly frame: {
+    readonly screens: readonly { readonly id: string; readonly dpPerPx: number }[];
+  };
+  readonly elements: readonly {
+    readonly id: string;
+    readonly component: string;
+    readonly parent: string | null;
+    readonly raw?: Readonly<Record<string, number>>;
+  }[];
+}
+const inventory = (path: string): Inventory => JSON.parse(readFileSync(path, 'utf8')) as Inventory;
+const rawOf = (from: Inventory, id: string): Readonly<Record<string, number>> => {
+  const raw = from.elements.find((e) => e.id === id)?.raw;
+  if (raw === undefined) throw new Error(`${id} has no readings`);
+  return raw;
+};
+const numberOf = (raw: Readonly<Record<string, number>>, key: string): number => {
+  const value = raw[key];
+  if (value === undefined) throw new Error(`no reading ${key}`);
+  return value;
+};
+const dpPerPxOf = (from: Inventory): number => {
+  const [screen] = from.frame.screens;
+  if (screen === undefined) throw new Error('no screen');
+  return screen.dpPerPx;
+};
+/** A mark's ink width in px, from its fitted petals: the side petals sit at ±72° from the top. */
+const markInkPx = (raw: Readonly<Record<string, number>>): number =>
+  2 * (numberOf(raw, 'orbitPx') * Math.sin((2 * Math.PI) / MARK.petals) + numberOf(raw, 'petalPx'));
+
+const one = inventory(ONE);
+const fourteen = inventory(FOURTEEN);
+const READ_01 = {
+  dpPerPx: dpPerPxOf(one),
+  mark: rawOf(one, '01.header.mark'),
+  name: rawOf(one, '01.header.wordmark'),
+};
+const READ_14 = {
+  dpPerPx: dpPerPxOf(fourteen),
+  mark: rawOf(fourteen, '14.splash.mark'),
+  name: rawOf(fourteen, '14.splash.wordmark'),
+  tagline: rawOf(fourteen, '14.splash.tagline'),
+};
+/**
+ * A ratio's error: the instrument's 0.3 px (twice for a width, which has two edges) over the em, plus
+ * the constants' three places.
+ */
+const ratioTolerance = (edges: number, dpPerPx: number, em: number): number =>
+  (edges * 0.3 * dpPerPx) / em + 0.0005;
+
+describe('the lockups are 01’s and 14’s, measured (F-230, ADR-0123)', () => {
+  const em01 = numberOf(READ_01.name, 'emDp');
+  const em14 = numberOf(READ_14.name, 'emDp');
+  const app = {
+    markInk: (markInkPx(READ_01.mark) * READ_01.dpPerPx) / em01,
+    gap: (numberOf(READ_01.name, 'markGapPx') * READ_01.dpPerPx) / em01,
+  };
+  const stack = {
+    markInk: (markInkPx(READ_14.mark) * READ_14.dpPerPx) / em14,
+    markGap: (numberOf(READ_14.name, 'markGapPx') * READ_14.dpPerPx) / em14,
+    taglineGap: (numberOf(READ_14.tagline, 'gapAbovePx') * READ_14.dpPerPx) / em14,
+  };
+  const within = (value: number, reading: number, tolerance: number): boolean =>
+    Math.abs(value - reading) <= tolerance;
+
+  it('sets each name at the em its drawing measures (ADR-0121)', () => {
+    expect(nativeType.latin.wordmark.fontSize).toBe(em01);
+    expect(nativeType.latin.wordmarkSplash.fontSize).toBe(em14);
   });
 
-  it('announces the name once, not twice', () => {
-    // The word is real text, so the mark beside it is decorative. A labelled mark in a lockup
-    // makes a screen reader say the product name twice.
-    const tree = draw(<Wordmark />);
-    expect(tree.queryAllByLabelText('Irodora')).toHaveLength(0);
+  it('recomputes 01’s row — the mark’s ink and the interval — within the instrument’s error', () => {
+    expect(within(LOCKUP_APP.markInk, app.markInk, ratioTolerance(2, READ_01.dpPerPx, em01))).toBe(
+      true,
+    );
+    expect(within(LOCKUP_APP.interval, app.gap, ratioTolerance(1, READ_01.dpPerPx, em01))).toBe(
+      true,
+    );
+  });
+
+  it('recomputes 14’s stack — the mark’s ink and both intervals — within the instrument’s error', () => {
+    const tolerance = ratioTolerance(1, READ_14.dpPerPx, em14);
+    expect(
+      within(LOCKUP_SPLASH.markInk, stack.markInk, ratioTolerance(2, READ_14.dpPerPx, em14)),
+    ).toBe(true);
+    expect(within(LOCKUP_SPLASH.markInterval, stack.markGap, tolerance)).toBe(true);
+    expect(within(LOCKUP_SPLASH.taglineInterval, stack.taglineGap, tolerance)).toBe(true);
+  });
+
+  it('DECOY — F-226’s lockup (the mark an em wide, an eighth of one between) is not 01’s or 14’s', () => {
+    expect(within(1, app.markInk, ratioTolerance(2, READ_01.dpPerPx, em01))).toBe(false);
+    expect(within(1 / 8, app.gap, ratioTolerance(1, READ_01.dpPerPx, em01))).toBe(false);
+    expect(within(1, stack.markInk, ratioTolerance(2, READ_14.dpPerPx, em14))).toBe(false);
+  });
+
+  it('DECOY — an interval snapped to the spacing scale is not the drawing’s, where the instrument can tell', () => {
+    // 01 draws 10.0 dp, which R9 §2's snap would make `sm` (8): a fifth tighter, 4 px at 01's scale.
+    expect(within(nativeSpacing.sm / em01, app.gap, ratioTolerance(1, READ_01.dpPerPx, em01))).toBe(
+      false,
+    );
+    // 14 draws 32.5 dp over the name: `xl` (32) is 0.38 px away, outside the instrument's 0.3.
+    expect(
+      within(nativeSpacing.xl / em14, stack.markGap, ratioTolerance(1, READ_14.dpPerPx, em14)),
+    ).toBe(false);
+    // 14 draws 15.9 dp over the tagline, within the instrument of `md` (16): there the ratio and
+    // the step agree, so no decoy can tell them apart and none is claimed. Asserted, so a re-reading
+    // that moves it is seen.
+    expect(
+      within(nativeSpacing.md / em14, stack.taglineGap, ratioTolerance(1, READ_14.dpPerPx, em14)),
+    ).toBe(true);
+  });
+});
+
+/** The ink offsets of each member within its own box, at one scale — independent of the margins. */
+function inkWithinBoxes(form: 'app' | 'splash', scale: number, taglineScale = scale) {
+  const step = form === 'app' ? nativeType.latin.wordmark : nativeType.latin.wordmarkSplash;
+  const em = step.fontSize * scale;
+  const line = step.lineHeight * scale;
+  const unit = em / GELASIO.unitsPerEm;
+  const content = (GELASIO.ascender - GELASIO.descender) * unit;
+  const baseline = (line - content) / 2 + GELASIO.ascender * unit;
+  const box = markInkBox();
+  const mark = lockupGeometry(form, scale, taglineScale).mark;
+  const t = nativeType.japanese.title;
+  const tEm = t.fontSize * taglineScale;
+  const tLine = t.lineHeight * taglineScale;
+  const tUnit = tEm / GOTHIC.unitsPerEm;
+  const tBaseline =
+    (tLine - (GOTHIC.ascender - GOTHIC.descender) * tUnit) / 2 + GOTHIC.ascender * tUnit;
+  return {
+    mark: {
+      w: mark,
+      h: mark,
+      left: (box.left / MARK.grid) * mark,
+      right: (box.right / MARK.grid) * mark,
+      top: (box.top / MARK.grid) * mark,
+      bottom: (box.bottom / MARK.grid) * mark,
+    },
+    name: {
+      w: GELASIO.name.advance * unit,
+      h: line,
+      left: GELASIO.name.inkLeft * unit,
+      right: GELASIO.name.inkRight * unit,
+      top: baseline - GELASIO.name.inkTop * unit,
+      bottom: baseline - GELASIO.name.inkBottom * unit,
+    },
+    tagline: {
+      h: tLine,
+      top: tBaseline - GOTHIC.faceTop * tUnit,
+      bottom: tBaseline - GOTHIC.faceBottom * tUnit,
+    },
+  };
+}
+
+describe('the figure is its ink, and its members sit as drawn', () => {
+  it('lays 01’s row out by its margins: the inks centred on one line, the interval between them', () => {
+    for (const scale of [1, 1.5, 2]) {
+      const g = lockupGeometry('app', scale);
+      const inner = inkWithinBoxes('app', scale);
+      const em = nativeType.latin.wordmark.fontSize * scale;
+      // A row with alignItems flex-start: each box at its margins, left to right.
+      const markX = g.markMargins.marginLeft;
+      const nameX = markX + inner.mark.w + g.markMargins.marginRight + g.nameMargins.marginLeft;
+      const markInk = {
+        left: markX + inner.mark.left,
+        right: markX + inner.mark.right,
+        top: g.markMargins.marginTop + inner.mark.top,
+        bottom: g.markMargins.marginTop + inner.mark.bottom,
+      };
+      const nameInk = {
+        left: nameX + inner.name.left,
+        right: nameX + inner.name.right,
+        top: g.nameMargins.marginTop + inner.name.top,
+        bottom: g.nameMargins.marginTop + inner.name.bottom,
+      };
+      expect(markInk.left).toBeCloseTo(0, 9);
+      expect(markInk.right - markInk.left).toBeCloseTo(LOCKUP_APP.markInk * em, 9);
+      expect(nameInk.left - markInk.right).toBeCloseTo(LOCKUP_APP.interval * em, 9);
+      expect((markInk.top + markInk.bottom) / 2).toBeCloseTo((nameInk.top + nameInk.bottom) / 2, 9);
+      // The row's box is the ink: as wide as mark to name, as tall as the taller ink, every member
+      // the same height outside.
+      const right = nameX + inner.name.w + g.nameMargins.marginRight;
+      expect(right).toBeCloseTo(nameInk.right, 9);
+      expect(right).toBeCloseTo(g.width, 9);
+      expect(Math.min(markInk.top, nameInk.top)).toBeCloseTo(0, 9);
+      expect(Math.max(markInk.bottom, nameInk.bottom)).toBeCloseTo(g.height, 9);
+      for (const [margins, h] of [
+        [g.markMargins, inner.mark.h],
+        [g.nameMargins, inner.name.h],
+      ] as const)
+        expect(margins.marginTop + h + margins.marginBottom).toBeCloseTo(g.height, 9);
+      // And the geometry reports what the layout produces.
+      expect(g.ink.mark.top).toBeCloseTo(markInk.top, 9);
+      expect(g.ink.name.left).toBeCloseTo(nameInk.left, 9);
+    }
+  });
+
+  it('lays 14’s stack out by its margins: one axis, the two intervals between the inks', () => {
+    for (const [scale, taglineScale] of [
+      [1, 1],
+      [1.76, 1.5],
+    ] as const) {
+      const g = lockupGeometry('splash', scale, taglineScale);
+      const inner = inkWithinBoxes('splash', scale, taglineScale);
+      const em = nativeType.latin.wordmarkSplash.fontSize * scale;
+      // A column with alignItems centre: each member's outer box centred, top to bottom.
+      let y = 0;
+      const place = (
+        margins: {
+          marginTop: number;
+          marginBottom: number;
+          marginLeft?: number;
+          marginRight?: number;
+        },
+        w: number,
+        h: number,
+      ) => {
+        const outer = (margins.marginLeft ?? 0) + w + (margins.marginRight ?? 0);
+        const x = (g.width - outer) / 2 + (margins.marginLeft ?? 0);
+        const top = y + margins.marginTop;
+        y = top + h + margins.marginBottom;
+        return { x, top };
+      };
+      const markAt = place(g.markMargins, inner.mark.w, inner.mark.h);
+      const nameAt = place(g.nameMargins, inner.name.w, inner.name.h);
+      if (g.taglineMargins === undefined) throw new Error('the splash has a tagline');
+      const taglineAt = place(g.taglineMargins, 0, inner.tagline.h);
+      const markInk = {
+        centre: markAt.x + (inner.mark.left + inner.mark.right) / 2,
+        top: markAt.top + inner.mark.top,
+        bottom: markAt.top + inner.mark.bottom,
+      };
+      const nameInk = {
+        centre: nameAt.x + (inner.name.left + inner.name.right) / 2,
+        top: nameAt.top + inner.name.top,
+        bottom: nameAt.top + inner.name.bottom,
+      };
+      const taglineInk = {
+        top: taglineAt.top + inner.tagline.top,
+        bottom: taglineAt.top + inner.tagline.bottom,
+      };
+      expect(markInk.top).toBeCloseTo(0, 9);
+      expect(markInk.centre).toBeCloseTo(g.width / 2, 9);
+      expect(nameInk.centre).toBeCloseTo(g.width / 2, 9);
+      expect(nameInk.top - markInk.bottom).toBeCloseTo(LOCKUP_SPLASH.markInterval * em, 9);
+      expect(taglineInk.top - nameInk.bottom).toBeCloseTo(LOCKUP_SPLASH.taglineInterval * em, 9);
+      // The column ends at the tagline's ink, and the geometry reports what the layout produces.
+      expect(y).toBeCloseTo(taglineInk.bottom, 9);
+      expect(y).toBeCloseTo(g.height, 9);
+      expect(g.ink.tagline?.top).toBeCloseTo(taglineInk.top, 9);
+    }
+  });
+
+  it('DECOY — a line box centred as a box is not the ink centred: the name’s ink sits high in its line', () => {
+    // What `alignItems: 'center'` alone would draw. Gelasio's ascender carries the cap and the
+    // ascenders; its descender a deep tail "Irodora" does not use.
+    const inner = inkWithinBoxes('app', 1);
+    const inkCentre = (inner.name.top + inner.name.bottom) / 2;
+    expect(inner.name.h / 2 - inkCentre).toBeGreaterThan(2);
+  });
+});
+
+/** Every node in a rendered tree whose props carry `key`. */
+const withProp = (tree: ReturnType<typeof draw>, key: string) =>
+  tree.UNSAFE_root.findAll((node) => typeof node.type === 'string' && key in node.props);
+
+/** A style prop, flattened. */
+const styleOf = (node: { props: Record<string, unknown> }): Record<string, unknown> => {
+  const style: unknown = node.props['style'];
+  return (
+    Array.isArray(style) ? Object.assign({}, ...(style as object[])) : (style ?? {})
+  ) as Record<string, unknown>;
+};
+
+const textLayout = (width: number, height: number) => ({
+  nativeEvent: {
+    lines: [
+      { x: 0, y: 0, width, height, ascender: 0, descender: 0, capHeight: 0, xHeight: 0, text: '' },
+    ],
+  },
+});
+
+describe('the lockup, rendered', () => {
+  it('sets each name at its measured step, in the serif, as Latin (ADR-0112, ADR-0121)', () => {
+    for (const [form, step] of [
+      ['app', nativeType.latin.wordmark],
+      ['splash', nativeType.latin.wordmarkSplash],
+    ] as const) {
+      const tree =
+        form === 'app'
+          ? draw(<Wordmark form="app" />)
+          : draw(<Wordmark form="splash" tagline="彩り・色の知性" />);
+      const name = styleOf(tree.getByText('Irodora'));
+      expect(name['fontSize']).toBe(step.fontSize);
+      expect(name['fontFamily']).toBe(nativeFamilies.serif);
+      expect(name['fontWeight']).toBe(nativeFaces.serif.fontWeight);
+      expect(tree.UNSAFE_getByType(Mark).props['size']).toBeCloseTo(lockupGeometry(form).mark, 9);
+    }
+  });
+
+  it('sets the splash tagline in the gothic at title, weight 400, as 14 records it', () => {
+    const tree = draw(<Wordmark form="splash" tagline="彩り・色の知性" />);
+    const tagline = styleOf(tree.getByText('彩り・色の知性'));
+    expect(tagline['fontFamily']).toBe(nativeFamilies.jp);
+    expect(tagline['fontSize']).toBe(nativeType.japanese.title.fontSize);
+    expect(tagline['fontWeight']).toBe('400');
+  });
+
+  it('announces the name once, and as a heading only where asked', () => {
+    // The word is real text, so the mark beside it is decorative: a labelled mark would say the
+    // product name twice.
+    const app = draw(<Wordmark form="app" heading />);
+    expect(app.queryAllByLabelText('Irodora')).toHaveLength(0);
+    expect(app.getByRole('header').props['children']).toBe('Irodora');
+    const stack = draw(<Wordmark form="splash" tagline="彩り・色の知性" />);
+    expect(stack.queryAllByLabelText('Irodora')).toHaveLength(0);
+    expect(stack.queryAllByRole('header')).toHaveLength(0);
   });
 
   it('renders in both themes', () => {
     for (const theme of ['light', 'dark'] as const)
-      expect(draw(<Wordmark />, theme).getByText('Irodora')).toBeTruthy();
+      expect(draw(<Wordmark form="app" />, theme).getByText('Irodora')).toBeTruthy();
   });
 
-  it('sets the name in the serif, as Latin, at the measured weight (ADR-0112)', () => {
-    // The wordmark 01 and 14 draw is Gelasio-shaped; the name is Latin in both locales, so it is
-    // never routed to the gothic the way a page's Japanese text is.
-    const style: unknown = draw(<Wordmark />).getByText('Irodora').props['style'];
-    const flat = (
-      Array.isArray(style) ? Object.assign({}, ...(style as object[])) : style
-    ) as Record<string, unknown>;
-    expect(flat['fontFamily']).toBe(nativeFamilies.serif);
-    expect(flat['fontWeight']).toBe(nativeFaces.serif.fontWeight);
+  it('scales as one figure: the mark and the intervals follow the name’s laid-out size (A7)', () => {
+    const advance =
+      (GELASIO.name.advance / GELASIO.unitsPerEm) * nativeType.latin.wordmark.fontSize;
+    const tree = draw(<Wordmark form="app" />);
+    expect(tree.UNSAFE_getByType(Mark).props['size']).toBeCloseTo(lockupGeometry('app').mark, 9);
+    fireEvent(tree.getByText('Irodora'), 'textLayout', textLayout(advance * 1.5, 0));
+    const scale = nameScaleOf('app', advance * 1.5);
+    expect(scale).toBeCloseTo(1.5, 9);
+    expect(tree.UNSAFE_getByType(Mark).props['size']).toBeCloseTo(
+      lockupGeometry('app', 1.5).mark,
+      9,
+    );
+    const nameBox = withProp(tree, 'style').find(
+      (node) => styleOf(node)['marginLeft'] === lockupGeometry('app', scale).nameMargins.marginLeft,
+    );
+    expect(nameBox).toBeDefined();
+  });
+
+  it('DECOY — a line laid out at the drawn size moves nothing', () => {
+    const advance =
+      (GELASIO.name.advance / GELASIO.unitsPerEm) * nativeType.latin.wordmark.fontSize;
+    const tree = draw(<Wordmark form="app" />);
+    fireEvent(tree.getByText('Irodora'), 'textLayout', textLayout(advance, 0));
+    expect(tree.UNSAFE_getByType(Mark).props['size']).toBeCloseTo(lockupGeometry('app').mark, 9);
+  });
+
+  it('follows the tagline’s own scale for its line, and the name’s for its interval', () => {
+    const tree = draw(<Wordmark form="splash" tagline="彩り・色の知性" />);
+    const height = nativeType.japanese.title.lineHeight * 1.5;
+    fireEvent(tree.getByText('彩り・色の知性'), 'textLayout', textLayout(100, height));
+    expect(taglineScaleOf(height)).toBeCloseTo(1.5, 9);
+    const expected = lockupGeometry('splash', 1, taglineScaleOf(height)).taglineMargins;
+    const box = withProp(tree, 'style').find(
+      (node) => styleOf(node)['marginTop'] === expected?.marginTop,
+    );
+    expect(box).toBeDefined();
+  });
+
+  it('fits the width it is given: one line the platform shrinks, never breaks or clips (A7)', () => {
+    for (const tree of [
+      draw(<Wordmark form="app" />),
+      draw(<Wordmark form="splash" tagline="彩り・色の知性" />),
+    ]) {
+      const name = tree.getByText('Irodora');
+      expect(name.props['numberOfLines']).toBe(1);
+      expect(name.props['adjustsFontSizeToFit']).toBe(true);
+      // Still scaled to 200 %: the fit takes over only where the width runs out.
+      expect(name.props['maxFontSizeMultiplier']).toBe(2);
+    }
+    // The row holds the name's box to its share of the width it is given, so the mark and the
+    // interval beside it fit too.
+    const tree = draw(<Wordmark form="app" />);
+    const [row] = withProp(tree, 'onLayout');
+    if (row === undefined) throw new Error('the row measures its width');
+    fireEvent(row, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 200, height: 40 } } });
+    const held = withProp(tree, 'style').find((node) => 'maxWidth' in styleOf(node));
+    expect(held === undefined ? undefined : styleOf(held)['maxWidth']).toBeCloseTo(
+      nameBoxFor('app', 200),
+      9,
+    );
+    const drawn = lockupGeometry('app');
+    expect((nameBoxFor('app', 200) / drawn.nameBox) * drawn.width).toBeCloseTo(200, 9);
+  });
+
+  it('refuses by type what no drawing draws', () => {
+    // @ts-expect-error — a lockup is one of the two drawn forms; there is no default.
+    expect(() => draw(<Wordmark />)).toBeDefined();
+    // @ts-expect-error — `size` is gone: each form's size is its drawing's.
+    expect(() => draw(<Wordmark form="app" size="title" />)).toBeDefined();
+    // @ts-expect-error — 01's row carries no tagline.
+    expect(() => draw(<Wordmark form="app" tagline="彩り・色の知性" />)).toBeDefined();
+    // @ts-expect-error — 14's stack carries one.
+    expect(() => draw(<Wordmark form="splash" />)).toBeDefined();
+    // @ts-expect-error — a splash is not a heading.
+    expect(() => draw(<Wordmark form="splash" tagline="彩り・色の知性" heading />)).toBeDefined();
   });
 });

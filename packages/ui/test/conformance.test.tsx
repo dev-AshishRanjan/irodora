@@ -200,6 +200,12 @@ const SAMPLE_B = fromSpace('oklch', [0.44, 0.08, 258], { source: 'declared', con
 const AVATAR_FIXTURE =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
+/**
+ * A FIXTURE, labelled as one: the splash lockup's tagline as `14` draws it. The real copy is the
+ * splash's (F-231), from the catalogue; the lockup only sets what its caller passes.
+ */
+const FIXTURE_TAGLINE = '彩り・色の知性';
+
 /** Readout fixtures (F-235): figures that name their quantity and space, as a readout's do. */
 const READOUT_OKLCH: ReadoutValue = {
   kind: 'figures',
@@ -474,29 +480,33 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE IDENTITY (F-141; three subjects since F-230).
+   *
+   * Different accessibility objects rather than sizes of one thing. A standing-alone `Mark` is an
+   * `image` with a name; the same mark inside a lockup is DECORATIVE, because the word beside it is
+   * real text and a labelled mark would make a screen reader say the product name twice.
+   *
+   * Registering only the lockups would leave the labelled form — a bare header — checked by
+   * nothing, and it is the form where getting the label wrong actually costs somebody something.
+   *
+   * The lockups take no locale: the name is Latin in both (ADR-0112) and the splash's tagline is
+   * Japanese in both, so one render is both locales'.
+   */
   {
-    /*
-     * THE IDENTITY (F-141).
-     *
-     * Both members, because they are different accessibility objects rather than two sizes of
-     * one thing. A standing-alone `Mark` is an `image` with a name; the same mark inside a
-     * `Wordmark` is DECORATIVE, because the word beside it is real text and a labelled mark
-     * would make a screen reader say the product name twice.
-     *
-     * Registering only the lockup would leave the labelled form — the splash, a bare header —
-     * checked by nothing, and it is the form where getting the label wrong actually costs
-     * somebody something.
-     */
-    name: 'Brand',
+    name: 'Brand — the app lockup',
     kind: 'static',
-    render: (_state, theme) =>
-      draw(
-        <>
-          <Wordmark size="title" />
-          <Mark size={16} label="Irodora" />
-        </>,
-        theme,
-      ),
+    render: (_state, theme) => draw(<Wordmark form="app" heading />, theme),
+  },
+  {
+    name: 'Brand — the splash lockup',
+    kind: 'static',
+    render: (_state, theme) => draw(<Wordmark form="splash" tagline={FIXTURE_TAGLINE} />, theme),
+  },
+  {
+    name: 'Brand — the mark at 16',
+    kind: 'static',
+    render: (_state, theme) => draw(<Mark size={16} label="Irodora" />, theme),
   },
   {
     /*

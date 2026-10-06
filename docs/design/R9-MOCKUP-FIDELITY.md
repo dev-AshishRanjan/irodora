@@ -40,7 +40,7 @@ fits the box the mockup draws, and text set a step larger may not. **Siblings dr
 same element in each card, row or tile of one image — take one step, the one most of them snap to
 (a tie again takes the smaller), so a record never sets two identical things at two sizes.
 `raw.emDp` keeps each element's own estimate. **For type, the snap reaches 4 dp** ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md)): type drawn more than 4 dp from every step is set at its drawn size, as a **measured step**
-bound to the elements drawn at it, at their median em; `type-scale.test` holds the census.
+bound to the elements drawn at it, at their median em; `type-scale.test` holds the census. **Inside a lockup nothing snaps** ([ADR-0123](../adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)): a lockup is one figure, and the mark's size and every interval are its drawing's, as ratios of the name's em, so it scales as one with the name.
 
 **Not design — never materialised:**
 

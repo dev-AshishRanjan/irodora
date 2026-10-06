@@ -46,9 +46,34 @@
       "copy": null
     },
     {
-      "id": "01.header.mark",
+      "id": "01.header.lockup",
       "order": 2,
       "parent": null,
+      "component": "ui:Wordmark",
+      "box": {
+        "x": 73,
+        "y": 80,
+        "w": 309,
+        "h": 77
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 40,
+        "w": 154.5,
+        "h": 38.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.header.mark",
+      "order": 3,
+      "parent": "01.header.lockup",
       "component": "ui:Mark",
       "box": {
         "x": 73,
@@ -89,9 +114,9 @@
     },
     {
       "id": "01.header.wordmark",
-      "order": 3,
-      "parent": null,
-      "component": "ui:Wordmark",
+      "order": 4,
+      "parent": "01.header.lockup",
+      "component": "ui:Text",
       "box": {
         "x": 170,
         "y": 93,
@@ -129,7 +154,7 @@
     },
     {
       "id": "01.header.tagline",
-      "order": 4,
+      "order": 5,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -167,7 +192,7 @@
     },
     {
       "id": "01.header.chip",
-      "order": 5,
+      "order": 6,
       "parent": null,
       "component": "ui:Chip",
       "box": {
@@ -198,7 +223,7 @@
     },
     {
       "id": "01.side-art-right",
-      "order": 6,
+      "order": 7,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -223,7 +248,7 @@
     },
     {
       "id": "01.hero",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -258,7 +283,7 @@
     },
     {
       "id": "01.hero.sample",
-      "order": 8,
+      "order": 9,
       "parent": "01.hero",
       "component": "ui:Swatch",
       "box": {
@@ -290,7 +315,7 @@
     },
     {
       "id": "01.hero.sample.kanji",
-      "order": 9,
+      "order": 10,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -325,7 +350,7 @@
     },
     {
       "id": "01.hero.sample.kana",
-      "order": 10,
+      "order": 11,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -357,7 +382,7 @@
     },
     {
       "id": "01.hero.sample.name",
-      "order": 11,
+      "order": 12,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -389,7 +414,7 @@
     },
     {
       "id": "01.hero.sample.oklch",
-      "order": 12,
+      "order": 13,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -422,7 +447,7 @@
     },
     {
       "id": "01.hero.cta",
-      "order": 13,
+      "order": 14,
       "parent": "01.hero",
       "component": "ui:Button",
       "box": {
@@ -460,7 +485,7 @@
     },
     {
       "id": "01.side-art",
-      "order": 14,
+      "order": 15,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -485,7 +510,7 @@
     },
     {
       "id": "01.wardrobe",
-      "order": 15,
+      "order": 16,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -514,7 +539,7 @@
     },
     {
       "id": "01.wardrobe.title",
-      "order": 16,
+      "order": 17,
       "parent": "01.wardrobe",
       "component": "ui:Text",
       "box": {
@@ -551,7 +576,7 @@
     },
     {
       "id": "01.wardrobe.count",
-      "order": 17,
+      "order": 18,
       "parent": "01.wardrobe",
       "component": "ui:Chip",
       "box": {
@@ -582,7 +607,7 @@
     },
     {
       "id": "01.wardrobe.tile-1",
-      "order": 18,
+      "order": 19,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -613,7 +638,7 @@
     },
     {
       "id": "01.wardrobe.tile-2",
-      "order": 19,
+      "order": 20,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -644,7 +669,7 @@
     },
     {
       "id": "01.wardrobe.tile-3",
-      "order": 20,
+      "order": 21,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -675,7 +700,7 @@
     },
     {
       "id": "01.wardrobe.tile-4",
-      "order": 21,
+      "order": 22,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -706,7 +731,7 @@
     },
     {
       "id": "01.wardrobe.tile-5",
-      "order": 22,
+      "order": 23,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -737,7 +762,7 @@
     },
     {
       "id": "01.wardrobe.tile-1.badge",
-      "order": 23,
+      "order": 24,
       "parent": "01.wardrobe.tile-1",
       "component": "new:TextureBadge",
       "box": {
@@ -762,7 +787,7 @@
     },
     {
       "id": "01.wardrobe.tile-2.badge",
-      "order": 24,
+      "order": 25,
       "parent": "01.wardrobe.tile-2",
       "component": "new:TextureBadge",
       "box": {
@@ -787,7 +812,7 @@
     },
     {
       "id": "01.wardrobe.tile-3.badge",
-      "order": 25,
+      "order": 26,
       "parent": "01.wardrobe.tile-3",
       "component": "new:TextureBadge",
       "box": {
@@ -812,7 +837,7 @@
     },
     {
       "id": "01.wardrobe.tile-4.badge",
-      "order": 26,
+      "order": 27,
       "parent": "01.wardrobe.tile-4",
       "component": "new:TextureBadge",
       "box": {
@@ -837,7 +862,7 @@
     },
     {
       "id": "01.wardrobe.tile-5.badge",
-      "order": 27,
+      "order": 28,
       "parent": "01.wardrobe.tile-5",
       "component": "new:TextureBadge",
       "box": {
@@ -862,7 +887,7 @@
     },
     {
       "id": "01.colour-card",
-      "order": 28,
+      "order": 29,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -891,7 +916,7 @@
     },
     {
       "id": "01.colour-card.title",
-      "order": 29,
+      "order": 30,
       "parent": "01.colour-card",
       "component": "ui:Text",
       "box": {
@@ -925,7 +950,7 @@
     },
     {
       "id": "01.colour-card.sample",
-      "order": 30,
+      "order": 31,
       "parent": "01.colour-card",
       "component": "ui:Swatch",
       "box": {
@@ -956,7 +981,7 @@
     },
     {
       "id": "01.colour-card.note",
-      "order": 31,
+      "order": 32,
       "parent": "01.colour-card",
       "component": "ui:Text",
       "box": {
@@ -994,7 +1019,7 @@
     },
     {
       "id": "01.tabs",
-      "order": 32,
+      "order": 33,
       "parent": null,
       "component": "ui:TabBar",
       "box": {
@@ -1026,7 +1051,7 @@
     },
     {
       "id": "01.tabs.indicator",
-      "order": 33,
+      "order": 34,
       "parent": "01.tabs",
       "component": null,
       "box": {
@@ -1053,7 +1078,7 @@
     },
     {
       "id": "01.tabs.home.icon",
-      "order": 34,
+      "order": 35,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1083,7 +1108,7 @@
     },
     {
       "id": "01.tabs.atlas.icon",
-      "order": 35,
+      "order": 36,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1110,7 +1135,7 @@
     },
     {
       "id": "01.tabs.lens.icon",
-      "order": 36,
+      "order": 37,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1137,7 +1162,7 @@
     },
     {
       "id": "01.tabs.wardrobe.icon",
-      "order": 37,
+      "order": 38,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1164,7 +1189,7 @@
     },
     {
       "id": "01.tabs.profile.icon",
-      "order": 38,
+      "order": 39,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1191,7 +1216,7 @@
     },
     {
       "id": "01.tabs.home.label",
-      "order": 39,
+      "order": 40,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1228,7 +1253,7 @@
     },
     {
       "id": "01.tabs.atlas.label",
-      "order": 40,
+      "order": 41,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1265,7 +1290,7 @@
     },
     {
       "id": "01.tabs.lens.label",
-      "order": 41,
+      "order": 42,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1302,7 +1327,7 @@
     },
     {
       "id": "01.tabs.wardrobe.label",
-      "order": 42,
+      "order": 43,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1339,7 +1364,7 @@
     },
     {
       "id": "01.tabs.profile.label",
-      "order": 43,
+      "order": 44,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1441,7 +1466,7 @@
     },
     {
       "id": "C4",
-      "elements": ["01.header.mark", "01.header.wordmark"],
+      "elements": ["01.header.lockup", "01.header.mark", "01.header.wordmark"],
       "resolution": "the in-app lockup is 01’s: the mark (geometry from 14) and the wordmark, monochrome",
       "flippedByUser": false
     },

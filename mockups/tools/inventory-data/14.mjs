@@ -59,7 +59,20 @@ export default {
       copy: null,
     },
     {
+      // F-230: the splash lockup (C4, P2) — one figure on one axis, its box the members' ink: the
+      // name's width, the mark's top to the tagline's foot (ADR-0123).
+      id: '14.splash.lockup',
+      screen: splash,
+      component: 'ui:Wordmark',
+      box: { x: 485, y: 534, w: 147, h: 194 },
+      tokens: {},
+      binding: null,
+      action: null,
+      copy: null,
+    },
+    {
       id: '14.splash.mark',
+      parent: '14.splash.lockup',
       screen: splash,
       component: 'ui:Mark',
       box: { x: 503, y: 534, w: 111, h: 108 },
@@ -89,8 +102,9 @@ export default {
     },
     {
       id: '14.splash.wordmark',
+      parent: '14.splash.lockup',
       screen: splash,
-      component: 'ui:Wordmark',
+      component: 'ui:Text',
       box: { x: 485, y: 665, w: 147, h: 35 },
       tokens: { fg: 'text.primary' },
       // ADR-0121: 12.3 dp from every board step, so a measured step.
@@ -104,6 +118,7 @@ export default {
     },
     {
       id: '14.splash.tagline',
+      parent: '14.splash.lockup',
       screen: splash,
       component: 'ui:Text',
       box: { x: 501, y: 711, w: 115, h: 17 },
@@ -181,7 +196,13 @@ export default {
   conflicts: [
     {
       id: 'C4',
-      elements: ['14.icon.tile.mark', '14.splash.mark', '14.splash.wordmark'],
+      elements: [
+        '14.icon.tile.mark',
+        '14.splash.lockup',
+        '14.splash.mark',
+        '14.splash.wordmark',
+        '14.splash.tagline',
+      ],
       resolution:
         'mark geometry and the splash lockup come from 14; monochrome everywhere, the icon included (supersedes ADR-0093)',
       flippedByUser: false,

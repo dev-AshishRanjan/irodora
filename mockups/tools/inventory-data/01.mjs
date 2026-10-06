@@ -55,9 +55,13 @@ export default {
     el('01.header.line-art', 'ui:Illustration', B(471, 15, 297, 261), {
       illustration: 'plum-branch',
     }),
+    // F-230: the in-app lockup (C4, P5) — one figure, its box the members' ink: the mark's left edge
+    // to the name's right, the mark's top to its foot (ADR-0123).
+    el('01.header.lockup', 'ui:Wordmark', B(73, 80, 309, 77)),
     // F-230 (2026-10-06), read as 14's are, a cross-check only (C4 takes the geometry from 14): the
     // same blossom, its eye smaller and each stamen ending in a dot 3.8 px across.
     el('01.header.mark', 'ui:Mark', B(73, 80, 78, 77), {
+      parent: '01.header.lockup',
       tokens: { fg: 'text.primary' },
       raw: {
         petals: 5,
@@ -78,7 +82,8 @@ export default {
     // F-230: the em from Gelasio's outlines (serif-weight.mjs --em), 31.6 dp by the ink's height and
     // 31.9 by its width; the 34 first recorded was a box's height. 20.0 px right of the mark's ink,
     // their vertical centres 0.3 px apart.
-    el('01.header.wordmark', 'ui:Wordmark', B(170, 93, 212, 51), {
+    el('01.header.wordmark', 'ui:Text', B(170, 93, 212, 51), {
+      parent: '01.header.lockup',
       tokens: { fg: 'text.primary' },
       // ADR-0121: 9.6 dp from every board step, so a measured step.
       type: text('serif', 'wordmark'),
@@ -310,7 +315,7 @@ export default {
     },
     {
       id: 'C4',
-      elements: ['01.header.mark', '01.header.wordmark'],
+      elements: ['01.header.lockup', '01.header.mark', '01.header.wordmark'],
       resolution:
         'the in-app lockup is 01’s: the mark (geometry from 14) and the wordmark, monochrome',
       flippedByUser: false,
