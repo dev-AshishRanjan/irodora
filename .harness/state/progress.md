@@ -8,6 +8,78 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-07 — F-230 The mark, the wordmark and the lockup are redrawn to the mockups
+
+**Done.** The mark is `14`'s 梅鉢, drawn from code. It is five tangent petals over a hub, the first
+petal straight up, with a ring cut around a centre disc, a stamen cut along each petal and a seam cut
+along each notch. Every cut is a hole, the mark is one ink everywhere, and the icon is included. The
+lockups are `01`'s row and `14`'s stack, each one figure. The feature shipped in ten commits,
+`3cf9d9d` through this one
+([ADR-0121](../../docs/adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md),
+[ADR-0122](../../docs/adr/0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md),
+[ADR-0123](../../docs/adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)).
+
+- **Measured first.** `mark.ps1` and `mark-fit.mjs` read the blossom, calibrated through a JPEG to
+  0.3 px with five decoys refused. `serif-weight.mjs --em` reads a word's em from its ink against the
+  face's outlines. `MARK`'s fields are recomputed from `14.splash.mark`, with F-165's mark, four
+  petals and six as decoys.
+- **OQ-13 decided (ADR-0121).** Type a screen draws within 4 dp of a board step takes that step;
+  beyond 4 dp, it gets a measured step bound to its elements. `wordmark` is 31.6 and `wordmarkSplash`
+  59.7. The census owes 06's, 20's and 26's kanji and 22's figures to the features that build them.
+- **One ink everywhere (ADR-0122, superseding ADR-0093).** `MARK_INKS` is a type. `--prove` reads
+  every asset's bytes and finds one ink. The icon is dark `foreground.2` on the dark ground, the same
+  image on both platforms. `cvdPairs` declares every ground a mark is drawn on. The census allows one
+  tinted mark, `27`'s.
+- **The lockups (ADR-0123).** The mark's ink and every interval are ratios of the name's em, outside
+  the spacing snap. The figure's box is its ink. It scales with the name's laid-out size, and fits the
+  width it is given while still scaling to 200 %. Home's header is `01`'s lockup at 31.6 dp.
+- **One geometry, three renderers.** `Mark`, `markSvg` and the generator all read `MARK`. The
+  generator writes `mark-geometry.json`, holding the scalars and its point test at 9,216 points, and
+  `brand.test` matches the component against both.
+
+**Review (once, on `3b20b07`): FAIL**, with every gate green. There was 1 blocking finding, 1
+significant and 8 minor. Fixed in `f99a5ec`:
+
+- **B1.** React Native 0.86 on iOS centres a line only at or above its font's own line height, and
+  otherwise clips a tall line's top. Each bundled face's own line is now in the manifest, and the
+  measured steps lead at least that (ADR-0121 amended). `lockupGeometry` places each baseline per
+  platform, and the tests model both platforms from RN's source.
+- **S1.** Gate 16 picks a signature per launcher layer.
+- **M1.** The type-census refusal had never run. It is now live and planted.
+- **M2, M4–M8.**
+
+Recorded as backlog: F-314 (M3, the tagline's tracking) and F-315 (board steps against each face's
+own line on iOS). The plan's review row lists each finding and what was done.
+
+**Found and recorded on F-231:** the native splash draws the mark's grid at 120 pt and the launch
+overlay at 160 pt, so the mark grows by a third at the hand-over (F-190's, pre-existing).
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm typecheck` · `pnpm format:check` · `pnpm build` · `pnpm lint`, which includes
+  `generate-brand-assets --check` and `--prove` (37 cases)
+- `pnpm test` (ui 838, mobile 1094) · `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd`
+- `node scripts/verify-mockups.mjs --prove` · `node scripts/verify-token-reach.mjs --prove` ·
+  `node scripts/verify-spacing-scale.mjs --prove` · `node scripts/generate-design-tokens.mjs --check`
+  · `node scripts/verify-cache-scope.mjs` · `node scripts/verify-viewport.mjs --prove`
+
+The first `pnpm test` on the fixes failed only on a 5 s `afterEach` timeout in the ui conformance
+suite, with no assertion failing. Re-run whole and alone, it passed.
+
+**Not run:**
+
+- `node scripts/verify-apk.mjs --prove` and gate `artifact`: this workstation has no Android SDK or
+  JDK, and the proof refuses to pass without its fixtures.
+- `e2e`.
+- Any device run.
+
+The three attestations stay outstanding for F-267's side-by-sides and a release artefact: the mark
+on devices and under the platforms' colour filters, both lockups on both platforms including 200 %
+text, and the one-ink icon on a launcher.
+
+---
+
 ## 2026-10-06 — F-235 The data displays the mockups draw
 
 **Done.** Every data display the mockups draw exists in `@irodora/ui`, built to the screen that draws
