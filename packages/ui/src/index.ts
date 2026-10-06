@@ -65,6 +65,26 @@ export {
 } from './FactorRows.js';
 export { STEP_PILL_HEIGHT, StepPill, type StepPillProps } from './StepPill.js';
 export {
+  Carousel,
+  CAROUSEL_GAP,
+  CAROUSEL_LEADING_GAP,
+  CAROUSEL_PEEK,
+  centredWidth,
+  type CarouselItem,
+  type CarouselProps,
+} from './Carousel.js';
+export {
+  PAGE_DOT,
+  PAGE_DOT_CURRENT,
+  PAGE_DOT_SMALL,
+  PAGE_DOTS_PITCH,
+  PAGE_DOTS_WINDOW,
+  PageDots,
+  pageDots,
+  type PageDot,
+  type PageDotsProps,
+} from './PageDots.js';
+export {
   FIELDS_ROW,
   HARMONY_ROW,
   NEAREST_ROW,

@@ -72,11 +72,11 @@ const rule = (n, box) =>
 const kasane = (n, strip, caption) => [
   // Joined samples: a Strip (F-233).
   el(`23.palettes.kasane-${n}`, 'ui:Strip', strip, {
-    parent: '23.palettes',
+    parent: '23.palettes.row',
     tokens: { radius: 'md' },
     binding: `engine:profile.palettes.${n - 1}`,
   }),
-  t(`23.palettes.kasane-${n}.name`, caption, '23.palettes', `corpus:kasane.${n - 1}.name`, {
+  t(`23.palettes.kasane-${n}.name`, caption, '23.palettes.row', `corpus:kasane.${n - 1}.name`, {
     tokens: { fg: 'text.primary' },
     ...sized('body'),
     copy: { shape: 'label', script: 'latin', lines: 2 },
@@ -194,6 +194,9 @@ export default {
         copy: { shape: 'heading', script: 'latin' },
       },
     ),
+    // F-235: Carousel's `leading` form, from the card's inset to the screen's edge, where the third
+    // kasane is clipped.
+    el('23.palettes.row', 'ui:Carousel', B(153, 876, 501, 118), { parent: '23.palettes' }),
     ...kasane(1, B(153, 876, 167, 64), B(154, 952, 115, 41)),
     ...kasane(2, B(329, 876, 167, 64), B(331, 953, 152, 37)),
     ...kasane(3, B(506, 876, 144, 64), B(507, 952, 143, 41)),

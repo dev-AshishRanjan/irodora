@@ -69,7 +69,8 @@ export default {
       action: 'open:share.card',
     }),
     // ---- the carousel: the neighbours' edges either side of the card
-    el('20.carousel', 'new:Carousel', B(0, 208, 768, 1168), { binding: 'corpus:entries' }),
+    // F-235: Carousel's `centred` form; each neighbour is a button (WCAG 2.2's 2.5.7, ADR-0120).
+    el('20.carousel', 'ui:Carousel', B(0, 208, 768, 1168), { binding: 'corpus:entries' }),
     // F-235 (2026-10-05): each neighbour is an outline whose side edge runs rows 213–1286 (edges, t 30),
     // so it ends 1079 px down — not at the frame's bottom, where it was first recorded.
     el('20.carousel.previous', 'ui:Card', B(0, 208, 78, 1079), {

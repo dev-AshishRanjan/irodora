@@ -199,7 +199,8 @@ export default {
       action: 'navigate:/wardrobe',
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('22.compat', null, B(152, 876, 488, 231), {}),
+    // F-235: Carousel's `leading` form, the third garment clipped at the screen's edge.
+    el('22.compat', 'ui:Carousel', B(152, 876, 488, 231), {}),
     ...garment(1, {
       box: B(152, 876, 186, 230),
       photo: B(161, 885, 168, 156),

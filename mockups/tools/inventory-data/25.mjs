@@ -138,9 +138,11 @@ export default {
     el('25.art-blossom', 'ui:Illustration', B(440, 955, 176, 110), { illustration: 'blossom' }),
     // F-235 (2026-10-05), blobs against the ground (lum 237, t 25): the active dot 9 px, two inactive
     // 8 px, a fourth 4 px, centres 18 px apart. The active dot's extra px is within its higher contrast
-    // through the same threshold (±1 px). It is marked by ink alone (rule 13).
+    // through the same threshold (±1 px). It is marked by ink alone (rule 13). ADR-0120 (OQ-52): the
+    // current page is a capsule in this ink, the others text.tertiary, and the small fourth means the
+    // pages go on past it.
     el('25.dots', 'ui:PageDots', B(361, 988, 61, 9), {
-      tokens: { fg: 'text.primary' },
+      tokens: { fg: 'text.primary', inactive: 'text.tertiary' },
       measured: { fg: '#191A1A', inactive: '#BFBFB9' },
       raw: { activePx: 9, dotPx: 8, smallPx: 4, pitchPx: 18 },
     }),
@@ -246,6 +248,11 @@ export default {
     },
   ],
   departures: [
+    {
+      rule: 'E3',
+      element: '25.dots',
+      why: 'the current page is a capsule in the drawn ink, not only a darker dot (golden rule 13: a second channel, shape); the other dots take text.tertiary, since the drawn #BFBFB9 is 1.69:1 on the ground, under the 3:1 a graphic needs (WCAG 1.4.11). ADR-0120',
+    },
     {
       rule: 'E1',
       element: '25.hero.oklch',

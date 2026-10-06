@@ -482,7 +482,8 @@
         "h": 7.5
       },
       "tokens": {
-        "fg": "text.primary"
+        "fg": "text.primary",
+        "inactive": "text.tertiary"
       },
       "type": null,
       "icon": null,
@@ -1317,6 +1318,11 @@
     }
   ],
   "departures": [
+    {
+      "rule": "E3",
+      "element": "25.dots",
+      "why": "the current page is a capsule in the drawn ink, not only a darker dot (golden rule 13: a second channel, shape); the other dots take text.tertiary, since the drawn #BFBFB9 is 1.69:1 on the ground, under the 3:1 a graphic needs (WCAG 1.4.11). ADR-0120"
+    },
     {
       "rule": "E1",
       "element": "25.hero.oklch",

@@ -21,6 +21,7 @@ import {
   Bands,
   Button,
   Card,
+  Carousel,
   Chip,
   CoverageDial,
   FabricSwatch,
@@ -28,6 +29,7 @@ import {
   FactorRows,
   FigureValue,
   MetricTile,
+  PageDots,
   ProximityHeadline,
   Radar,
   RankedRow,
@@ -1697,6 +1699,71 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         </Card>,
         theme,
       ),
+  },
+  {
+    /*
+     * THE CAROUSEL (F-235, ADR-0120), laid out so its items have their width. `static`: it chooses
+     * nothing of its own — its neighbours are shortcuts for the swipe, and a carousel is never
+     * disabled or busy. Their targets are checked in `carousel.test`.
+     */
+    name: 'Carousel (centred, 20)',
+    kind: 'static',
+    render: (_state, theme) => {
+      const rendered = render(
+        <ThemeProvider theme={theme}>
+          <Carousel
+            form="centred"
+            index={1}
+            onIndexChange={() => undefined}
+            testID="carousel"
+            items={['Ai-nezumi', 'Kuchiba', 'Sabi-asagi'].map((name) => ({
+              key: name,
+              name: `Show ${name}`,
+              node: (
+                <Text size="title" color="foreground">
+                  {name}
+                </Text>
+              ),
+            }))}
+          />
+        </ThemeProvider>,
+      );
+      fireEvent(rendered.getByTestId('carousel'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 384, height: 600 } },
+      });
+      const json = rendered.toJSON() as TestNode;
+      rendered.unmount();
+      return json;
+    },
+  },
+  {
+    name: 'Carousel (leading, 22)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Carousel
+          form="leading"
+          inset={16}
+          items={['Charcoal Wool', 'Off-White Oxford', 'Navy Knit'].map((name) => ({
+            key: name,
+            node: (
+              <Card level="1">
+                <Text size="body" color="foreground">
+                  {name}
+                </Text>
+              </Card>
+            ),
+          }))}
+        />,
+        theme,
+      ),
+  },
+  {
+    // The page dots (F-235, ADR-0120): the current page a capsule, a small dot past the window.
+    name: 'PageDots (25)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<PageDots current={0} total={6} label="Colour 1 of 6" />, theme),
   },
   {
     // The headline (F-235): the band's ink is the caller's, so the subject passes one that exists.

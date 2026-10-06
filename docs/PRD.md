@@ -463,6 +463,8 @@ two people and it is labelled as such rather than hidden.
 
 **OQ-50 and OQ-51 are closed by [ADR-0119](adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md)** (2026-10-05, decided on the person's delegation; both arose in F-235 and were decided there rather than raised). Mockup 04's delta bars share one unit, the smaller of the two sides' room, so equal magnitudes draw equal lengths on either side; F-245 scales them by its tolerance over each axis's weighted CIEDE2000 term. Every bar takes the hue bar's drawn ink, `text.tertiary` on a card: the lightness bar's slate fails 3:1, and the chroma bar's green would state a per-axis pass by colour alone. The rows print what 04 prints, the quantity and space in each row's accessible name: FR-61 governs the professional surfaces, where mockup 08 prints the notation.
 
+**OQ-52 is closed by [ADR-0120](adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md)** (2026-10-06, decided on the person's delegation; it arose in F-235 and was decided there rather than raised). Mockup 25 marks its current page dot by ink alone and draws a smaller fourth dot with no stated meaning. The current page is a capsule in the drawn ink, a shape as the second channel; the other dots take `foreground.3`, since the drawn grey is 1.69:1 on its ground; at most four dots show, and a dot at the window's edge with pages beyond it is drawn small.
+
 **Closed, not answered.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which
 vendor to choose for capabilities the product no longer has. **OQ-4 is settled at ~120
 entries** — depth over breadth.

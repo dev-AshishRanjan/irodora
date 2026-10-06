@@ -135,6 +135,7 @@ Two rules that matter more than the format:
 | [0117](0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md) | The tab bar is 01's, drawn by our own component, and its words return | Accepted; OQ-47 open for a person; supersedes F-168 |
 | [0118](0118-the-app-bar-and-the-action-bar-are-placed-by-screen-and-the-sheet-by-its-form.md) | The app bar and the action bar are placed by Screen, and the sheet by its form | Accepted |
 | [0119](0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) | The delta bars share one unit and one ink, and print what 04 prints | Accepted; closes OQ-50 and OQ-51 |
+| [0120](0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md) | The current page is a capsule, and a carousel rests where it is drawn | Accepted; closes OQ-52 |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

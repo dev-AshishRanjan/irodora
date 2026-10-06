@@ -1213,9 +1213,34 @@
       }
     },
     {
-      "id": "23.palettes.kasane-1",
+      "id": "23.palettes.row",
       "order": 38,
       "parent": "23.palettes",
+      "component": "ui:Carousel",
+      "box": {
+        "x": 153,
+        "y": 876,
+        "w": 501,
+        "h": 118
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 560.5,
+        "w": 356.5,
+        "h": 84
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.palettes.kasane-1",
+      "order": 39,
+      "parent": "23.palettes.row",
       "component": "ui:Strip",
       "box": {
         "x": 153,
@@ -1241,8 +1266,8 @@
     },
     {
       "id": "23.palettes.kasane-2",
-      "order": 39,
-      "parent": "23.palettes",
+      "order": 40,
+      "parent": "23.palettes.row",
       "component": "ui:Strip",
       "box": {
         "x": 329,
@@ -1268,8 +1293,8 @@
     },
     {
       "id": "23.palettes.kasane-3",
-      "order": 40,
-      "parent": "23.palettes",
+      "order": 41,
+      "parent": "23.palettes.row",
       "component": "ui:Strip",
       "box": {
         "x": 506,
@@ -1295,8 +1320,8 @@
     },
     {
       "id": "23.palettes.kasane-1.name",
-      "order": 41,
-      "parent": "23.palettes",
+      "order": 42,
+      "parent": "23.palettes.row",
       "component": "ui:Text",
       "box": {
         "x": 154,
@@ -1330,8 +1355,8 @@
     },
     {
       "id": "23.palettes.kasane-2.name",
-      "order": 42,
-      "parent": "23.palettes",
+      "order": 43,
+      "parent": "23.palettes.row",
       "component": "ui:Text",
       "box": {
         "x": 331,
@@ -1365,8 +1390,8 @@
     },
     {
       "id": "23.palettes.kasane-3.name",
-      "order": 43,
-      "parent": "23.palettes",
+      "order": 44,
+      "parent": "23.palettes.row",
       "component": "ui:Text",
       "box": {
         "x": 507,
@@ -1400,7 +1425,7 @@
     },
     {
       "id": "23.history",
-      "order": 44,
+      "order": 45,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1429,7 +1454,7 @@
     },
     {
       "id": "23.history.icon",
-      "order": 45,
+      "order": 46,
       "parent": "23.history",
       "component": null,
       "box": {
@@ -1457,7 +1482,7 @@
     },
     {
       "id": "23.history.title",
-      "order": 46,
+      "order": 47,
       "parent": "23.history",
       "component": "ui:Text",
       "box": {
@@ -1491,7 +1516,7 @@
     },
     {
       "id": "23.history.detail",
-      "order": 47,
+      "order": 48,
       "parent": "23.history",
       "component": "ui:Text",
       "box": {
@@ -1525,7 +1550,7 @@
     },
     {
       "id": "23.actions",
-      "order": 48,
+      "order": 49,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1552,7 +1577,7 @@
     },
     {
       "id": "23.actions.retake",
-      "order": 49,
+      "order": 50,
       "parent": "23.actions",
       "component": "ui:Button",
       "box": {
@@ -1583,7 +1608,7 @@
     },
     {
       "id": "23.actions.export",
-      "order": 50,
+      "order": 51,
       "parent": "23.actions",
       "component": "ui:Button",
       "box": {
