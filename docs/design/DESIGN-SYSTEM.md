@@ -330,6 +330,29 @@ Every component in `@irodora/ui` must:
 - **`Sheet`** — `form` is required: `floating` (`03`) or `docked` (`04`, its side inset OQ-16's). No
   drawn title, no scrim; the handle and the dismiss layer are named in the caller's words.
 
+### The data displays are built to the screens that draw them (F-235)
+
+Every number a display draws is its screen's, recomputed from that screen's inventory by a test, as
+a median where the screen draws several. A screen composes a display and owns only its slot's
+content; it never re-draws a display's insides.
+
+| display | screen | forms, and what each takes |
+|---|---|---|
+| `ReadoutTable` | `06` `08` `26` | `table` (a second value after a bar), `ruled` (`columns` or `stacked`), `grid` (two cells a row) |
+| `DeltaBars`, `ProximityHeadline` | `04` | one unit and one ink for every bar ([ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md)); the band's ink the caller's until F-245 mints it |
+| `CoverageDial`, `Radar` | `11` `17` | the dial prints its own share from its `fraction`; the radar takes four axes by type and a neutral ink until OQ-24 |
+| `MetricTile`, `FactorRows`, `StepPill` | `22` `13` `17` | a count or a score built with its noun, so what is printed and what is said cannot drift |
+| `RankedRow` | `19` `21` `24` | `harmony`, `nearest`, `fields`; no `rank` where none is printed, no `action` where none is drawn |
+| `Carousel`, `PageDots` | `20` `22` `23` `25` | `centred` (neighbours are buttons, WCAG 2.2 2.5.7) or `leading`; the current page a capsule ([ADR-0120](../adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md)) |
+
+- **A figure is built once and says what it is.** `figureText` prints what the drawing prints;
+  `figureName` says the quantity, the value, the unit and the space (FR-61), and an empty one is
+  refused. The `ragged-figure` rule requires every figure tabular.
+- **They register as `static`.** A display draws a reading; `data`'s loading, error and empty states
+  are `27`'s, built by F-236, and a carousel is never disabled or busy. Where a display holds a
+  control — a ranked row's action, a carousel's neighbour — the control is the component's own and
+  carries its own states and target.
+
 ---
 
 ## Verification

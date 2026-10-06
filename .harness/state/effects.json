@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-05",
+  "updated": "2026-10-06",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -6004,7 +6004,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen.",
+      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen. F-235 removed 04.gauge.chroma.bar from 04's C10 conflict and from the manifest's green exception together (ADR-0119: a bar carries no words, so its green would be a verdict by colour alone); the test requires both lists to move at once.",
       "memory": "memory/effects/chroma-a-mockup-draws-before-a-token-exists-is-declared-by-element.md",
       "rationale": "C10 and ADR-0110 follow chroma the mockups draw on elements no token holds yet: gold HUDs, green verdicts, coloured icons. The feature that builds each surface mints its token. Until then, the chroma-ceiling count would have been blind to exactly the chroma the product is about to ship. So the manifest declares it by inventory element, and the inventories and the manifest are held together. When an inventory adds or renames a C10 element, the manifest must follow. When a feature mints the token, it replaces the element exception with a token exception or with nothing. F-232 (2026-09-28): the first two exceptions RETIRED by a mint — 00.controls.icon-wheel and 00.buttons.icon-palette — replaced by token-group exceptions that carry the elements forward, so coverage stays exactly once (E-159).",
       "confidence": 0.85,
@@ -6358,6 +6358,46 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/FabricSwatch.tsx#FABRIC_PITCH"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ReadoutTable.tsx#READOUT_LABEL"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/DeltaBars.tsx#DELTA_AXIS"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/CoverageDial.tsx#DIAL_RADIUS"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Radar.tsx#RADAR_SIZE"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/MetricTile.tsx#METRIC_TILE_HEIGHT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/FactorRows.tsx#FACTOR_ROW"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/RankedRow.tsx#FIELDS_ROW"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/StepPill.tsx#STEP_PILL_HEIGHT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Carousel.tsx#CAROUSEL_PEEK"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/PageDots.tsx#PAGE_DOTS_PITCH"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6369,7 +6409,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle).",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy.",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6615,7 +6655,7 @@
       ],
       "severity": "medium",
       "feature": "F-233",
-      "guard": "test:packages/ui/test/sample-family.test.tsx, cards.test.tsx and fabric-swatch.test.tsx recompute SWATCH_SIZE, SWATCH_KEYLINE, the swatch corner, STRIP_CORNER, STRIP_KEYLINE, CARD_RADIUS, the card edge and the fabric teeth from the inventories, with the counts asserted and the old values as decoys; illustrations.test counts every sample component by name.",
+      "guard": "test:packages/ui/test/sample-family.test.tsx, cards.test.tsx and fabric-swatch.test.tsx recompute SWATCH_SIZE, SWATCH_KEYLINE, the swatch corner, STRIP_CORNER, STRIP_KEYLINE, CARD_RADIUS, the card edge and the fabric teeth from the inventories, with the counts asserted and the old values as decoys; illustrations.test counts every sample component by name. Since F-235, cards.test's census counts every element drawn as a card — ui:Card, ui:MetricTile, and ui:RankedRow in its card forms — because 22's tiles and 19's and 21's rows compose Card; a component that composes Card joins the filter, or the census stops counting the cards it was written about.",
       "memory": "memory/effects/a-sample-renamed-in-the-inventory-must-be-renamed-in-the-scans.md",
       "rationale": "The sample family's defaults are counted off the inventories by component name (ui:Swatch, ui:Strip, ui:Card, ui:FabricSwatch) and by element id (12.source.swatch). Re-record an element under another name, add one, or change a token it binds, and a count moves: the default tests fail on purpose, and illustrations.test's SAMPLE_COMPONENTS stops seeing a sample unless its name is listed. F-233 renamed five (04, 10, 23 to ui:Strip; 09, 17 to ui:Swatch; 12 to ui:FabricSwatch) and moved each list in the same change."
     },
@@ -6767,6 +6807,155 @@
       "guard": "test:apps/mobile/test/tab-bar.test.tsx holds TABS[].activeGlyph to 01.json's raw.filled for each tab (Home alone filled is the decoy for filling all five); packages/ui/test/tab-bar.test.tsx recomputes every TAB_* constant from 01.json with the replaced values as decoys.",
       "memory": "memory/effects/oq-47s-answer-is-data-not-code.md",
       "rationale": "What an active Atlas, Lens, Wardrobe or Profile tab draws is OQ-47, a person's. The glyph's shape is data — 01's raw.filled read into TABS[].activeGlyph — so the answer changes the inventory and the registry, and the test moves with them; and every number the bar draws is 01's, so re-measuring 01 moves the bar."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-235",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "mockups"
+      ],
+      "severity": "medium",
+      "id": "E-168",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/index.ts"
+      },
+      "to": [
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-245"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-247"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-249"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-252"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-257"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-258"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-259"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-260"
+        }
+      ],
+      "guard": "test:packages/ui/test/conformance.test.tsx renders every display's subjects (each ReadoutTable, DeltaBars, ProximityHeadline, CoverageDial, Radar, MetricTile, FactorRows, StepPill, RankedRow, Carousel and PageDots form) in light and dark and in Slate and Obsidian; readout.test, delta.test, charts.test, rows.test and carousel.test recompute each display's numbers from the screen that draws it.",
+      "memory": "memory/effects/a-display-is-built-before-the-screen-that-composes-it.md",
+      "rationale": "F-235 built the displays before any screen composes them. A screen feature composes a display and owns only its slot content, so a change to a display reaches every screen that composes it, and the screens see it only when their own sweeps run."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-235",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "mockups"
+      ],
+      "severity": "medium",
+      "id": "E-169",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/figures.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ReadoutTable.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/DeltaBars.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ProximityHeadline.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/CoverageDial.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Radar.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/MetricTile.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/FactorRows.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/RankedRow.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/tree.ts"
+        }
+      ],
+      "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes.",
+      "memory": "memory/effects/a-figure-says-what-it-is-and-where-it-was-computed.md",
+      "rationale": "FR-61 asks for each value's space named beside it, and most drawings print a bare figure. The printed text and the spoken name are both built from one Figure, so a change to figureText or figureName reaches every display at once, and a number printed without a Figure has no name."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-235",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "mockups"
+      ],
+      "severity": "medium",
+      "id": "E-170",
+      "from": {
+        "kind": "doc",
+        "ref": "docs/design/R9-MOCKUP-FIDELITY.md#11-open-questions"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ProximityHeadline.tsx#ProximityHeadlineProps"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Radar.tsx#RadarProps"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/MetricTile.tsx"
+        }
+      ],
+      "guard": "test:packages/ui/test/charts.test.tsx refuses a radar ink outside the neutrals with @ts-expect-error (the colour is OQ-24's), and packages/design-tokens/test/c10-exceptions.test.ts moves the proximity green from an exception to a token group when F-245 mints it.",
+      "memory": "memory/effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md",
+      "rationale": "A display built before its question is answered must not answer it by default: the headline's and the radar's ink are required and typed to the neutrals that exist, so an answer (F-245's mint, OQ-24, OQ-25, OQ-13) widens a type or changes a step rather than the component's shape."
     }
   ]
 }

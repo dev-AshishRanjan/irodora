@@ -89,6 +89,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 ### Environment
 
 - [lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md](lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md) — `UNKNOWN: unknown error, read` under turbo's parallel jest is a file read failing under load, a different suite each time; re-run the whole gate alone, never count passes past it.
+- [lessons/a-coloured-tool-output-hides-the-word-a-grep-looks-for.md](lessons/a-coloured-tool-output-hides-the-word-a-grep-looks-for.md) — `tsc | grep "error TS"` printed nothing over a real error, because the colour codes split the words; decide on the gate's exit code, or strip colour first.
+- [lessons/a-reading-of-one-drawn-instance-is-not-the-drawings-number.md](lessons/a-reading-of-one-drawn-instance-is-not-the-drawings-number.md) — every row-1 reading in F-235's plan moved once the test took the median over all drawn instances; the median is the number, the single reading the decoy.
 - [lessons/powershell-51-round-trips-utf8-into-mojibake.md](lessons/powershell-51-round-trips-utf8-into-mojibake.md) — read and write UTF-8 explicitly at both ends, or Japanese names and ΔE notation corrupt silently.
 
 ### Content and licensing
@@ -298,4 +300,7 @@ which is after they exist, not before.*
 - [effects/the-tab-bar-is-ours-and-must-keep-react-navigations-contract.md](effects/the-tab-bar-is-ours-and-must-keep-react-navigations-contract.md) — **E-165** · our tab bar must emit `tabPress` and navigate only when nobody prevented it, as React Navigation's would; the e2e ids moved to the drawn tabs.
 - [effects/a-portalled-sheet-reads-its-own-inset.md](effects/a-portalled-sheet-reads-its-own-inset.md) — **E-166** · the sheet's `form` is every caller's choice; the floating sheet reads the bottom inset itself, so `verify-viewport` lists it, and a second render in one test finds the first sheet.
 - [effects/oq-47s-answer-is-data-not-code.md](effects/oq-47s-answer-is-data-not-code.md) — **E-167** · `01`'s `raw.filled` sets which tab's glyph fills, and every `TAB_*` number is `01`'s, recomputed.
+- [effects/a-display-is-built-before-the-screen-that-composes-it.md](effects/a-display-is-built-before-the-screen-that-composes-it.md) — **E-168** · the data displays are built to their screens before any screen composes them; a screen owns the slot, not the display.
+- [effects/a-figure-says-what-it-is-and-where-it-was-computed.md](effects/a-figure-says-what-it-is-and-where-it-was-computed.md) — **E-169** · one `Figure` builds the printed text and the spoken name, so FR-61's space is said wherever a figure is printed.
+- [effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md](effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md) — **E-170** · an ink a question still owes is a required prop typed to what exists, so the answer widens a type.
 - [lessons/a-package-gate-is-not-the-repository-gate.md](lessons/a-package-gate-is-not-the-repository-gate.md) — F-223's increments were committed on the changed packages' eslint and the new test files while the root lint chain and the app suite were red; iterate on subsets, commit on the root commands.
