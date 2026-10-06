@@ -205,24 +205,54 @@ const rgb = (hex) => {
 const SUPERSAMPLE = 4;
 
 /**
+ * The mark's shapes in a canvas's PIXELS, each with the ink it takes and a point test.
+ *
+ * A POINT TEST, NOT A LIST OF DISCS TO PAINT (F-230). 14's blossom is drawn by cutting holes — a
+ * ring, stamens, seams — out of filled shapes, and a hole is not a disc anybody paints. So the
+ * renderer asks, for each sample, which shape's ink covers it; a shape can then be anything a
+ * point can be tested against. Each test is written in pixel space, with the same expression the
+ * disc-by-disc renderer used, so the refactor changes no byte (`--check` is the proof).
+ */
+function shapesInPixels(g, gridPx, canvas, ink) {
+  const unit = gridPx / g.grid;
+  const offset = (canvas - gridPx) / 2;
+  let petal = -1;
+  return discs(g).map((disc) => {
+    const fill =
+      disc.role === 'eye' ? ink.eye : ((petal += 1), ink.petals[petal % ink.petals.length]);
+    const cx = offset + disc.cx * unit;
+    const cy = offset + disc.cy * unit;
+    const r = disc.r * unit;
+    return {
+      ink: rgb(fill),
+      box: [cx - r, cy - r, cx + r, cy + r],
+      covers: (x, y) => {
+        const dx = x - cx;
+        const dy = y - cy;
+        return dx * dx + dy * dy <= r * r;
+      },
+    };
+  });
+}
+
+/**
  * Draw the mark onto a flat canvas.
  *
  * `ground === null` means transparent, which is what the adaptive-icon foreground and both
  * splash images need — Android and Expo composite them over a colour of their own.
  *
  * `ink` is `{ eye, petals }`: one colour for the anchor and one per petal, or a single-entry
- * `petals` for the monochrome mark. The discs do not overlap — the gap between them is the
- * interval — so each is blended independently and the order does not matter.
+ * `petals` for the monochrome mark. Each pixel's coverage is the share of its samples a shape's
+ * point test accepts, and the shapes are blended in order, each over what is already there.
  */
 function render(canvas, gridPx, ink, ground, g) {
   const unit = gridPx / g.grid;
   if (!Number.isInteger(unit))
     throw new Error(
-      `unit is ${String(unit)}px and must be a whole number — a fractional unit puts the six discs` +
-        ' out of proportion with each other and makes the artefact signature approximate.',
+      `unit is ${String(unit)}px and must be a whole number — a fractional unit puts the mark's` +
+        ' shapes out of proportion with each other and makes the artefact signature approximate.',
     );
 
-  const offset = (canvas - gridPx) / 2;
   const [gr, gg, gb] = ground === null ? [0, 0, 0] : rgb(ground);
   const px = Buffer.alloc(canvas * canvas * 4);
   for (let i = 0; i < canvas * canvas; i++) {
@@ -232,34 +262,25 @@ function render(canvas, gridPx, ink, ground, g) {
     px[i * 4 + 3] = ground === null ? 0 : 255;
   }
 
-  let petal = -1;
-  for (const disc of discs(g)) {
-    const fill =
-      disc.role === 'eye' ? ink.eye : ((petal += 1), ink.petals[petal % ink.petals.length]);
-    const [ir, ig, ib] = rgb(fill);
-
-    const cx = offset + disc.cx * unit;
-    const cy = offset + disc.cy * unit;
-    const r = disc.r * unit;
-    const from = Math.max(0, Math.floor(cy - r) - 1);
-    const to = Math.min(canvas, Math.ceil(cy + r) + 1);
-    const left = Math.max(0, Math.floor(cx - r) - 1);
-    const right = Math.min(canvas, Math.ceil(cx + r) + 1);
+  for (const shape of shapesInPixels(g, gridPx, canvas, ink)) {
+    const [ir, ig, ib] = shape.ink;
+    const [x0, y0, x1, y1] = shape.box;
+    const from = Math.max(0, Math.floor(y0) - 1);
+    const to = Math.min(canvas, Math.ceil(y1) + 1);
+    const left = Math.max(0, Math.floor(x0) - 1);
+    const right = Math.min(canvas, Math.ceil(x1) + 1);
 
     for (let y = from; y < to; y++)
       for (let x = left; x < right; x++) {
         /*
-         * COVERAGE, NOT A HIT TEST. A circle's edge falls between pixels wherever it likes, and
-         * the honest answer for a pixel the edge crosses is "partly" — which is what an
-         * anti-aliased edge is. Snapping to whole pixels would be staircasing, not sharpness.
+         * COVERAGE, NOT A HIT TEST. An edge falls between pixels wherever it likes, and the honest
+         * answer for a pixel the edge crosses is "partly" — which is what an anti-aliased edge is.
+         * Snapping to whole pixels would be staircasing, not sharpness.
          */
         let hits = 0;
         for (let sy = 0; sy < SUPERSAMPLE; sy++)
-          for (let sx = 0; sx < SUPERSAMPLE; sx++) {
-            const dx = x + (sx + 0.5) / SUPERSAMPLE - cx;
-            const dy = y + (sy + 0.5) / SUPERSAMPLE - cy;
-            if (dx * dx + dy * dy <= r * r) hits += 1;
-          }
+          for (let sx = 0; sx < SUPERSAMPLE; sx++)
+            if (shape.covers(x + (sx + 0.5) / SUPERSAMPLE, y + (sy + 0.5) / SUPERSAMPLE)) hits += 1;
         if (hits === 0) continue;
 
         const alpha = hits / (SUPERSAMPLE * SUPERSAMPLE);
