@@ -169,18 +169,13 @@ export function svgNumber(value: number): string {
  * The mark as an SVG document.
  *
  * Exists for F-142: an app icon is a file, and a pipeline cannot render a React component into
- * one. A caller passes the colours, because the mark has none of its own.
+ * one. A caller passes the ink, because the mark has none of its own.
  *
- * `ink` may be a single colour — the monochrome mark, which is what the brief's *"works in one
- * colour"* means and what the app itself draws — or one colour per petal, which is what the icon
- * uses. The eye always takes the first colour: it is the anchor, not one of the five.
+ * **One ink, by type** (ADR-0122, superseding ADR-0093's five-colour icon): the mark is drawn in
+ * one colour everywhere, the icon included, so a list of colours does not compile.
  */
-export function markSvg(
-  ink: string | readonly string[],
-  size: number = MARK.grid,
-  eye?: string,
-): string {
-  const colors = typeof ink === 'string' ? [ink] : ink;
+export function markSvg(ink: string, size: number = MARK.grid): string {
+  const colors = [ink];
 
   /*
    * REFUSED RATHER THAN DEFAULTED, and the lint is what asked for it.
@@ -191,9 +186,9 @@ export function markSvg(
    * the mark a colour of its own; it is that **a mark with no colour to draw in is a caller
    * error**, and inventing one would hide it behind a document that looked fine.
    */
-  const anchor = eye ?? colors[0];
-  if (anchor === undefined)
-    throw new Error('markSvg needs at least one colour — the mark has none of its own');
+  const anchor = colors[0];
+  if (anchor === undefined || anchor.trim() === '')
+    throw new Error('markSvg needs a colour — the mark has none of its own');
 
   let petal = -1;
 
@@ -228,6 +223,19 @@ export function narrowestFeature(size: number): number {
   return (MARK.interval / MARK.grid) * size;
 }
 
+/**
+ * The tokens the mark may be drawn in: the neutral foregrounds and their inverse. One ink each, and
+ * none of them a hue (ADR-0122). 27's tinted loading mark is the one declared exception, and F-236
+ * adds its token here when it mints it.
+ */
+export const MARK_INKS = [
+  'foreground',
+  'foreground.2',
+  'foreground.3',
+  'inverse.foreground',
+] as const satisfies readonly (keyof ThemeColors)[];
+export type MarkInk = (typeof MARK_INKS)[number];
+
 export interface MarkProps extends Omit<ViewProps, 'style' | 'accessibilityRole'> {
   /** Rendered edge length. Defaults to the brief's floor. */
   readonly size?: number;
@@ -235,10 +243,7 @@ export interface MarkProps extends Omit<ViewProps, 'style' | 'accessibilityRole'
    * Which foreground token every disc takes. The mark introduces no colour of its own. `22` draws it
    * in the header in `text.tertiary`, which is `foreground.3` (F-234).
    */
-  readonly color?: Extract<
-    keyof ThemeColors,
-    'foreground' | 'foreground.2' | 'foreground.3' | 'inverse.foreground'
-  >;
+  readonly color?: MarkInk;
   /**
    * What a screen reader announces.
    *

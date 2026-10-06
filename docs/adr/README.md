@@ -108,7 +108,7 @@ Two rules that matter more than the format:
 | [0090](0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md) | A swatch corner is bounded by the area it removes, not fixed at zero | Amended by ADR-0103 |
 | [0091](0091-a-deliberate-capture-is-fr-15s-precision-pick.md) | A deliberate capture is FR-15 precision pick, and that is not the ceiling raise ADR-0087 refused | Accepted |
 | [0092](0092-pixels-come-out-of-a-file-in-javascript.md) | Pixels come out of a file in JavaScript, and the PNG walk is ours | Accepted |
-| [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Accepted |
+| [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Superseded by 0122 |
 | [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Amended by ADR-0103 |
 | [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted |
 | [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Superseded by ADR-0111 |
@@ -137,6 +137,7 @@ Two rules that matter more than the format:
 | [0119](0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) | The delta bars share one unit and one ink, and print what 04 prints | Accepted; closes OQ-50 and OQ-51 |
 | [0120](0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md) | The current page is a capsule, and a carousel rests where it is drawn | Accepted; closes OQ-52 |
 | [0121](0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md) | Type drawn off the scale takes its step within 4 dp, and a measured step beyond | Accepted; closes OQ-13 |
+| [0122](0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md) | The mark is 14’s blossom, in one ink everywhere, its cuts drawn as holes | Accepted; supersedes 0093 |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

@@ -352,6 +352,8 @@ export {
   markDiscs,
   markReach,
   markSvg,
+  MARK_INKS,
+  type MarkInk,
   narrowestFeature,
   EYE_RADIUS,
   PETAL_RADIUS,

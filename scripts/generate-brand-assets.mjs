@@ -31,12 +31,14 @@
  * | `adaptive-icon` | 1024 | 648 | 27 | 302 | Android guarantees only a **66/108** circle — radius 312.9 |
  * | `splash-icon-*` | 1024 | 768 | 32 | 358 | Expo composites it over the theme background |
  *
- * ## The icon carries colour and the app does not
+ * ## One ink everywhere, the icon included
  *
- * [ADR-0093](../docs/adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md).
- * Five petals, five corpus colours, pinned by slug below and checked against the published
- * bundle by `--prove` — so a corpus republish that moves one of them fails loudly instead of
- * silently redrawing the app icon.
+ * [ADR-0122](../docs/adr/0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md)
+ * supersedes ADR-0093's five-colour icon: mockup 14 draws the icon's mark in `text.secondary`, and
+ * C4 takes the mark from 14. `--prove` reads every asset's bytes and requires one ink, with
+ * ADR-0093's icon rendered in memory as the decoy it must refuse.
+ *
+ * `--prove` runs in `lint`, after `--check` (F-230).
  *
  * ```
  * node scripts/generate-brand-assets.mjs
@@ -146,28 +148,7 @@ function discs(g) {
   return out;
 }
 
-/**
- * The five petals, pinned by slug.
- *
- * **From the corpus, which is where every colour in this product comes from** — but PINNED
- * rather than read at build time, so a corpus republish cannot silently redraw the app icon.
- * `--prove` checks each hex against the published bundle and fails by name if one has moved,
- * which turns a silent redraw into a decision somebody has to make.
- *
- * A year, in five colours: the hues are spread across the circle so the mark reads as *colours*
- * rather than as a tint, and the lightnesses are held between OKLCh 0.53 and 0.64 so they sit
- * together calmly rather than shouting past each other. That restraint is the register the
- * product chose — soft minimal — applied to the one surface allowed any colour at all.
- */
-const PETALS = [
-  { slug: 'mi-aka', hex: '#AC473E', name: '実赤 Fruit Red' },
-  { slug: 'aki-batake', hex: '#9F7850', name: '秋畑 Autumn Field' },
-  { slug: 'natsu-kage', hex: '#4E8164', name: '夏影 Summer Shade' },
-  { slug: 'oki-nagi', hex: '#449AAC', name: '沖凪 Calm Offing' },
-  { slug: 'yoru-kawa', hex: '#507DB3', name: '夜川 Night River' },
-];
-
-/** Colours, from the manifest and the corpus. The icon invents none of its own. */
+/** Colours, from the manifest. The mark has none of its own, and the icon invents none. */
 function palette() {
   const m = JSON.parse(readFileSync(join(ROOT, 'docs/design/design-system.manifest.json'), 'utf8'));
   const hex = (theme, token) => m.color[theme][token].srgb;
@@ -176,18 +157,9 @@ function palette() {
     darkGround: hex('dark', 'background'),
     darkInk: hex('dark', 'foreground'),
     lightInk: hex('light', 'foreground'),
-    petals: PETALS.map((p) => p.hex),
+    // 14's icon draws its mark in `text.secondary` (`14.icon.tile.mark`): dark `foreground.2`.
+    iconInk: hex('dark', 'foreground.2'),
   };
-}
-
-/** Every published entry's derived hex, by slug. Read only by `--prove`. */
-function corpusHexes() {
-  const src = readFileSync(join(ROOT, 'apps/mobile/src/corpus/generated/bundle.ts'), 'utf8');
-  const match = /export const CORPUS_BUNDLE_TEXT = ("[\s\S]*?");\n/.exec(src);
-  if (match === null) throw new Error('could not read the corpus bundle text');
-  const by = new Map();
-  for (const e of JSON.parse(JSON.parse(match[1])).entries) by.set(e.entry.slug, e.derived.hex);
-  return by;
 }
 
 const rgb = (hex) => {
@@ -320,28 +292,22 @@ export function assets() {
   const p = palette();
 
   /*
-   * THE ICON IS THE ONE SURFACE WITH COLOUR (ADR-0093), and it is the one surface with nothing
-   * to compete with: a home screen has no garment in it. Everywhere inside the app the mark is
-   * a single token, because every screen there is being used to judge a colour.
-   *
-   * The ground is the LIGHT background — warm off-white. Among a screen of saturated icons a
-   * pale one is the distinctive choice rather than the timid one, and it is the same ground the
-   * product's own light theme uses.
+   * ONE INK EVERYWHERE, THE ICON INCLUDED (ADR-0122, superseding ADR-0093). Mockup 14 draws the
+   * icon's mark in `text.secondary` on a dark tile, and C4 takes the mark from 14. The tile's
+   * gradient and squircle are F-231's; until then the icon is the mark in dark `foreground.2` on
+   * the dark `background` the adaptive layer already composes over, so iOS and Android show one
+   * image.
    */
-  const colour = { eye: p.lightInk, petals: p.petals };
+  const icon = { eye: p.iconInk, petals: [p.iconInk] };
   const monoLight = { eye: p.lightInk, petals: [p.lightInk] };
   const monoDark = { eye: p.darkInk, petals: [p.darkInk] };
 
   return [
     // iOS and the store. OPAQUE — iOS rejects an app icon with an alpha channel.
-    { file: 'icon.png', bytes: render(CANVAS, 768, colour, p.lightGround, g) },
+    { file: 'icon.png', bytes: render(CANVAS, 768, icon, p.darkGround, g) },
     // Android's foreground layer. Transparent; `adaptiveIcon.backgroundColor` is the other half.
-    { file: 'adaptive-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, colour, null, g) },
-    /*
-     * THE SPLASHES STAY MONOCHROME. A splash is inside the app: it is the first thing before a
-     * surface where colours are judged, and a five-colour blossom there would set the eye up
-     * with five colours it has to forget. The icon has done its job by then.
-     */
+    { file: 'adaptive-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, icon, null, g) },
+    // The splashes: each theme's `foreground`, over the splash's own ground.
     { file: 'splash-icon-light.png', bytes: render(CANVAS, 768, monoLight, null, g) },
     { file: 'splash-icon-dark.png', bytes: render(CANVAS, 768, monoDark, null, g) },
     /*
@@ -359,8 +325,7 @@ export function assets() {
      *
      * THE INK IS NOT THE POINT, and that is recorded rather than left looking deliberate:
      * Android TINTS this drawable itself and consumes only the alpha silhouette. `lightInk` is
-     * used because the splashes already use it and one source beats a new decision — a reader
-     * wondering why should know there is nothing to find.
+     * used because the splashes already use it and one source beats a new decision.
      */
     { file: 'monochrome-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, monoLight, null, g) },
   ];
@@ -395,6 +360,48 @@ export function expectedSignature(gridPx = 768, canvas = CANVAS) {
     ((Math.abs((side[0]?.cx ?? 0) - middle) + halfChord - g.eye) * unit) / canvas - petalWidth;
 
   return { petals: petalWidth, eye: eyeWidth, gap: gapWidth };
+}
+
+/**
+ * Whether a decoded asset is drawn in ONE ink (ADR-0122).
+ *
+ * Over a transparent ground every painted pixel must be the ink exactly — coverage lives in the
+ * alpha. Over an opaque ground every pixel must lie on the line from the ground to the ink: one
+ * blend factor for all three channels, each within the half a level the blend's rounding makes
+ * (one level allowed). A second colour anywhere puts a pixel off that line.
+ */
+export function oneInk(image, ink, ground) {
+  const [ir, ig, ib] = rgb(ink);
+  if (ground === null) {
+    let painted = 0;
+    for (let i = 0; i < image.rgba.length; i += 4) {
+      if (image.rgba[i + 3] === 0) continue;
+      painted += 1;
+      if (image.rgba[i] !== ir || image.rgba[i + 1] !== ig || image.rgba[i + 2] !== ib)
+        return {
+          ok: false,
+          why: `a painted pixel is rgb(${String(image.rgba[i])}, ${String(image.rgba[i + 1])}, ${String(image.rgba[i + 2])}), not ${ink}`,
+        };
+    }
+    return painted > 0
+      ? { ok: true, why: `${String(painted)} painted pixel(s), all ${ink}` }
+      : { ok: false, why: 'nothing is painted — a silhouette of nothing' };
+  }
+  const g = rgb(ground);
+  const span = [ir - g[0], ig - g[1], ib - g[2]];
+  const longest = span.reduce((m, v, k) => (Math.abs(v) > Math.abs(span[m]) ? k : m), 0);
+  let inked = 0;
+  for (let i = 0; i < image.rgba.length; i += 4) {
+    const c = [image.rgba[i], image.rgba[i + 1], image.rgba[i + 2]];
+    const t = (c[longest] - g[longest]) / span[longest];
+    for (let k = 0; k < 3; k += 1)
+      if (Math.abs(c[k] - (g[k] + t * span[k])) > 1)
+        return { ok: false, why: `rgb(${c.join(', ')}) is off the line from ${ground} to ${ink}` };
+    if (t > 0.5) inked += 1;
+  }
+  return inked > 0
+    ? { ok: true, why: `every pixel between ${ground} and ${ink}; ${String(inked)} mostly ink` }
+    : { ok: false, why: 'no pixel is mostly ink — a ground with no mark on it' };
 }
 
 /*
@@ -491,16 +498,44 @@ function prove() {
     'the row crosses a different pattern',
   );
 
-  // 4. The petals are the corpus's, and still are.
-  const published = corpusHexes();
-  for (const p of PETALS) {
-    const now = published.get(p.slug);
-    say(
-      now === p.hex,
-      `${p.name} is still ${p.hex}`,
-      now === p.hex ? `corpus entry ${p.slug}` : `the corpus now says ${String(now)} — decide`,
-    );
+  /*
+   * 4. EVERY ASSET IS ONE INK, READ FROM ITS BYTES (ADR-0122).
+   *
+   * A transparent asset paints exactly one colour among its painted pixels; an opaque one paints
+   * every pixel on the line between its ground and its ink, to within the rounding a blend can
+   * make. Counted from what came out, never trusted from the scheme that was passed in.
+   */
+  const p = palette();
+  const expected = {
+    'icon.png': [p.iconInk, p.darkGround],
+    'adaptive-icon.png': [p.iconInk, null],
+    'splash-icon-light.png': [p.lightInk, null],
+    'splash-icon-dark.png': [p.darkInk, null],
+    'monochrome-icon.png': [p.lightInk, null],
+  };
+  for (const a of assets()) {
+    const [ink, ground] = expected[a.file];
+    const r = oneInk(decodePng(a.bytes), ink, ground);
+    say(r.ok, `${a.file} is one ink`, r.why);
   }
+  /*
+   * THE DECOY: ADR-0093's icon, five corpus colours on the light ground, rendered in memory. The
+   * check above must refuse it, or "one ink" is a property of the check rather than the assets.
+   */
+  const fiveColour = decodePng(
+    render(
+      CANVAS,
+      768,
+      { eye: p.lightInk, petals: ['#AC473E', '#9F7850', '#4E8164', '#449AAC', '#507DB3'] },
+      p.lightGround,
+      g,
+    ),
+  );
+  say(
+    !oneInk(fiveColour, p.lightInk, p.lightGround).ok,
+    "DECOY — ADR-0093's five-colour icon is REFUSED",
+    'five petals in five corpus colours, which ADR-0122 supersedes',
+  );
 
   // 4b. The Android safe zone, as arithmetic rather than a screenshot — and DERIVED, because a
   //     written-down figure would go on passing about a shape it no longer described (E-085).
@@ -568,54 +603,17 @@ function prove() {
   );
 
   /*
-   * 4c. THE THEMED-ICON LAYER IS A SILHOUETTE, NOT A PICTURE (F-192).
-   *
-   * Android tints `monochromeImage` itself and reads only the alpha. A layer that kept the five
-   * petal colours would look right in every preview here and be wrong the instant a launcher
-   * tinted it — five hues collapsing to one, with the gaps between them gone.
-   *
-   * So: every painted pixel is ONE ink. Counted from the decoded bytes rather than trusted from
-   * the ink scheme that was passed in, because the point is what came out.
+   * 4c. THE THEMED-ICON LAYER IS A SILHOUETTE (F-192): Android tints it and reads only its alpha.
+   * Its one ink is checked with every other asset's above; what is left is that its ground is
+   * transparent, so the launcher supplies the other half.
    */
   const themed = decodePng(assets().find((a) => a.file === 'monochrome-icon.png').bytes);
-  const inks = new Set();
   let transparent = 0;
-  for (let i = 0; i < themed.rgba.length; i += 4) {
-    const alpha = themed.rgba[i + 3];
-    if (alpha === 0) {
-      transparent += 1;
-      continue;
-    }
-    inks.add(
-      `${String(themed.rgba[i])},${String(themed.rgba[i + 1])},${String(themed.rgba[i + 2])}`,
-    );
-  }
-  say(
-    inks.size === 1,
-    'the themed icon paints ONE ink, so a launcher tinting it keeps the shape',
-    `${String(inks.size)} colour(s) among the painted pixels`,
-  );
+  for (let i = 3; i < themed.rgba.length; i += 4) if (themed.rgba[i] === 0) transparent += 1;
   say(
     transparent > 0,
-    'and its ground is transparent, so the launcher supplies the other half',
+    "the themed icon's ground is transparent, so the launcher supplies the other half",
     `${String(transparent)} fully transparent pixel(s)`,
-  );
-
-  /*
-   * THE DECOY. A count of one would also be produced by an asset that is entirely transparent,
-   * or entirely one flat colour edge to edge — both of which are silhouettes of nothing.
-   */
-  const coloured = decodePng(assets().find((a) => a.file === 'icon.png').bytes);
-  const colouredInks = new Set();
-  for (let i = 0; i < coloured.rgba.length; i += 4)
-    if (coloured.rgba[i + 3] !== 0)
-      colouredInks.add(
-        `${String(coloured.rgba[i])},${String(coloured.rgba[i + 1])},${String(coloured.rgba[i + 2])}`,
-      );
-  say(
-    colouredInks.size > 1 && inks.size > 0,
-    'DECOY — the COLOURED icon has many inks, so "one" is a measurement not a constant',
-    `icon.png: ${String(colouredInks.size)} colour(s)`,
   );
 
   const tooBig = ((g.orbit + g.petal) * 768) / g.grid;

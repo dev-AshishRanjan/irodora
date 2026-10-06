@@ -2,7 +2,9 @@
 
 ## Status
 
-**Accepted** — F-165 (second pass). Amends
+**Superseded** by [ADR-0122](0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md)
+(F-230, 2026-10-06): mockup 14 draws the icon's mark in one ink, and C4 takes the mark from 14.
+Was: **Accepted** — F-165 (second pass). Amends
 [`BRAND.md` §7](../design/BRAND.md#7-the-mark) by interpretation rather than by exception.
 
 ## Date

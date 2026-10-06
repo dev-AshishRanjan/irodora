@@ -14,13 +14,12 @@
  *
  * The rest is recorded as an attested criterion rather than pretended away.
  *
- * ## The CVD check changed shape with the mark, and got stronger
+ * ## The CVD check is about recognisability, not ink
  *
- * It used to count fills and require exactly one. That was a true statement about a monochrome
- * mark and the wrong statement about the requirement: the brief is about **recognisability**,
- * not about ink. The icon now carries five corpus colours (ADR-0093), and the honest check is
- * that its silhouette is the same whether it is drawn in five colours or one — which is what
- * "does not depend on colour" means, and which counting fills could never have said.
+ * The brief is about **recognisability**: the mark's silhouette must not change with the colour it
+ * is drawn in. Since F-230 it is drawn in ONE ink everywhere, the icon included (ADR-0122,
+ * superseding ADR-0093's five-colour icon), so the document carries one fill and a list of
+ * colours does not compile — and the silhouette is still asserted to be the same in any ink.
  */
 
 import { render } from '@testing-library/react-native';
@@ -33,6 +32,7 @@ import {
   markDiscs,
   markReach,
   markSvg,
+  MARK_INKS,
   narrowestFeature,
   PETAL_RADIUS,
   svgNumber,
@@ -161,14 +161,33 @@ describe('it does not depend on colour to be recognisable', () => {
    * silhouette is the same however the mark is filled — which is assertable, and which is what
    * these two cases do.
    */
-  it('draws the same silhouette in five colours as in one', () => {
-    const five = markSvg(['#AC473E', '#9F7850', '#4E8164', '#449AAC', '#507DB3']);
-    const one = markSvg('#131110');
+  it('draws the same silhouette in any ink', () => {
+    const dark = markSvg('#131110');
+    const light = markSvg('#F6F4F1');
+    expect(silhouette(light)).toEqual(silhouette(dark));
+    expect(silhouette(dark)).toHaveLength(MARK.petals + 1);
+    // And the inks really did differ, or the comparison above would be trivially true.
+    expect(fills(light)).not.toEqual(fills(dark));
+  });
 
-    expect(silhouette(five)).toEqual(silhouette(one));
-    expect(silhouette(one)).toHaveLength(MARK.petals + 1);
-    // And the colours really did differ, or the comparison above would be trivially true.
-    expect(fills(five).length).toBeGreaterThan(fills(one).length);
+  it('draws in ONE ink — a list of colours does not compile (ADR-0122)', () => {
+    expect(fills(markSvg('#131110'))).toEqual(['#131110']);
+    // @ts-expect-error — ADR-0093's five-colour icon is superseded: the mark takes one ink.
+    expect(() => markSvg(['#AC473E', '#9F7850'])).toBeDefined();
+    // DECOY: `fills` would see two colours in a document that had them.
+    expect(fills('<circle fill="#000000"/><circle fill="#FFFFFF"/>')).toHaveLength(2);
+    expect(() => markSvg(' ')).toThrow(/needs a colour/u);
+  });
+
+  it('takes only the neutral inks, by type', () => {
+    expect([...MARK_INKS]).toStrictEqual([
+      'foreground',
+      'foreground.2',
+      'foreground.3',
+      'inverse.foreground',
+    ]);
+    // @ts-expect-error — a hue is not an ink the mark takes; 27's tint is F-236's declared exception.
+    expect(draw(<Mark color="status.ok" />)).toBeDefined();
   });
 
   it('REFUSES a silhouette that changed — the decoy, without which the comparison asserts nothing', () => {
@@ -186,12 +205,11 @@ describe('it does not depend on colour to be recognisable', () => {
     }
   });
 
-  it('stays one colour inside the app, whatever the icon does', () => {
+  it('stays one colour inside the app', () => {
     /*
-     * ADR-0093's other half, and the one that protects the product's actual job: every surface
-     * in the app is used to judge a garment colour, so a five-colour mark in a header would be
-     * five colours competing with the one being read. `Mark` takes a single token and has no
-     * way to express more.
+     * The half that protects the product's actual job: every surface in the app is used to judge
+     * a garment colour, so a many-colour mark in a header would be colours competing with the one
+     * being read. `Mark` takes a single token and has no way to express more.
      */
     const tree = draw(<Mark size={48} label="Irodora" />, 'dark');
     const drawn = new Set(
