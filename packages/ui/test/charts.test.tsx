@@ -156,6 +156,18 @@ describe('the dial draws its arc and its figure from one fraction', () => {
     expect(fill?.props['d']).not.toBe(dialArc(c, c, DIAL_RADIUS, start, 249));
   });
 
+  it('for any share, fills that share of the sweep and prints it as a whole percent', () => {
+    const c = DIAL_RADIUS + DIAL_STROKE / 2;
+    const start = 180 + (360 - DIAL_SWEEP) / 2;
+    for (const fraction of [0.01, 0.1, 0.25, 0.5, 0.666, 0.84, 0.995, 1]) {
+      const tree = draw({ fraction, label: 'Wardrobe Coverage' });
+      const fill = paths(tree)[1];
+      expect(fill?.props['d']).toBe(dialArc(c, c, DIAL_RADIUS, start, fraction * DIAL_SWEEP));
+      expect(screen.getByText(`${String(Math.round(fraction * 100))}%`)).toBeTruthy();
+      screen.unmount();
+    }
+  });
+
   it('draws the track alone at zero, and refuses a share outside 0 to 1', () => {
     expect(paths(draw({ fraction: 0, label: 'Wardrobe Coverage' }))).toHaveLength(1);
     expect(() => draw({ fraction: 1.2, label: 'Wardrobe Coverage' })).toThrow(RangeError);
@@ -265,6 +277,35 @@ describe('the radar as drawn', () => {
       '色の傾向: Temperature 40%、Depth 60%、Chroma 30%、Muted Tolerance 65%',
     );
     for (const axis of AXES) expect(screen.getByText(axis.label)).toBeTruthy();
+  });
+
+  it('puts each vertex at its fraction of the outer ring, on its own axis', () => {
+    const tree = draw({ name: 'Colour profile', axes: AXES, ink: 'foreground' });
+    const c = (RADAR_SIZE + RADAR_MARKER) / 2;
+    const outer = RADAR_SIZE / 2 - RADAR_RING;
+    const [top, right, bottom, left] = AXES.map((a) => a.fraction * outer);
+    const expected = [
+      [c, c - (top ?? NaN)],
+      [c + (right ?? NaN), c],
+      [c, c + (bottom ?? NaN)],
+      [c - (left ?? NaN), c],
+    ];
+    const markers = nodes(tree)
+      .filter((n) => n.props['r'] === RADAR_MARKER / 2)
+      .map((n) => [Number(n.props['cx']), Number(n.props['cy'])]);
+    expect(markers).toHaveLength(4);
+    markers.forEach(([x, y], i) => {
+      expect(x).toBeCloseTo(expected[i]?.[0] ?? NaN, 3);
+      expect(y).toBeCloseTo(expected[i]?.[1] ?? NaN, 3);
+    });
+    // DECOY: right and left swapped would put Depth where Muted Tolerance is (0.6 against 0.65).
+    expect(markers[1]?.[0]).not.toBeCloseTo(c + (left ?? NaN), 3);
+    // The polygon runs through the same four points.
+    const polygon = nodes(tree).find((n) => n.props['fillOpacity'] === RADAR_FILL_OPACITY);
+    for (const [x, y] of expected)
+      expect(String(polygon?.props['d'])).toContain(
+        `${String(Math.round((x ?? NaN) * 1000) / 1000)} ${String(Math.round((y ?? NaN) * 1000) / 1000)}`,
+      );
   });
 
   it('draws six rings in border.strong, the spokes in border, and the polygon in its ink', () => {

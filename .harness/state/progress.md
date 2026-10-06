@@ -8,6 +8,57 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-06 — F-235 The data displays the mockups draw
+
+**Done.** Every data display the mockups draw exists in `@irodora/ui`, built to the screen that draws
+it, each number recomputed from that screen's inventory: the readout table in three forms, the delta
+rows and the proximity headline, the coverage dial and the radar, the metric tile, the factor rows,
+the step pill, the ranked row in three forms, the carousel in two and the page dots. It shipped in
+eleven commits, `0c53c72` through this one
+([ADR-0119](../../docs/adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md),
+[ADR-0120](../../docs/adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md)).
+
+- **A figure says what it is.** `figures.tsx` builds the printed text and the spoken name from one
+  `Figure`: a measure names its quantity and space (FR-61), a share what it is of, a count its noun,
+  an empty name is refused, and a delta's sign is U+2212. The conformance suite's `ragged-figure`
+  rule requires every figure tabular; it found two in `Bands` and the slider, fixed here.
+- **Three open questions decided on the person's delegation.** OQ-50 and OQ-51 (ADR-0119): the delta
+  bars share one unit, the smaller side's room, so equal deltas draw equal lengths; every bar takes the
+  hue bar's drawn ink, `text.tertiary` on a card (the slate fails 3:1, the green would be a verdict by
+  colour alone); the rows print what `04` prints. OQ-52 (ADR-0120): the current page is a capsule, the
+  other dots `foreground.3`, and a small dot means the pages go on past a four-dot window.
+- **Measured, then recorded.** 04 06 08 11 13 17 19 20 21 22 23 24 25 26 re-recorded: containers for
+  each display, members re-parented, the readings of increment 1 (the dial's 276° sweep, the radar's
+  rings and inks, the dots, 04's inks). Every constant is a median over the drawn instances; every
+  row-1 reading the plan took moved under the median (a lesson).
+- **The displays register `static`**: a reading has no disabled or busy state, and `data`'s states are
+  `27`'s (F-236). A carousel's neighbour is a button (WCAG 2.2 2.5.7) with its target and focus ring.
+
+**Review (once, on `dde71bf`): FAIL**, every gate green: 1 blocking, 10 should-fix, 13 notes. Fixed in
+this commit: B1 (19's distance is a figure), S1–S10 (the neighbour's focus ring, the bar's side from its
+figure and its share spoken, 20's neighbours drawn as outlines, E-168's features, 21's Japanese run,
+the bar-length departures and F-245's risk, the attestations, fifteen Japanese subjects, the carousel's
+and the charts' missing tests) and N2, N3, N5–N11. Recorded: F-312 (N1) and F-313 (N4). The plan's
+review row lists each.
+
+**Gates run on the final tree, each exit 0:** `node scripts/verify-state.mjs` · `pnpm typecheck` ·
+`pnpm format:check` · `pnpm build` · `pnpm lint` · `pnpm test` (ui 814, mobile 1088) ·
+`pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `node scripts/verify-mockups.mjs --prove` ·
+`node scripts/verify-viewport.mjs --prove`. Along the way `pnpm test` failed twice without a defect —
+a 5 s `afterEach` timeout in the ui conformance suite and `@irodora/store`'s node:sqlite timeout
+(F-306), both under load — and each time the gate was re-run whole and alone and passed.
+
+**Not run:** `e2e` (no screen changes; gate 7 pending), `artifact` (no JDK), any device run.
+**Attested, outstanding (F-235's `attested`):** on a device — the delta and readout rows at 360–430 dp
+and up to 200 % text, where the bar unit reaches zero; the SVG arcs, rings and markers; the carousels'
+rests, the neighbours' taps and focus rings; every text equivalent read by VoiceOver and TalkBack in
+both locales.
+
+**Lessons:** [[a-coloured-tool-output-hides-the-word-a-grep-looks-for]] ·
+[[a-reading-of-one-drawn-instance-is-not-the-drawings-number]].
+
+**Next:** the lowest-id eligible R9 feature.
+
 ## 2026-10-05 — F-234 The navigation chrome is one tab bar, one app bar, one action bar and one sheet
 
 **Done.** The tab bar is `01`'s, drawn by our own component and wired through the navigator; the app

@@ -6844,6 +6844,18 @@
         },
         {
           "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-253"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-254"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-255"
+        },
+        {
+          "kind": "doc",
           "ref": ".harness/state/feature_list.json#F-257"
         },
         {
@@ -6916,6 +6928,14 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/testing/tree.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens.test.tsx"
         }
       ],
       "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes.",
@@ -6955,7 +6975,7 @@
       ],
       "guard": "test:packages/ui/test/charts.test.tsx refuses a radar ink outside the neutrals with @ts-expect-error (the colour is OQ-24's), and packages/design-tokens/test/c10-exceptions.test.ts moves the proximity green from an exception to a token group when F-245 mints it.",
       "memory": "memory/effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md",
-      "rationale": "A display built before its question is answered must not answer it by default: the headline's and the radar's ink are required and typed to the neutrals that exist, so an answer (F-245's mint, OQ-24, OQ-25, OQ-13) widens a type or changes a step rather than the component's shape."
+      "rationale": "A display built before its question is answered must not answer it by default: the headline's and the radar's ink are required and typed to the neutrals that exist, so an answer (F-245's mint, OQ-24, OQ-25) widens a type rather than changing the component's shape. The metric tile's figure step is not a prop: it is the recorded title, and OQ-13's answer changes that one size in MetricTile."
     }
   ]
 }

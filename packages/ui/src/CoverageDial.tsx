@@ -122,7 +122,7 @@ export function CoverageDial({
         }}
       >
         <View style={{ maxWidth: 2 * DIAL_RADIUS - DIAL_STROKE, alignItems: 'center' }}>
-          <Text size="title" weight={600} color="foreground" numeric>
+          <Text size="title" weight={600} color="foreground" numeric selectable>
             {printed}
           </Text>
           <Text size="caption" color="foreground.2" script={script} align="center">

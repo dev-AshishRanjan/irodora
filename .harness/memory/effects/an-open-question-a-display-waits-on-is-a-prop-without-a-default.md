@@ -16,8 +16,9 @@ required and typed to what exists today: the headline's and the radar's ink take
 the type widens by one token and the caller passes it — the component does not change shape, and
 `c10-exceptions.test` moves the element from an exception to a token group.
 
-The metric tile's figure is the recorded `title` (R9 §2's snap). `22` draws it at 45–47 dp, which is
-OQ-13's; if OQ-13 adds a step, the tile's one `size` changes.
+The metric tile's figure is **not** a prop: it is the recorded `title` (R9 §2's snap), and `22` draws
+it at 45–47 dp, which is OQ-13's. If OQ-13 adds a step, that is a code change to the tile's one
+`size` — and until then the drawn "large figure" is a visible gap, within §2's snap.
 
 Three questions F-235 met were decided there, on the person's delegation, and are no longer
 props: the delta bars' scale and ink (OQ-50) and their notation (OQ-51), in ADR-0119; the page dots'

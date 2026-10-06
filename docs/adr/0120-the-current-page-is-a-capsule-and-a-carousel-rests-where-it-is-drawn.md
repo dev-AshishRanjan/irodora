@@ -79,6 +79,20 @@ motion, so where a carousel comes to rest is undrawn too.
    `interactive` kind's `disabled` and `loading` states would be invented; `navigation` is earned by a
    tablist, which it does not draw. Its one control, the neighbour, is checked where it is defined.
 
+## Amended after F-235's review (2026-10-06)
+
+- **A neighbour is drawn as `20` draws it: an outline** — the card's edge and `md` corner, no fill,
+  no content, as tall as the row — and only the current item draws its node. The first build drew
+  each neighbour as the caller's own item, filled, which no mockup draws (rule 14). A swipe now slides
+  outlines until the carousel comes to rest and the new current item draws.
+- **A focused neighbour draws the focus ring**, told by the caller which one has focus, as `TabBar`
+  is (WCAG 2.4.7). The plan asked for it; the first build left it out.
+
+**Evidence and its limits.** The dot inks (#191A1A, #BFBFB9) and sizes were read off a JPEG at
+0.817 dp/px, with ΔE00 ≈ 2 of noise and ±1 px on each size. The decision does not rest on one
+reading: the grey fails 3:1 by 1.3, far past the noise, and the 1 px between the current and the
+other dots is within it, which is why size was not taken as the drawing's second channel.
+
 ## Consequences
 
 **Good**
@@ -91,8 +105,8 @@ motion, so where a carousel comes to rest is undrawn too.
 
 - **`25`'s current dot becomes a capsule and its grey dots darken.** Both visible on the one screen
   that draws them; recorded as an E3 departure on `25.dots`.
-- **A neighbour's whole item is the button**, though only its peek is on screen; a person cannot reach
-  the neighbour's own controls without bringing it to the centre first.
+- **A neighbour shows no content until it is the current item**, as `20` draws it; a person sees what
+  it is only by its name, read aloud, or by bringing it to the centre.
 - **Snapping is unverified until a device runs it** (no JDK on the workstation for Android).
 - Nothing ships the dots to a screen yet: C2 adopts `01`'s layout, and `01` draws none. They live in
   the registry until a screen needs them.

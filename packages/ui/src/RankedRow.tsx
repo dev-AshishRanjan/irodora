@@ -1,11 +1,11 @@
 /**
- * A ranked row — one result in an ordered list, in the form its screen draws (F-235, criterion 3;
+ * A ranked row — one result in an ordered list, in the form its screen draws (F-235, criterion 2;
  * mockups 19, 21 and 24).
  *
  * | form | screen | what it draws |
  * |---|---|---|
- * | `harmony` | `19` | a level-1 card: the sample, the name in English • 日本語, a detail line holding the ΔE00, and an outlined action |
- * | `nearest` | `21` | a level-1 card: the sample, a two-line name, the hex, a ΔE00 badge filled and outlined, and a plain *View →* |
+ * | `harmony` | `19` | a level-1 card: the sample, the name in English • 日本語, the relationship and the ΔE00 on one line, and an outlined action |
+ * | `nearest` | `21` | a level-1 card: the sample, a two-line name led by its Japanese, the hex, a ΔE00 badge filled and outlined, and a plain *View →* |
  * | `fields` | `24` | inside its screen's card, under a rule: the rank, the relationship, a ΔE00 badge tinted by the sample, the sample with its keyline, and three labelled fields |
  *
  * Each form takes only what its drawing has, by type. `19` and `21` print no rank numeral, so the
@@ -107,11 +107,12 @@ interface HarmonyProps {
   readonly name: string;
   /** Its Japanese, after the bullet: `琥珀色`. */
   readonly ja?: string;
-  /** The relationship and the distance, as the screen prints them. */
-  readonly detail: string;
+  /** The relationship: `Complementary`. Printed before the distance, as `19` prints it. */
+  readonly relationship: string;
+  /** The distance to the anchor: printed `ΔE00: 48.2`, and said with its space (FR-61). */
+  readonly distance: MeasureFigure;
   readonly action: RankedAction;
   readonly rank?: never;
-  readonly distance?: never;
   readonly script?: Script;
   readonly testID?: string;
 }
@@ -119,8 +120,10 @@ interface HarmonyProps {
 interface NearestProps {
   readonly form: 'nearest';
   readonly sample: RankedSample;
-  /** The name, up to two lines: `錆浅葱 Sabi-asagi (Rust Light Teal)`. */
+  /** The name after its Japanese, up to two lines with it: `Sabi-asagi (Rust Light Teal)`. */
   readonly name: string;
+  /** The Japanese it leads with, set in the Japanese face: `錆浅葱`. */
+  readonly ja?: string;
   readonly distance: MeasureFigure;
   readonly view: RankedAction;
   readonly rank?: never;
@@ -165,7 +168,8 @@ function Harmony({
   sample,
   name,
   ja,
-  detail,
+  relationship,
+  distance,
   action,
   script = 'latin',
   testID,
@@ -202,9 +206,15 @@ function Harmony({
             script={script}
             numberOfLines={1}
           />
-          <Text size="label" color="foreground.2" script={script} numeric>
-            {detail}
-          </Text>
+          <View
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`${relationship}, ${figureName(distance)}`}
+          >
+            <Text size="label" color="foreground.2" script={script} numeric>
+              {`${relationship} • ${distance.quantity}: ${figureText(distance)}`}
+            </Text>
+          </View>
         </View>
         <Button
           variant="secondary"
@@ -223,6 +233,7 @@ function Harmony({
 function Nearest({
   sample,
   name,
+  ja,
   distance,
   view,
   script = 'latin',
@@ -253,6 +264,9 @@ function Nearest({
         </View>
         <View style={{ flex: 1, justifyContent: 'space-between' }}>
           <Text size="body" color="foreground" script={script} numberOfLines={2}>
+            {ja === undefined ? null : (
+              <Text size="body" color="foreground" script="japanese">{`${ja} `}</Text>
+            )}
             {name}
           </Text>
           <Text size="body" color="foreground.2" numeric selectable>

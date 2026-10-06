@@ -1520,7 +1520,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) => {
       const rendered = render(
         <ThemeProvider theme={theme}>
-          <DeltaBars rows={DELTA_ROWS} scale={1} testID="deltas" />
+          <DeltaBars rows={DELTA_ROWS} scale={1} scaleName="Share of tolerance" testID="deltas" />
         </ThemeProvider>,
       );
       const layout = (width: number) => ({
@@ -1608,7 +1608,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
                 icon: 'score-fit',
                 label: 'Personal Fit',
                 score: 0.92,
-                note: 'Cool-Muted Match',
+                note: 'Cool, muted',
               },
               {
                 key: 'contrast',
@@ -1641,7 +1641,14 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
           name="Ai-nezumi"
           ja="藍鼠"
-          detail="Complementary • ΔE00: 48.2"
+          relationship="Complementary"
+          distance={{
+            kind: 'measure',
+            value: 48.2,
+            places: 1,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
           action={{ label: 'Wear', name: 'Wear Ai-nezumi', onPress: () => undefined }}
         />,
         theme,
@@ -1656,7 +1663,8 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         <RankedRow
           form="nearest"
           sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
-          name="藍鼠 Ai-nezumi (Indigo Mouse Grey)"
+          ja="藍鼠"
+          name="Ai-nezumi (Indigo Mouse Grey)"
           distance={{
             kind: 'measure',
             value: 2.14,
@@ -1758,6 +1766,297 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * EVERY DISPLAY IN THE JAPANESE LOCALE (F-235's review). The Japanese face has taller lines and
+   * full-width brackets, and the grid form was the only display drawn in it.
+   */
+  ...(
+    [
+      [
+        'ReadoutTable (table, 06, ja)',
+        {
+          form: 'table',
+          script: 'japanese',
+          rows: [
+            {
+              key: 'hex',
+              label: '16進数',
+              value: { kind: 'code', text: '#5B6B78', spoken: '16進数 5B6B78' },
+            },
+            { key: 'oklch', label: 'OKLCh表色系', value: READOUT_OKLCH },
+          ],
+        },
+      ],
+      [
+        'ReadoutTable (ruled columns, 08, ja)',
+        {
+          form: 'ruled',
+          layout: 'columns',
+          script: 'japanese',
+          rows: [
+            {
+              key: 'l',
+              label: '明度',
+              notation: 'ΔL*',
+              value: READOUT_DELTA,
+              reading: 'Bが明るい',
+            },
+          ],
+        },
+      ],
+      [
+        'ReadoutTable (ruled stacked, 08, ja)',
+        {
+          form: 'ruled',
+          layout: 'stacked',
+          script: 'japanese',
+          rows: [
+            {
+              key: 'w',
+              label: 'WCAG 2.2 コントラスト比',
+              value: READOUT_DELTA,
+              reading: '非テキスト',
+              note: '（APCA Lc: 16.2）',
+            },
+          ],
+        },
+      ],
+    ] as const satisfies readonly (readonly [string, ReadoutTableProps])[]
+  ).map(([name, props]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    render: (_state, theme) => draw(<ReadoutTable {...props} />, theme),
+  })),
+  {
+    name: 'DeltaBars (04, ja)',
+    kind: 'static',
+    render: (_state, theme) => {
+      const rows: readonly DeltaRow[] = DELTA_ROWS.map((row, i) => ({
+        ...row,
+        label: ['明度', '彩度', '色相'][i] ?? row.label,
+        reading: ['やや暗い', 'やや鮮やか', 'やや寒色'][i] ?? row.reading,
+      }));
+      const rendered = render(
+        <ThemeProvider theme={theme}>
+          <DeltaBars
+            rows={rows}
+            scale={1}
+            scaleName="許容差に対する割合"
+            script="japanese"
+            testID="deltas"
+          />
+        </ThemeProvider>,
+      );
+      const layout = (width: number) => ({
+        nativeEvent: { layout: { x: 0, y: 0, width, height: 26 } },
+      });
+      fireEvent(rendered.getByTestId('deltas'), 'layout', layout(373.5));
+      for (const row of rows) {
+        fireEvent(
+          rendered.getByText(`（${row.reading}）`, { exact: false }),
+          'layout',
+          layout(133),
+        );
+      }
+      const json = rendered.toJSON() as TestNode;
+      rendered.unmount();
+      return json;
+    },
+  },
+  {
+    name: 'ProximityHeadline (04, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <ProximityHeadline
+          distance={{
+            kind: 'measure',
+            value: 1.42,
+            places: 2,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          band="見本の区分"
+          ink="foreground"
+          seal
+          pair={<View style={{ height: 46.5 }} />}
+          caption="左［目標：#5B6B78］｜右［実物：#566774］"
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'CoverageDial (11, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<CoverageDial fraction={0.84} label="ワードローブ網羅率" script="japanese" />, theme),
+  },
+  {
+    name: 'Radar (17, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Radar
+          name="色の傾向"
+          ink="foreground"
+          script="japanese"
+          axes={[
+            { label: '温度', fraction: 0.4, figure: { kind: 'share', fraction: 0.4, of: '温度' } },
+            { label: '深さ', fraction: 0.6, figure: { kind: 'share', fraction: 0.6, of: '深さ' } },
+            { label: '彩度', fraction: 0.3, figure: { kind: 'share', fraction: 0.3, of: '彩度' } },
+            {
+              label: 'くすみ許容',
+              fraction: 0.65,
+              figure: { kind: 'share', fraction: 0.65, of: 'くすみ許容' },
+            },
+          ]}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'MetricTile (22, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <MetricTile
+          value={14}
+          signed
+          label="増える着こなし"
+          detail="新しい組み合わせ"
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'FactorRows (13, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Card level="1">
+          <FactorRows
+            script="japanese"
+            rows={[
+              {
+                key: 'harmony',
+                icon: 'score-harmony',
+                label: '配色調和',
+                score: 0.95,
+                note: '類似の重ね',
+              },
+              {
+                key: 'fit',
+                icon: 'score-fit',
+                label: '似合い度',
+                score: 0.92,
+                note: '寒色・くすみ',
+              },
+            ]}
+          />
+        </Card>,
+        theme,
+      ),
+  },
+  {
+    name: 'StepPill (17, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <StepPill
+          step={2}
+          total={4}
+          text="ステップ 2/4 • アンダートーンと温度"
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'RankedRow (harmony, 19, ja)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <RankedRow
+          form="harmony"
+          sample={{ name: '藍鼠', hex: '#526A6B', color: SAMPLE }}
+          name="Ai-nezumi"
+          ja="藍鼠"
+          relationship="補色"
+          distance={{
+            kind: 'measure',
+            value: 48.2,
+            places: 1,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          action={{ label: '着る', name: '藍鼠を着る', onPress: () => undefined }}
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'RankedRow (nearest, 21, ja)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <RankedRow
+          form="nearest"
+          sample={{ name: '藍鼠', hex: '#526A6B', color: SAMPLE }}
+          ja="藍鼠"
+          name="Ai-nezumi"
+          distance={{
+            kind: 'measure',
+            value: 2.14,
+            places: 2,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          view={{ label: '見る', name: '藍鼠を見る', onPress: () => undefined }}
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'RankedRow (fields, 24, ja)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Card level="1">
+          <RankedRow
+            form="fields"
+            rank={1}
+            relationship="補色の行"
+            distance={{
+              kind: 'measure',
+              value: 1.42,
+              places: 2,
+              quantity: 'ΔE00',
+              space: 'CIEDE2000',
+            }}
+            sample={{ name: '藍鼠', hex: '#526A6B', color: SAMPLE }}
+            fields={[
+              { label: '和名', value: '藍鼠', script: 'japanese' },
+              { label: 'ローマ字', value: 'Ai-nezumi' },
+              { label: '16進数', value: '#526A6B', numeric: true },
+            ]}
+            script="japanese"
+          />
+        </Card>,
+        theme,
+      ),
+  },
+  {
+    name: 'PageDots (25, ja)',
+    kind: 'static',
+    render: (_state, theme) => draw(<PageDots current={2} total={6} label="カラー 3/6" />, theme),
+  },
   {
     // The page dots (F-235, ADR-0120): the current page a capsule, a small dot past the window.
     name: 'PageDots (25)',
@@ -1779,7 +2078,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             quantity: 'ΔE00',
             space: 'CIEDE2000',
           }}
-          band="Very Close Match"
+          band="Sample Band"
           ink="foreground"
           seal
           pair={<View style={{ height: 46.5 }} />}

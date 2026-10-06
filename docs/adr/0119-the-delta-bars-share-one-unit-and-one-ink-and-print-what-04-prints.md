@@ -118,6 +118,23 @@ ink is the caller's, typed to tokens that exist; the green is F-245's to mint un
 band's words carry the verdict. The seal is hidden from assistive technology: the band says what it
 says.
 
+## Amended after F-235's review (2026-10-06)
+
+- **The side is the printed figure's sign; the magnitude gives only the length.** The weighted term
+  F-245 passes can differ in sign from the raw delta printed beside it: ΔC′ is computed from a′ =
+  (1 + G)a, so ΔC′ and ΔC\* can disagree near the neutral axis. A bar on the side its figure
+  contradicts would break the argument above — the sign is the side, the figure and the words — so
+  `deltaBar` takes the figure's value for the side and `|magnitude|` for the length.
+- **The row says what the bar draws.** The bar's length is the weighted term's share of the
+  tolerance, a quantity the figure and the reading do not state, so the row's accessible name ends
+  with it, in the caller's words (`scaleName`): *Lightness: ΔL\* −0.8, CIELAB, Slightly Darker,
+  Share of tolerance 80%*. Past the tolerance it says the share as it is (150 %), where the bar is
+  full.
+- **The shorter bars are a recorded departure**, not sample content: under one unit for both sides,
+  no input reaches `04`'s drawn left-bar length on `04`'s widths. Each bar carries it in `04`'s
+  inventory, and F-245 carries the narrow-width risk (the unit near zero at 360 dp, the label column
+  under "Lightness" on a fitted gauge) as a note to measure when it composes the gauge.
+
 ## Consequences
 
 **Good**

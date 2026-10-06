@@ -1489,7 +1489,22 @@
     {
       "rule": "E3",
       "element": "04.gauge.lightness.bar",
-      "why": "the drawn slate (#566673) is 2.72:1 on the card, under the 3:1 a graphic needs (WCAG 1.4.11), and lies 9.4 ΔE00 from any token; it takes the ink its sibling, the hue bar, draws (ADR-0119)"
+      "why": "the drawn slate (#566673) is 2.72:1 on the card, under the 3:1 a graphic needs (WCAG 1.4.11), and lies 9.4 ΔE00 from any token. E3 forces the move; rather than its smallest lightness step, a value no token holds, the bar takes the ink its sibling, the hue bar, draws (ADR-0119)"
+    },
+    {
+      "rule": "E3",
+      "element": "04.gauge.lightness.bar",
+      "why": "the bar is shorter than drawn, by construction: one unit for both sides, the smaller side’s room, so equal deltas draw equal lengths (ADR-0119, WCAG 1.4.11 and rule 11 read together: a bar that drew one side at three times the other’s rate would misstate the delta). On 04’s widths the unit is about 36 dp, so 04’s −0.8 bar draws about 29 dp, not 95.5; the risk at narrower widths is recorded on F-245"
+    },
+    {
+      "rule": "E3",
+      "element": "04.gauge.chroma.bar",
+      "why": "the bar is shorter than drawn, by construction: one unit for both sides, the smaller side’s room, so equal deltas draw equal lengths (ADR-0119, WCAG 1.4.11 and rule 11 read together: a bar that drew one side at three times the other’s rate would misstate the delta). On 04’s widths the unit is about 36 dp, so 04’s −0.8 bar draws about 29 dp, not 95.5; the risk at narrower widths is recorded on F-245"
+    },
+    {
+      "rule": "E3",
+      "element": "04.gauge.hue.bar",
+      "why": "the bar is shorter than drawn, by construction: one unit for both sides, the smaller side’s room, so equal deltas draw equal lengths (ADR-0119, WCAG 1.4.11 and rule 11 read together: a bar that drew one side at three times the other’s rate would misstate the delta). On 04’s widths the unit is about 36 dp, so 04’s −0.8 bar draws about 29 dp, not 95.5; the risk at narrower widths is recorded on F-245"
     },
     {
       "rule": "E2",

@@ -10,10 +10,12 @@
  * Every number is the drawing's, recomputed by `carousel.test`.
  *
  * - **The peek and the gap are held in dp**, so a wider phone widens the item, not the peeks.
+ * - **A neighbour is drawn as `20` draws it: an outline**, the card's edge and corner with no fill
+ *   and no content, as tall as the row. Only the current item draws its node.
  * - **A neighbour is a button** (`20` records each as `select:card.previous` and `.next`): swiping is a
  *   drag, and WCAG 2.2's 2.5.7 asks for a single-pointer way to do what a drag does. Its target is the
  *   peek and the gap beside it, `CAROUSEL_PEEK + CAROUSEL_GAP` dp, past the platform's tap target.
- *   The caller names it by what it shows.
+ *   The caller names it by what it shows, and says which one has focus, as `TabBar` is told.
  * - **Items no one can see say nothing**: only the current item and its two neighbours are reachable
  *   by a screen reader.
  * - **It comes to rest where the drawing is drawn** (ADR-0120): the centred form on an item's centre,
@@ -23,6 +25,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
+import { nativeRadius } from '@irodora/design-tokens';
+import { CARD_EDGE } from './Card.js';
+import { FocusRing } from './selection.js';
+import { useTheme } from './theme.js';
 
 /** How far each neighbour peeks in, in dp: the median of `20`'s two. */
 export const CAROUSEL_PEEK = 39.25;
@@ -38,6 +44,7 @@ export function centredWidth(width: number): number {
 
 export interface CarouselItem {
   readonly key: string;
+  /** Drawn while this is the current item; a neighbour is drawn as an outline. */
   readonly node: React.ReactNode;
   /** The neighbour button's name, when this item is a neighbour: what it shows, `Kuchiba`. */
   readonly name: string;
@@ -49,6 +56,8 @@ interface CentredProps {
   /** The item shown, from 0. */
   readonly index: number;
   readonly onIndexChange: (index: number) => void;
+  /** The neighbour an external keyboard or Switch Control has focused. */
+  readonly focused?: 'previous' | 'next';
   readonly inset?: never;
   readonly testID?: string;
 }
@@ -60,6 +69,7 @@ interface LeadingProps {
   readonly inset: number;
   readonly index?: never;
   readonly onIndexChange?: never;
+  readonly focused?: never;
   readonly testID?: string;
 }
 
@@ -69,14 +79,28 @@ export function Carousel(props: CarouselProps): React.JSX.Element {
   return props.form === 'centred' ? <Centred {...props} /> : <Leading {...props} />;
 }
 
-function Centred({ items, index, onIndexChange, testID }: CentredProps): React.JSX.Element {
+function Centred({
+  items,
+  index,
+  onIndexChange,
+  focused,
+  testID,
+}: CentredProps): React.JSX.Element {
+  const { colors } = useTheme();
   const scroller = useRef<ScrollView>(null);
   const [width, setWidth] = useState(0);
   const item = centredWidth(width);
   const step = item + CAROUSEL_GAP;
   useEffect(() => {
-    if (step > 0) scroller.current?.scrollTo({ x: index * step, animated: true });
-  }, [index, step]);
+    // Not before the row is measured: an item 0 wide would slide the first frame to the gap's offset.
+    if (item > 0) scroller.current?.scrollTo({ x: index * step, animated: true });
+  }, [index, item, step]);
+  const outline = {
+    width: item,
+    borderWidth: CARD_EDGE,
+    borderColor: colors.border,
+    borderRadius: nativeRadius.md,
+  } as const;
   if (!Number.isInteger(index) || index < 0 || index >= items.length) {
     throw new RangeError(`Carousel: item ${String(index)} of ${String(items.length)}`);
   }
@@ -110,21 +134,19 @@ function Centred({ items, index, onIndexChange, testID }: CentredProps): React.J
         }
         if (Math.abs(i - index) === 1) {
           // The neighbour's peek and the gap toward the centre are its target.
-          const toward = i < index ? { right: CAROUSEL_GAP } : { left: CAROUSEL_GAP };
+          const side = i < index ? 'previous' : 'next';
           return (
             <Pressable
               key={entry.key}
               accessibilityRole="button"
               accessibilityLabel={entry.name}
-              hitSlop={toward}
+              hitSlop={side === 'previous' ? { right: CAROUSEL_GAP } : { left: CAROUSEL_GAP }}
               onPress={() => {
                 onIndexChange(i);
               }}
-              style={{ width: item }}
+              style={outline}
             >
-              <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-                {entry.node}
-              </View>
+              <FocusRing visible={focused === side} radius={nativeRadius.md} />
             </Pressable>
           );
         }
@@ -133,10 +155,8 @@ function Centred({ items, index, onIndexChange, testID }: CentredProps): React.J
             key={entry.key}
             importantForAccessibility="no-hide-descendants"
             accessibilityElementsHidden
-            style={{ width: item }}
-          >
-            {entry.node}
-          </View>
+            style={outline}
+          />
         );
       })}
     </ScrollView>

@@ -23,6 +23,7 @@ import {
   DELTA_LABEL_END,
   DELTA_ROW,
   deltaBar,
+  deltaShare,
   DeltaBars,
   deltaUnit,
   HEADLINE_CAPTION_GAP,
@@ -159,8 +160,8 @@ describe('one unit for every row and both sides (OQ-50)', () => {
   it('draws equal magnitudes at equal lengths, on either side', () => {
     const unit = deltaUnit(width, widest);
     for (const m of [0.1, 0.3, 0.8, 1]) {
-      const left = deltaBar(-m, 1, unit);
-      const right_ = deltaBar(m, 1, unit);
+      const left = deltaBar(-m, m, 1, unit);
+      const right_ = deltaBar(m, m, 1, unit);
       expect(left.side).toBe('left');
       expect(right_.side).toBe('right');
       expect(left.length).toBe(right_.length);
@@ -169,17 +170,28 @@ describe('one unit for every row and both sides (OQ-50)', () => {
   });
 
   it('stops a magnitude past the scale at a full unit, and draws nothing for zero', () => {
-    expect(deltaBar(3, 1, 40)).toStrictEqual({ side: 'right', length: 40 });
-    expect(deltaBar(-3, 1, 40)).toStrictEqual({ side: 'left', length: 40 });
-    expect(deltaBar(0, 1, 40)).toStrictEqual({ side: 'none', length: 0 });
-    expect(deltaBar(0.5, 1, 0)).toStrictEqual({ side: 'none', length: 0 });
+    expect(deltaBar(3, 3, 1, 40)).toStrictEqual({ side: 'right', length: 40 });
+    expect(deltaBar(-3, 3, 1, 40)).toStrictEqual({ side: 'left', length: 40 });
+    expect(deltaBar(0, 0, 1, 40)).toStrictEqual({ side: 'none', length: 0 });
+    expect(deltaBar(0.5, 0.5, 1, 0)).toStrictEqual({ side: 'none', length: 0 });
+  });
+
+  it('takes its side from the printed figure, and only its length from the magnitude', () => {
+    // The weighted term can disagree in sign with the raw delta printed beside it (ΔC′ against ΔC*).
+    expect(deltaBar(0.1, -0.4, 1, 40)).toStrictEqual({ side: 'right', length: 16 });
+    expect(deltaBar(-0.1, 0.4, 1, 40)).toStrictEqual({ side: 'left', length: 16 });
+    // DECOY: the magnitude's own sign would have put the first on the left.
+    expect(deltaBar(0.1, -0.4, 1, 40).side).not.toBe('left');
+    // A share past the scale is said as it is, not clamped to a full bar.
+    expect(deltaShare(-0.8, 1)).toBe(80);
+    expect(deltaShare(1.5, 1)).toBe(150);
   });
 
   it('refuses a scale that is not positive, and a magnitude that is not a number', () => {
-    expect(() => deltaBar(1, 0, 40)).toThrow(RangeError);
-    expect(() => deltaBar(1, -1, 40)).toThrow(RangeError);
-    expect(() => deltaBar(Number.NaN, 1, 40)).toThrow(RangeError);
-    expect(() => deltaBar(Number.POSITIVE_INFINITY, 1, 40)).toThrow(RangeError);
+    expect(() => deltaBar(1, 1, 0, 40)).toThrow(RangeError);
+    expect(() => deltaBar(1, 1, -1, 40)).toThrow(RangeError);
+    expect(() => deltaBar(1, Number.NaN, 1, 40)).toThrow(RangeError);
+    expect(() => deltaBar(Number.POSITIVE_INFINITY, 1, 1, 40)).toThrow(RangeError);
   });
 });
 
@@ -240,7 +252,7 @@ const layout = (width: number) => ({
 function drawBars(theme: Theme, measure: boolean): TestNode {
   render(
     <ThemeProvider theme={theme}>
-      <DeltaBars rows={ROWS} scale={1} testID="deltas" />
+      <DeltaBars rows={ROWS} scale={1} scaleName="Share of tolerance" testID="deltas" />
     </ThemeProvider>,
   );
   if (measure) {
@@ -254,13 +266,13 @@ const bars = (tree: TestNode): readonly TestNode[] =>
   nodes(tree).filter((n) => flattenStyle(n.props['style'])['height'] === DELTA_BAR);
 
 describe('the rows as drawn', () => {
-  it('names each row once: its label, its figure’s quantity and space, and the reading', () => {
+  it('names each row once: its label, its figure’s quantity and space, the reading, and the bar', () => {
     const tree = drawBars('dark', true);
     const named = nodes(tree).filter((n) => n.props['accessible'] === true);
     expect(named.map((n) => n.props['accessibilityLabel'])).toStrictEqual([
-      'Lightness: ΔL* −0.8, CIELAB, Slightly Darker',
-      'Chroma: ΔC* +0.3, CIELAB, Slightly Richer',
-      'Hue: Δh −0.4°, CIELAB, Slightly Cooler',
+      'Lightness: ΔL* −0.8, CIELAB, Slightly Darker, Share of tolerance 80%',
+      'Chroma: ΔC* +0.3, CIELAB, Slightly Richer, Share of tolerance 30%',
+      'Hue: Δh −0.4°, CIELAB, Slightly Cooler, Share of tolerance 40%',
     ]);
     expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
     // As 04 prints it: the label alone, with no notation line (OQ-51).
@@ -297,7 +309,12 @@ describe('the rows as drawn', () => {
   it('sets the reading in full-width brackets in Japanese', () => {
     render(
       <ThemeProvider theme="dark">
-        <DeltaBars rows={ROWS.slice(0, 1)} scale={1} script="japanese" />
+        <DeltaBars
+          rows={ROWS.slice(0, 1)}
+          scale={1}
+          scaleName="許容差に対する割合"
+          script="japanese"
+        />
       </ThemeProvider>,
     );
     expect(screen.getByText('（Slightly Darker）', { exact: false })).toBeTruthy();
@@ -318,7 +335,7 @@ describe('the headline', () => {
       <ThemeProvider theme="dark">
         <ProximityHeadline
           distance={DISTANCE}
-          band="Very Close Match"
+          band="Sample Band"
           ink="foreground"
           seal
           pair={null}
@@ -330,10 +347,10 @@ describe('the headline', () => {
     const tree = screen.toJSON() as TestNode;
     const named = nodes(tree).filter((n) => n.props['accessible'] === true);
     expect(named.map((n) => n.props['accessibilityLabel'])).toStrictEqual([
-      'ΔE00 1.42, CIEDE2000, Very Close Match',
+      'ΔE00 1.42, CIEDE2000, Sample Band',
     ]);
     expect(screen.getByText('ΔE00: 1.42')).toBeTruthy();
-    expect(screen.getByText('(Very Close Match)')).toBeTruthy();
+    expect(screen.getByText('(Sample Band)')).toBeTruthy();
     const hidden = nodes(tree).filter((n) => n.props['accessibilityElementsHidden'] === true);
     expect(hidden).toHaveLength(1);
     expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);

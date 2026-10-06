@@ -7787,7 +7787,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-225",
         "F-226",
@@ -7826,7 +7826,33 @@
         "contrast",
         "cvd"
       ],
-      "plan": "plans/F-235-the-data-displays-the-mockups-draw.md"
+      "plan": "plans/F-235-the-data-displays-the-mockups-draw.md",
+      "attested": [
+        {
+          "criterion": "Readout table (06 08) and its two-column grid form (26); delta rows with signed bars and a plain-language reading (04 08); proximity headline with split sample (04)",
+          "verifiedBy": "On an iOS and an Android device, recorded: the delta bars and the readout rows at 360, 384 and 430 dp and 1× to 200 % text — no label column breaking a word, and where the bar unit reaches zero recorded (ADR-0119, F-245); VoiceOver and TalkBack read each delta row and readout row as one element with its quantity and space, \"minus\" for U+2212 and the share of the tolerance.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Coverage dial (11); radar of four axes (17); metric tile — large figure, label, basis line (22); ranked row with rank, sample, two-script name, figure and action (19 21 24); factor row with icon, figure and reason (13)",
+          "verifiedBy": "On a device: react-native-svg draws the dial's open arc with round caps and the radar's rings, spokes, polygon and markers as the subjects lay them out; each is read as one image with its data; the ranked rows' actions and the tiles at 200 % text keep every figure unclipped.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Step pill (17); horizontal carousel with peeking neighbours (20 22 23); pagination dots (25 where drawn)",
+          "verifiedBy": "On a device: the centred carousel comes to rest on an item's centre and the leading one on an item's start, without fighting a swipe (ADR-0120); a neighbour's peek and gap take a tap and select it; a focused neighbour draws its ring under an external keyboard and Switch Control; the step pill and the page dots are read as their words.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Every figure is tabular, carries its unit and space, and every chart has a text equivalent a screen reader announces",
+          "verifiedBy": "On a device, both locales: tabular figures align down the readout columns and the factor rows; VoiceOver and TalkBack say every chart's text equivalent, including the Japanese separator in the radar's name.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-236",
@@ -8233,7 +8259,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10). ALSO DEPARTS (F-219): the hue delta keeps its figure and its descriptor band and drops the claim of an identical hue 04 draws — FR-74 never asserts identity (E2). This is outside F-219’s five lint classes, so this record and §4 E2 hold it, not the lint. FROM F-232 (2026-09-28): 04's tolerance verdict is `Status form=\"pill\"` (04.sheet.tolerance's 28.5 dp): icon + text on a plate, typed `plate?: 'surface.1' | 'surface.2'` because the status tokens are declared on those. Minting 04's and 12's greens is this feature's; widen `plate` to the minted token and declare its pairings when you do. FROM F-233 (2026-09-29): OQ-45 (a person's) — this screen draws its joined samples below ADR-0095's 77 dp floor; F-233 leaves Strip's height as it is until the question is answered, and this feature waits on it. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 04's target bar is `Strip` with two members, corner sm, keyline drawn; its height waits on OQ-45. The target swatch is 29.5×28.5 sm. FROM F-233's REVIEW (2026-09-29): 04's target bar also draws a light seam between its two members (#B7C1CA at y 795) and a bright outline on the right member only (#CAD1D9), where Strip draws no line where members meet (ADR-0095) and treats both members alike. OQ-45 now asks about both, and this feature waits on it. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ. FROM F-234 (2026-10-05): 04's sheet is `form=\"docked\"`, and the type requires its `sideInset`: that is OQ-16's answer, so it is passed here once OQ-16 is answered. The F-234 subject uses 9.5 dp, 04's drawn left inset mirrored, as a test fixture only. FROM F-234'S REVIEW (2026-10-05): the docked sheet now ends its content and footer the bottom inset higher, above the home indicator; the side inset is still OQ-16's.",
+      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10). ALSO DEPARTS (F-219): the hue delta keeps its figure and its descriptor band and drops the claim of an identical hue 04 draws — FR-74 never asserts identity (E2). This is outside F-219’s five lint classes, so this record and §4 E2 hold it, not the lint. FROM F-232 (2026-09-28): 04's tolerance verdict is `Status form=\"pill\"` (04.sheet.tolerance's 28.5 dp): icon + text on a plate, typed `plate?: 'surface.1' | 'surface.2'` because the status tokens are declared on those. Minting 04's and 12's greens is this feature's; widen `plate` to the minted token and declare its pairings when you do. FROM F-233 (2026-09-29): OQ-45 (a person's) — this screen draws its joined samples below ADR-0095's 77 dp floor; F-233 leaves Strip's height as it is until the question is answered, and this feature waits on it. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 04's target bar is `Strip` with two members, corner sm, keyline drawn; its height waits on OQ-45. The target swatch is 29.5×28.5 sm. FROM F-233's REVIEW (2026-09-29): 04's target bar also draws a light seam between its two members (#B7C1CA at y 795) and a bright outline on the right member only (#CAD1D9), where Strip draws no line where members meet (ADR-0095) and treats both members alike. OQ-45 now asks about both, and this feature waits on it. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ. FROM F-234 (2026-10-05): 04's sheet is `form=\"docked\"`, and the type requires its `sideInset`: that is OQ-16's answer, so it is passed here once OQ-16 is answered. The F-234 subject uses 9.5 dp, 04's drawn left inset mirrored, as a test fixture only. FROM F-234'S REVIEW (2026-10-05): the docked sheet now ends its content and footer the bottom inset higher, above the home indicator; the side inset is still OQ-16's. FROM F-235'S REVIEW (2026-10-06), S6: DeltaBars' one unit is the smaller side's room (ADR-0119), so on 04's drawn widths a bar draws about a third of the length 04 draws, and on a gauge fitted to a 384 dp phone (OQ-16) the unit falls to about 13 dp and the 16.7 % label column to about 54 dp, under the 61.5 dp 04 draws for 'Lightness'. At 360 dp the unit nears zero, ADR-0119's own revisit trigger. F-245 measures both when it composes the gauge, and decides OQ-16 with them.",
       "openQuestions": [
         "OQ-45"
       ]
@@ -10421,6 +10447,57 @@
         "contrast"
       ],
       "notes": "FROM F-234'S REVIEW (2026-10-05), finding M4: the plain form fixes weight 400 and every labelled form sets body, so a screen feature told to pass each element's drawn values cannot pass these. Blocks nothing yet; F-242–F-263 meet it as they compose 05 and 06."
+    },
+    {
+      "id": "F-312",
+      "title": "A composed Japanese count is a figure the ragged-figure rule reads",
+      "requirements": [
+        "FR-61",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "01",
+        "26"
+      ],
+      "acceptance": [
+        "The figure scan in packages/ui/src/testing/tree.ts tells a numeral bound to a catalogue word ('2色', '1型', '16進数', which are words as 'two' is) from a count the app composes ('14着', 01's '14 Garments' in Japanese), so the composed count is held to the tabular setting as its English form is",
+        "figures.test plants a composed Japanese count as a decoy the rule must report, beside the catalogue words it must not"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-235'S REVIEW (2026-10-06), N1. The COUNTER exemption skips any numeral followed by kana or kanji, which is right for the catalogue's fixed words and lets a rendered count escape ragged-figure in Japanese while its English form is caught."
+    },
+    {
+      "id": "F-313",
+      "title": "08's accessibility rows record the figure and its words apart",
+      "requirements": [
+        "FR-61"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "08"
+      ],
+      "acceptance": [
+        "Each 08.access row's value is re-recorded as its figure (text.primary, 500, tabular) and the words after it (text.secondary), measured as 04's were in F-235, so the inventory says what ReadoutTable's stacked form draws"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-235'S REVIEW (2026-10-06), N4. 08.access.*.value is recorded whole as text.secondary 400; the image draws the figure in the foreground ink at 500, which is what the stacked form renders. F-249 composes 08 and reads this record."
     }
   ]
 }

@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeNumericFeature, nativeSpacing } from '@irodora/design-tokens';
+import { nativeFamilies, nativeNumericFeature, nativeSpacing } from '@irodora/design-tokens';
 import {
   BADGE_HEIGHT,
   FACTOR_COLUMNS,
@@ -36,7 +36,7 @@ import {
   ThemeProvider,
   type RankedRowProps,
 } from '../src/index.js';
-import { raggedFigures, type TestNode } from '../src/testing/index.js';
+import { flattenStyle, raggedFigures, type TestNode } from '../src/testing/index.js';
 
 interface Box {
   readonly x: number;
@@ -308,7 +308,8 @@ describe('the ranked row as each screen draws it', () => {
     const tree = draw({
       form: 'nearest',
       sample: { name: 'Sabi-asagi', hex: '#5C828C', color: SAMPLE },
-      name: '錆浅葱 Sabi-asagi (Rust Light Teal)',
+      ja: '錆浅葱',
+      name: 'Sabi-asagi (Rust Light Teal)',
       distance: DISTANCE,
       view: { label: 'View', name: 'View Sabi-asagi', onPress: noop },
     });
@@ -316,6 +317,10 @@ describe('the ranked row as each screen draws it', () => {
     expect(screen.getByLabelText('ΔE00 2.14, CIEDE2000')).toBeTruthy();
     expect(screen.getByText('#5C828C')).toBeTruthy();
     expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
+    // The name leads with its Japanese, set in the Japanese face; the rest in the Latin one.
+    expect(flattenStyle(screen.getByText('錆浅葱 ').props['style'])['fontFamily']).toBe(
+      nativeFamilies.jp,
+    );
   });
 
   it('24 numbers its row, tints its badge, and reads each field as its label and value', () => {
@@ -343,11 +348,15 @@ describe('the ranked row as each screen draws it', () => {
       sample: { name: 'Amber Ochre', hex: '#A77344', color: SAMPLE },
       name: 'Amber Ochre',
       ja: '琥珀色',
-      detail: 'Complementary • ΔE00: 48.2',
+      relationship: 'Complementary',
+      distance: { ...DISTANCE, value: 48.2, places: 1 },
       action: { label: 'Wear', name: 'Wear Amber Ochre', onPress: noop },
     });
     expect(screen.getByText(' • 琥珀色')).toBeTruthy();
     expect(screen.getByLabelText('Wear Amber Ochre')).toBeTruthy();
+    // The detail prints what 19 prints, and says the metric's space (FR-61).
+    expect(screen.getByText('Complementary • ΔE00: 48.2')).toBeTruthy();
+    expect(screen.getByLabelText('Complementary, ΔE00 48.2, CIEDE2000')).toBeTruthy();
   });
 
   it('takes only what each drawing has, by type', () => {
@@ -358,7 +367,8 @@ describe('the ranked row as each screen draws it', () => {
         form: 'harmony',
         sample,
         name: 'x',
-        detail: 'x',
+        relationship: 'x',
+        distance: DISTANCE,
         action: { label: 'x', onPress: noop },
         rank: 1,
       },
@@ -386,7 +396,14 @@ describe('the ranked row as each screen draws it', () => {
         action: { label: 'x', onPress: noop },
       },
       // DECOY: as drawn, it compiles.
-      { form: 'harmony', sample, name: 'x', detail: 'x', action: { label: 'x', onPress: noop } },
+      {
+        form: 'harmony',
+        sample,
+        name: 'x',
+        relationship: 'x',
+        distance: DISTANCE,
+        action: { label: 'x', onPress: noop },
+      },
     ];
     expect(forms).toHaveLength(4);
   });

@@ -96,7 +96,11 @@ function digits(figure: Figure): string {
         );
       return `${String(Math.round(figure.fraction * 100))}%`;
     case 'count':
-      return figure.signed === true ? signed(figure.value, 0) : String(figure.value);
+      return figure.signed === true
+        ? signed(figure.value, 0)
+        : figure.value < 0
+          ? `${MINUS}${String(Math.abs(figure.value))}`
+          : String(figure.value);
   }
 }
 

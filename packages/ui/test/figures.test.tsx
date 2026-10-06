@@ -67,6 +67,8 @@ describe('a figure names what it is and where it was computed', () => {
   it('names what a count counts', () => {
     expect(figureName({ kind: 'count', value: 12, noun: 'pairings' })).toBe('12 pairings');
     expect(figureText({ kind: 'count', value: 3, signed: true, noun: 'kept' })).toBe('+3');
+    // An unsigned negative count prints the true minus too, as a measure does.
+    expect(figureText({ kind: 'count', value: -3, noun: 'kept' })).toBe(`${MINUS}3`);
   });
 
   it('refuses an empty name: a figure whose space is blank tells nobody anything', () => {

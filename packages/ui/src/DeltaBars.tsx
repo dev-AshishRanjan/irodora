@@ -21,6 +21,11 @@
  *   is clamped below `scale`. A magnitude past `scale` draws a full unit, and the figure always
  *   carries the exact value. `magnitude` and `scale` are the caller's, in one unit across the rows
  *   (F-245: each axis's weighted CIEDE2000 term, against the tolerance).
+ * - **The side is the printed figure's sign** (F-235's review): the weighted term can differ in sign
+ *   from the raw delta printed beside it (ΔC′ is computed from a stretched a′), so the bar takes only
+ *   its length from `magnitude` and never sits on the side the figure contradicts.
+ * - **The row says what the bar draws**: after the figure and the reading, the share of `scale` the
+ *   bar's length stands for, in the caller's words (`scaleName`), past 100 % where it is.
  */
 
 import { useState } from 'react';
@@ -53,7 +58,7 @@ export interface DeltaRow {
   readonly delta: MeasureFigure;
   /** The words after it, in brackets: `Slightly darker` (F-222's bands). */
   readonly reading: string;
-  /** The bar's signed magnitude, in the unit `scale` is in, which every row shares (ADR-0119). */
+  /** The bar's size, in the unit `scale` is in, which every row shares (ADR-0119). Its side is the figure's. */
   readonly magnitude: number;
 }
 
@@ -61,6 +66,8 @@ export interface DeltaBarsProps {
   readonly rows: readonly DeltaRow[];
   /** The magnitude that draws a full unit: F-245's tolerance (ADR-0119). */
   readonly scale: number;
+  /** What `scale` is, spoken before the bar's share of it: `Share of tolerance`. */
+  readonly scaleName: string;
   readonly script?: Script;
   readonly testID?: string;
 }
@@ -76,26 +83,35 @@ export function deltaUnit(width: number, widestValue: number): number {
   return Math.max(0, Math.min(left, right));
 }
 
-/** A bar's side and length in dp. */
+/** A bar's side — the printed figure's sign — and its length in dp, from its magnitude. */
 export function deltaBar(
+  value: number,
   magnitude: number,
   scale: number,
   unit: number,
 ): { readonly side: 'left' | 'right' | 'none'; readonly length: number } {
   if (!(scale > 0)) throw new RangeError(`DeltaBars: scale must be positive, not ${String(scale)}`);
-  if (!Number.isFinite(magnitude)) {
-    throw new RangeError(`DeltaBars: magnitude must be finite, not ${String(magnitude)}`);
+  if (!Number.isFinite(magnitude) || !Number.isFinite(value)) {
+    throw new RangeError(
+      `DeltaBars: a delta must be finite, not ${String(value)} or ${String(magnitude)}`,
+    );
   }
-  if (magnitude === 0 || unit <= 0) return { side: 'none', length: 0 };
+  if (value === 0 || magnitude === 0 || unit <= 0) return { side: 'none', length: 0 };
   return {
-    side: magnitude < 0 ? 'left' : 'right',
+    side: value < 0 ? 'left' : 'right',
     length: Math.min(Math.abs(magnitude) / scale, 1) * unit,
   };
+}
+
+/** The share of `scale` a magnitude stands for, as a whole percent, unclamped. */
+export function deltaShare(magnitude: number, scale: number): number {
+  return Math.round((Math.abs(magnitude) / scale) * 100);
 }
 
 function DeltaBarRow({
   row,
   scale,
+  scaleName,
   width,
   unit,
   script,
@@ -103,20 +119,21 @@ function DeltaBarRow({
 }: {
   readonly row: DeltaRow;
   readonly scale: number;
+  readonly scaleName: string;
   readonly width: number;
   readonly unit: number;
   readonly script: Script;
   readonly onValueWidth: (key: string, width: number) => void;
 }): React.JSX.Element {
   const { colors } = useTheme();
-  const bar = deltaBar(row.magnitude, scale, unit);
+  const bar = deltaBar(row.delta.value, row.magnitude, scale, unit);
   const axis = DELTA_AXIS * width;
   const [open, close] = script === 'japanese' ? ['（', '）'] : ['(', ')'];
   return (
     <View
       accessible
       accessibilityRole="text"
-      accessibilityLabel={`${row.label}: ${figureName(row.delta)}, ${row.reading}`}
+      accessibilityLabel={`${row.label}: ${figureName(row.delta)}, ${row.reading}, ${scaleName} ${String(deltaShare(row.magnitude, scale))}%`}
       style={{ flexDirection: 'row', alignItems: 'center', minHeight: DELTA_ROW }}
     >
       <View style={{ width: `${String(DELTA_LABEL_END * 100)}%` as `${number}%` }}>
@@ -175,6 +192,7 @@ function DeltaBarRow({
 export function DeltaBars({
   rows,
   scale,
+  scaleName,
   script = 'latin',
   testID,
 }: DeltaBarsProps): React.JSX.Element {
@@ -199,6 +217,7 @@ export function DeltaBars({
           key={row.key}
           row={row}
           scale={scale}
+          scaleName={scaleName}
           width={width}
           unit={unit}
           script={script}

@@ -121,6 +121,7 @@ export {
 } from './Radar.js';
 export {
   deltaBar,
+  deltaShare,
   DeltaBars,
   DELTA_AXIS,
   DELTA_AXIS_WIDTH,

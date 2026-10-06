@@ -218,13 +218,65 @@ describe('the carousel as drawn', () => {
     expect(next.props['hitSlop']).toStrictEqual({ left: CAROUSEL_GAP });
     fireEvent.press(next);
     expect(changes).toStrictEqual([2]);
-    // The far item is hidden from a screen reader; the current item is not a button.
+    // Only the current item draws its content; a neighbour or a far item is 20's outline, and says
+    // nothing a screen reader could reach.
+    expect(screen.getByText('Kuchiba')).toBeTruthy();
+    for (const hidden of ['Ai-nezumi', 'Sabi-asagi', 'Toki-iro'])
+      expect(screen.queryByText(hidden)).toBeNull();
     expect(screen.queryByLabelText('Show Toki-iro')).toBeNull();
     expect(screen.queryByLabelText('Show Kuchiba')).toBeNull();
-    const widths = nodes(screen.toJSON() as TestNode)
-      .map((n) => flattenStyle(n.props['style'])['width'])
-      .filter((w) => w === centredWidth(384));
-    expect(widths).toHaveLength(ITEMS.length);
+    const outlines = nodes(screen.toJSON() as TestNode)
+      .map((n) => flattenStyle(n.props['style']))
+      .filter(
+        (st) => st['width'] === centredWidth(384) && st['borderColor'] === nativeColors.dark.border,
+      );
+    expect(outlines).toHaveLength(ITEMS.length - 1);
+    for (const st of outlines) expect(st['backgroundColor']).toBeUndefined();
+  });
+
+  it('centred: rests on an item, says where it came to rest, and rings the focused neighbour', () => {
+    const changes: number[] = [];
+    const draw = (focused?: 'previous' | 'next') =>
+      render(
+        <ThemeProvider theme="dark">
+          <Carousel
+            form="centred"
+            items={ITEMS}
+            index={1}
+            onIndexChange={(i) => changes.push(i)}
+            {...(focused === undefined ? {} : { focused })}
+            testID="c"
+          />
+        </ThemeProvider>,
+      );
+    draw();
+    const scroller = screen.getByTestId('c');
+    fireEvent(scroller, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 384, height: 600 } },
+    });
+    const step = centredWidth(384) + CAROUSEL_GAP;
+    expect(screen.getByTestId('c').props['snapToOffsets']).toStrictEqual(
+      ITEMS.map((_, i) => i * step),
+    );
+    // A swipe that ends near item 3 selects it; one past the end selects the last; the same item, nothing.
+    const end = (x: number): void => {
+      fireEvent(screen.getByTestId('c'), 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x, y: 0 } },
+      });
+    };
+    end(3 * step - 10);
+    end(10 * step);
+    end(step + 4);
+    expect(changes).toStrictEqual([3, 3]);
+    // No ring until the caller says a neighbour has focus.
+    const rings = (): number =>
+      nodes(screen.toJSON() as TestNode).filter(
+        (n) => flattenStyle(n.props['style'])['borderColor'] === nativeColors.dark.ring,
+      ).length;
+    expect(rings()).toBe(0);
+    screen.unmount();
+    draw('next');
+    expect(rings()).toBe(1);
   });
 
   it('leading: from the screen’s inset, the drawn gap apart', () => {
@@ -249,7 +301,11 @@ describe('the carousel as drawn', () => {
     ];
     expect(forms).toHaveLength(3);
     expect(() =>
-      render(<Carousel form="centred" items={ITEMS} index={4} onIndexChange={() => undefined} />),
+      render(
+        <ThemeProvider theme="dark">
+          <Carousel form="centred" items={ITEMS} index={4} onIndexChange={() => undefined} />
+        </ThemeProvider>,
+      ),
     ).toThrow(RangeError);
   });
 });
