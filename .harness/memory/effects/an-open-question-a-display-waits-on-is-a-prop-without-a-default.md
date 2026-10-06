@@ -25,3 +25,9 @@ props: the delta bars' scale and ink (OQ-50) and their notation (OQ-51), in ADR-
 second channel and small dot (OQ-52), in ADR-0120.
 
 Related: [[chroma-a-mockup-draws-before-a-token-exists-is-declared-by-element]], [[oq-47s-answer-is-data-not-code]]
+
+## F-230: OQ-13 answered
+
+ADR-0121 answers OQ-13 with a rule: `22`'s figures are more than 4 dp from every step, so F-258
+sets them at one measured step, and `MetricTile`'s figure step changes there. The type census owes
+the row to F-258, and `verify-token-reach` fails if F-258 is done while it is still owed (E-171).

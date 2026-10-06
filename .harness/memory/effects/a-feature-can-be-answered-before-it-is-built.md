@@ -36,3 +36,9 @@ over-specified against an audit rather than the code. This is the first time one
 **over-specified against a future that did not happen**.
 
 [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]
+
+## F-230: the exception became the rule
+
+ADR-0122 makes the mark one ink everywhere, the icon included, so the property this link proved for
+the themed layer is now proved for every asset from its bytes. The decoy changed with it: `icon.png`
+is one ink too now, so ADR-0093's five-colour icon is rendered in memory for `--prove` to refuse.

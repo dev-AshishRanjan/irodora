@@ -60,3 +60,14 @@ next feature widens a union and wonders why an exemption went stale.
 - [[an-exemption-that-names-no-owner-turns-unfinished-into-passing]] — the ADR this qualifies.
 - [[spacing-is-a-step-name-so-a-number-cannot-reach-a-screen]] — the same one-source-two-readers
   shape, for spacing.
+
+## F-230: a third geometry, and the identity moved from an equality to a drawing
+
+The mark is now `14`'s blossom (ADR-0122): five tangent petals over a hub, a ring cut around a
+centre disc, a stamen along each petal and a seam along each notch, every cut a hole in one ink. The
+interval equality above was F-141's and F-165's identity; it went with their geometries. **What
+identifies the mark now is the drawing**: `brand.test` recomputes every `MARK` field from
+`14.splash.mark`'s readings, with F-165's mark, four petals and six as decoys, and requires
+`markShapes()` to equal the `mark-geometry.json` the generator writes. The link is still one
+geometry and every renderer reading it; the icon path it declared before it existed is real, under
+`assets/brand/`.

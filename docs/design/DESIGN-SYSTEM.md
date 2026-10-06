@@ -378,7 +378,12 @@ content; it never re-draws a display's insides.
   applied when the platform expresses **no preference**. `unspecified` counts as no
   preference; a stated `light` is honoured. It had been decided three ways at once —
   a fallback in a screen, `dark` in the manifest, and "open" here.
-- **The mark** — in-product, or app icon only.
+- ~~**The mark**~~ — settled: both, in one ink (F-230,
+  [ADR-0122](../adr/0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md)).
+  It is `14`'s blossom in-product, in the lockups and on the icon, one neutral ink everywhere, with
+  `27`'s loading tint the one exception (C10). The lockups are `01`'s row and `14`'s stack, each one
+  figure that scales with the name
+  ([ADR-0123](../adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)).
 - ~~**Fonts**~~ — settled, in three faces and one platform font (F-226,
   [ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)):
   - the **Japanese sans** is a bundled Noto Sans JP subset generated from the corpus

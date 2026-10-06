@@ -69,3 +69,11 @@ usually telling you the boundary is the guard.
 
 Related: [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]],
 [[a-fixture-that-names-a-file-rots-when-the-file-does]]
+
+## F-230: compared across the boundary, through a file
+
+The comparison that could be written on neither side is now written across it: the generator writes
+`apps/mobile/assets/brand/mark-geometry.json`, `--check` byte-compares it, and `brand.test`
+requires `markShapes()` to equal it. Neither side loads the other; both read the same bytes. The
+parse also reads decimals and the five cut fields now, still only between `MARK`'s braces, and
+refuses a missing field.

@@ -37,6 +37,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 ### Design
 
 - [lessons/the-constraint-and-the-taste-usually-agree.md](lessons/the-constraint-and-the-taste-usually-agree.md) — a constraint is a design direction, not a licence to be austere; find the field that already works under it.
+- [lessons/a-line-box-is-not-its-ink.md](lessons/a-line-box-is-not-its-ink.md) — centring Gelasio’s line box set the name’s ink 2.5 dp high; align ink from the face’s metrics, and lay the margins out in the test to recover it.
 
 ### Engineering discipline
 
@@ -44,6 +45,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md](lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md) — F-226 closed OQ-13 on "§2 was approved on 2026-09-10"; `git log -S` showed an agent wrote §2 on 09-14. A header date is not every sentence's date.
 - [lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md](lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md) — `Extract<>` and `@ts-expect-error` let three renamed type steps through a "it type-checks" rewrite; delete an old name before giving it a new meaning.
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
+- [lessons/a-plant-that-picks-by-position-goes-vacuous-when-the-data-gains-a-row.md](lessons/a-plant-that-picks-by-position-goes-vacuous-when-the-data-gains-a-row.md) — a container sharing its first member’s corner made "swap elements 1 and 2" plant nothing; name what a plant moves.
 - [lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md](lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md) — `expect([undefined]).toEqual([])` passes, so a "nothing happened" assertion can be satisfied by something happening; use `toHaveLength(0)`.
 - [lessons/a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it.md](lessons/a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it.md) — prettier formats `.yaml`, so a generator emitting double quotes made `format` and `--check` demand different bytes of the same file, forever.
 - [lessons/a-fix-made-in-review-is-the-one-most-likely-to-ship-untested.md](lessons/a-fix-made-in-review-is-the-one-most-likely-to-ship-untested.md) — three of four guards added from a review report could be deleted with the suite still green; the report is not in the repository.
@@ -303,4 +305,8 @@ which is after they exist, not before.*
 - [effects/a-display-is-built-before-the-screen-that-composes-it.md](effects/a-display-is-built-before-the-screen-that-composes-it.md) — **E-168** · the data displays are built to their screens before any screen composes them; a screen owns the slot, not the display.
 - [effects/a-figure-says-what-it-is-and-where-it-was-computed.md](effects/a-figure-says-what-it-is-and-where-it-was-computed.md) — **E-169** · one `Figure` builds the printed text and the spoken name, so FR-61's space is said wherever a figure is printed.
 - [effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md](effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md) — **E-170** · an ink a question still owes is a required prop typed to what exists, so the answer widens a type.
+- [effects/a-measured-type-step-is-owed-by-the-feature-that-builds-it.md](effects/a-measured-type-step-is-owed-by-the-feature-that-builds-it.md) — **E-171** · ADR-0121 is a rule, so it reaches every feature that sets off-scale type; the owed rows fail once their owner is done.
+- [effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md](effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md) — **E-172** · one neutral ink by type, one declared tint, and every ground a mark is drawn on a scored CVD pair.
+- [effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md](effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md) — **E-173** · a caller names 01’s row or 14’s stack, places it by its ink, and the figure scales with the name.
+- [effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md](effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md) — **E-174** · the lockup aligns ink from the faces’ metrics, read back from the TTFs, so a re-subset cannot leave it a dp off.
 - [lessons/a-package-gate-is-not-the-repository-gate.md](lessons/a-package-gate-is-not-the-repository-gate.md) — F-223's increments were committed on the changed packages' eslint and the new test files while the root lint chain and the app suite were red; iterate on subsets, commit on the root commands.

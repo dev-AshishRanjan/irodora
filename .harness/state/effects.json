@@ -2307,8 +2307,11 @@
         },
         {
           "kind": "artifact",
-          "ref": "apps/mobile/assets/icon.png",
-          "exists": false
+          "ref": "apps/mobile/assets/brand/icon.png"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/brand/mark-geometry.json"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2317,12 +2320,13 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:test (packages/ui/test/brand.test.tsx) — the interval equality is asserted, and the SVG and the component are asserted to draw the same rectangles. gate:cvd via the one-fill count, with a two-colour decoy that must fail it.",
+      "guard": "gate:test (packages/ui/test/brand.test.tsx) — since F-230 every MARK field is recomputed from 14.splash.mark within the instrument's error, with F-165's mark, four petals and six as decoys; tangency, phase and the drawn aspect; ink and holes where they should be; five-fold symmetry with a tenth of a turn the decoy; one ink, clipped, the component and the SVG drawing the same circles; markShapes() equal to the mark-geometry.json the generator writes; five lobes at 16 px with a disc and six petals the decoys. gate:lint — generate-brand-assets --check byte-compares every asset and --prove refuses the decoys.",
       "memory": "memory/effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md",
-      "rationale": "ONE GEOMETRY, TWO RENDERERS. `Mark` draws Views for the app; `markSvg` emits a string because F-142 needs a FILE and an icon pipeline cannot render a React component into one. Both read `MARK` and neither carries its own numbers, so the icon on a home screen cannot drift from the mark inside the app — which is precisely what happens when somebody exports a PNG from a drawing tool and commits it beside the code. THE REVERSE IS ALSO TRUE AND WORTH SAYING: changing `MARK` changes the shipped icon and the store listing, so an edit that looks like a component tweak is not one. THE INTERVAL EQUALITY IS THE IDENTITY: the gap between the fields and the offset between them are the same number, which is what makes the mark an arrangement rather than an adjacency (BRAND.md section 7). A later edit that nudged one field would leave something that still reads as a mark and has stopped being this one; the test fails on it. THE CVD GUARANTEE IS A COUNT, NOT A SIMULATION — a simulation over a single-colour document maps one colour to one colour and reports no confusion, which is true of any such document and would therefore pass whatever it was given. The honest property is that there is only one colour to map, and a two-colour decoy proves the count distinguishes. THE ICON PATH IS DECLARED BEFORE IT EXISTS (exists: false), so the dependency is recorded while it is still a decision — rather than after somebody has exported a PNG by hand and there is nothing left to link it to.",
+      "rationale": "ONE GEOMETRY, TWO RENDERERS. `Mark` draws Views for the app; `markSvg` emits a string because F-142 needs a FILE and an icon pipeline cannot render a React component into one. Both read `MARK` and neither carries its own numbers, so the icon on a home screen cannot drift from the mark inside the app — which is precisely what happens when somebody exports a PNG from a drawing tool and commits it beside the code. THE REVERSE IS ALSO TRUE AND WORTH SAYING: changing `MARK` changes the shipped icon and the store listing, so an edit that looks like a component tweak is not one. THE INTERVAL EQUALITY IS THE IDENTITY: the gap between the fields and the offset between them are the same number, which is what makes the mark an arrangement rather than an adjacency (BRAND.md section 7). A later edit that nudged one field would leave something that still reads as a mark and has stopped being this one; the test fails on it. THE CVD GUARANTEE IS A COUNT, NOT A SIMULATION — a simulation over a single-colour document maps one colour to one colour and reports no confusion, which is true of any such document and would therefore pass whatever it was given. The honest property is that there is only one colour to map, and a two-colour decoy proves the count distinguishes. THE ICON PATH IS DECLARED BEFORE IT EXISTS (exists: false), so the dependency is recorded while it is still a decision — rather than after somebody has exported a PNG by hand and there is nothing left to link it to. ---- THIRD GEOMETRY (F-230, ADR-0122). The mark is now 14's blossom: five tangent petals over a hub, a ring cut around a centre disc, a stamen along each petal and a seam along each notch, every cut a hole. The interval equality that was F-141's identity and F-165's is gone with them; what identifies the mark now is the drawing, recomputed field by field from its readings. The icon path this link declared before it existed is real, under assets/brand/.",
       "confidence": 0.9,
       "origin": "manual",
-      "status": "active"
+      "status": "active",
+      "feature": "F-230"
     },
     {
       "id": "E-060",
@@ -2355,9 +2359,9 @@
         "scripts"
       ],
       "severity": "medium",
-      "guard": "gate:build — `expo prebuild` cannot produce a config until @irodora/design-tokens resolves, so a broken build order fails there rather than shipping the wrong colour. gate:lint — `generate-brand-assets.mjs --check` byte-compares the four PNGs against what MARK and the manifest currently produce, proven by mutating one byte and watching it go red.",
+      "guard": "gate:build — `expo prebuild` cannot produce a config until @irodora/design-tokens resolves, so a broken build order fails there rather than shipping the wrong colour. gate:lint — `generate-brand-assets.mjs --check` byte-compares the four PNGs against what MARK and the manifest currently produce, proven by mutating one byte and watching it go red. F-230: `--prove` (in lint) also decodes every asset and requires ONE ink — a transparent asset one colour, an opaque one on the line from its ground to its ink — refusing ADR-0093's five-colour icon rendered in memory.",
       "memory": "memory/effects/the-app-config-now-evaluates-design-tokens.md",
-      "rationale": "app.config.ts NOW IMPORTS `nativeColors` and uses it for the adaptive icon background and both splash backgrounds, so the config is evaluated code with a build-order dependency where it previously imported only types. THE ALTERNATIVE WAS THREE HEX LITERALS, which would have been correct on the day they were typed and would then have been the only colours in the product the contrast gate never sees. THE SPECIFIC DEFECT THIS PREVENTS: the splash is composited from the theme background and the app’s first frame paints the same token; if the two disagree the user sees a change of polarity at launch, which lasts 400ms and is therefore never filed. THE NARROWER THING IT DOES NOT DO: icon.png’s ground is baked into the PNG because a PNG has pixels. It follows a manifest change only when the generator is RUN — `--check` in lint is what turns \"somebody remembered\" into \"the build failed\", so the icon does not track the manifest continuously, it is checked against it continuously.",
+      "rationale": "app.config.ts NOW IMPORTS `nativeColors` and uses it for the adaptive icon background and both splash backgrounds, so the config is evaluated code with a build-order dependency where it previously imported only types. THE ALTERNATIVE WAS THREE HEX LITERALS, which would have been correct on the day they were typed and would then have been the only colours in the product the contrast gate never sees. THE SPECIFIC DEFECT THIS PREVENTS: the splash is composited from the theme background and the app’s first frame paints the same token; if the two disagree the user sees a change of polarity at launch, which lasts 400ms and is therefore never filed. THE NARROWER THING IT DOES NOT DO: icon.png’s ground is baked into the PNG because a PNG has pixels. It follows a manifest change only when the generator is RUN — `--check` in lint is what turns \"somebody remembered\" into \"the build failed\", so the icon does not track the manifest continuously, it is checked against it continuously. F-230 (ADR-0122): icon.png's ground is dark `background` and its ink dark `foreground.2`, the adaptive foreground the same ink on transparent over the same ground, so iOS and Android show one image — this link's stated intent, false until then (icon.png had the light ground).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -3194,12 +3198,13 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:artifact — `generate-brand-assets.mjs --prove` now runs eleven checks with THREE decoys (a solid block, two strokes, three strokes at the wrong interval) and asserts the Android safe zone from the geometry rather than from a written-down number; `--check` byte-compares every asset; the generator reads MARK out of the component source and throws by name when a field moves.",
+      "guard": "gate:lint — since F-230 `generate-brand-assets.mjs --prove` runs in lint: 35 cases, 12 refusals. The signature is DERIVED FROM THE GEOMETRY AT THE IMAGE'S SIZE, in two tiers: where every cut spans 3 px the middle row and column must show the predicted runs; at launcher densities (48 to 192 px) the outline must. Decoys: a solid disc, a blossom with no ring, four petals, F-165's six discs, a two-ink image, and at 48 px still a solid disc and four petals. The safe zone is derived (ADAPTIVE_GRID 624 from the reach). `--check` byte-compares every asset. gate:artifact — gate 16 reads the mark out of a built APK and cannot run on this workstation (no JDK): F-230's third attestation.",
       "memory": "memory/effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md",
-      "rationale": "THE SAFE-ZONE ASSERTION CARRIED THE OLD MARK'S NUMBERS AND WOULD HAVE PASSED WHILE ANDROID CLIPPED THE NEW ONE. `generate-brand-assets.mjs --prove` checked that the adaptive icon fits Android's guaranteed 66/108 circle with `const inkDiagonal = 432 * Math.SQRT2` — 432 being the F-141 mark's ink box at the 576 grid, written down. F-165's ink box is 20 grid units rather than 18, and its CORNERS ARE INK because a stroke's end is exactly the far point, so at the same grid the ink would have reached 339 against a guaranteed 313 and Android would have cut the corners off the icon. THE CHECK WOULD HAVE GONE ON PASSING, because it was asserting a fact about a shape it no longer described. Deriving it — `inkRadius(gridPx, geometry)` — made the failure visible immediately and forced the adaptive grid from 576 down to 504, which is a consequence rather than a preference: the unit must stay a whole number or the generator refuses to build, and 21 is the largest that fits. A SECOND DECOY WENT IN WITH IT: `inkRadius(576)` must EXCEED the safe radius, so the check cannot become vacuous again by drifting to a mark small enough to pass anything. THE SAME SHAPE AS THE SIGNATURE, one step along: `carriesMark` read the middle ROW for two ink runs, which is a fact about two side-by-side fields and says nothing about three stacked strokes — a horizontal scan of the new mark crosses one stroke and reports a single run, exactly as a solid block would. It reads the centre COLUMN now, where the signature is five alternations every one of which is the same quantity, and the two-stroke decoy proves the shape F-141 shipped would not pass as this one. GENERAL FORM: a check written as a constant is a check about the code that existed when it was typed. When the thing being checked can change shape, the check has to be derived from the shape — and it needs a decoy that fails, or deriving it only moves where the vacuum is. ---- SECOND PASS, AND THE SAME LESSON FROM THE OTHER SIDE (2026-09-06). The 彡 mark was rejected too, and the reason both attempts failed was one thing: ABSTRACT GEOMETRIC MINIMALISM IS WHAT \"NOT RELEVANT\" MEANT. A person has a second to work out what an app is, and an abstraction gives them no route however good the sentence explaining it. THERE WAS A SECOND, QUIETER CAUSE, and it is the effect-shaped one: the brand test asserted EXACTLY ONE FILL and called that the CVD guarantee. That made monochrome a property of the build rather than a decision, and it went unexamined through two redraws — a colour product whose icon had no colour in it, held there by a test nobody re-read. The brief says a mark must not DEPEND on colour to be recognisable; counting fills is a different claim, and a weaker one, true of a blank page. The check now renders the mark in five colours and in one and compares the SILHOUETTE, with a decoy that fails when the geometry moves. A TEST CAN ENFORCE A DECISION NOBODY MADE: the fill count was written to express a real requirement, drifted into standing for a different one, and then constrained three features. When a check is the reason something cannot change, read what it actually asserts before believing it is the requirement.",
+      "rationale": "THE SAFE-ZONE ASSERTION CARRIED THE OLD MARK'S NUMBERS AND WOULD HAVE PASSED WHILE ANDROID CLIPPED THE NEW ONE. `generate-brand-assets.mjs --prove` checked that the adaptive icon fits Android's guaranteed 66/108 circle with `const inkDiagonal = 432 * Math.SQRT2` — 432 being the F-141 mark's ink box at the 576 grid, written down. F-165's ink box is 20 grid units rather than 18, and its CORNERS ARE INK because a stroke's end is exactly the far point, so at the same grid the ink would have reached 339 against a guaranteed 313 and Android would have cut the corners off the icon. THE CHECK WOULD HAVE GONE ON PASSING, because it was asserting a fact about a shape it no longer described. Deriving it — `inkRadius(gridPx, geometry)` — made the failure visible immediately and forced the adaptive grid from 576 down to 504, which is a consequence rather than a preference: the unit must stay a whole number or the generator refuses to build, and 21 is the largest that fits. A SECOND DECOY WENT IN WITH IT: `inkRadius(576)` must EXCEED the safe radius, so the check cannot become vacuous again by drifting to a mark small enough to pass anything. THE SAME SHAPE AS THE SIGNATURE, one step along: `carriesMark` read the middle ROW for two ink runs, which is a fact about two side-by-side fields and says nothing about three stacked strokes — a horizontal scan of the new mark crosses one stroke and reports a single run, exactly as a solid block would. It reads the centre COLUMN now, where the signature is five alternations every one of which is the same quantity, and the two-stroke decoy proves the shape F-141 shipped would not pass as this one. GENERAL FORM: a check written as a constant is a check about the code that existed when it was typed. When the thing being checked can change shape, the check has to be derived from the shape — and it needs a decoy that fails, or deriving it only moves where the vacuum is. ---- SECOND PASS, AND THE SAME LESSON FROM THE OTHER SIDE (2026-09-06). The 彡 mark was rejected too, and the reason both attempts failed was one thing: ABSTRACT GEOMETRIC MINIMALISM IS WHAT \"NOT RELEVANT\" MEANT. A person has a second to work out what an app is, and an abstraction gives them no route however good the sentence explaining it. THERE WAS A SECOND, QUIETER CAUSE, and it is the effect-shaped one: the brand test asserted EXACTLY ONE FILL and called that the CVD guarantee. That made monochrome a property of the build rather than a decision, and it went unexamined through two redraws — a colour product whose icon had no colour in it, held there by a test nobody re-read. The brief says a mark must not DEPEND on colour to be recognisable; counting fills is a different claim, and a weaker one, true of a blank page. The check now renders the mark in five colours and in one and compares the SILHOUETTE, with a decoy that fails when the geometry moves. A TEST CAN ENFORCE A DECISION NOBODY MADE: the fill count was written to express a real requirement, drifted into standing for a different one, and then constrained three features. When a check is the reason something cannot change, read what it actually asserts before believing it is the requirement. ---- F-230: the signature had been written for one geometry at one size, and 14's blossom has cuts of 1 to 2 px at a launcher's densities, where whether a cut reads depends on a rasteriser's threshold rather than on the mark. So the expectation is computed per size and the claim shrinks to what the size can carry — the same lesson as the safe zone, one step further: derive the check from the shape AND from the size it is viewed at.",
       "confidence": 0.93,
       "origin": "manual",
-      "status": "active"
+      "status": "active",
+      "feature": "F-230"
     },
     {
       "id": "E-086",
@@ -4553,9 +4558,9 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE LAYER IS PROVEN TO BE A SILHOUETTE, NOT ASSUMED TO BE ONE. Android tints `monochromeImage` itself and reads only the alpha, so a layer that kept the five petal colours would look right in every preview here and collapse to one flat blob the instant a launcher tinted it — with the gaps between the petals gone. The proof decodes the produced bytes and counts distinct RGB among painted pixels: exactly one, with a transparent ground. ITS DECOY IS WHAT MAKES \"ONE\" A MEASUREMENT: `icon.png` decoded the same way has 96, so the assertion is not a constant that would also pass on an asset that is entirely transparent or one flat colour edge to edge. The grid is `ADAPTIVE_GRID` and the existing safe-circle case covers it, so the themed layer survives the same launcher mask as the foreground. WHAT IS NOT GUARDED: how it looks tinted, on a device, with themed icons switched on. Nothing here can see that.",
+      "guard": "ONE INK FOR EVERY ASSET, PROVEN FROM THE BYTES (F-230, ADR-0122). `--prove` decodes each produced asset and requires one ink: a transparent asset paints one colour, an opaque one lies on the line from its ground to its ink. Its decoy is ADR-0093's five-colour icon rendered in memory, which must be refused — so \"one\" is a measurement, not a constant that a blank or flat asset would also satisfy. The themed layer is still a silhouette Android tints, on `ADAPTIVE_GRID`, inside the same safe circle. WHAT IS NOT GUARDED: how it looks tinted, on a device, with themed icons on — F-230's third attestation.",
       "memory": "memory/effects/a-feature-can-be-answered-before-it-is-built.md",
-      "rationale": "THE FEATURE'S PREMISE WAS REMOVED BY EVIDENCE BEFORE ANY WORK STARTED. F-192 was written when two marks had been rejected at the one step no gate can discharge, and asked for a mark saying something *\"a ring of discs does not\"* — a request to REPLACE the disc mark. The user then looked at F-165's third mark on a home screen and approved it. Drawing a fourth would have been the opposite of what the feature is for, so criterion 1 became keeping it, and its other halves were VERIFIED rather than rebuilt: `brand.test.tsx` already covers 16px and all three CVD simulations. WHAT WAS GENUINELY UNDONE was one asset. `adaptiveIcon` had `foregroundImage` and `backgroundColor` and no `monochromeImage`, so on Android 13+ with themed icons on, the launcher DERIVES its own silhouette from the coloured icon — an icon this product designed deliberately becomes one the platform guessed at, on exactly the home screen the mark was just approved on. Same class as the icon that predated F-141: *\"an app icon is the one asset you stop seeing after a week, so nobody notices.\"*",
+      "rationale": "THE FEATURE'S PREMISE WAS REMOVED BY EVIDENCE BEFORE ANY WORK STARTED. F-192 was written when two marks had been rejected at the one step no gate can discharge, and asked for a mark saying something *\"a ring of discs does not\"* — a request to REPLACE the disc mark. The user then looked at F-165's third mark on a home screen and approved it. Drawing a fourth would have been the opposite of what the feature is for, so criterion 1 became keeping it, and its other halves were VERIFIED rather than rebuilt: `brand.test.tsx` already covers 16px and all three CVD simulations. WHAT WAS GENUINELY UNDONE was one asset. `adaptiveIcon` had `foregroundImage` and `backgroundColor` and no `monochromeImage`, so on Android 13+ with themed icons on, the launcher DERIVES its own silhouette from the coloured icon — an icon this product designed deliberately becomes one the platform guessed at, on exactly the home screen the mark was just approved on. Same class as the icon that predated F-141: *\"an app icon is the one asset you stop seeing after a week, so nobody notices.\"* F-230: the themed layer stopped being the exception. ADR-0122 makes the mark one ink everywhere, the icon included, so the property this link proved for one asset is now proved for all of them.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -4590,6 +4595,10 @@
         {
           "kind": "test",
           "ref": "packages/ui/test/brand.test.tsx"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/brand/mark-geometry.json"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4599,9 +4608,9 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS, rather than watched for reading them. `markGeometry()` matched four regexes against the WHOLE of brand.tsx and threw only when it could not FIND them — a `grid:` in any constant or comment above MARK would have given the generator one geometry and the app another, and `--check` could not have seen it because it compares the assets against exactly that reading. Two refusals now: exactly one `export const MARK` in the file, and the numbers read only from between its braces. THREE CASES IN --prove HAND IT A MUTATED SOURCE AND WATCH IT REFUSE, the third being the decoy — a source with NO MARK must be refused too, or a function that threw on everything would pass. The third artefact is coupled by rendering rather than by numbers, so launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap; that case was watched failing against an <Image>. WHAT IS NOT GUARDED: a regex is still a regex. A value moved into a nested object INSIDE the block would still be misread. And gate 16, which reads the mark out of a built APK, has not run. F-226: the lockup's name is set in the serif (Gelasio Regular, ADR-0112) as Latin text in both locales; `Wordmark` lost its `script` prop, and brand.test asserts the rendered family and weight. `Launch` does not render the wordmark yet (F-231).",
+      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS: exactly one `export const MARK`, numbers read only between its braces, decimals and the F-230 fields (eye, ringOuter, stamenOuter, stamenWidth, seamWidth) included, and a missing field refused. `--prove` hands it mutated sources and watches it refuse, with a source that has no MARK as the decoy. SINCE F-230 THE TWO DERIVATIONS ARE COMPARED THROUGH A FILE: the generator writes `apps/mobile/assets/brand/mark-geometry.json`, `--check` byte-compares it, and brand.test requires `markShapes()` to equal it — turbo keys on the file. launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap. WHAT IS NOT GUARDED: gate 16, which reads the mark out of a built APK, has not run (no JDK). F-226: the name is set in the serif (Gelasio Regular, ADR-0112) as Latin text in both locales. F-230: `Wordmark` takes a form (E-173). `Launch` does not render the lockup yet (F-231).",
       "memory": "memory/effects/a-parse-that-can-find-the-wrong-numbers-is-worse-than-one-that-finds-none.md",
-      "rationale": "CRITERION 1 WAS ALREADY TRUE AND THE FINDING WAS SAYING SO PRECISELY. All three artefacts already derive from MARK — the assets by parsing it, the wordmark by being it, the launch by rendering it — so the work was not building a coupling but closing the one place it could break silently. TWO ATTEMPTS FAILED FOR THE SAME REASON, and the reason is the interesting part: comparing the parse against the component cannot be written in the generator (Node cannot load brand.tsx — it imports React Native, which is WHY the parse exists) and cannot be written in jest (which cannot parse the .mjs). Both were trying to DETECT a wrong reading across a boundary that exists to keep the two sides apart. The boundary was the guard: narrow the parse until the failure has nowhere to live.",
+      "rationale": "CRITERION 1 WAS ALREADY TRUE AND THE FINDING WAS SAYING SO PRECISELY. All three artefacts already derive from MARK — the assets by parsing it, the wordmark by being it, the launch by rendering it — so the work was not building a coupling but closing the one place it could break silently. TWO ATTEMPTS FAILED FOR THE SAME REASON, and the reason is the interesting part: comparing the parse against the component cannot be written in the generator (Node cannot load brand.tsx — it imports React Native, which is WHY the parse exists) and cannot be written in jest (which cannot parse the .mjs). Both were trying to DETECT a wrong reading across a boundary that exists to keep the two sides apart. The boundary was the guard: narrow the parse until the failure has nowhere to live. ---- F-230 CLOSED THE GAP THE FIRST GUARD LEFT. Comparing the parse with the component could be written on neither side of the boundary, so it is written ACROSS it: a file the generator writes and jest reads. Neither side loads the other; both read the same bytes.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -5996,6 +6005,10 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/mark-census.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6004,7 +6017,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen. F-235 removed 04.gauge.chroma.bar from 04's C10 conflict and from the manifest's green exception together (ADR-0119: a bar carries no words, so its green would be a verdict by colour alone); the test requires both lists to move at once.",
+      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen. F-235 removed 04.gauge.chroma.bar from 04's C10 conflict and from the manifest's green exception together (ADR-0119: a bar carries no words, so its green would be a verdict by colour alone); the test requires both lists to move at once. F-230: mark-census.test.ts asserts `27.lens-working.mark` is the ONE mark among the exceptions, every other governing mark binds an ink within the ceiling in all four palettes, and only 00's and 25's marks sit outside the product (C4) — a planted status-colour mark refused.",
       "memory": "memory/effects/chroma-a-mockup-draws-before-a-token-exists-is-declared-by-element.md",
       "rationale": "C10 and ADR-0110 follow chroma the mockups draw on elements no token holds yet: gold HUDs, green verdicts, coloured icons. The feature that builds each surface mints its token. Until then, the chroma-ceiling count would have been blind to exactly the chroma the product is about to ship. So the manifest declares it by inventory element, and the inventories and the manifest are held together. When an inventory adds or renames a C10 element, the manifest must follow. When a feature mints the token, it replaces the element exception with a token exception or with nothing. F-232 (2026-09-28): the first two exceptions RETIRED by a mint — 00.controls.icon-wheel and 00.buttons.icon-palette — replaced by token-group exceptions that carry the elements forward, so coverage stays exactly once (E-159).",
       "confidence": 0.85,
@@ -6131,6 +6144,14 @@
         {
           "kind": "file",
           "ref": "mockups/inventory.schema.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/type-census.json"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-token-reach.mjs"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6139,9 +6160,9 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are.",
+      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done.",
       "memory": "memory/effects/the-caption-is-the-median-of-what-the-mockups-draw.md",
-      "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set.",
+      "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set. F-230: an inventory re-reading can now also MOVE A MEASURED STEP — the median of its bound elements — or move an element across the 4 dp line, which the census reports as unbound or no longer owed.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -6398,6 +6419,18 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/PageDots.tsx#PAGE_DOTS_PITCH"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx#MARK"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx#LOCKUP_APP"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx#LOCKUP_SPLASH"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6409,7 +6442,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy.",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6971,11 +7004,198 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/MetricTile.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/type-census.json"
         }
       ],
-      "guard": "test:packages/ui/test/charts.test.tsx refuses a radar ink outside the neutrals with @ts-expect-error (the colour is OQ-24's), and packages/design-tokens/test/c10-exceptions.test.ts moves the proximity green from an exception to a token group when F-245 mints it.",
+      "guard": "test:packages/ui/test/charts.test.tsx refuses a radar ink outside the neutrals with @ts-expect-error (the colour is OQ-24's), and packages/design-tokens/test/c10-exceptions.test.ts moves the proximity green from an exception to a token group when F-245 mints it. F-230: OQ-13 is answered (ADR-0121), and the type census owes 22's figures to F-258 — verify-token-reach fails if F-258 is done while the row is still owed.",
       "memory": "memory/effects/an-open-question-a-display-waits-on-is-a-prop-without-a-default.md",
-      "rationale": "A display built before its question is answered must not answer it by default: the headline's and the radar's ink are required and typed to the neutrals that exist, so an answer (F-245's mint, OQ-24, OQ-25) widens a type rather than changing the component's shape. The metric tile's figure step is not a prop: it is the recorded title, and OQ-13's answer changes that one size in MetricTile."
+      "rationale": "A display built before its question is answered must not answer it by default: the headline's and the radar's ink are required and typed to the neutrals that exist, so an answer (F-245's mint, OQ-24, OQ-25) widens a type rather than changing the component's shape. The metric tile's figure step is not a prop: it is the recorded title, and OQ-13's answer changes that one size in MetricTile. F-230: OQ-13's answer is a rule rather than a step: 22's figures, 45.3–47.4 dp, are more than 4 dp from every board step, so F-258 sets them at one measured step and MetricTile's figure step changes there."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-230",
+      "scope": [
+        "packages/ui",
+        "packages/design-tokens",
+        "apps/mobile",
+        "mockups"
+      ],
+      "severity": "medium",
+      "id": "E-171",
+      "from": {
+        "kind": "decision",
+        "ref": "docs/adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/verification/type-census.json"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/MetricTile.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-242"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-247"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-253"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-258"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-260"
+        }
+      ],
+      "guard": "The type census (type-scale.test.ts): every governing element drawn more than 4 dp from every board step is bound to a measured step or owed in .harness/verification/type-census.json, both ways, with a planted decoy. verify-token-reach.mjs (uncached) fails once an owed row's owner is done while the row is still owed — closedBy's rule — and names any reader of a measured step but brand.tsx.",
+      "memory": "memory/effects/a-measured-type-step-is-owed-by-the-feature-that-builds-it.md",
+      "rationale": "ADR-0121 answers OQ-13 with a RULE, so it reaches every feature that sets type a mockup draws off the scale. 06's and 26's kanji (F-247), 20's card kanji (F-253) and 22's figures (F-258, through MetricTile) are drawn more than 4 dp from every step and each owes a measured step; 01's tagline (F-242) and 17's slider labels (F-260) are within 4 dp and take board steps. The owed rows are a declaration file read by the uncached reach script, not the feature list read by a cached test, which would key every test on every claim."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-230",
+      "scope": [
+        "packages/ui",
+        "packages/design-tokens",
+        "mockups"
+      ],
+      "severity": "medium",
+      "id": "E-172",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ui/src/brand.tsx#MARK_INKS"
+      },
+      "to": [
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-236"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-243"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/mark-census.test.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/cvd/mark.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
+      ],
+      "guard": "The type refusal in brand.test (`<Mark color=\"status.ok\" />` is @ts-expect-error) and its achromatic check of every MARK_INKS token in all four palettes, status.ok the decoy; mark-census.test.ts (every governing placement neutral, exactly one exception, 27.lens-working.mark); cvd/mark.test.ts (every (ink, ground) a governing mockup draws a mark on is in cvdPairs, the placements counted, a planted placement named, ADR-0093's red/green petals scoring 54.8 under deutan as the decoy).",
+      "memory": "memory/effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md",
+      "rationale": "ADR-0122 makes the mark ONE neutral ink, and BRAND §7 disqualifies a mark that depends on colour. Two things change with MARK_INKS: F-236 adds 27's tint when it mints it (the one C10 exception), and a mark placed on a new ground — 02's capture button (F-243) draws it on `accent` in `accent.foreground`, which equals `inverse.foreground` in every palette — must have its pair declared in cvdPairs, or gate 10 never scores it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-230",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-173",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ui/src/brand.tsx#WordmarkProps"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Home.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-231"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-242"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/brand.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "guard": "gate:typecheck — `form` is required, and `size`, a tagline on `app`, a splash without one and a heading on the splash are refused (brand.test's @ts-expect-error cases). The conformance registry renders both lockups and the mark at 16 in four palettes. brand.test lays the margins out and recovers the drawn inks, follows a scaled line, and holds the row's name to its share of the width.",
+      "memory": "memory/effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md",
+      "rationale": "ADR-0123: a lockup is one figure, so a caller names the DRAWING (01's row or 14's stack) and never a size. Home's header became 01's lockup at 31.6 dp (it led at 72), F-242 rebuilds the rest of Home around it, and F-231's splash calls the stack with the catalogue's tagline. The figure's box is its ink, so a caller places it by the inventory's ink box; the row measures the width its column gives it, which both drawn placements are."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-230",
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "id": "E-174",
+      "from": {
+        "kind": "artifact",
+        "ref": "apps/mobile/assets/fonts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx#GELASIO"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx#GOTHIC"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/fonts.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them.",
+      "memory": "memory/effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md",
+      "rationale": "The lockups align ink, not boxes (ADR-0123), and the arithmetic is the faces' metrics written down as constants, since a component cannot read a TTF. Re-subsetting Noto Sans JP (F-231 adds 知 with the splash copy) or updating Gelasio could move an ascender, the character face or the name's advance; the lockup would then sit off by a dp or two with every component test green. The font test fails instead."
     }
   ]
 }

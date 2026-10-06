@@ -40,3 +40,9 @@ ADR-0113's caption rule, applied to controls.
 
 Related: [[an-inventory-is-the-structure-a-surface-is-built-from]],
 [[the-target-is-the-hit-area-and-the-rule-adds-it-back]].
+
+## F-230: the mark and the lockups
+
+`MARK`'s fields are recomputed from `14.splash.mark`'s readings, and `LOCKUP_APP` and
+`LOCKUP_SPLASH` from `01`'s and `14`'s, as ratios of the name's em (ADR-0123). Each has decoys:
+F-165's mark, and F-226's lockup and the snapped intervals where the instrument can tell them apart.

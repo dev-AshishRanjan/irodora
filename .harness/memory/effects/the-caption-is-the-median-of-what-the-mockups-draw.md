@@ -32,3 +32,10 @@ schema's `type.size` enum, so a record can never name a size the app cannot set.
 When F-273 (or anyone) measures more captions, this test fails with the new median. Change the
 manifest to it and record the change in ADR-0113's revisit list. Never loosen the test. Adding a type
 step means adding it to the schema's enum and to the manifest together.
+
+## F-230: measured steps
+
+ADR-0121 extends the rule above to every size the mockups draw more than 4 dp from a board step: a
+**measured step**, bound to its elements at their median em. `wordmark` 31.6 and `wordmarkSplash`
+59.7 are the first two. A re-reading can now move a measured step, or move an element across the
+4 dp line, and the census reports either.

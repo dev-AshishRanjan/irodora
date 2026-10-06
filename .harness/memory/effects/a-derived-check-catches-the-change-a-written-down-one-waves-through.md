@@ -82,3 +82,11 @@ it is the only reason a `git add -A` did not commit the deletions.
 
 Related: [[a-second-technology-a-second-blind-spot]] ·
 [[one-name-under-a-swatch-is-a-claim-and-the-engine-refused-it]]
+
+## F-230: derived from the shape, and from the size it is viewed at
+
+`14`'s blossom has cuts of one or two pixels at a launcher's densities, where whether a cut reads
+depends on a rasteriser's threshold rather than on the mark. So the expected signature is computed
+**per image size**, in two tiers: the full run pattern where every cut spans 3 px, the outline below
+that. The claim shrinks to what the size can carry, and the decoys still fail at 48 px (a solid disc,
+four petals). The same lesson as the safe zone, one step further.

@@ -46,3 +46,10 @@ exception, or with nothing if the token sits under the ceiling. It must not leav
 tokens were minted. They are replaced by **token group** exceptions that carry the elements
 forward, so coverage stays exactly once, and the element exceptions are gone in the same change.
 That is the pattern for every later mint: [[a-minted-group-carries-its-elements-forward]].
+
+## F-230: the one tinted mark
+
+`27.lens-working.mark` is the only mark among the element exceptions, and `mark-census.test.ts`
+says so: every other mark a governing mockup draws binds an ink within the ceiling in all four
+palettes, and `00`'s and `25`'s marks are left out by C4. When F-236 mints 27's tint, the exception
+moves to a token group, as the gold and the greens will.

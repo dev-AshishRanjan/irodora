@@ -158,34 +158,57 @@ work in one colour, at 16 px, and under protan, deutan and tritan simulation.
 
 **A mark that depends on colour to be recognisable is disqualified from this product.**
 
-### What was drawn
+### What is drawn
 
-**梅鉢 — a plum-blossom kamon.** Five discs around a sixth, at the interval. It reads two ways
-at once and both are true: a **kamon**, which is where geometric corporate identity comes from in
-Japan and has for centuries; and **five colours arranged around a centre**, which is adjacency and
-interval — the direction above, said in the plainest way available.
+**梅鉢 — a plum-blossom kamon, as mockup `14` draws it** (C4,
+[ADR-0122](../adr/0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md)):
+five tangent petals over a hub filled to their tangency, the first petal straight up; a ring cut
+around a centre disc; a stamen cut along each petal; a seam cut along each notch, from the ring to
+the edge. Every cut is a hole, so the surface beneath shows through it.
 
-梅 is a corpus colour family, in a corpus where most colours are named after plants. The blossom
-is the product own subject rather than decoration borrowed from Japan.
+It reads two ways at once and both are true: a **kamon**, which is where geometric corporate
+identity comes from in Japan and has for centuries; and a **blossom arranged around a centre**,
+which is adjacency and interval said in the plainest way available. 梅 is a corpus colour family, in
+a corpus where most colours are named after plants, so the blossom is the product's own subject
+rather than decoration borrowed from Japan.
 
-The geometry is **two numbers**: the orbit, and the interval. Both radii are solved from them, so
-the gap between neighbouring petals and the gap between a petal and the eye are equal by
-construction. That is F-141 real idea — 間, the interval as the subject of the mark rather than
-the space left over by it — kept, and given a figure that reads.
+**The drawing decides the proportions.** Each cut is `14`'s splash reading as a fraction of the
+petals' reach, recomputed by a test with F-165's six discs, four petals and six as decoys. The
+petals are tangent, so their radius and orbit follow from the reach alone.
 
-**Inside the app the mark is one colour. The app icon carries five**
-([ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md)):
-the disqualifying line above is about recognisability rather than about ink, the silhouette is a
-rosette however it is filled, and a test asserts exactly that by comparing the five-colour
-silhouette against the one-colour one. Every surface inside the app is used to judge a garment
-colour; a home screen is not.
+**One ink, everywhere — the icon included** (ADR-0122, superseding
+[ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md)). The
+mark takes one of four neutral foregrounds, by type. The icon is `14`'s: the mark in
+`text.secondary` on the dark ground, the same image on iOS and Android. Shape, not colour, is what
+makes it recognisable, and every ground it is drawn on is a scored colour-vision pair. **The one
+exception is `27`'s loading state**, which tints the mark (C10), with words beside it.
 
-**Two earlier attempts were rejected**, and both for one reason: they were abstract geometric
-minimalism, which is what *not relevant* meant. F-141 drew two offset rectangles; the first F-165
-pass drew 彡, the radical that means colour in 彩, as three 45° strokes. The audits are in
-[](../../packages/ui/src/brand.tsx) rather than repeated here.
+**At 16 px it is five lobes.** The cuts are sub-pixel there, and nothing is claimed about them.
 
-The machinery survived all three: the geometry lives in source, every asset is generated from it,
+### The lockups
+
+The name is set in Gelasio, the mockups' serif, and is Latin in both locales
+([ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)).
+There are two lockups:
+
+- **`01`'s row**: the mark beside the name, as Home's header draws it.
+- **`14`'s stack**: the mark over the name over 彩り・色の知性, as the splash draws it.
+
+`00`'s coral outline and `25`'s IRODORA 彩度 are not used. A lockup is **one figure**
+([ADR-0123](../adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)):
+the mark's size and every interval are its drawing's, as ratios of the name's em, so it scales as
+one with the name when a person enlarges text.
+
+### Before this
+
+**Three earlier marks were set aside.** F-141 drew two offset rectangles. The first F-165 pass drew
+彡, the radical that means colour in 彩, as three 45° strokes. Both were rejected for one reason:
+they were abstract geometric minimalism, which is what *not relevant* meant. F-165 then drew six
+discs at one interval, a blossom of its own, with five corpus colours on the icon. F-230 replaced
+it with the blossom `14` draws, in the ink `14` draws it in. The audits are in
+[`brand.tsx`](../../packages/ui/src/brand.tsx) rather than repeated here.
+
+The machinery survived all four: the geometry lives in source, every asset is generated from it,
 and gate 16 reads the mark back out of the built APK by proportion rather than by hash.
 
 ---

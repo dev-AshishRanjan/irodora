@@ -47,3 +47,11 @@ than here.
 
 - [[the-icon-is-generated-from-the-mark-not-exported-beside-it]] — the shape half of the same
   feature; this is the colour half.
+
+## F-230: one image on both platforms
+
+`icon.png`'s ground is now dark `background` and its ink dark `foreground.2` (`14`'s
+`text.secondary`), and the adaptive foreground is the same ink on transparent, composed by Android
+over the same ground. So iOS and Android finally show one image, which was this link's stated intent
+and was false until ADR-0122 (the icon had the light ground). `--prove`, now in `lint`, decodes
+every asset and requires one ink.
