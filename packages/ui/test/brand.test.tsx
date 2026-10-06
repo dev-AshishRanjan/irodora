@@ -29,6 +29,8 @@ import {
   nativeFamilies,
   nativeSpacing,
   nativeType,
+  parseManifest,
+  THEMES,
 } from '@irodora/design-tokens';
 import {
   GELASIO,
@@ -78,6 +80,15 @@ function silhouette(svg: string): string[] {
 
 /* ONE `join` per path, every segment literal, so verify-cache-scope can see what is read. */
 const FOURTEEN = join(__dirname, '..', '..', '..', 'mockups', 'inventory', '14.json');
+const MANIFEST_SOURCE = JSON.parse(
+  readFileSync(
+    join(__dirname, '..', '..', '..', 'docs', 'design', 'design-system.manifest.json'),
+    'utf8',
+  ),
+) as { gate: { contrast: { chromaCeiling: { maxChroma: number } } } };
+const MANIFEST = parseManifest(MANIFEST_SOURCE);
+/** The largest chroma chrome may carry (F-225, ADR-0111): what "neutral" means here. */
+const CEILING = MANIFEST_SOURCE.gate.contrast.chromaCeiling.maxChroma;
 const GEOMETRY = join(
   __dirname,
   '..',
@@ -284,6 +295,16 @@ describe('it does not depend on colour to be recognisable', () => {
     ]);
     // @ts-expect-error — a hue is not an ink the mark takes; 27's tint is F-236's declared exception.
     expect(draw(<Mark color="status.ok" />)).toBeDefined();
+  });
+
+  it('takes inks achromatic in all four palettes — within the manifest’s chroma ceiling', () => {
+    const chromaticIn = (token: string): string[] =>
+      THEMES.filter((theme) => (MANIFEST.color[theme][token]?.oklch.c ?? Infinity) > CEILING);
+    expect(
+      MARK_INKS.flatMap((ink) => chromaticIn(ink).map((theme) => `${theme}.${ink}`)),
+    ).toStrictEqual([]);
+    // DECOY: a status colour is chromatic in every one of them, so the check can fail.
+    expect(chromaticIn('status.ok')).toStrictEqual([...THEMES]);
   });
 
   it('hard-codes no colour of its own', () => {

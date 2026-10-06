@@ -1302,6 +1302,26 @@ export const runtimeManifest: CheckableManifest = {
       [
         "ring",
         "border.strong"
+      ],
+      [
+        "foreground",
+        "background"
+      ],
+      [
+        "foreground.2",
+        "background"
+      ],
+      [
+        "foreground.3",
+        "background"
+      ],
+      [
+        "foreground.3.card",
+        "surface.1"
+      ],
+      [
+        "accent.foreground",
+        "accent"
       ]
     ]
   },

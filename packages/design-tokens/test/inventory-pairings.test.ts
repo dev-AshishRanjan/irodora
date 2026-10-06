@@ -8,16 +8,22 @@
  * out is a combination gate 9 has never measured.
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { parseManifest } from '../src/index.js';
+import {
+  inventories as allInventories,
+  SURFACE,
+  surfaceOf,
+  textToken,
+  type InventoryElement as Element,
+} from './inventory-roles.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 /* ONE `join` per path, every segment literal, so verify-cache-scope can see what is read. */
-const INVENTORY = join(HERE, '..', '..', '..', 'mockups', 'inventory');
 const MANIFEST = parseManifest(
   JSON.parse(
     readFileSync(
@@ -27,64 +33,13 @@ const MANIFEST = parseManifest(
   ) as unknown,
 );
 
-interface Element {
-  readonly id: string;
-  readonly parent: string | null;
-  readonly tokens?: Readonly<Record<string, string>>;
-  readonly copy?: unknown;
-  readonly children?: readonly Element[];
-}
-
 /** Every element of every inventory, flattened, per file. */
-function inventories(): Element[][] {
-  const out: Element[][] = [];
-  for (const file of readdirSync(INVENTORY)) {
-    if (!file.endsWith('.json')) continue;
-    const inv = JSON.parse(readFileSync(join(INVENTORY, file), 'utf8')) as {
-      elements: readonly Element[];
-    };
-    const all: Element[] = [];
-    const walk = (els: readonly Element[] | undefined): void => {
-      for (const e of els ?? []) {
-        all.push(e);
-        walk(e.children);
-      }
-    };
-    walk(inv.elements);
-    out.push(all);
-  }
-  return out;
-}
-
-/** README surface role → manifest token. */
-const SURFACE: Readonly<Record<string, string>> = {
-  ground: 'background',
-  level1: 'surface.1',
-  level2: 'surface.2',
-  level3: 'surface.3',
-  'action.primary': 'accent',
-};
-
-/**
- * README foreground role → manifest token, by surface. Tertiary text has two drawn values — the
- * ground keeps #768290, cards take §4 E3's #94A1AF — so it is two tokens. The ground's own colour
- * ON the primary action is the pill's text. The strong border drawn as a FOREGROUND is the sheet's
- * drag handle, which has no label, so it is `border.indicator` — checked, not decorative.
- */
-function textToken(role: string, surface: string): string | null {
-  if (role === 'border.strong') return 'border.indicator';
-  if (role === 'text.primary') return 'foreground';
-  if (role === 'text.secondary') return 'foreground.2';
-  if (role === 'text.tertiary')
-    return surface === 'background' ? 'foreground.3' : 'foreground.3.card';
-  if (role === 'ground' && surface === 'accent') return 'accent.foreground';
-  return null;
-}
+const inventories = (): (readonly Element[])[] => allInventories().map((inv) => inv.elements);
 
 /**
  * Roles the manifest declares UNCHECKED, each with its reason in the manifest: the subtle border
  * and the keyline are decorative or face an arbitrary sample. Named here so a new role cannot slip
- * through as "not text". The strong border is NOT here: as a foreground it is checked (above), and
+ * through as "not text". The strong border is NOT here: as a foreground it is checked (`textToken`), and
  * as an OUTLINE it is decorative only because a label identifies the component — which the last
  * block of this file checks per element rather than assuming (F-225's review).
  */
@@ -98,19 +53,7 @@ function drawnPairs(): Map<string, string> {
     for (const e of all) {
       const fg = e.tokens?.['fg'];
       if (fg === undefined) continue;
-      // The surface is the nearest ancestor that paints one; an element on nothing sits on the ground.
-      let surface = 'ground';
-      for (let at = e.parent === null ? undefined : byId.get(e.parent); at;) {
-        const bg = at.tokens?.['bg'];
-        if (bg !== undefined) {
-          surface = bg;
-          break;
-        }
-        at = at.parent === null ? undefined : byId.get(at.parent);
-      }
-      const own = e.tokens?.['bg'];
-      if (own !== undefined && own !== fg) surface = own;
-      const key = `${fg} on ${surface}`;
+      const key = `${fg} on ${surfaceOf(e, byId)}`;
       if (!found.has(key)) found.set(key, e.id);
     }
   }

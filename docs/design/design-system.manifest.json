@@ -1364,7 +1364,7 @@
     }
   },
   "cvdPairs": {
-    "_note": "Semantic pairs that must remain distinguishable under simulated CVD at severity 1.0. Asserted by the `cvd` gate. The product's own interface is held to the standard it applies to outfits.",
+    "_note": "Semantic pairs that must remain distinguishable under simulated CVD at severity 1.0. Asserted by the `cvd` gate. The product's own interface is held to the standard it applies to outfits. THE MARK'S PAIRS (F-230, ADR-0122): every (ink, ground) a governing mockup draws a `ui:Mark` on — `foreground` on `background` (01, 14, 15), `foreground.2` on `background` (14's icon), `foreground.3` on `background` (22), `foreground.3.card` on `surface.1` (20) and `accent.foreground` on `accent` (02's capture button). BRAND §7 disqualifies a mark that depends on colour to be recognisable, so the ground it is drawn on must separate from its ink under every deficiency. `cvd/mark.test.ts` derives the placements from the inventories and requires each here, so a new placement cannot escape this gate.",
     "minSeparation": 60,
     "pairs": [
       [
@@ -1382,6 +1382,26 @@
       [
         "ring",
         "border.strong"
+      ],
+      [
+        "foreground",
+        "background"
+      ],
+      [
+        "foreground.2",
+        "background"
+      ],
+      [
+        "foreground.3",
+        "background"
+      ],
+      [
+        "foreground.3.card",
+        "surface.1"
+      ],
+      [
+        "accent.foreground",
+        "accent"
       ]
     ]
   },
