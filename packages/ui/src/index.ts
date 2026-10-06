@@ -47,6 +47,34 @@ export {
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
 export { Bilingual, BILINGUAL_SEPARATOR, type BilingualProps } from './bilingual.js';
 export {
+  METRIC_TILE_HEIGHT,
+  METRIC_TILE_INSET,
+  MetricTile,
+  type MetricTileProps,
+} from './MetricTile.js';
+export {
+  FACTOR_COLUMNS,
+  FACTOR_ICON,
+  FACTOR_ICON_INSET,
+  FACTOR_ROW,
+  FACTOR_RULE,
+  FactorRows,
+  type FactorIcon,
+  type FactorRow,
+  type FactorRowsProps,
+} from './FactorRows.js';
+export { STEP_PILL_HEIGHT, StepPill, type StepPillProps } from './StepPill.js';
+export {
+  FIELDS_ROW,
+  HARMONY_ROW,
+  NEAREST_ROW,
+  RankedRow,
+  type RankedAction,
+  type RankedField,
+  type RankedRowProps,
+  type RankedSample,
+} from './RankedRow.js';
+export {
   CoverageDial,
   DIAL_RADIUS,
   DIAL_STROKE,

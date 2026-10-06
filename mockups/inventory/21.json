@@ -438,7 +438,7 @@
       "id": "21.results.row-1",
       "order": 14,
       "parent": null,
-      "component": "new:CorpusRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 101,
         "y": 539,
@@ -636,7 +636,7 @@
       "id": "21.results.row-2",
       "order": 20,
       "parent": null,
-      "component": "new:CorpusRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 101,
         "y": 674,
@@ -834,7 +834,7 @@
       "id": "21.results.row-3",
       "order": 26,
       "parent": null,
-      "component": "new:CorpusRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 101,
         "y": 809,
@@ -1032,7 +1032,7 @@
       "id": "21.results.row-4",
       "order": 32,
       "parent": null,
-      "component": "new:CorpusRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 101,
         "y": 946,
@@ -1230,7 +1230,7 @@
       "id": "21.results.row-5",
       "order": 38,
       "parent": null,
-      "component": "new:CorpusRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 101,
         "y": 1081,

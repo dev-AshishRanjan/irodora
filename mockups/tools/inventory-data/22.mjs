@@ -32,7 +32,8 @@ const t = (id, box, parent, binding, extra = {}) =>
 const stat = (key, s) => {
   const p = `22.stats.${key}`;
   return [
-    el(p, 'ui:Card', s.box, {
+    // F-235: a ui:MetricTile — a level-1 card with its edge, the count, its noun and its basis.
+    el(p, 'ui:MetricTile', s.box, {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: s.bg },
     }),

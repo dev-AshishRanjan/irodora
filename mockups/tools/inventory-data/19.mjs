@@ -30,7 +30,8 @@ const t = (id, box, parent, binding, extra = {}) =>
 const row = (n, r) => {
   const p = `19.rows.row-${n}`;
   return [
-    el(p, 'new:HarmonyRow', r.box, {
+    // F-235: RankedRow's `harmony` form.
+    el(p, 'ui:RankedRow', r.box, {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: r.bg },
     }),

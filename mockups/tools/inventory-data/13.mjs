@@ -78,24 +78,33 @@ const slot = (n, s) => {
         ]),
   ];
 };
+// F-235: each row is a ui:FactorRow inside 13.score.factors (ui:FactorRows), over the rules. The four
+// one-ink icons read #A7ABB1 at their cores (the brightest twelve pixels of the fit icon): foreground.2,
+// as the notes are; the harmony icon draws its three colours (ADR-0110).
 const component = (key, row) => [
-  el(`13.score.${key}.icon`, null, row.icon, { parent: '13.score', icon: `score-${key}` }),
-  t(`13.score.${key}.label`, row.label, '13.score', `static:lab.component.${key}`, {
+  el(`13.score.${key}`, 'ui:FactorRow', row.box, { parent: '13.score.factors' }),
+  el(`13.score.${key}.icon`, null, row.icon, {
+    parent: `13.score.${key}`,
+    icon: `score-${key}`,
+    ...(key === 'harmony' ? {} : { tokens: { fg: 'text.secondary' } }),
+    ...(key === 'fit' ? { measured: { fg: '#A7ABB1' } } : {}),
+  }),
+  t(`13.score.${key}.label`, row.label, `13.score.${key}`, `static:lab.component.${key}`, {
     tokens: { fg: 'text.primary' },
   }),
-  t(`13.score.${key}.value`, row.value, '13.score', `engine:outfit.components.${key}`, {
+  t(`13.score.${key}.value`, row.value, `13.score.${key}`, `engine:outfit.components.${key}`, {
     tokens: { fg: 'text.primary' },
     type: text('sans', 'label', 500, { tabular: true }),
     copy: { shape: 'value', script: 'figures' },
   }),
-  t(`13.score.${key}.note`, row.note, '13.score', row.noteBinding, {
+  t(`13.score.${key}.note`, row.note, `13.score.${key}`, row.noteBinding, {
     tokens: { fg: 'text.secondary' },
     copy: { shape: 'value', script: 'mixed' },
   }),
 ];
 const rule = (n, y) =>
   el(`13.score.rule-${n}`, null, B(64, y, 640, 2), {
-    parent: '13.score',
+    parent: '13.score.factors',
     tokens: { fg: 'border.subtle' },
   });
 
@@ -195,7 +204,9 @@ export default {
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
     }),
+    el('13.score.factors', 'ui:FactorRows', B(64, 842, 640, 266), { parent: '13.score' }),
     ...component('harmony', {
+      box: B(64, 842, 640, 53),
       icon: B(70, 855, 29, 27),
       label: B(111, 859, 176, 25),
       value: B(357, 859, 47, 21),
@@ -204,6 +215,7 @@ export default {
     }),
     rule(1, 895),
     ...component('fit', {
+      box: B(64, 897, 640, 50),
       icon: B(74, 908, 22, 28),
       label: B(111, 912, 128, 20),
       value: B(357, 911, 47, 21),
@@ -212,6 +224,7 @@ export default {
     }),
     rule(2, 947),
     ...component('contrast', {
+      box: B(64, 949, 640, 52),
       icon: B(72, 962, 25, 26),
       label: B(111, 965, 155, 20),
       value: B(357, 965, 48, 21),
@@ -220,6 +233,7 @@ export default {
     }),
     rule(3, 1001),
     ...component('balance', {
+      box: B(64, 1003, 640, 51),
       icon: B(70, 1015, 29, 26),
       label: B(111, 1018, 197, 24),
       value: B(357, 1018, 47, 20),
@@ -228,6 +242,7 @@ export default {
     }),
     rule(4, 1054),
     ...component('cvd', {
+      box: B(64, 1056, 640, 52),
       icon: B(71, 1072, 27, 18),
       label: B(111, 1071, 170, 21),
       value: B(357, 1071, 47, 20),

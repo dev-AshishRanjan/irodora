@@ -1082,9 +1082,59 @@
       }
     },
     {
-      "id": "13.score.harmony.icon",
+      "id": "13.score.factors",
       "order": 36,
       "parent": "13.score",
+      "component": "ui:FactorRows",
+      "box": {
+        "x": 64,
+        "y": 842,
+        "w": 640,
+        "h": 266
+      },
+      "dp": {
+        "x": 32,
+        "y": 421,
+        "w": 320,
+        "h": 133
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "13.score.harmony",
+      "order": 37,
+      "parent": "13.score.factors",
+      "component": "ui:FactorRow",
+      "box": {
+        "x": 64,
+        "y": 842,
+        "w": 640,
+        "h": 53
+      },
+      "dp": {
+        "x": 32,
+        "y": 421,
+        "w": 320,
+        "h": 26.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "13.score.harmony.icon",
+      "order": 38,
+      "parent": "13.score.harmony",
       "component": null,
       "box": {
         "x": 70,
@@ -1108,8 +1158,8 @@
     },
     {
       "id": "13.score.harmony.label",
-      "order": 37,
-      "parent": "13.score",
+      "order": 39,
+      "parent": "13.score.harmony",
       "component": "ui:Text",
       "box": {
         "x": 111,
@@ -1142,8 +1192,8 @@
     },
     {
       "id": "13.score.harmony.value",
-      "order": 38,
-      "parent": "13.score",
+      "order": 40,
+      "parent": "13.score.harmony",
       "component": "ui:Text",
       "box": {
         "x": 357,
@@ -1177,8 +1227,8 @@
     },
     {
       "id": "13.score.harmony.note",
-      "order": 39,
-      "parent": "13.score",
+      "order": 41,
+      "parent": "13.score.harmony",
       "component": "ui:Text",
       "box": {
         "x": 417,
@@ -1211,8 +1261,8 @@
     },
     {
       "id": "13.score.rule-1",
-      "order": 40,
-      "parent": "13.score",
+      "order": 42,
+      "parent": "13.score.factors",
       "component": null,
       "box": {
         "x": 64,
@@ -1237,9 +1287,34 @@
       "copy": null
     },
     {
+      "id": "13.score.fit",
+      "order": 43,
+      "parent": "13.score.factors",
+      "component": "ui:FactorRow",
+      "box": {
+        "x": 64,
+        "y": 897,
+        "w": 640,
+        "h": 50
+      },
+      "dp": {
+        "x": 32,
+        "y": 448.5,
+        "w": 320,
+        "h": 25
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "13.score.fit.icon",
-      "order": 41,
-      "parent": "13.score",
+      "order": 44,
+      "parent": "13.score.fit",
       "component": null,
       "box": {
         "x": 74,
@@ -1253,18 +1328,23 @@
         "w": 11,
         "h": 14
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "score-fit",
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "fg": "#A7ABB1"
+      },
       "copy": null
     },
     {
       "id": "13.score.fit.label",
-      "order": 42,
-      "parent": "13.score",
+      "order": 45,
+      "parent": "13.score.fit",
       "component": "ui:Text",
       "box": {
         "x": 111,
@@ -1297,8 +1377,8 @@
     },
     {
       "id": "13.score.fit.value",
-      "order": 43,
-      "parent": "13.score",
+      "order": 46,
+      "parent": "13.score.fit",
       "component": "ui:Text",
       "box": {
         "x": 357,
@@ -1332,8 +1412,8 @@
     },
     {
       "id": "13.score.fit.note",
-      "order": 44,
-      "parent": "13.score",
+      "order": 47,
+      "parent": "13.score.fit",
       "component": "ui:Text",
       "box": {
         "x": 418,
@@ -1366,8 +1446,8 @@
     },
     {
       "id": "13.score.rule-2",
-      "order": 45,
-      "parent": "13.score",
+      "order": 48,
+      "parent": "13.score.factors",
       "component": null,
       "box": {
         "x": 64,
@@ -1392,9 +1472,34 @@
       "copy": null
     },
     {
+      "id": "13.score.contrast",
+      "order": 49,
+      "parent": "13.score.factors",
+      "component": "ui:FactorRow",
+      "box": {
+        "x": 64,
+        "y": 949,
+        "w": 640,
+        "h": 52
+      },
+      "dp": {
+        "x": 32,
+        "y": 474.5,
+        "w": 320,
+        "h": 26
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "13.score.contrast.icon",
-      "order": 46,
-      "parent": "13.score",
+      "order": 50,
+      "parent": "13.score.contrast",
       "component": null,
       "box": {
         "x": 72,
@@ -1408,7 +1513,9 @@
         "w": 12.5,
         "h": 13
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "score-contrast",
       "illustration": null,
@@ -1418,8 +1525,8 @@
     },
     {
       "id": "13.score.contrast.label",
-      "order": 47,
-      "parent": "13.score",
+      "order": 51,
+      "parent": "13.score.contrast",
       "component": "ui:Text",
       "box": {
         "x": 111,
@@ -1452,8 +1559,8 @@
     },
     {
       "id": "13.score.contrast.value",
-      "order": 48,
-      "parent": "13.score",
+      "order": 52,
+      "parent": "13.score.contrast",
       "component": "ui:Text",
       "box": {
         "x": 357,
@@ -1487,8 +1594,8 @@
     },
     {
       "id": "13.score.contrast.note",
-      "order": 49,
-      "parent": "13.score",
+      "order": 53,
+      "parent": "13.score.contrast",
       "component": "ui:Text",
       "box": {
         "x": 418,
@@ -1521,8 +1628,8 @@
     },
     {
       "id": "13.score.rule-3",
-      "order": 50,
-      "parent": "13.score",
+      "order": 54,
+      "parent": "13.score.factors",
       "component": null,
       "box": {
         "x": 64,
@@ -1547,9 +1654,34 @@
       "copy": null
     },
     {
+      "id": "13.score.balance",
+      "order": 55,
+      "parent": "13.score.factors",
+      "component": "ui:FactorRow",
+      "box": {
+        "x": 64,
+        "y": 1003,
+        "w": 640,
+        "h": 51
+      },
+      "dp": {
+        "x": 32,
+        "y": 501.5,
+        "w": 320,
+        "h": 25.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "13.score.balance.icon",
-      "order": 51,
-      "parent": "13.score",
+      "order": 56,
+      "parent": "13.score.balance",
       "component": null,
       "box": {
         "x": 70,
@@ -1563,7 +1695,9 @@
         "w": 14.5,
         "h": 13
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "score-balance",
       "illustration": null,
@@ -1573,8 +1707,8 @@
     },
     {
       "id": "13.score.balance.label",
-      "order": 52,
-      "parent": "13.score",
+      "order": 57,
+      "parent": "13.score.balance",
       "component": "ui:Text",
       "box": {
         "x": 111,
@@ -1607,8 +1741,8 @@
     },
     {
       "id": "13.score.balance.value",
-      "order": 53,
-      "parent": "13.score",
+      "order": 58,
+      "parent": "13.score.balance",
       "component": "ui:Text",
       "box": {
         "x": 357,
@@ -1642,8 +1776,8 @@
     },
     {
       "id": "13.score.balance.note",
-      "order": 54,
-      "parent": "13.score",
+      "order": 59,
+      "parent": "13.score.balance",
       "component": "ui:Text",
       "box": {
         "x": 418,
@@ -1676,8 +1810,8 @@
     },
     {
       "id": "13.score.rule-4",
-      "order": 55,
-      "parent": "13.score",
+      "order": 60,
+      "parent": "13.score.factors",
       "component": null,
       "box": {
         "x": 64,
@@ -1702,9 +1836,34 @@
       "copy": null
     },
     {
+      "id": "13.score.cvd",
+      "order": 61,
+      "parent": "13.score.factors",
+      "component": "ui:FactorRow",
+      "box": {
+        "x": 64,
+        "y": 1056,
+        "w": 640,
+        "h": 52
+      },
+      "dp": {
+        "x": 32,
+        "y": 528,
+        "w": 320,
+        "h": 26
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "13.score.cvd.icon",
-      "order": 56,
-      "parent": "13.score",
+      "order": 62,
+      "parent": "13.score.cvd",
       "component": null,
       "box": {
         "x": 71,
@@ -1718,7 +1877,9 @@
         "w": 13.5,
         "h": 9
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "score-cvd",
       "illustration": null,
@@ -1728,8 +1889,8 @@
     },
     {
       "id": "13.score.cvd.label",
-      "order": 57,
-      "parent": "13.score",
+      "order": 63,
+      "parent": "13.score.cvd",
       "component": "ui:Text",
       "box": {
         "x": 111,
@@ -1762,8 +1923,8 @@
     },
     {
       "id": "13.score.cvd.value",
-      "order": 58,
-      "parent": "13.score",
+      "order": 64,
+      "parent": "13.score.cvd",
       "component": "ui:Text",
       "box": {
         "x": 357,
@@ -1797,8 +1958,8 @@
     },
     {
       "id": "13.score.cvd.note",
-      "order": 59,
-      "parent": "13.score",
+      "order": 65,
+      "parent": "13.score.cvd",
       "component": "ui:Text",
       "box": {
         "x": 418,
@@ -1831,7 +1992,7 @@
     },
     {
       "id": "13.capsule",
-      "order": 60,
+      "order": 66,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1863,7 +2024,7 @@
     },
     {
       "id": "13.capsule.title",
-      "order": 61,
+      "order": 67,
       "parent": "13.capsule",
       "component": "ui:Text",
       "box": {
@@ -1897,7 +2058,7 @@
     },
     {
       "id": "13.capsule.icon",
-      "order": 62,
+      "order": 68,
       "parent": "13.capsule",
       "component": null,
       "box": {
@@ -1922,7 +2083,7 @@
     },
     {
       "id": "13.capsule.body",
-      "order": 63,
+      "order": 69,
       "parent": "13.capsule",
       "component": "ui:Text",
       "box": {
@@ -1957,7 +2118,7 @@
     },
     {
       "id": "13.actions",
-      "order": 64,
+      "order": 70,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1984,7 +2145,7 @@
     },
     {
       "id": "13.actions.next",
-      "order": 65,
+      "order": 71,
       "parent": "13.actions",
       "component": "ui:Button",
       "box": {
@@ -2015,7 +2176,7 @@
     },
     {
       "id": "13.actions.save",
-      "order": 66,
+      "order": 72,
       "parent": "13.actions",
       "component": "ui:Button",
       "box": {

@@ -29,13 +29,20 @@ const cards: readonly Element[] = readdirSync(INVENTORY)
       (JSON.parse(readFileSync(join(INVENTORY, f), 'utf8')) as { elements?: readonly Element[] })
         .elements ?? [],
   )
-  .filter((e) => e.component === 'ui:Card');
+  // Every element drawn as a card: since F-235, 22's tiles are `MetricTile`s and 19's and 21's rows
+  // `RankedRow`s in their card forms, and both compose `Card`. 24's field rows are not cards.
+  .filter(
+    (e) =>
+      e.component === 'ui:Card' ||
+      e.component === 'ui:MetricTile' ||
+      (e.component === 'ui:RankedRow' && e.tokens?.['bg'] !== undefined),
+  );
 
 describe('the defaults are the inventories’, recomputed', () => {
   it('CARD_RADIUS is the step most cards are bound to — md, not the lg it replaced', () => {
     const count = (step: string): number =>
       cards.filter((e) => e.tokens?.['radius'] === step).length;
-    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([56, 21, 4]);
+    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([66, 21, 4]);
     expect(CARD_RADIUS).toBe('md');
     expect(CARD_RADIUS).not.toBe('lg');
   });
@@ -43,7 +50,7 @@ describe('the defaults are the inventories’, recomputed', () => {
   it('a filled level-1 card carries the edge; board 00’s levels 2 and 3 carry none', () => {
     const filled = cards.filter((e) => e.tokens?.['bg'] !== undefined);
     const edged = filled.filter((e) => e.tokens?.['border'] === 'border.subtle');
-    expect([edged.length, filled.length]).toStrictEqual([73, 80]);
+    expect([edged.length, filled.length]).toStrictEqual([83, 90]);
     for (const level of ['level2', 'level3'])
       expect(
         cards.filter((e) => e.tokens?.['bg'] === level && e.tokens['border'] !== undefined),

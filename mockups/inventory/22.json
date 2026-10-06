@@ -303,7 +303,7 @@
       "id": "22.stats.unlocked",
       "order": 10,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:MetricTile",
       "box": {
         "x": 148,
         "y": 493,
@@ -335,7 +335,7 @@
       "id": "22.stats.pairings",
       "order": 11,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:MetricTile",
       "box": {
         "x": 391,
         "y": 493,
@@ -582,7 +582,7 @@
       "id": "22.stats.duplicates",
       "order": 18,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:MetricTile",
       "box": {
         "x": 148,
         "y": 660,
@@ -614,7 +614,7 @@
       "id": "22.stats.gaps",
       "order": 19,
       "parent": null,
-      "component": "ui:Card",
+      "component": "ui:MetricTile",
       "box": {
         "x": 391,
         "y": 660,

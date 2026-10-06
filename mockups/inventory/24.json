@@ -599,9 +599,34 @@
       "copy": null
     },
     {
-      "id": "24.rows.row-1.rank",
+      "id": "24.rows.row-1",
       "order": 19,
       "parent": "24.rows",
+      "component": "ui:RankedRow",
+      "box": {
+        "x": 136,
+        "y": 584,
+        "w": 496,
+        "h": 155
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 367,
+        "w": 355.5,
+        "h": 111
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-1.rank",
+      "order": 20,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 154,
@@ -637,8 +662,8 @@
     },
     {
       "id": "24.rows.row-1.relationship",
-      "order": 20,
-      "parent": "24.rows",
+      "order": 21,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 185,
@@ -674,8 +699,8 @@
     },
     {
       "id": "24.rows.row-1.distance",
-      "order": 21,
-      "parent": "24.rows",
+      "order": 22,
+      "parent": "24.rows.row-1",
       "component": "ui:Chip",
       "box": {
         "x": 513,
@@ -707,8 +732,8 @@
     },
     {
       "id": "24.rows.row-1.swatch",
-      "order": 22,
-      "parent": "24.rows",
+      "order": 23,
+      "parent": "24.rows.row-1",
       "component": "ui:Swatch",
       "box": {
         "x": 184,
@@ -738,8 +763,8 @@
     },
     {
       "id": "24.rows.row-1.japanese.label",
-      "order": 23,
-      "parent": "24.rows",
+      "order": 24,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -772,8 +797,8 @@
     },
     {
       "id": "24.rows.row-1.romaji.label",
-      "order": 24,
-      "parent": "24.rows",
+      "order": 25,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 378,
@@ -806,8 +831,8 @@
     },
     {
       "id": "24.rows.row-1.hex.label",
-      "order": 25,
-      "parent": "24.rows",
+      "order": 26,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -840,8 +865,8 @@
     },
     {
       "id": "24.rows.row-1.japanese.value",
-      "order": 26,
-      "parent": "24.rows",
+      "order": 27,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -874,8 +899,8 @@
     },
     {
       "id": "24.rows.row-1.romaji.value",
-      "order": 27,
-      "parent": "24.rows",
+      "order": 28,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 379,
@@ -911,8 +936,8 @@
     },
     {
       "id": "24.rows.row-1.hex.value",
-      "order": 28,
-      "parent": "24.rows",
+      "order": 29,
+      "parent": "24.rows.row-1",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -948,9 +973,34 @@
       }
     },
     {
-      "id": "24.rows.rule-1",
-      "order": 29,
+      "id": "24.rows.row-2",
+      "order": 30,
       "parent": "24.rows",
+      "component": "ui:RankedRow",
+      "box": {
+        "x": 136,
+        "y": 739,
+        "w": 496,
+        "h": 157
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 478,
+        "w": 355.5,
+        "h": 112.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.rule-1",
+      "order": 31,
+      "parent": "24.rows.row-2",
       "component": null,
       "box": {
         "x": 136,
@@ -976,8 +1026,8 @@
     },
     {
       "id": "24.rows.row-2.rank",
-      "order": 30,
-      "parent": "24.rows",
+      "order": 32,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 153,
@@ -1013,8 +1063,8 @@
     },
     {
       "id": "24.rows.row-2.relationship",
-      "order": 31,
-      "parent": "24.rows",
+      "order": 33,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 185,
@@ -1050,8 +1100,8 @@
     },
     {
       "id": "24.rows.row-2.distance",
-      "order": 32,
-      "parent": "24.rows",
+      "order": 34,
+      "parent": "24.rows.row-2",
       "component": "ui:Chip",
       "box": {
         "x": 513,
@@ -1083,8 +1133,8 @@
     },
     {
       "id": "24.rows.row-2.swatch",
-      "order": 33,
-      "parent": "24.rows",
+      "order": 35,
+      "parent": "24.rows.row-2",
       "component": "ui:Swatch",
       "box": {
         "x": 184,
@@ -1114,8 +1164,8 @@
     },
     {
       "id": "24.rows.row-2.japanese.label",
-      "order": 34,
-      "parent": "24.rows",
+      "order": 36,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -1148,8 +1198,8 @@
     },
     {
       "id": "24.rows.row-2.romaji.label",
-      "order": 35,
-      "parent": "24.rows",
+      "order": 37,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 380,
@@ -1182,8 +1232,8 @@
     },
     {
       "id": "24.rows.row-2.hex.label",
-      "order": 36,
-      "parent": "24.rows",
+      "order": 38,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -1216,8 +1266,8 @@
     },
     {
       "id": "24.rows.row-2.japanese.value",
-      "order": 37,
-      "parent": "24.rows",
+      "order": 39,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 275,
@@ -1250,8 +1300,8 @@
     },
     {
       "id": "24.rows.row-2.romaji.value",
-      "order": 38,
-      "parent": "24.rows",
+      "order": 40,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 379,
@@ -1287,8 +1337,8 @@
     },
     {
       "id": "24.rows.row-2.hex.value",
-      "order": 39,
-      "parent": "24.rows",
+      "order": 41,
+      "parent": "24.rows.row-2",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -1324,9 +1374,34 @@
       }
     },
     {
-      "id": "24.rows.rule-2",
-      "order": 40,
+      "id": "24.rows.row-3",
+      "order": 42,
       "parent": "24.rows",
+      "component": "ui:RankedRow",
+      "box": {
+        "x": 136,
+        "y": 896,
+        "w": 496,
+        "h": 157
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 590.5,
+        "w": 355.5,
+        "h": 112.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.rule-2",
+      "order": 43,
+      "parent": "24.rows.row-3",
       "component": null,
       "box": {
         "x": 136,
@@ -1352,8 +1427,8 @@
     },
     {
       "id": "24.rows.row-3.rank",
-      "order": 41,
-      "parent": "24.rows",
+      "order": 44,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 153,
@@ -1389,8 +1464,8 @@
     },
     {
       "id": "24.rows.row-3.relationship",
-      "order": 42,
-      "parent": "24.rows",
+      "order": 45,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 186,
@@ -1426,8 +1501,8 @@
     },
     {
       "id": "24.rows.row-3.distance",
-      "order": 43,
-      "parent": "24.rows",
+      "order": 46,
+      "parent": "24.rows.row-3",
       "component": "ui:Chip",
       "box": {
         "x": 509,
@@ -1459,8 +1534,8 @@
     },
     {
       "id": "24.rows.row-3.swatch",
-      "order": 44,
-      "parent": "24.rows",
+      "order": 47,
+      "parent": "24.rows.row-3",
       "component": "ui:Swatch",
       "box": {
         "x": 184,
@@ -1490,8 +1565,8 @@
     },
     {
       "id": "24.rows.row-3.japanese.label",
-      "order": 45,
-      "parent": "24.rows",
+      "order": 48,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -1524,8 +1599,8 @@
     },
     {
       "id": "24.rows.row-3.romaji.label",
-      "order": 46,
-      "parent": "24.rows",
+      "order": 49,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 380,
@@ -1558,8 +1633,8 @@
     },
     {
       "id": "24.rows.row-3.hex.label",
-      "order": 47,
-      "parent": "24.rows",
+      "order": 50,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -1592,8 +1667,8 @@
     },
     {
       "id": "24.rows.row-3.japanese.value",
-      "order": 48,
-      "parent": "24.rows",
+      "order": 51,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -1626,8 +1701,8 @@
     },
     {
       "id": "24.rows.row-3.romaji.value",
-      "order": 49,
-      "parent": "24.rows",
+      "order": 52,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 381,
@@ -1663,8 +1738,8 @@
     },
     {
       "id": "24.rows.row-3.hex.value",
-      "order": 50,
-      "parent": "24.rows",
+      "order": 53,
+      "parent": "24.rows.row-3",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -1700,9 +1775,34 @@
       }
     },
     {
-      "id": "24.rows.rule-3",
-      "order": 51,
+      "id": "24.rows.row-4",
+      "order": 54,
       "parent": "24.rows",
+      "component": "ui:RankedRow",
+      "box": {
+        "x": 136,
+        "y": 1053,
+        "w": 496,
+        "h": 135
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 703,
+        "w": 355.5,
+        "h": 96.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.rule-3",
+      "order": 55,
+      "parent": "24.rows.row-4",
       "component": null,
       "box": {
         "x": 136,
@@ -1728,8 +1828,8 @@
     },
     {
       "id": "24.rows.row-4.rank",
-      "order": 52,
-      "parent": "24.rows",
+      "order": 56,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 152,
@@ -1765,8 +1865,8 @@
     },
     {
       "id": "24.rows.row-4.relationship",
-      "order": 53,
-      "parent": "24.rows",
+      "order": 57,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 186,
@@ -1802,8 +1902,8 @@
     },
     {
       "id": "24.rows.row-4.distance",
-      "order": 54,
-      "parent": "24.rows",
+      "order": 58,
+      "parent": "24.rows.row-4",
       "component": "ui:Chip",
       "box": {
         "x": 514,
@@ -1835,8 +1935,8 @@
     },
     {
       "id": "24.rows.row-4.swatch",
-      "order": 55,
-      "parent": "24.rows",
+      "order": 59,
+      "parent": "24.rows.row-4",
       "component": "ui:Swatch",
       "box": {
         "x": 184,
@@ -1866,8 +1966,8 @@
     },
     {
       "id": "24.rows.row-4.japanese.label",
-      "order": 56,
-      "parent": "24.rows",
+      "order": 60,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -1900,8 +2000,8 @@
     },
     {
       "id": "24.rows.row-4.romaji.label",
-      "order": 57,
-      "parent": "24.rows",
+      "order": 61,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 380,
@@ -1934,8 +2034,8 @@
     },
     {
       "id": "24.rows.row-4.hex.label",
-      "order": 58,
-      "parent": "24.rows",
+      "order": 62,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -1968,8 +2068,8 @@
     },
     {
       "id": "24.rows.row-4.japanese.value",
-      "order": 59,
-      "parent": "24.rows",
+      "order": 63,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 274,
@@ -2002,8 +2102,8 @@
     },
     {
       "id": "24.rows.row-4.romaji.value",
-      "order": 60,
-      "parent": "24.rows",
+      "order": 64,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 381,
@@ -2039,8 +2139,8 @@
     },
     {
       "id": "24.rows.row-4.hex.value",
-      "order": 61,
-      "parent": "24.rows",
+      "order": 65,
+      "parent": "24.rows.row-4",
       "component": "ui:Text",
       "box": {
         "x": 506,
@@ -2077,7 +2177,7 @@
     },
     {
       "id": "24.actions",
-      "order": 62,
+      "order": 66,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -2107,7 +2207,7 @@
     },
     {
       "id": "24.actions.create",
-      "order": 63,
+      "order": 67,
       "parent": "24.actions",
       "component": "ui:Button",
       "box": {

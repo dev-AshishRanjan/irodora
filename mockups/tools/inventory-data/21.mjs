@@ -29,7 +29,8 @@ const t = (id, box, parent, binding, extra = {}) =>
 const row = (n, r) => {
   const p = `21.results.row-${n}`;
   return [
-    el(p, 'new:CorpusRow', r.box, {
+    // F-235: RankedRow's `nearest` form.
+    el(p, 'ui:RankedRow', r.box, {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: r.bg },
     }),

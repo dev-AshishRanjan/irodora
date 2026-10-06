@@ -35,11 +35,11 @@ const sized = (size, emDp, weight = 400, extra = {}) => ({
 // the list card, and share an id prefix rather than a parent.
 const L = '24.rows';
 const field = (p, key, label, value, v, script) => [
-  t(`${p}.${key}.label`, label, L, `static:with.field.${key}`, {
+  t(`${p}.${key}.label`, label, p, `static:with.field.${key}`, {
     tokens: { fg: 'text.tertiary' },
     ...sized(v.labelSize),
   }),
-  t(`${p}.${key}.value`, value, L, `corpus:with.${v.n}.${key}`, {
+  t(`${p}.${key}.value`, value, p, `corpus:with.${v.n}.${key}`, {
     tokens: { fg: 'text.primary' },
     ...(key === 'japanese'
       ? { type: text('sans', 'title') }
@@ -50,17 +50,24 @@ const field = (p, key, label, value, v, script) => [
 const row = (n, r) => {
   const p = `24.rows.row-${n}`;
   return [
-    t(`${p}.rank`, r.rank, L, `engine:with.${n - 1}.rank`, {
+    // F-235: RankedRow's `fields` form, from the rule above it (or the card's top) to the next.
+    el(p, 'ui:RankedRow', r.box, { parent: L }),
+    ...(r.rule === undefined
+      ? []
+      : [
+          el(`24.rows.rule-${n - 1}`, null, r.rule, { parent: p, tokens: { fg: 'border.subtle' } }),
+        ]),
+    t(`${p}.rank`, r.rank, p, `engine:with.${n - 1}.rank`, {
       tokens: { fg: 'text.primary' },
       ...sized(r.rankSize, r.rankEm),
       copy: { shape: 'value', script: 'figures' },
     }),
-    t(`${p}.relationship`, r.title, L, `engine:with.${n - 1}.relationship`, {
+    t(`${p}.relationship`, r.title, p, `engine:with.${n - 1}.relationship`, {
       tokens: { fg: 'text.primary' },
       ...sized(r.titleSize, r.titleEm),
     }),
     el(`${p}.distance`, 'ui:Chip', r.badge, {
-      parent: L,
+      parent: p,
       tokens: { radius: 'sm' },
       measured: { bg: r.badgeFill },
       binding: `engine:with.${n - 1}.deltaE00`,
@@ -68,7 +75,7 @@ const row = (n, r) => {
     }),
     // A light keyline reads on rows 3 and 4 (F-233); the four are drawn alike.
     el(`${p}.swatch`, 'ui:Swatch', r.swatch, {
-      parent: L,
+      parent: p,
       tokens: { keyline: 'keyline', radius: 'md' },
       binding: `corpus:with.${n - 1}.hex`,
       measured: { fill: r.fill },
@@ -203,7 +210,7 @@ export default {
       measured: { bg: '#1E2025' },
     }),
     ...row(1, {
-      box: B(136, 600, 496, 139),
+      box: B(136, 584, 496, 155),
       rank: B(154, 612, 15, 19),
       rankSize: 'body',
       rankEm: 18.6,
@@ -225,12 +232,9 @@ export default {
       hexLabelSize: 'label',
       hex: B(506, 686, 98, 20),
     }),
-    el('24.rows.rule-1', null, B(136, 739, 496, 2), {
-      parent: '24.rows',
-      tokens: { fg: 'border.subtle' },
-    }),
     ...row(2, {
-      box: B(136, 757, 496, 139),
+      rule: B(136, 739, 496, 2),
+      box: B(136, 739, 496, 157),
       rank: B(153, 768, 19, 20),
       rankSize: 'body',
       rankEm: 19.6,
@@ -252,12 +256,9 @@ export default {
       hexLabelSize: 'label',
       hex: B(506, 843, 98, 20),
     }),
-    el('24.rows.rule-2', null, B(136, 896, 496, 2), {
-      parent: '24.rows',
-      tokens: { fg: 'border.subtle' },
-    }),
     ...row(3, {
-      box: B(136, 914, 496, 139),
+      rule: B(136, 896, 496, 2),
+      box: B(136, 896, 496, 157),
       rank: B(153, 925, 19, 20),
       rankSize: 'body',
       rankEm: 19.6,
@@ -279,12 +280,9 @@ export default {
       hexLabelSize: 'label',
       hex: B(506, 1000, 97, 20),
     }),
-    el('24.rows.rule-3', null, B(136, 1053, 496, 2), {
-      parent: '24.rows',
-      tokens: { fg: 'border.subtle' },
-    }),
     ...row(4, {
-      box: B(136, 1071, 496, 117),
+      rule: B(136, 1053, 496, 2),
+      box: B(136, 1053, 496, 135),
       rank: B(152, 1082, 20, 19),
       rankSize: 'body',
       rankEm: 18.6,

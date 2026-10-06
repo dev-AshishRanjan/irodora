@@ -131,8 +131,13 @@ type ChipControlProps = Omit<
 /** A chip nobody presses: a badge beside a reading (F-232). */
 interface ChipBadgeProps {
   readonly form: 'badge';
-  /** The visible text. Also the accessible name. */
+  /** The visible text. Also the accessible name, unless {@link name} says it in full. */
   readonly label: string;
+  /**
+   * The accessible name, where the text abbreviates: a ΔE00 badge prints `ΔE00: 2.14` and says the
+   * metric's space too (FR-61, F-235).
+   */
+  readonly name?: string;
   /** A glyph before the text: `03`'s conditions, `24`'s capture source. */
   readonly icon?: GlyphName;
   /** The text carries figures (a count, a ΔE00), so it is set in the numeric setting. */
@@ -146,6 +151,8 @@ interface ChipBadgeProps {
   readonly radius?: 'sm' | 'pill';
   /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BADGE_HEIGHT}. */
   readonly height?: number;
+  /** The text's step: `label`, or `17`'s step pill's `caption` (F-235). */
+  readonly size?: 'label' | 'caption';
   readonly script?: Script;
   readonly testID?: string;
 }
@@ -167,6 +174,7 @@ export function Chip(props: ChipProps): React.JSX.Element {
 
 function Badge({
   label,
+  name,
   icon,
   numeric = false,
   fill,
@@ -174,6 +182,7 @@ function Badge({
   tint,
   radius = 'pill',
   height = BADGE_HEIGHT,
+  size = 'label',
   script = 'latin',
   testID,
 }: ChipBadgeProps): React.JSX.Element {
@@ -187,7 +196,7 @@ function Badge({
       // Read, not pressed: one element, announced as the text it is and never as a control.
       accessible
       accessibilityRole="text"
-      accessibilityLabel={label}
+      accessibilityLabel={name ?? label}
       style={{
         height,
         flexDirection: 'row',
@@ -210,7 +219,7 @@ function Badge({
           spectrum={glyphSpectrum(icon, colors)}
         />
       )}
-      <Text size="label" color={ink} script={script} numeric={numeric} numberOfLines={1}>
+      <Text size={size} color={ink} script={script} numeric={numeric} numberOfLines={1}>
         {label}
       </Text>
     </View>

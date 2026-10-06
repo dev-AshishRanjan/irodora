@@ -25,10 +25,14 @@ import {
   CoverageDial,
   FabricSwatch,
   DeltaBars,
+  FactorRows,
   FigureValue,
+  MetricTile,
   ProximityHeadline,
   Radar,
+  RankedRow,
   ReadoutTable,
+  StepPill,
   ChoiceGroup,
   Dialog,
   DisplaySettingsProvider,
@@ -1568,6 +1572,129 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             },
           ]}
         />,
+        theme,
+      ),
+  },
+  {
+    // The metric tile (F-235): a count with its noun and basis, on its card.
+    name: 'MetricTile (22)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <MetricTile value={14} signed label="Outfits Unlocked" detail="ΔE00 < 5.0 with closet" />,
+        theme,
+      ),
+  },
+  {
+    // The factor rows (F-235), inside the card 13 draws them on.
+    name: 'FactorRows (13)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Card level="1">
+          <FactorRows
+            rows={[
+              {
+                key: 'harmony',
+                icon: 'score-harmony',
+                label: 'Colour Harmony',
+                score: 0.95,
+                note: 'Analogous Kasane',
+              },
+              {
+                key: 'fit',
+                icon: 'score-fit',
+                label: 'Personal Fit',
+                score: 0.92,
+                note: 'Cool-Muted Match',
+              },
+              {
+                key: 'contrast',
+                icon: 'score-contrast',
+                label: 'Contrast Ratio',
+                score: 0.9,
+                note: 'APCA Lc 48',
+              },
+            ]}
+          />
+        </Card>,
+        theme,
+      ),
+  },
+  {
+    name: 'StepPill (17)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<StepPill step={2} total={4} text="Step 2 of 4 • Undertone & Temperature" />, theme),
+  },
+  {
+    // The ranked row (F-235), in each form its screen draws.
+    name: 'RankedRow (harmony, 19)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <RankedRow
+          form="harmony"
+          sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
+          name="Ai-nezumi"
+          ja="藍鼠"
+          detail="Complementary • ΔE00: 48.2"
+          action={{ label: 'Wear', name: 'Wear Ai-nezumi', onPress: () => undefined }}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'RankedRow (nearest, 21)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <RankedRow
+          form="nearest"
+          sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
+          name="藍鼠 Ai-nezumi (Indigo Mouse Grey)"
+          distance={{
+            kind: 'measure',
+            value: 2.14,
+            places: 2,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          view={{ label: 'View', name: 'View Ai-nezumi', onPress: () => undefined }}
+        />,
+        theme,
+      ),
+  },
+  {
+    // Inside the card 24 draws its rows on, the second row under its rule.
+    name: 'RankedRow (fields, 24)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Card level="1">
+          <RankedRow
+            form="fields"
+            rank={2}
+            ruled
+            relationship="Analogous Row"
+            distance={{
+              kind: 'measure',
+              value: 1.42,
+              places: 2,
+              quantity: 'ΔE00',
+              space: 'CIEDE2000',
+            }}
+            sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
+            fields={[
+              { label: 'Japanese', value: '藍鼠', script: 'japanese' },
+              { label: 'Romaji', value: 'Ai-nezumi' },
+              { label: 'Hex', value: '#526A6B', numeric: true },
+            ]}
+          />
+        </Card>,
         theme,
       ),
   },

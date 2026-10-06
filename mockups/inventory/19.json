@@ -436,7 +436,7 @@
       "id": "19.rows.row-1",
       "order": 14,
       "parent": null,
-      "component": "new:HarmonyRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 89,
         "y": 462,
@@ -597,7 +597,7 @@
       "id": "19.rows.row-2",
       "order": 19,
       "parent": null,
-      "component": "new:HarmonyRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 89,
         "y": 617,
@@ -761,7 +761,7 @@
       "id": "19.rows.row-3",
       "order": 24,
       "parent": null,
-      "component": "new:HarmonyRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 89,
         "y": 770,
@@ -922,7 +922,7 @@
       "id": "19.rows.row-4",
       "order": 29,
       "parent": null,
-      "component": "new:HarmonyRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 89,
         "y": 922,
@@ -1083,7 +1083,7 @@
       "id": "19.rows.row-5",
       "order": 34,
       "parent": null,
-      "component": "new:HarmonyRow",
+      "component": "ui:RankedRow",
       "box": {
         "x": 89,
         "y": 1073,
