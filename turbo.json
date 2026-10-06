@@ -14,7 +14,8 @@
     "mockups/inventory.schema.json",
     "mockups/README.md",
     ".harness/verification/claims.json",
-    ".harness/verification/type-census.json"
+    ".harness/verification/type-census.json",
+    "apps/mobile/assets/brand/mark-geometry.json"
   ],
   "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],
   "tasks": {

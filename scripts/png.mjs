@@ -277,53 +277,131 @@ function axisSignature({ width, height, rgba }, axis) {
 /**
  * Does this image carry the mark?
  *
- * The mark's middle ROW crosses five things: the petal on the left, the gap, the eye, the gap,
- * the petal on the right. It does NOT cross the two lower petals, which sit clear of it — so the
- * signature is a symmetric five-run pattern, and a solid disc, a ring, a four-petal blossom or
- * any of this mark's own predecessors fail it.
+ * Read against what the mark's geometry predicts at THIS image's width (`expected.at(width)`, from
+ * `expectedSignature`), in one of two tiers:
  *
- * **Proportions survive resizing**, which is why the check is written as fractions: the caller
- * may be looking at an icon a build tool resized to 48 px. `tolerance` is generous for the
- * rounding that costs, and not generous enough for a different shape.
+ * - **runs**, where every cut spans at least 3 px: the middle row and the middle column, each as
+ *   runs of ink and ground with the margin dropped, must match the predicted runs, and the row must
+ *   be symmetric. A solid disc, a four-petal blossom, a ring without its cuts and this mark's own
+ *   predecessors fail it.
+ * - **outline**, at a launcher's sizes, where a cut is a pixel or two and reads by a rasteriser's
+ *   threshold: the row's ink as wide as predicted and centred, the column's reaching the top petal's
+ *   tip above the centre and ending well short of it below. A solid disc fails that too.
+ *
+ * **Proportions survive resizing**, which is why the check is written as fractions. `tolerance` is a
+ * fraction of the width, never less than 3 px.
  */
 export function carriesMark(image, expected, tolerance = 0.03) {
-  const runs = rowSignature(image);
-  const ink = runs.filter((r) => r.ink);
-  if (ink.length !== 3)
-    return {
-      ok: false,
-      why: `${String(ink.length)} ink run(s) across the middle row, expected 3`,
+  const want = expected.at(image.width);
+  const tol = Math.max(tolerance, 3 / image.width);
+  const row = rowSignature(image);
+  const column = columnSignature(image);
+  const pct = (v) => `${(v * 100).toFixed(1)}%`;
+  const describe = (runs) =>
+    runs.map((r) => `${r.ink ? 'ink' : 'gap'} ${pct(r.fraction)}`).join(' · ');
+
+  if (want.tier === 'outline') {
+    // Where the ink starts and ends along a scan, as fractions of it.
+    const extent = (runs) => {
+      let at = 0;
+      let first = null;
+      let last = null;
+      for (const r of runs) {
+        if (r.ink) {
+          first ??= at;
+          last = at + r.fraction;
+        }
+        at += r.fraction;
+      }
+      return first === null || last === null ? null : [first, last];
     };
-
-  // The interior gaps only: the ground either side of the blossom is margin, and its size
-  // depends on how the caller cropped or padded the image.
-  const gaps = runs.filter((r, i) => !r.ink && i > 0 && i < runs.length - 1);
-  if (gaps.length !== 2)
-    return { ok: false, why: `${String(gaps.length)} gap(s) inside the mark, expected 2` };
-
-  for (const [name, actual, want] of [
-    ['the left petal', ink[0].fraction, expected.petals],
-    ['the gap to the eye', gaps[0].fraction, expected.gap],
-    ['the eye', ink[1].fraction, expected.eye],
-    ['the gap from the eye', gaps[1].fraction, expected.gap],
-    ['the right petal', ink[2].fraction, expected.petals],
-  ])
-    if (Math.abs(actual - want) > tolerance)
+    const across = extent(row);
+    const down = extent(column);
+    if (across === null || down === null)
+      return { ok: false, why: 'no ink on the middle row or column' };
+    const width = across[1] - across[0];
+    if (Math.abs(width - want.rowWidth) > tol)
       return {
         ok: false,
-        why: `${name} is ${(actual * 100).toFixed(1)}% of the width, expected ${(want * 100).toFixed(1)}%`,
+        why: `the row's ink is ${pct(width)} wide, expected ${pct(want.rowWidth)}`,
       };
+    if (Math.abs(0.5 - across[0] - (across[1] - 0.5)) > tol)
+      return { ok: false, why: 'the row is not symmetric — the mark is not centred' };
+    const above = 0.5 - down[0];
+    const below = down[1] - 0.5;
+    if (Math.abs(above - want.above) > tol)
+      return {
+        ok: false,
+        why: `the column reaches ${pct(above)} above the centre, expected ${pct(want.above)}`,
+      };
+    if (below > want.belowAtMost + tol)
+      return {
+        ok: false,
+        why: `the column reaches ${pct(below)} below the centre — a blossom with a notch at the bottom ends nearer`,
+      };
+    return {
+      ok: true,
+      why: `outline: ${pct(width)} wide, ${pct(above)} above and ${pct(below)} below the centre`,
+    };
+  }
+
+  const interior = (runs) => runs.filter((run, i) => run.ink || (i > 0 && i < runs.length - 1));
+  const actual = { row: interior(row), column: interior(column) };
+  const matches = (got, expect) =>
+    got.length === expect.length &&
+    got.every(
+      (r, i) => r.ink === expect[i].ink && Math.abs(r.fraction - expect[i].fraction) <= tol,
+    );
+  if (!matches(actual.row, want.row) || !matches(actual.column, want.column))
+    return {
+      ok: false,
+      why:
+        `row ${describe(actual.row)}; column ${describe(actual.column)} — expected row ` +
+        `${describe(want.row)}; column ${describe(want.column)}`,
+    };
 
   /*
-   * SYMMETRY, WHICH THE FRACTIONS ALONE DO NOT GUARANTEE. Two petals within tolerance of the
-   * expected width could still differ from each other by twice it — a blossom leaning to one
-   * side, which is exactly what a mis-centred or partly-cropped icon looks like.
+   * SYMMETRY, WHICH THE FRACTIONS ALONE DO NOT GUARANTEE. Two outer runs within tolerance of the
+   * expected width could still differ from each other by twice it — a blossom leaning to one side,
+   * which is exactly what a mis-centred or partly-cropped icon looks like.
    */
-  if (Math.abs(ink[0].fraction - ink[2].fraction) > tolerance)
-    return { ok: false, why: 'the two petals differ from each other — the mark is not centred' };
+  const first = actual.row[0];
+  const last = actual.row[actual.row.length - 1];
+  if (first !== undefined && last !== undefined && Math.abs(first.fraction - last.fraction) > tol)
+    return { ok: false, why: 'the row is not symmetric — the mark is not centred' };
 
-  return {
-    ok: true,
-    why: 'petal · gap · eye · gap · petal, symmetric, in the mark’s proportions',
-  };
+  return { ok: true, why: `row ${describe(actual.row)}; column ${describe(actual.column)}` };
+}
+
+/**
+ * An image scaled down to `size` × `size` by averaging the source pixels each target pixel covers,
+ * colour weighted by alpha: what a build tool's launcher variants look like, for the density cases.
+ */
+export function downscale(image, size) {
+  const out = Buffer.alloc(size * size * 4);
+  const f = image.width / size;
+  for (let y = 0; y < size; y += 1)
+    for (let x = 0; x < size; x += 1) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let a = 0;
+      let n = 0;
+      for (let sy = Math.floor(y * f); sy < Math.floor((y + 1) * f); sy += 1)
+        for (let sx = Math.floor(x * f); sx < Math.floor((x + 1) * f); sx += 1) {
+          const d = (sy * image.width + sx) * 4;
+          const alpha = image.rgba[d + 3];
+          r += image.rgba[d] * alpha;
+          g += image.rgba[d + 1] * alpha;
+          b += image.rgba[d + 2] * alpha;
+          a += alpha;
+          n += 1;
+        }
+      const d = (y * size + x) * 4;
+      out[d] = a === 0 ? 0 : Math.round(r / a);
+      out[d + 1] = a === 0 ? 0 : Math.round(g / a);
+      out[d + 2] = a === 0 ? 0 : Math.round(b / a);
+      out[d + 3] = Math.round(a / n);
+    }
+  return { width: size, height: size, rgba: out };
 }

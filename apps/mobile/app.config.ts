@@ -170,9 +170,10 @@ const config: ExpoConfig = {
      * THE FOREGROUND IS TRANSPARENT AND SMALLER THAN THE ICON, and the number behind that is
      * Android's rather than a taste: an adaptive icon is masked to a shape the launcher chooses,
      * and only the central **66 of 108** units are guaranteed visible — a circle of Ø 625.8 px on
-     * this 1024 canvas. The mark's ink is 432 px square, so its diagonal is 610.9 and it fits
-     * inside that circle whichever mask the device applies. `brand-assets.test.mjs` asserts the
-     * arithmetic rather than trusting this comment.
+     * this 1024 canvas. The foreground's grid is derived from that (F-230): 26 px a unit, so 14's
+     * blossom reaches 312 px from the centre, inside the 312.9 px radius whichever mask the device
+     * applies. `generate-brand-assets.mjs --prove` (in `lint`) asserts the arithmetic rather
+     * than trusting this comment.
      *
      * `backgroundColor` is the manifest's dark `background`, so the two layers compose into the
      * same image `icon.png` already is.
@@ -183,7 +184,8 @@ const config: ExpoConfig = {
       /*
        * THE THEMED ICON (F-192). Android 13+ lets a person tint every icon to their wallpaper,
        * and an app with no `monochromeImage` gets a silhouette the LAUNCHER derives from the
-       * coloured one. This mark is five petals and an eye; guessed at, it is a blob.
+       * coloured one. This mark is five petals cut by a ring, stamens and seams; guessed at, it is
+       * a blob.
        *
        * Generated from the same geometry as the foreground and on the same grid, so it survives
        * the same mask. The system supplies the colour — what it reads here is the shape.
