@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-05",
+  "updated": "2026-10-06",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7533,7 +7533,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-226",
         "F-225"
@@ -7563,6 +7563,27 @@
       "notes": "Four lockups are drawn (C4): 00 coral outline, 01 filled white, 14 silver, 25 \"IRODORA 彩度\". 00’s and 25’s are not used. The current mark is six discs — five coloured, one dark — which mockup 14 replaces entirely. FROM F-226 (2026-09-28, ADR-0112): `Wordmark` sets \"Irodora\" in the serif (Gelasio Regular, tracking 0), as Latin text in both locales; its `script` prop is gone, and WordmarkSize is display1 | title. 01's wordmark is drawn at 34 dp, between two steps; whether it is set at 34 or at `title` 22 is OQ-13, which is open (ADR-0113), so this feature waits on it. The in-app lockup is 01's and the splash lockup 14's (C4); both read at Regular.",
       "openQuestions": [
         "OQ-13"
+      ],
+      "plan": "plans/F-230-the-mark-the-wordmark-and-the-lockup-are-redrawn-to-the-mockups.md",
+      "attested": [
+        {
+          "criterion": "The mark is mockup 14’s 梅鉢 — five petals, a centre ring, radiating stamen lines — drawn from code as today (MARK in packages/ui/src/brand.tsx), recognisable at 16 px and under protan, deutan and tritan simulation",
+          "verifiedBy": "On an iOS and an Android device, the mark rendered by react-native-svg at 16, 23, 25.5 and 39 dp beside mockup 14's drawing, and again under the platforms' colour filters (protanopia, deuteranopia, tritanopia): a person identifies it as 14's blossom, and the ring and the stamens render as holes through the clip path, not as paint.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The in-app lockup is 01’s — filled mark and “Irodora” in the display serif, title case; the splash lockup is 14’s",
+          "verifiedBy": "F-267's side-by-side of Home's header against mockup 01 and of the splash lockup against mockup 14, on both platforms, including the vertical alignment (line-box placement, Android's font padding) and both lockups at 200 % text.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The mark is monochrome everywhere, the icon included, and an ADR supersedes ADR-0093 (C4); the tinted mark in 27’s loading state is the one declared exception",
+          "verifiedBy": "Gate 16 on a release artefact (every launcher density carries the one-ink mark), the iOS icon on a device, and the Android 13 themed icon tinted on a home screen. This workstation has no JDK.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
