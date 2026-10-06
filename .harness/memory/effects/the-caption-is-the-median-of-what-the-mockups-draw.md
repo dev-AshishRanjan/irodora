@@ -39,3 +39,10 @@ ADR-0121 extends the rule above to every size the mockups draw more than 4 dp fr
 **measured step**, bound to its elements at their median em. `wordmark` 31.6 and `wordmarkSplash`
 59.7 are the first two. A re-reading can now move a measured step, or move an element across the
 4 dp line, and the census reports either.
+
+## F-230's review: a measured step's leading
+
+A measured step leads at the nearest board step's ratio, **or its face's own line where that is
+taller**. iOS centres a line only at or above its face's own and otherwise clips a tall line's top
+(ADR-0121, amended). Each bundled face's `ownLine` is in the manifest, and the font test reads it
+back.

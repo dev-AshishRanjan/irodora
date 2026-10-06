@@ -85,12 +85,12 @@ const GENERATED = [
 ];
 const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 const DECLARATIONS = join(ROOT, '.harness', 'verification', 'unreached-tokens.json');
-/** ADR-0121's census: off-scale type owed a measured step, each by the feature that builds it. */
 /**
  * ADR-0121: a MEASURED type step (one the manifest binds to inventory elements) is the size those
  * elements are drawn at, not a step a screen may pick. Only the component that draws them reads it.
  */
 const MEASURED_STEP_READERS = ['packages/ui/src/brand.tsx'];
+/** ADR-0121's census: off-scale type owed a measured step, each by the feature that builds it. */
 const TYPE_CENSUS = join(ROOT, '.harness', 'verification', 'type-census.json');
 
 /**
@@ -488,29 +488,35 @@ function declarations(known, groupNames, override) {
     }
   }
 
-  /*
-   * ADR-0121's owed rows, the closedBy rule applied to type: an element drawn off the scale is owed
-   * a measured step by the feature that builds it, and that feature cannot be done while it still
-   * owes it. The census itself (every off-scale element accounted for, both ways) is
-   * type-scale.test's; this is the half that needs the feature list.
-   */
-  if (override === undefined && existsSync(TYPE_CENSUS)) {
-    const census = JSON.parse(readFileSync(TYPE_CENSUS, 'utf8'));
-    for (const [index, row] of (census.owed ?? []).entries()) {
-      const at = `type-census.json owed[${String(index)}] (${String(row.element)})`;
-      if (!FEATURE_IDS.has(row.feature))
-        problems.push(
-          `${at}: owed by "${String(row.feature)}", which is not a feature id in feature_list.json.`,
-        );
-      else if (DONE_FEATURES.has(row.feature))
-        problems.push(
-          `${at}: owed by ${String(row.feature)}, which is DONE. ADR-0121: the element takes its measured ` +
-            'step when its feature builds it, and the row goes; a done owner with the row still here is ' +
-            'a screen built at a size nobody decided.',
-        );
-    }
-  }
   return { byToken, problems, entries: file.unreached };
+}
+
+/**
+ * ADR-0121's owed rows, the closedBy rule applied to type: an element drawn off the scale is owed a
+ * measured step by the feature that builds it, and that feature cannot be done while it still owes
+ * it. The census itself (every off-scale element accounted for, both ways) is type-scale.test's; this
+ * is the half that needs the feature list.
+ *
+ * ITS OWN STEP, AND WHY (F-230's review). It lived inside `declarations()` behind
+ * `override === undefined`, and `run()` passes `null` there: the check had never run. `--prove`
+ * now plants a row owed by a done feature and one owed by no feature, and watches both refused.
+ */
+function owedRows(census) {
+  const problems = [];
+  for (const [index, row] of (census.owed ?? []).entries()) {
+    const at = `type-census.json owed[${String(index)}] (${String(row.element)})`;
+    if (!FEATURE_IDS.has(row.feature))
+      problems.push(
+        `${at}: owed by "${String(row.feature)}", which is not a feature id in feature_list.json.`,
+      );
+    else if (DONE_FEATURES.has(row.feature))
+      problems.push(
+        `${at}: owed by ${String(row.feature)}, which is DONE. ADR-0121: the element takes its measured ` +
+          'step when its feature builds it, and the row goes; a done owner with the row still here is ' +
+          'a screen built at a size nobody decided.',
+      );
+  }
+  return problems;
 }
 
 // --- the run --------------------------------------------------------------------------
@@ -523,7 +529,7 @@ export const rel = (path) => relative(ROOT, path).replaceAll('\\', '/');
  * A proof that edits `packages/` is a proof that can fail dirty, and this session has already
  * left a mutated manifest behind once. Nothing here writes to the working tree.
  */
-export async function run(overrides = new Map(), declaredOverride = null) {
+export async function run(overrides = new Map(), declaredOverride = null, censusOverride = null) {
   const bindings = await loadEmitted();
   const files = sources().map((f) =>
     overrides.has(rel(f.path)) ? { ...f, source: overrides.get(rel(f.path)) } : f,
@@ -536,6 +542,12 @@ export async function run(overrides = new Map(), declaredOverride = null) {
     known,
     groups.map((g) => g.group),
     declaredOverride,
+  );
+  declared.problems.push(
+    ...owedRows(
+      censusOverride ??
+        (existsSync(TYPE_CENSUS) ? JSON.parse(readFileSync(TYPE_CENSUS, 'utf8')) : { owed: [] }),
+    ),
   );
 
   const unreached = [];
@@ -716,6 +728,25 @@ const PLANT = <Text size="wordmark" color="foreground">x</Text>;
     planted.misread.some((m) => m.name === 'wordmark' && m.by === home),
     'a screen that reads a measured type step is named',
     `size="wordmark" planted in ${home}`,
+  );
+
+  // ADR-0121: a census row still owed by a DONE feature, and one owed by no feature, are refused.
+  const done = [...DONE_FEATURES][0];
+  const owedByDone = await run(new Map(), null, {
+    owed: [{ element: '99.plant.kanji', feature: done }],
+  });
+  say(
+    owedByDone.declared.problems.some((m) => m.includes('which is DONE')),
+    'a type-census row still owed by a done feature is refused',
+    `99.plant.kanji owed by ${String(done)}`,
+  );
+  const owedByNobody = await run(new Map(), null, {
+    owed: [{ element: '99.plant.kanji', feature: 'F-9999' }],
+  });
+  say(
+    owedByNobody.declared.problems.some((m) => m.includes('not a feature id')),
+    'a type-census row owed by no feature is refused',
+    '99.plant.kanji owed by F-9999',
   );
 
   // Criterion 3, and F-019's exact defect replayed: remove the one real consumer.

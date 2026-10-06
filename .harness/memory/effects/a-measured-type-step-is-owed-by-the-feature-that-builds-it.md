@@ -22,3 +22,10 @@ to a measured step or to an owed row, both ways, with a planted decoy. The owed 
 feature list: once a row's owner is `done` while the row is still owed, the gate fails. That is
 `closedBy`'s rule, and it is why the rows are a declaration file rather than the feature list read
 by a cached test, which would key every test on every claim.
+
+## F-230's review: the guard had never run
+
+The refusal of an owed row whose owner is done sat inside `declarations()` behind
+`override === undefined`, and `run()` passes `null` there. **It had never run**, and nothing
+said so, because no plant had been written for it. It is now its own step (`owedRows`), and
+`--prove` plants a row owed by a done feature and one owed by no feature.

@@ -59,7 +59,8 @@ The nearest in-band readings are 4.0 off (`05.title`, `07.title`, 26 against 22)
    - its size the median of their `raw.emDp`, to a tenth, read from the face's outlines where the
      face is bundled; siblings drawn alike share one step;
    - its leading the nearest board step's ratio — a single-line element draws no leading to
-     measure — and its tracking and weight its face's (ADR-0112);
+     measure — **or its face's own line where that is taller** (amended below), and its tracking
+     and weight its face's (ADR-0112);
    - read only by the component that draws those elements (a source scan holds it).
 4. **`25` and `00` set nothing** (P2, P3).
 5. **A census holds the rule.** `type-scale.test.ts` lists every governing element drawn more than
@@ -74,8 +75,8 @@ interval, past the instrument's error at body sizes.
 
 | element | drawn (em, outlines) | step |
 |---|---|---|
-| `01.header.wordmark` | 31.6 dp (31.9 by width) | **`wordmark`** 31.6, leading title's 1.2 |
-| `14.splash.wordmark` | 59.7 dp (59.9 by width) | **`wordmarkSplash`** 59.7, leading display1's 0.98 |
+| `01.header.wordmark` | 31.6 dp (31.9 by width) | **`wordmark`** 31.6, leading the serif's own line, 1.27 (title's 1.2 is under it) |
+| `14.splash.wordmark` | 59.7 dp (59.9 by width) | **`wordmarkSplash`** 59.7, leading the serif's own line, 1.27 (display1's 0.98 is under it) |
 | `14.splash.tagline` | 22.0 dp | `title` (in band), re-recorded from `body` |
 
 **Owed, each by the feature that builds it:** `06.kanji` and `26.hero.kanji` (F-247), `20.card.kanji`
@@ -118,3 +119,25 @@ anticipated). `01.header.tagline` (18.5) is in band: `body` (F-242).
 - A screen draws type within 4 dp of 72 (then `display1` is read), or a remeasure moves a reading
   across the band.
 - A measured step is read by a component that does not draw its elements.
+
+## Amendment — a measured step never leads under its face's own line (F-230's review, 2026-10-07)
+
+F-230's one review read React Native 0.86's text layout and found that **iOS does not centre a line
+set under its face's own height.** `RCTApplyBaselineOffsetForRange` (`RCTAttributedTextUtils.mm`)
+raises the glyphs by half the spare height only when the line height is at least the font's own line;
+below it, no offset is applied, TextKit sets the glyphs on the line's foot, and a drawn Text clips
+whatever rises out of its frame. Android's `CustomLineHeightSpan` splits negative leading evenly, so
+the two platforms place such a line differently.
+
+`wordmarkSplash` had taken display1's 0.98: on iOS the name's ink would have risen 7.3 dp out of its
+frame and been clipped. So decision 3's leading is **the nearest board step's, or the face's own line
+where that is taller**. The face's own line is recorded per bundled face as `ownLine` — hhea's
+ascender less its descender, plus its line gap, over its em, rounded up to two places: Gelasio 1.27,
+Noto Sans JP 1.45, Noto Serif JP 1.44. `apps/mobile/test/fonts.test.tsx` reads it back from each TTF,
+and `type-scale.test.ts` holds every measured step to it, with display1's 0.98 as the decoy. Both
+wordmark steps now lead at 1.27. A single line shows no leading, so nothing a mockup draws moves.
+
+**Not changed: board steps.** `title`'s Japanese leading (1.345) is under the gothic's own (1.45), so
+iOS bottom-aligns a Japanese title: about a dp from Android, with no clip. A Japanese or serif
+`display1` would clip on iOS, and no screen draws one (it is declared unreached). The first screen
+that does must take the face's own line, as a measured step does here.

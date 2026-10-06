@@ -50,7 +50,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
 import { decodePng, carriesMark } from './png.mjs';
-import { expectedSignature } from './generate-brand-assets.mjs';
+import { ADAPTIVE_GRID, expectedSignature } from './generate-brand-assets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -69,6 +69,27 @@ const GREEN = '\x1b[32m',
   DIM = '\x1b[2m',
   BOLD = '\x1b[1m',
   OFF = '\x1b[0m';
+
+/**
+ * Which drawing of the mark a launcher resource is, and so which signature it must carry (F-230's
+ * review).
+ *
+ * Expo's prebuild (`withAndroidIcons`) makes the legacy `ic_launcher` and `ic_launcher_round` from
+ * `icon.png`, and the adaptive `ic_launcher_foreground` and `ic_launcher_monochrome` from the
+ * adaptive and monochrome layers; `splashscreen_logo` is the splash image. The icon and the splash
+ * draw the mark on the 768 px grid of their 1024 px canvas, and the adaptive layers on
+ * `ADAPTIVE_GRID`, inside Android's safe circle. One signature for all of them refused a correct
+ * adaptive layer: its row is about 56 % of the image, where the icon's is 68.5 %.
+ *
+ * A release build shortens every resource path (`res/xa.webp`), and the name no longer says which
+ * drawing it is. Such an entry may carry either: both are this mark, at a proportion the generator
+ * produced, and a disc, a ring without its cuts or four petals still fail both.
+ */
+function signaturesFor(name, signatures) {
+  if (/\/ic_launcher_(foreground|monochrome)\.[a-z]+$/u.test(name)) return [signatures.adaptive];
+  if (/\/(ic_launcher(_round)?|splashscreen_logo)\.[a-z]+$/u.test(name)) return [signatures.icon];
+  return [signatures.icon, signatures.adaptive];
+}
 
 /* ================================================================== ZIP reading */
 
@@ -618,7 +639,12 @@ export function checkApk(apkPath, expected) {
     for (const name of readable) {
       let verdict;
       try {
-        verdict = carriesMark(decodePng(readEntry(buf, entries.get(name))), expected.markSignature);
+        const image = decodePng(readEntry(buf, entries.get(name)));
+        verdict = { ok: false, why: 'no signature applies' };
+        for (const signature of signaturesFor(name, expected.markSignature)) {
+          verdict = carriesMark(image, signature);
+          if (verdict.ok) break;
+        }
       } catch (error) {
         verdict = { ok: false, why: `could not be decoded: ${error.message}` };
       }
@@ -1189,7 +1215,11 @@ if (!isEntryPoint) {
    * `--skip-mark` exists for an artefact that legitimately has no icon of ours — nothing builds
    * one today, and the flag is here so that case is stated rather than silently tolerated.
    */
-  if (args['skip-mark'] !== true) expected.markSignature = expectedSignature();
+  if (args['skip-mark'] !== true)
+    expected.markSignature = {
+      icon: expectedSignature(),
+      adaptive: expectedSignature(ADAPTIVE_GRID),
+    };
 
   if (args['expect-package']) expected.package = String(args['expect-package']);
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);

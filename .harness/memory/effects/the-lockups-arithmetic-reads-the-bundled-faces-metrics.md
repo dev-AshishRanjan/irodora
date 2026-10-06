@@ -22,3 +22,10 @@ the lockup would sit a dp or two off with every component test green.
 `fonts.test.tsx` reads the tables from the bundled bytes and requires the constants to equal them.
 Its decoys are Noto's typographic pair, which that face does not use (no USE_TYPO_METRICS), and
 another word's extent. It sits beside the fonts, so no cached task outside the app keys on them.
+
+## F-230's review: kerned, and each face's own line
+
+Platforms kern by default, so the name's advance is read with GPOS's `kern` pairs applied. None
+adjusts "Irodora"; Gelasio's one kerned class (L before two unencoded glyphs, −300) is the decoy.
+The manifest's `ownLine` for every bundled face is held to its hhea line here too: it decides
+whether iOS centres a line or bottom-aligns it.

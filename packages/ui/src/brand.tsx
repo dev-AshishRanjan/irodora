@@ -48,7 +48,13 @@
  */
 
 import { useId, useState } from 'react';
-import { View, type LayoutChangeEvent, type TextLayoutEvent, type ViewProps } from 'react-native';
+import {
+  Platform,
+  View,
+  type LayoutChangeEvent,
+  type TextLayoutEvent,
+  type ViewProps,
+} from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Path } from 'react-native-svg';
 import { nativeType } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
@@ -468,22 +474,49 @@ export interface LockupGeometry {
     readonly name: LockupInk;
     readonly tagline: LockupInk | undefined;
   };
-  /** The figure's ink box, dp — the tagline's width excepted, which is its copy's. */
+  /**
+   * The figure's ink box, dp — the tagline's width excepted, which is its copy's, and its height for
+   * one line of tagline. A wrapped tagline's box still ends at its last line's ink: each line sits in
+   * its box as the first does.
+   */
   readonly width: number;
   readonly height: number;
   /** The name's box (its advance), dp. */
   readonly nameBox: number;
 }
 
-/** The baseline's distance from the top of a line box: the half-leading model both platforms follow. */
+/** The platform whose line placement a lockup's geometry follows. */
+export type LockupPlatform = 'ios' | 'android';
+
+/**
+ * The baseline's distance from the top of a line box, where React Native 0.86 puts it.
+ *
+ * - **Android** (`CustomLineHeightSpan`): the CSS half-leading model — the leading, negative or not,
+ *   split evenly above the face's ascent and below its descent.
+ * - **iOS** (`RCTAttributedTextUtils.mm`, `RCTApplyBaselineOffsetForRange`): the same, but only
+ *   where the line is at least the face's own (its ascent plus its descent; these faces carry no line
+ *   gap). Below that no offset is applied, TextKit sets the glyphs on the line's foot — the baseline
+ *   the face's descent above the bottom — and the top of a tall line is clipped by its frame.
+ *
+ * So a lockup's NAME is set at the serif's own line (`wordmark` and `wordmarkSplash` lead at 1.27,
+ * ADR-0121 amended by F-230's review), where the two platforms agree and nothing is clipped; the
+ * TAGLINE keeps `title`'s leading, under the gothic's own line, so its two placements differ by a dp
+ * and each is computed.
+ */
 function baselineIn(
   face: { readonly unitsPerEm: number; readonly ascender: number; readonly descender: number },
   em: number,
   lineHeight: number,
+  platform: LockupPlatform,
 ): number {
   const unit = em / face.unitsPerEm;
-  return (lineHeight - (face.ascender - face.descender) * unit) / 2 + face.ascender * unit;
+  const own = (face.ascender - face.descender) * unit;
+  if (platform === 'ios' && lineHeight < own) return lineHeight + face.descender * unit;
+  return (lineHeight - own) / 2 + face.ascender * unit;
 }
+
+/** This device's placement: iOS's, or Android's everywhere else. */
+const PLATFORM: LockupPlatform = Platform.OS === 'ios' ? 'ios' : 'android';
 
 /**
  * A lockup's geometry at a scale (ADR-0123).
@@ -503,19 +536,21 @@ function baselineIn(
  * - `splash`: one column on one axis. The mark's ink, the interval, the name's ink, the interval,
  *   the tagline's ink.
  *
- * Where each platform puts a line box's baseline is a device attestation: the jest tree has no
- * layout, so this is the arithmetic both platforms are documented to follow.
+ * `platform` is whose line placement to follow ({@link baselineIn}); it defaults to this device's.
+ * The jest tree has no layout, so the placement is React Native's source read rather than a render
+ * measured: that it lands where computed is a device attestation.
  */
 export function lockupGeometry(
   form: WordmarkForm,
   scale = 1,
   taglineScale = scale,
+  platform: LockupPlatform = PLATFORM,
 ): LockupGeometry {
   const step = form === 'app' ? nativeType.latin.wordmark : nativeType.latin.wordmarkSplash;
   const em = step.fontSize * scale;
   const line = step.lineHeight * scale;
   const unit = em / GELASIO.unitsPerEm;
-  const baseline = baselineIn(GELASIO, em, line);
+  const baseline = baselineIn(GELASIO, em, line, platform);
   const name = {
     top: baseline - GELASIO.name.inkTop * unit,
     bottom: baseline - GELASIO.name.inkBottom * unit,
@@ -581,7 +616,7 @@ export function lockupGeometry(
   const tagline = nativeType.japanese.title;
   const taglineEm = tagline.fontSize * taglineScale;
   const taglineLine = tagline.lineHeight * taglineScale;
-  const taglineBaseline = baselineIn(GOTHIC, taglineEm, taglineLine);
+  const taglineBaseline = baselineIn(GOTHIC, taglineEm, taglineLine, platform);
   const taglineUnit = taglineEm / GOTHIC.unitsPerEm;
   const taglineInk = {
     top: taglineBaseline - GOTHIC.faceTop * taglineUnit,

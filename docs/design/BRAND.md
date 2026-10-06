@@ -178,8 +178,9 @@ petals are tangent, so their radius and orbit follow from the reach alone.
 
 **One ink, everywhere — the icon included** (ADR-0122, superseding
 [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md)). The
-mark takes one of four neutral foregrounds, by type. The icon is `14`'s: the mark in
-`text.secondary` on the dark ground, the same image on iOS and Android. Shape, not colour, is what
+mark takes one of four neutral foregrounds, by type. The icon takes `14`'s ink: the mark in
+`text.secondary` on the dark ground, the same image on iOS and Android (`14`'s tile, its gradient
+and corner, is F-231's). Shape, not colour, is what
 makes it recognisable, and every ground it is drawn on is a scored colour-vision pair. **The one
 exception is `27`'s loading state**, which tints the mark (C10), with words beside it.
 

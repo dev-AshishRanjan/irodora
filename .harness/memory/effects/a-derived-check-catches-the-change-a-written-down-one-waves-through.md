@@ -90,3 +90,11 @@ depends on a rasteriser's threshold rather than on the mark. So the expected sig
 **per image size**, in two tiers: the full run pattern where every cut spans 3 px, the outline below
 that. The claim shrinks to what the size can carry, and the decoys still fail at 48 px (a solid disc,
 four petals). The same lesson as the safe zone, one step further.
+
+## F-230's review: one signature per drawing
+
+Gate 16 checked every launcher resource against `icon.png`'s grid. The adaptive layers are drawn on
+`ADAPTIVE_GRID`, so a correct foreground would have been refused. The check was derived from the
+shape and the size, and still assumed one drawing. It now picks the signature by the resource's
+layer, and `--prove` refuses each drawing by the other's signature, so the assumption cannot come
+back unseen.

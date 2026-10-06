@@ -379,6 +379,7 @@ export {
   type LockupGeometry,
   type LockupMargins,
   type LockupInk,
+  type LockupPlatform,
 } from './brand.js';
 export {
   Dialog,

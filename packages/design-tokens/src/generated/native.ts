@@ -260,20 +260,20 @@ export const nativeType = {
   latin: {
     display1: { fontSize: 72, lineHeight: 70.56, letterSpacing: -2.88, fontWeight: '500' },
     title: { fontSize: 22, lineHeight: 26.4, letterSpacing: -0.44, fontWeight: '600' },
-    wordmark: { fontSize: 31.6, lineHeight: 37.92, letterSpacing: 0, fontWeight: '400' },
+    wordmark: { fontSize: 31.6, lineHeight: 40.13, letterSpacing: 0, fontWeight: '400' },
     body: { fontSize: 16, lineHeight: 26.4, letterSpacing: 0, fontWeight: '400' },
     label: { fontSize: 14, lineHeight: 21.7, letterSpacing: 0, fontWeight: '400' },
     caption: { fontSize: 10.3, lineHeight: 15.45, letterSpacing: 0, fontWeight: '400' },
-    wordmarkSplash: { fontSize: 59.7, lineHeight: 58.51, letterSpacing: 0, fontWeight: '400' },
+    wordmarkSplash: { fontSize: 59.7, lineHeight: 75.82, letterSpacing: 0, fontWeight: '400' },
   },
   japanese: {
     display1: { fontSize: 72, lineHeight: 79.11, letterSpacing: -2.88, fontWeight: '500' },
     title: { fontSize: 22, lineHeight: 29.6, letterSpacing: -0.44, fontWeight: '600' },
-    wordmark: { fontSize: 31.6, lineHeight: 42.52, letterSpacing: 0, fontWeight: '400' },
+    wordmark: { fontSize: 31.6, lineHeight: 45, letterSpacing: 0, fontWeight: '400' },
     body: { fontSize: 16, lineHeight: 29.6, letterSpacing: 0, fontWeight: '400' },
     label: { fontSize: 14, lineHeight: 24.33, letterSpacing: 0, fontWeight: '400' },
     caption: { fontSize: 10.3, lineHeight: 17.32, letterSpacing: 0, fontWeight: '400' },
-    wordmarkSplash: { fontSize: 59.7, lineHeight: 65.6, letterSpacing: 0, fontWeight: '400' },
+    wordmarkSplash: { fontSize: 59.7, lineHeight: 85.01, letterSpacing: 0, fontWeight: '400' },
   },
 } as const;
 
@@ -303,9 +303,9 @@ export const nativeFamilies = {
 
 /** What each bundled face is cut at, and the steps a mockup draws it at (ADR-0112). */
 export const nativeFaces = {
-  jp: { family: 'NotoSansJP', file: 'NotoSansJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', tracking: null, steps: 'all' },
-  serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, fontWeight: '400', tracking: '0', steps: ['display1', 'title', 'body', 'wordmark', 'wordmarkSplash'] },
-  mincho: { family: 'NotoSerifJP-Regular', file: 'NotoSerifJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', tracking: null, steps: ['title'] },
+  jp: { family: 'NotoSansJP', file: 'NotoSansJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', ownLine: 1.45, tracking: null, steps: 'all' },
+  serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, fontWeight: '400', ownLine: 1.27, tracking: '0', steps: ['display1', 'title', 'body', 'wordmark', 'wordmarkSplash'] },
+  mincho: { family: 'NotoSerifJP-Regular', file: 'NotoSerifJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', ownLine: 1.44, tracking: null, steps: ['title'] },
 } as const;
 
 export const nativeNumericFeature = 'tabular-nums' as const;

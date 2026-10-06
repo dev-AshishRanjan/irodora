@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-06",
+  "updated": "2026-10-07",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7571,13 +7571,13 @@
         },
         {
           "criterion": "The in-app lockup is 01’s — filled mark and “Irodora” in the display serif, title case; the splash lockup is 14’s",
-          "verifiedBy": "F-267's side-by-side of Home's header against mockup 01 and of the splash lockup against mockup 14, on both platforms, including the vertical alignment (line-box placement, Android's font padding) and both lockups at 200 % text.",
+          "verifiedBy": "F-267's side-by-side of Home's header against mockup 01 and of the splash lockup against mockup 14, on both platforms: the vertical alignment as lockupGeometry places it per platform (iOS bottom-aligns a line under its face's own; Android splits the leading), no ink clipped at the top of the name or the tagline, and both lockups at 200 % text, the name fitting its width.",
           "blocks": "release",
           "status": "outstanding"
         },
         {
           "criterion": "The mark is monochrome everywhere, the icon included, and an ADR supersedes ADR-0093 (C4); the tinted mark in 27’s loading state is the one declared exception",
-          "verifiedBy": "Gate 16 on a release artefact (every launcher density carries the one-ink mark), the iOS icon on a device, and the Android 13 themed icon tinted on a home screen. This workstation has no JDK.",
+          "verifiedBy": "Gate 16 on a release artefact: every launcher resource it can decode carries the mark's SHAPE, each layer against its own drawing's signature (verify-apk.mjs reads shape, not ink count; one ink is generate-brand-assets --prove's, on the source assets). The iOS icon on a device, and the Android 13 themed icon tinted on a home screen. This workstation has no JDK.",
           "blocks": "release",
           "status": "outstanding"
         }
@@ -7619,7 +7619,7 @@
         "cvd",
         "artifact"
       ],
-      "notes": "MOCKUP 14. Tagline \"Deterministic Colour Engine • 100% On-Device & Offline\" is true (ADR-0051: no server) and stays. The motion — waves, glow, progress — never animates a colour (motion rules), and is built in F-266. FROM F-226 (2026-09-28): the splash lockup's name is set in Gelasio Regular (ADR-0112; 14's drawn wordmark reads 437 on the stem instrument). `Launch` does not render the wordmark yet, and every bundled font is loaded behind the native splash before the first frame, so the lockup can use the serif without a fallback flash. FROM F-230 (2026-10-06): the splash lockup is `<Wordmark form=\"splash\" tagline={…} />`, 14's stack as one figure whose box is its ink (ADR-0123); place it by 14.splash.lockup's ink box. The tagline 彩り・色の知性 is catalogue copy this feature adds (static:brand.taglineJa). 知 is NOT in the Noto Sans JP subset yet, so adding the copy re-subsets the face, and apps/mobile/test/fonts.test.tsx then re-reads GOTHIC's metrics from it (E-174). The icon's tile (gradient, squircle) is this feature's (ADR-0122 decision 6); until then the icon is the mark on the flat dark ground. A HAND-OVER DEFECT FOUND BY F-230, AND THIS FEATURE'S TO FIX: the native splash shows splash-icon-*.png (a 1024 px canvas whose grid is 768 px) at imageWidth SPLASH_IMAGE_WIDTH = 160 pt, so its mark's grid is 120 pt, while launch.tsx's overlay draws `<Mark size={SPLASH_IMAGE_WIDTH} />`, a 160 pt grid. The mark grows by a third at the hand-over. launch.test only compares the two numbers. 14 draws the splash mark's grid at 154.5 dp (ink 149.7), which is LOCKUP_SPLASH's at the default text size. Fix it with the splash rebuild: the native image and the overlay's lockup must draw the grid at one size, 14's."
+      "notes": "MOCKUP 14. Tagline \"Deterministic Colour Engine • 100% On-Device & Offline\" is true (ADR-0051: no server) and stays. The motion — waves, glow, progress — never animates a colour (motion rules), and is built in F-266. FROM F-226 (2026-09-28): the splash lockup's name is set in Gelasio Regular (ADR-0112; 14's drawn wordmark reads 437 on the stem instrument). `Launch` does not render the wordmark yet, and every bundled font is loaded behind the native splash before the first frame, so the lockup can use the serif without a fallback flash. FROM F-230 (2026-10-06): the splash lockup is `<Wordmark form=\"splash\" tagline={…} />`, 14's stack as one figure whose box is its ink (ADR-0123); place it by 14.splash.lockup's ink box. The tagline 彩り・色の知性 is catalogue copy this feature adds (static:brand.taglineJa). 知 is NOT in the Noto Sans JP subset yet, so adding the copy re-subsets the face, and apps/mobile/test/fonts.test.tsx then re-reads GOTHIC's metrics from it (E-174). The icon's tile (gradient, squircle) is this feature's (ADR-0122 decision 6); until then the icon is the mark on the flat dark ground. A HAND-OVER DEFECT FOUND BY F-230, AND THIS FEATURE'S TO FIX: the native splash shows splash-icon-*.png (a 1024 px canvas whose grid is 768 px) at imageWidth SPLASH_IMAGE_WIDTH = 160 pt, so its mark's grid is 120 pt, while launch.tsx's overlay draws `<Mark size={SPLASH_IMAGE_WIDTH} />`, a 160 pt grid. The mark grows by a third at the hand-over. launch.test only compares the two numbers. 14 draws the splash mark's grid at 154.5 dp (ink 149.7), which is LOCKUP_SPLASH's at the default text size. Fix it with the splash rebuild: the native image and the overlay's lockup must draw the grid at one size, 14's. FROM F-230'S REVIEW (2026-10-07): the plan said the splash tagline 'declares its language'; nothing in the product sets accessibilityLanguage, and Wordmark does not — when this feature adds the catalogue copy, decide whether Japanese text announces its language (iOS VoiceOver picks the voice by it), product-wide rather than for the tagline alone."
     },
     {
       "id": "F-232",
@@ -10506,6 +10506,56 @@
         "test"
       ],
       "notes": "FROM F-235'S REVIEW (2026-10-06), N4. 08.access.*.value is recorded whole as text.secondary 400; the image draws the figure in the foreground ink at 500, which is what the stacked form renders. F-249 composes 08 and reads this record."
+    },
+    {
+      "id": "F-314",
+      "title": "14's splash tagline is set at the tracking 14 draws it at",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "14"
+      ],
+      "acceptance": [
+        "14.splash.tagline's tracking is re-read from 14 (its em by height and by width, as serif-weight.mjs --em reads them) and the lockup's tagline is set at it: today it inherits title's −0.02 em, while 14's readings (22.0 dp by height, 22.2 by width) are consistent with none"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-230'S REVIEW (2026-10-07), M3. Text keeps a step's tracking for Japanese, so Wordmark's tagline is about 2.6 dp narrower than 14 draws it. A per-element tracking is a new kind of record (the inventory's type carries face, size and weight), so it needs its rule and, if it departs from the step, an ADR."
+    },
+    {
+      "id": "F-315",
+      "title": "Every step a face sets leads at least its own line, or iOS bottom-aligns it — recorded, and held",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "00"
+      ],
+      "acceptance": [
+        "A census holds every (step, face) a component can set against the face's own line (nativeFaces ownLine): each pair at or above it, or listed with what iOS does to it — bottom-aligned, by how much, and whether the ink leaves the frame — so a screen cannot set a clipped line unseen",
+        "The pairs that clip on iOS today (a serif or Japanese display1, at 0.98 and 1.099 against 1.27 and 1.45) are refused by type or by the census, with a decoy"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "FROM F-230'S REVIEW (2026-10-07). React Native 0.86 centres a line in its box on iOS only when its height is at least the font's own (RCTApplyBaselineOffsetForRange); below it, TextKit sets the glyphs on the line's foot and a drawn Text clips its top. ADR-0121 (amended) holds the MEASURED steps to their face's own line; the board steps are not held. Today Japanese title (1.345 vs 1.45) and serif title (1.2 vs 1.27) are bottom-aligned on iOS, about a dp from Android, without clipping; display1 is read by no screen."
     }
   ]
 }

@@ -318,6 +318,13 @@ export interface BundledFace {
   readonly script: Script;
   /** The weight the file is cut at. */
   readonly weight: number;
+  /**
+   * The face's own line — hhea's ascender less its descender, plus its line gap, over its em,
+   * rounded up to two places (F-230). iOS centres a line in its box only at or above it; below it,
+   * the glyphs are bottom-aligned and a tall line's top is clipped (RN 0.86,
+   * `RCTApplyBaselineOffsetForRange`). A measured step never leads tighter (ADR-0121).
+   */
+  readonly ownLine: number;
   /** The face's own tracking, where it was measured; `null` keeps the step's. */
   readonly tracking: string | null;
   /** The steps a mockup draws the face at — `'all'`, or the list. */
@@ -1078,6 +1085,12 @@ export function parseManifest(input: unknown): Manifest {
         `${at}.weight`,
         'expected 100-900 in steps of 100, the weight the file is cut at',
       );
+    const ownLine = requireNumber(o['ownLine'], `${at}.ownLine`);
+    if (ownLine < 1 || ownLine > 2)
+      throw new ManifestError(
+        `${at}.ownLine`,
+        "expected the face's own line as a multiple of its em, between 1 and 2",
+      );
     const trackingRaw = o['tracking'];
     const tracking = trackingRaw === null ? null : requireString(trackingRaw, `${at}.tracking`);
     if (tracking !== null && tracking !== '0' && !/^-?\d*\.?\d+em$/u.test(tracking))
@@ -1101,7 +1114,7 @@ export function parseManifest(input: unknown): Manifest {
         return step;
       });
     }
-    faces[name] = { family, file, script: script as Script, weight, tracking, steps };
+    faces[name] = { family, file, script: script as Script, weight, ownLine, tracking, steps };
   }
   const typeScale: Record<string, TypeStep> = {};
   for (const [name, value] of Object.entries(scaleRaw)) {

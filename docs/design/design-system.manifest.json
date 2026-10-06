@@ -1459,12 +1459,13 @@
       "jp": "'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif"
     },
     "faces": {
-      "_note": "The faces the app BUNDLES (ADR-0057, ADR-0112), one native family name each: React Native takes a single name and has no fallback cascade, so the CSS stacks above cannot be used there. `family` is the name the app registers the file under, `weight` the weight the file is cut at — a `fontWeight` other than it makes a platform fake one — and `steps` the steps a mockup draws the face at (\"all\", or a list; anything else is a type error in Text). `tracking` overrides the step's where the face's own was measured (the serif's is 0, ADR-0112). The Latin SANS is not here: it is the platform's (ADR-0057 §6).",
+      "_note": "The faces the app BUNDLES (ADR-0057, ADR-0112), one native family name each: React Native takes a single name and has no fallback cascade, so the CSS stacks above cannot be used there. `family` is the name the app registers the file under, `weight` the weight the file is cut at — a `fontWeight` other than it makes a platform fake one — and `steps` the steps a mockup draws the face at (\"all\", or a list; anything else is a type error in Text). `tracking` overrides the step's where the face's own was measured (the serif's is 0, ADR-0112). The Latin SANS is not here: it is the platform's (ADR-0057 §6). `ownLine` is the face's own line — its hhea ascender less its descender (plus line gap) over its em, rounded UP to two places — which apps/mobile/test/fonts.test.tsx reads back from the TTF (F-230). IT MATTERS ON iOS: React Native 0.86 (RCTAttributedTextUtils.mm, RCTApplyBaselineOffsetForRange) centres a line in its box only when the line height is at least the font's own; below it, TextKit bottom-aligns the glyphs and the top of a tall line is clipped. A measured step therefore never takes a leading under its face's own line (ADR-0121, amended by F-230's review).",
       "jp": {
         "family": "NotoSansJP",
         "file": "NotoSansJP-Subset.ttf",
         "script": "japanese",
         "weight": 400,
+        "ownLine": 1.45,
         "tracking": null,
         "steps": "all"
       },
@@ -1473,6 +1474,7 @@
         "file": "Gelasio-Regular.ttf",
         "script": "latin",
         "weight": 400,
+        "ownLine": 1.27,
         "tracking": "0",
         "steps": [
           "display1",
@@ -1487,6 +1489,7 @@
         "file": "NotoSerifJP-Subset.ttf",
         "script": "japanese",
         "weight": 400,
+        "ownLine": 1.44,
         "tracking": null,
         "steps": [
           "title"
@@ -1508,13 +1511,13 @@
       },
       "wordmark": {
         "size": 31.6,
-        "lineHeight": 1.2,
+        "lineHeight": 1.27,
         "tracking": "0",
         "weight": 400,
         "elements": [
           "01.header.wordmark"
         ],
-        "_note": "MEASURED (ADR-0121): 01's wordmark, drawn 9.6 dp from every board step. Its em from Gelasio's outlines (serif-weight.mjs --em), the leading title's — the nearest board step — and the serif's tracking and weight (ADR-0112). Read by Wordmark alone."
+        "_note": "MEASURED (ADR-0121): 01's wordmark, drawn 9.6 dp from every board step. Its em from Gelasio's outlines (serif-weight.mjs --em), the serif's tracking and weight (ADR-0112), and the serif's own line, 1.27 — taller than title's 1.2, the nearest board step's, which iOS would bottom-align (F-230's review). Read by Wordmark alone."
       },
       "body": {
         "size": 16,
@@ -1536,13 +1539,13 @@
       },
       "wordmarkSplash": {
         "size": 59.7,
-        "lineHeight": 0.98,
+        "lineHeight": 1.27,
         "tracking": "0",
         "weight": 400,
         "elements": [
           "14.splash.wordmark"
         ],
-        "_note": "MEASURED (ADR-0121): 14's splash wordmark, drawn 12.3 dp from every board step. Its em from Gelasio's outlines, the leading display1's — the nearest board step — and the serif's tracking and weight. Read by Wordmark alone."
+        "_note": "MEASURED (ADR-0121): 14's splash wordmark, drawn 12.3 dp from every board step. Its em from Gelasio's outlines, the serif's tracking and weight, and the serif's own line, 1.27 — display1's 0.98, the nearest board step's, would have iOS bottom-align the name and clip 7.3 dp off its top (F-230's review). Read by Wordmark alone."
       }
     },
     "lineHeight": {

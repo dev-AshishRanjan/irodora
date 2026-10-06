@@ -67,6 +67,12 @@ const chromaticIn = (token: string): string[] =>
     return value.oklch.c > CEILING;
   });
 
+/** The census's refusal: every mark whose ink is chromatic in any palette, with where. */
+const tinted = (inks: readonly { readonly id: string; readonly token: string }[]) =>
+  inks
+    .map(({ id, token }) => ({ id, token, palettes: chromaticIn(token) }))
+    .filter(({ palettes }) => palettes.length > 0);
+
 describe('every mark is drawn in a neutral ink (F-230, ADR-0122)', () => {
   const all = marks(inventories());
   const placed = all.filter(
@@ -79,11 +85,9 @@ describe('every mark is drawn in a neutral ink (F-230, ADR-0122)', () => {
   });
 
   it('binds each placement to an ink achromatic in all four palettes', () => {
-    const tinted = placed
-      .map(({ inv, e }) => ({ id: e.id, token: inkOf(inv, e) }))
-      .map(({ id, token }) => ({ id, token, palettes: chromaticIn(token) }))
-      .filter(({ palettes }) => palettes.length > 0);
-    expect(tinted).toStrictEqual([]);
+    expect(tinted(placed.map(({ inv, e }) => ({ id: e.id, token: inkOf(inv, e) })))).toStrictEqual(
+      [],
+    );
   });
 
   it('declares exactly one mark among the chroma exceptions: 27’s loading state (C10)', () => {
@@ -98,8 +102,13 @@ describe('every mark is drawn in a neutral ink (F-230, ADR-0122)', () => {
     ).toStrictEqual(['00.mark', '25.mark']);
   });
 
-  it('DECOY — a mark planted in a status colour is refused', () => {
-    expect(chromaticIn('status.ok')).toStrictEqual([...THEMES]);
+  it('DECOY — a mark planted in a status colour is refused, in every palette', () => {
+    expect(tinted([{ id: '99.mark', token: 'status.ok' }])).toStrictEqual([
+      { id: '99.mark', token: 'status.ok', palettes: [...THEMES] },
+    ]);
+  });
+
+  it('DECOY — a mark whose role maps to no token is refused rather than skipped', () => {
     const planted: Inventory = {
       id: '99',
       governs: 'layout',

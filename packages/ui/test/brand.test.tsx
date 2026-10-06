@@ -221,7 +221,12 @@ describe('its cuts are holes, and every renderer draws one geometry', () => {
     for (let i = 1; i < angles.length; i += 1)
       expect((angles[i] ?? 0) - (angles[i - 1] ?? 0)).toBeGreaterThan(2 * widest);
     const box = markInkBox();
-    expect([box.left, box.top]).toStrictEqual([expect.any(Number), expect.any(Number)]);
+    // The top petal touches the grid's top edge; the side petals, at a fifth of a turn, stop short.
+    expect(box.top).toBeCloseTo(0, 9);
+    expect(box.left).toBeCloseTo(
+      MARK.grid / 2 - (MARK_ORBIT * Math.sin((2 * Math.PI) / MARK.petals) + MARK_PETAL),
+      9,
+    );
     expect(Math.min(box.left, box.top)).toBeGreaterThanOrEqual(0);
     expect(Math.max(box.right, box.bottom)).toBeLessThanOrEqual(MARK.grid);
     expect(markReach()).toBe(MARK.reach);
@@ -262,11 +267,46 @@ describe('its cuts are holes, and every renderer draws one geometry', () => {
       stamenWidth: Number(svgNumber(MARK.stamenWidth)),
       seamWidth: Number(svgNumber(MARK.seamWidth)),
     };
-    // The file's own note is not geometry.
-    const derived = Object.fromEntries(Object.entries(generated).filter(([k]) => k !== '$comment'));
+    // The file's own note is not geometry, and its coverage is compared below.
+    const derived = Object.fromEntries(
+      Object.entries(generated).filter(([k]) => k !== '$comment' && k !== 'coverage'),
+    );
     expect(derived).toStrictEqual(mine);
     // DECOY: a generator that read one field differently is seen.
     expect({ ...derived, seamWidth: (derived['seamWidth'] ?? 0) + 0.01 }).not.toStrictEqual(mine);
+  });
+
+  it('covers every point the generator covers: the two point tests agree, not only their numbers (E-116)', () => {
+    const { coverage } = JSON.parse(readFileSync(GEOMETRY, 'utf8')) as {
+      coverage: { cells: number; rows: string[] };
+    };
+    const unit = MARK.grid / coverage.cells;
+    const sample = (turn: number): string[] =>
+      Array.from({ length: coverage.cells }, (_, j) =>
+        Array.from({ length: coverage.cells }, (_, i) => {
+          // `turn` rotates the sampling about the centre, for the decoy.
+          const x = (i + 0.5) * unit - MARK.grid / 2;
+          const y = (j + 0.5) * unit - MARK.grid / 2;
+          const c = Math.cos(turn);
+          const s = Math.sin(turn);
+          return markCovers(MARK.grid / 2 + x * c - y * s, MARK.grid / 2 + x * s + y * c)
+            ? '#'
+            : '.';
+        }).join(''),
+      );
+    expect(coverage.cells).toBeGreaterThanOrEqual(96);
+    expect(coverage.rows).toStrictEqual(sample(0));
+    // The sampling resolves the cuts: ground inside the petals' reach, not only around the mark.
+    const centreRow = coverage.rows[coverage.cells / 2] ?? '';
+    expect(centreRow.replace(/^\.+|\.+$/gu, '')).toContain('.');
+    // DECOY: the same mark turned a tenth of a turn — where its cuts and notches swap — differs.
+    const turned = sample(Math.PI / MARK.petals);
+    let differing = 0;
+    turned.forEach((row, j) => {
+      for (let i = 0; i < row.length; i += 1)
+        if (row.charAt(i) !== coverage.rows[j]?.charAt(i)) differing += 1;
+    });
+    expect(differing).toBeGreaterThan(200);
   });
 });
 
@@ -491,22 +531,61 @@ describe('the lockups are 01’s and 14’s, measured (F-230, ADR-0123)', () => 
   });
 });
 
-/** The ink offsets of each member within its own box, at one scale — independent of the margins. */
-function inkWithinBoxes(form: 'app' | 'splash', scale: number, taglineScale = scale) {
+/** The two platforms whose line placement the lockups are laid out for. */
+const PLATFORMS = ['ios', 'android'] as const;
+type Platform = (typeof PLATFORMS)[number];
+
+/**
+ * Where a line's baseline sits below the top of its box — written here from React Native 0.86's
+ * sources, not from brand.tsx, so the layout tests check the component rather than agree with it.
+ * `ascent` and `descent` are the face's, both positive.
+ *
+ * - Android, `CustomLineHeightSpan.kt`: the leading `L − (A + D)`, negative or not, half above the
+ *   ascent and half below the descent.
+ * - iOS, `RCTAttributedTextUtils.mm` (`RCTApplyBaselineOffsetForRange`): TextKit sets the glyphs on
+ *   the line's foot, the baseline the descent above the bottom, and React Native raises them by half
+ *   the spare height only when the line is at least the font's own. Below it, nothing.
+ */
+function placedBaseline(platform: Platform, ascent: number, descent: number, line: number): number {
+  const own = ascent + descent;
+  const foot = line - descent;
+  if (platform === 'ios') return line >= own ? foot - (line - own) / 2 : foot;
+  return (line - own) / 2 + ascent;
+}
+
+/**
+ * Each member's box and the ink inside it, at one scale on one platform — independent of the margins.
+ * `nameLine` replaces the name's line height, for the decoys.
+ */
+function inkWithinBoxes(
+  form: 'app' | 'splash',
+  scale: number,
+  taglineScale: number,
+  platform: Platform,
+  nameLine?: number,
+) {
   const step = form === 'app' ? nativeType.latin.wordmark : nativeType.latin.wordmarkSplash;
   const em = step.fontSize * scale;
-  const line = step.lineHeight * scale;
+  const line = nameLine ?? step.lineHeight * scale;
   const unit = em / GELASIO.unitsPerEm;
-  const content = (GELASIO.ascender - GELASIO.descender) * unit;
-  const baseline = (line - content) / 2 + GELASIO.ascender * unit;
+  const baseline = placedBaseline(
+    platform,
+    GELASIO.ascender * unit,
+    -GELASIO.descender * unit,
+    line,
+  );
   const box = markInkBox();
-  const mark = lockupGeometry(form, scale, taglineScale).mark;
+  const mark = lockupGeometry(form, scale, taglineScale, platform).mark;
   const t = nativeType.japanese.title;
   const tEm = t.fontSize * taglineScale;
   const tLine = t.lineHeight * taglineScale;
   const tUnit = tEm / GOTHIC.unitsPerEm;
-  const tBaseline =
-    (tLine - (GOTHIC.ascender - GOTHIC.descender) * tUnit) / 2 + GOTHIC.ascender * tUnit;
+  const tBaseline = placedBaseline(
+    platform,
+    GOTHIC.ascender * tUnit,
+    -GOTHIC.descender * tUnit,
+    tLine,
+  );
   return {
     mark: {
       w: mark,
@@ -532,111 +611,179 @@ function inkWithinBoxes(form: 'app' | 'splash', scale: number, taglineScale = sc
   };
 }
 
+/** A column with alignItems centre: each member's outer box centred, top to bottom. */
+function column(width: number) {
+  let y = 0;
+  return {
+    place(
+      margins: {
+        marginTop: number;
+        marginBottom: number;
+        marginLeft?: number;
+        marginRight?: number;
+      },
+      w: number,
+      h: number,
+    ) {
+      const outer = (margins.marginLeft ?? 0) + w + (margins.marginRight ?? 0);
+      const x = (width - outer) / 2 + (margins.marginLeft ?? 0);
+      const top = y + margins.marginTop;
+      y = top + h + margins.marginBottom;
+      return { x, top };
+    },
+    get end() {
+      return y;
+    },
+  };
+}
+
 describe('the figure is its ink, and its members sit as drawn', () => {
-  it('lays 01’s row out by its margins: the inks centred on one line, the interval between them', () => {
-    for (const scale of [1, 1.5, 2]) {
-      const g = lockupGeometry('app', scale);
-      const inner = inkWithinBoxes('app', scale);
-      const em = nativeType.latin.wordmark.fontSize * scale;
-      // A row with alignItems flex-start: each box at its margins, left to right.
-      const markX = g.markMargins.marginLeft;
-      const nameX = markX + inner.mark.w + g.markMargins.marginRight + g.nameMargins.marginLeft;
-      const markInk = {
-        left: markX + inner.mark.left,
-        right: markX + inner.mark.right,
-        top: g.markMargins.marginTop + inner.mark.top,
-        bottom: g.markMargins.marginTop + inner.mark.bottom,
-      };
-      const nameInk = {
-        left: nameX + inner.name.left,
-        right: nameX + inner.name.right,
-        top: g.nameMargins.marginTop + inner.name.top,
-        bottom: g.nameMargins.marginTop + inner.name.bottom,
-      };
-      expect(markInk.left).toBeCloseTo(0, 9);
-      expect(markInk.right - markInk.left).toBeCloseTo(LOCKUP_APP.markInk * em, 9);
-      expect(nameInk.left - markInk.right).toBeCloseTo(LOCKUP_APP.interval * em, 9);
-      expect((markInk.top + markInk.bottom) / 2).toBeCloseTo((nameInk.top + nameInk.bottom) / 2, 9);
-      // The row's box is the ink: as wide as mark to name, as tall as the taller ink, every member
-      // the same height outside.
-      const right = nameX + inner.name.w + g.nameMargins.marginRight;
-      expect(right).toBeCloseTo(nameInk.right, 9);
-      expect(right).toBeCloseTo(g.width, 9);
-      expect(Math.min(markInk.top, nameInk.top)).toBeCloseTo(0, 9);
-      expect(Math.max(markInk.bottom, nameInk.bottom)).toBeCloseTo(g.height, 9);
-      for (const [margins, h] of [
-        [g.markMargins, inner.mark.h],
-        [g.nameMargins, inner.name.h],
-      ] as const)
-        expect(margins.marginTop + h + margins.marginBottom).toBeCloseTo(g.height, 9);
-      // And the geometry reports what the layout produces.
-      expect(g.ink.mark.top).toBeCloseTo(markInk.top, 9);
-      expect(g.ink.name.left).toBeCloseTo(nameInk.left, 9);
+  it('lays 01’s row out by its margins on both platforms: the inks centred on one line, the interval between them', () => {
+    for (const platform of PLATFORMS)
+      for (const scale of [1, 1.5, 2]) {
+        const g = lockupGeometry('app', scale, scale, platform);
+        const inner = inkWithinBoxes('app', scale, scale, platform);
+        const em = nativeType.latin.wordmark.fontSize * scale;
+        // A row with alignItems flex-start: each box at its margins, left to right.
+        const markX = g.markMargins.marginLeft;
+        const nameX = markX + inner.mark.w + g.markMargins.marginRight + g.nameMargins.marginLeft;
+        const markInk = {
+          left: markX + inner.mark.left,
+          right: markX + inner.mark.right,
+          top: g.markMargins.marginTop + inner.mark.top,
+          bottom: g.markMargins.marginTop + inner.mark.bottom,
+        };
+        const nameInk = {
+          left: nameX + inner.name.left,
+          right: nameX + inner.name.right,
+          top: g.nameMargins.marginTop + inner.name.top,
+          bottom: g.nameMargins.marginTop + inner.name.bottom,
+        };
+        expect(markInk.left).toBeCloseTo(0, 9);
+        expect(markInk.right - markInk.left).toBeCloseTo(LOCKUP_APP.markInk * em, 9);
+        expect(nameInk.left - markInk.right).toBeCloseTo(LOCKUP_APP.interval * em, 9);
+        expect((markInk.top + markInk.bottom) / 2).toBeCloseTo(
+          (nameInk.top + nameInk.bottom) / 2,
+          9,
+        );
+        // The row's box is the ink: as wide as mark to name, as tall as the taller ink, every member
+        // the same height outside.
+        const right = nameX + inner.name.w + g.nameMargins.marginRight;
+        expect(right).toBeCloseTo(nameInk.right, 9);
+        expect(right).toBeCloseTo(g.width, 9);
+        expect(Math.min(markInk.top, nameInk.top)).toBeCloseTo(0, 9);
+        expect(Math.max(markInk.bottom, nameInk.bottom)).toBeCloseTo(g.height, 9);
+        for (const [margins, h] of [
+          [g.markMargins, inner.mark.h],
+          [g.nameMargins, inner.name.h],
+        ] as const)
+          expect(margins.marginTop + h + margins.marginBottom).toBeCloseTo(g.height, 9);
+        // And the geometry reports what the layout produces.
+        expect(g.ink.mark.top).toBeCloseTo(markInk.top, 9);
+        expect(g.ink.name.left).toBeCloseTo(nameInk.left, 9);
+      }
+  });
+
+  it('lays 14’s stack out by its margins on both platforms: one axis, the two intervals between the inks', () => {
+    for (const platform of PLATFORMS)
+      for (const [scale, taglineScale] of [
+        [1, 1],
+        [1.76, 1.5],
+      ] as const) {
+        const g = lockupGeometry('splash', scale, taglineScale, platform);
+        const inner = inkWithinBoxes('splash', scale, taglineScale, platform);
+        const em = nativeType.latin.wordmarkSplash.fontSize * scale;
+        const stack = column(g.width);
+        const markAt = stack.place(g.markMargins, inner.mark.w, inner.mark.h);
+        const nameAt = stack.place(g.nameMargins, inner.name.w, inner.name.h);
+        if (g.taglineMargins === undefined) throw new Error('the splash has a tagline');
+        const taglineAt = stack.place(g.taglineMargins, 0, inner.tagline.h);
+        const markInk = {
+          centre: markAt.x + (inner.mark.left + inner.mark.right) / 2,
+          top: markAt.top + inner.mark.top,
+          bottom: markAt.top + inner.mark.bottom,
+        };
+        const nameInk = {
+          centre: nameAt.x + (inner.name.left + inner.name.right) / 2,
+          top: nameAt.top + inner.name.top,
+          bottom: nameAt.top + inner.name.bottom,
+        };
+        const taglineInk = {
+          top: taglineAt.top + inner.tagline.top,
+          bottom: taglineAt.top + inner.tagline.bottom,
+        };
+        expect(markInk.top).toBeCloseTo(0, 9);
+        expect(markInk.centre).toBeCloseTo(g.width / 2, 9);
+        expect(nameInk.centre).toBeCloseTo(g.width / 2, 9);
+        expect(nameInk.top - markInk.bottom).toBeCloseTo(LOCKUP_SPLASH.markInterval * em, 9);
+        expect(taglineInk.top - nameInk.bottom).toBeCloseTo(LOCKUP_SPLASH.taglineInterval * em, 9);
+        // The column ends at the tagline's ink, and the geometry reports what the layout produces.
+        expect(stack.end).toBeCloseTo(taglineInk.bottom, 9);
+        expect(stack.end).toBeCloseTo(g.height, 9);
+        expect(g.ink.tagline?.top).toBeCloseTo(taglineInk.top, 9);
+      }
+  });
+
+  it('ends a wrapped tagline’s box at its last line’s ink', () => {
+    // At 200 % on a narrow screen the caller's tagline may wrap. Each line sits in its box as the
+    // first does, so the figure still ends at ink.
+    for (const platform of PLATFORMS) {
+      const g = lockupGeometry('splash', 1, 2, platform);
+      const inner = inkWithinBoxes('splash', 1, 2, platform);
+      if (g.taglineMargins === undefined) throw new Error('the splash has a tagline');
+      const stack = column(g.width);
+      stack.place(g.markMargins, inner.mark.w, inner.mark.h);
+      stack.place(g.nameMargins, inner.name.w, inner.name.h);
+      const taglineAt = stack.place(g.taglineMargins, 0, 2 * inner.tagline.h);
+      expect(stack.end).toBeCloseTo(taglineAt.top + inner.tagline.h + inner.tagline.bottom, 9);
     }
   });
 
-  it('lays 14’s stack out by its margins: one axis, the two intervals between the inks', () => {
-    for (const [scale, taglineScale] of [
-      [1, 1],
-      [1.76, 1.5],
-    ] as const) {
-      const g = lockupGeometry('splash', scale, taglineScale);
-      const inner = inkWithinBoxes('splash', scale, taglineScale);
-      const em = nativeType.latin.wordmarkSplash.fontSize * scale;
-      // A column with alignItems centre: each member's outer box centred, top to bottom.
-      let y = 0;
-      const place = (
-        margins: {
-          marginTop: number;
-          marginBottom: number;
-          marginLeft?: number;
-          marginRight?: number;
-        },
-        w: number,
-        h: number,
-      ) => {
-        const outer = (margins.marginLeft ?? 0) + w + (margins.marginRight ?? 0);
-        const x = (g.width - outer) / 2 + (margins.marginLeft ?? 0);
-        const top = y + margins.marginTop;
-        y = top + h + margins.marginBottom;
-        return { x, top };
-      };
-      const markAt = place(g.markMargins, inner.mark.w, inner.mark.h);
-      const nameAt = place(g.nameMargins, inner.name.w, inner.name.h);
-      if (g.taglineMargins === undefined) throw new Error('the splash has a tagline');
-      const taglineAt = place(g.taglineMargins, 0, inner.tagline.h);
-      const markInk = {
-        centre: markAt.x + (inner.mark.left + inner.mark.right) / 2,
-        top: markAt.top + inner.mark.top,
-        bottom: markAt.top + inner.mark.bottom,
-      };
-      const nameInk = {
-        centre: nameAt.x + (inner.name.left + inner.name.right) / 2,
-        top: nameAt.top + inner.name.top,
-        bottom: nameAt.top + inner.name.bottom,
-      };
-      const taglineInk = {
-        top: taglineAt.top + inner.tagline.top,
-        bottom: taglineAt.top + inner.tagline.bottom,
-      };
-      expect(markInk.top).toBeCloseTo(0, 9);
-      expect(markInk.centre).toBeCloseTo(g.width / 2, 9);
-      expect(nameInk.centre).toBeCloseTo(g.width / 2, 9);
-      expect(nameInk.top - markInk.bottom).toBeCloseTo(LOCKUP_SPLASH.markInterval * em, 9);
-      expect(taglineInk.top - nameInk.bottom).toBeCloseTo(LOCKUP_SPLASH.taglineInterval * em, 9);
-      // The column ends at the tagline's ink, and the geometry reports what the layout produces.
-      expect(y).toBeCloseTo(taglineInk.bottom, 9);
-      expect(y).toBeCloseTo(g.height, 9);
-      expect(g.ink.tagline?.top).toBeCloseTo(taglineInk.top, 9);
-    }
+  it('keeps every lockup text’s ink inside its frame on both platforms, at 100 % and 200 %', () => {
+    // A drawRect-drawn Text clips what leaves its frame (iOS), so ink above the top is lost ink.
+    for (const platform of PLATFORMS)
+      for (const form of ['app', 'splash'] as const)
+        for (const scale of [1, 2]) {
+          const inner = inkWithinBoxes(form, scale, scale, platform);
+          expect(inner.name.top).toBeGreaterThanOrEqual(0);
+          expect(inner.name.bottom).toBeLessThanOrEqual(inner.name.h);
+          expect(inner.tagline.top).toBeGreaterThanOrEqual(0);
+          expect(inner.tagline.bottom).toBeLessThanOrEqual(inner.tagline.h);
+        }
+  });
+
+  it('DECOY — at display1’s 0.98, the leading the splash name first took, iOS clips its top', () => {
+    const tight = 0.98 * nativeType.latin.wordmarkSplash.fontSize;
+    // iOS bottom-aligns a line under the face's own and lifts the ink out of the frame by 7.3 dp;
+    // Android splits the negative leading and keeps it in. The two disagree, which is the defect.
+    expect(inkWithinBoxes('splash', 1, 1, 'ios', tight).name.top).toBeLessThan(-7);
+    expect(inkWithinBoxes('splash', 1, 1, 'android', tight).name.top).toBeGreaterThan(0);
+    // The leading the step takes now is the serif's own line, where both platforms centre.
+    expect(nativeType.latin.wordmarkSplash.lineHeight).toBeGreaterThanOrEqual(
+      ((GELASIO.ascender - GELASIO.descender) / GELASIO.unitsPerEm) *
+        nativeType.latin.wordmarkSplash.fontSize,
+    );
+  });
+
+  it('DECOY — the tagline sits a dp apart on the two platforms, so one placement for both is wrong', () => {
+    // `title`'s Japanese leading is under the gothic's own line: iOS sets it on the foot.
+    const ios = inkWithinBoxes('splash', 1, 1, 'ios').tagline.top;
+    const android = inkWithinBoxes('splash', 1, 1, 'android').tagline.top;
+    expect(Math.abs(ios - android)).toBeGreaterThan(1);
+    expect(lockupGeometry('splash', 1, 1, 'ios').taglineMargins?.marginTop).not.toBeCloseTo(
+      lockupGeometry('splash', 1, 1, 'android').taglineMargins?.marginTop ?? 0,
+      1,
+    );
   });
 
   it('DECOY — a line box centred as a box is not the ink centred: the name’s ink sits high in its line', () => {
     // What `alignItems: 'center'` alone would draw. Gelasio's ascender carries the cap and the
     // ascenders; its descender a deep tail "Irodora" does not use.
-    const inner = inkWithinBoxes('app', 1);
-    const inkCentre = (inner.name.top + inner.name.bottom) / 2;
-    expect(inner.name.h / 2 - inkCentre).toBeGreaterThan(2);
+    for (const platform of PLATFORMS) {
+      const inner = inkWithinBoxes('app', 1, 1, platform);
+      const inkCentre = (inner.name.top + inner.name.bottom) / 2;
+      expect(inner.name.h / 2 - inkCentre).toBeGreaterThan(2);
+    }
   });
 });
 

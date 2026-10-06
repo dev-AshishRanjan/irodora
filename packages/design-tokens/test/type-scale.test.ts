@@ -176,7 +176,29 @@ describe('type drawn off the scale (ADR-0121)', () => {
     for (const [name] of measured) expect(serif?.steps).toContain(name);
   });
 
-  it('sets each measured step at its elements’ median em, with the nearest board step’s leading', () => {
+  /** The manifest face each inventory face is set in (ADR-0112): the gothic is the bundled jp. */
+  const FACE_OF: Readonly<Record<string, string>> = {
+    serif: 'serif',
+    gothic: 'jp',
+    mincho: 'mincho',
+  };
+
+  /**
+   * The tallest own line among the faces a step's bound elements are drawn in (F-230's review). iOS
+   * centres a line in its box only at or above its face's own line; below it, React Native 0.86
+   * applies no baseline offset, TextKit bottom-aligns the glyphs, and a tall line's top is clipped
+   * (RCTApplyBaselineOffsetForRange). The platform sans has no bundled face, so it reads 0 here.
+   */
+  const ownLineOf = (name: string): number =>
+    Math.max(
+      0,
+      ...(manifest.typography.scale[name]?.elements ?? []).map((id) => {
+        const face = FACE_OF[byId.get(id)?.type?.face ?? ''];
+        return face === undefined ? 0 : (manifest.typography.faces[face]?.ownLine ?? 0);
+      }),
+    );
+
+  it('sets each measured step at its elements’ median em, leading at least its face’s own line', () => {
     for (const [name, step] of measured) {
       const ems = (step.elements ?? []).map((id) => {
         const e = byId.get(id);
@@ -189,11 +211,17 @@ describe('type drawn off the scale (ADR-0121)', () => {
       const nearest = [...BOARD].sort(
         (a, b) => Math.abs(boardSize(a) - step.size) - Math.abs(boardSize(b) - step.size),
       )[0];
-      expect(step.lineHeight).toBe(manifest.typography.scale[nearest ?? '']?.lineHeight);
+      // The nearest board step's leading, or the face's own line where that is taller (ADR-0121).
+      const board = manifest.typography.scale[nearest ?? '']?.lineHeight ?? NaN;
+      expect(step.lineHeight).toBe(Math.max(board, ownLineOf(name)));
       expect([step.weight, step.tracking]).toStrictEqual([400, '0']);
     }
     // DECOY: the snap ADR-0121 replaces would have set the wordmark at title.
     expect(manifest.typography.scale['wordmark']?.size).not.toBe(boardSize('title'));
+    // DECOY: display1's 0.98, which the splash wordmark first took, is under the serif's own line.
+    expect(manifest.typography.scale['display1']?.lineHeight).toBeLessThan(
+      ownLineOf('wordmarkSplash'),
+    );
   });
 
   it('accounts for every element drawn more than 4 dp from every step: bound, or owed', () => {

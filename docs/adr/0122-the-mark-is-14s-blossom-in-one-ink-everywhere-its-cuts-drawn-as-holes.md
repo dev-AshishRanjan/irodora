@@ -24,7 +24,7 @@ gap one interval — and ADR-0093 gave the **icon** five corpus colours while th
 draws a coloured mark except `27`'s loading state.
 
 F-230 measured `14`'s mark (`mark.ps1`, `mark-fit.mjs`; calibrated through a JPEG at quality 85 to
-0.3 px, five decoys refused). At 1.3521 dp/px, in px:
+0.3 px, five decoys refused). In px — `14`'s two columns at 1.3521 dp/px, `01`'s at 0.5:
 
 | | splash (`14.splash.mark`) | icon (`14.icon.tile.mark`) | `01.header.mark` (cross-check) |
 |---|---|---|---|

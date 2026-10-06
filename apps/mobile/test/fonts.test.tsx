@@ -135,10 +135,11 @@ describe('the first frame waits for every face (criterion 4)', () => {
  * The tables a lockup's arithmetic reads, from a bundled face's bytes (F-230).
  *
  * Just enough TrueType for the numbers `GELASIO` and `GOTHIC` carry: `head`'s units per em,
- * `hhea`'s ascender and descender, `OS/2`'s typographic pair and its USE_TYPO_METRICS bit, a word's
- * advance and ink box (`cmap` format 4, `hmtx`, and each glyph's box from `loca`/`glyf`), and `BASE`'s
- * ideographic character face. Read independently of the constants, so the constants are checked
- * against the font rather than against themselves.
+ * `hhea`'s ascender, descender and line gap, `OS/2`'s typographic pair and its USE_TYPO_METRICS
+ * bit, a word's advance and ink box (`cmap` format 4, `hmtx`, each glyph's box from `loca`/`glyf`,
+ * and the pair kerning `GPOS`'s `kern` feature applies — a platform kerns by default, F-230's
+ * review), and `BASE`'s ideographic character face. Read independently of the constants, so the
+ * constants are checked against the font rather than against themselves.
  */
 function faceTables(file: string) {
   const bytes = readFileSync(join(APP, 'assets', 'fonts', file));
@@ -188,15 +189,108 @@ function faceTables(file: string) {
   const advanceOf = (glyph: number): number =>
     view.getUint16(at('hmtx') + 4 * Math.min(glyph, metrics - 1));
 
+  // GPOS pair kerning: the `kern` feature's pair-adjustment lookups (type 2, or 9 wrapping 2).
+  const coverageIndex = (coverage: number, glyph: number): number => {
+    const count = view.getUint16(coverage + 2);
+    if (view.getUint16(coverage) === 1) {
+      for (let i = 0; i < count; i += 1)
+        if (view.getUint16(coverage + 4 + 2 * i) === glyph) return i;
+      return -1;
+    }
+    for (let i = 0; i < count; i += 1) {
+      const range = coverage + 4 + 6 * i;
+      const first = view.getUint16(range);
+      if (glyph >= first && glyph <= view.getUint16(range + 2))
+        return view.getUint16(range + 4) + glyph - first;
+    }
+    return -1;
+  };
+  const classOf = (classDef: number, glyph: number): number => {
+    if (view.getUint16(classDef) === 1) {
+      const first = view.getUint16(classDef + 2);
+      const count = view.getUint16(classDef + 4);
+      return glyph >= first && glyph < first + count
+        ? view.getUint16(classDef + 6 + 2 * (glyph - first))
+        : 0;
+    }
+    for (let i = 0; i < view.getUint16(classDef + 2); i += 1) {
+      const range = classDef + 4 + 6 * i;
+      if (glyph >= view.getUint16(range) && glyph <= view.getUint16(range + 2))
+        return view.getUint16(range + 4);
+    }
+    return 0;
+  };
+  const valueSize = (format: number): number => {
+    let size = 0;
+    for (let bit = 0; bit < 8; bit += 1) if (format & (1 << bit)) size += 2;
+    return size;
+  };
+  /** A value record's x advance (bit 2), after its x and y placements where present. */
+  const xAdvance = (record: number, format: number): number =>
+    format & 4 ? view.getInt16(record + (format & 1 ? 2 : 0) + (format & 2 ? 2 : 0)) : 0;
+  const pairSubtables: number[] = [];
+  if (tables.has('GPOS')) {
+    const gpos = at('GPOS');
+    const features = gpos + view.getUint16(gpos + 6);
+    const lookups = gpos + view.getUint16(gpos + 8);
+    for (let i = 0; i < view.getUint16(features); i += 1) {
+      if (bytes.toString('latin1', features + 2 + 6 * i, features + 6 + 6 * i) !== 'kern') continue;
+      const feature = features + view.getUint16(features + 6 + 6 * i);
+      for (let k = 0; k < view.getUint16(feature + 2); k += 1) {
+        const lookup =
+          lookups + view.getUint16(lookups + 2 + 2 * view.getUint16(feature + 4 + 2 * k));
+        const type = view.getUint16(lookup);
+        for (let t = 0; t < view.getUint16(lookup + 4); t += 1) {
+          const sub = lookup + view.getUint16(lookup + 6 + 2 * t);
+          if (type === 2) pairSubtables.push(sub);
+          else if (type === 9 && view.getUint16(sub + 2) === 2)
+            pairSubtables.push(sub + view.getUint32(sub + 4));
+        }
+      }
+    }
+  }
+  /** The x-advance adjustment the `kern` feature applies between two glyphs, in font units. */
+  const kernOf = (left: number, right: number): number => {
+    let total = 0;
+    for (const sub of pairSubtables) {
+      const index = coverageIndex(sub + view.getUint16(sub + 2), left);
+      if (index < 0) continue;
+      const first = view.getUint16(sub + 4);
+      const second = view.getUint16(sub + 6);
+      if (view.getUint16(sub) === 1) {
+        const set = sub + view.getUint16(sub + 10 + 2 * index);
+        const size = 2 + valueSize(first) + valueSize(second);
+        for (let i = 0; i < view.getUint16(set); i += 1)
+          if (view.getUint16(set + 2 + size * i) === right)
+            total += xAdvance(set + 2 + size * i + 2, first);
+      } else {
+        const classes = view.getUint16(sub + 14);
+        const row = classOf(sub + view.getUint16(sub + 8), left);
+        const column = classOf(sub + view.getUint16(sub + 10), right);
+        total += xAdvance(
+          sub + 16 + (row * classes + column) * (valueSize(first) + valueSize(second)),
+          first,
+        );
+      }
+    }
+    return total;
+  };
+
   return {
     unitsPerEm: view.getUint16(head + 18),
     ascender: view.getInt16(hhea + 4),
     descender: view.getInt16(hhea + 6),
+    lineGap: view.getInt16(hhea + 8),
     typo: { ascender: view.getInt16(os2 + 68), descender: view.getInt16(os2 + 70) },
     useTypoMetrics: (view.getUint16(os2 + 62) & (1 << 7)) !== 0,
-    /** A word set at no tracking: its advance and its ink, from the first glyph's origin, y up. */
+    /** A character's glyph id. */
+    glyph: (character: string): number => glyphOf(character.codePointAt(0) ?? 0),
+    /** The `kern` feature's adjustment between two glyphs, in font units. */
+    kern: kernOf,
+    /** A word set at no tracking, kerned: its advance and its ink, from the first glyph's origin, y up. */
     word(text: string) {
       let pen = 0;
+      let previous = -1;
       const ink = {
         inkLeft: Infinity,
         inkRight: -Infinity,
@@ -206,6 +300,8 @@ function faceTables(file: string) {
       for (const character of text) {
         const glyph = glyphOf(character.codePointAt(0) ?? 0);
         if (glyph === 0) throw new Error(`${file} has no glyph for ${character}`);
+        if (previous >= 0) pen += kernOf(previous, glyph);
+        previous = glyph;
         if (offsetOf(glyph + 1) > offsetOf(glyph)) {
           const box = at('glyf') + offsetOf(glyph);
           ink.inkLeft = Math.min(ink.inkLeft, pen + view.getInt16(box + 2));
@@ -281,5 +377,25 @@ describe('the lockup’s metrics are the bundled faces’ (F-230, ADR-0123)', ()
 
   it('DECOY — another word is another extent, so the reader is not agreeing with anything', () => {
     expect(gelasio.word('irodora')).not.toStrictEqual(GELASIO.name);
+  });
+
+  it('DECOY — Gelasio does kern, one pair class, so a kern in the name would be read', () => {
+    // The name's advance above is kerned: no pair in "Irodora" is adjusted. The face's one kerned
+    // class is "L" before two unencoded glyphs (248 and 249), at −300 units — which the reader sees.
+    expect(gelasio.kern(gelasio.glyph('L'), 248)).toBe(-300);
+    expect(gelasio.kern(gelasio.glyph('I'), gelasio.glyph('r'))).toBe(0);
+  });
+
+  it('records each bundled face’s own line in the manifest, rounded up from hhea (ADR-0121)', () => {
+    // iOS centres a line only at or above its face's own line; the measured steps lead at least that.
+    for (const face of Object.values(nativeFaces)) {
+      const t = faceTables(face.file);
+      const own = (t.ascender - t.descender + t.lineGap) / t.unitsPerEm;
+      expect({ face: face.family, ownLine: face.ownLine }).toStrictEqual({
+        face: face.family,
+        ownLine: Math.ceil(own * 100) / 100,
+      });
+      expect(face.ownLine).toBeGreaterThanOrEqual(own);
+    }
   });
 });

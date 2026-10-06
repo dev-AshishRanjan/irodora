@@ -77,3 +77,10 @@ The comparison that could be written on neither side is now written across it: t
 requires `markShapes()` to equal it. Neither side loads the other; both read the same bytes. The
 parse also reads decimals and the five cut fields now, still only between `MARK`'s braces, and
 refuses a missing field.
+
+## F-230's review: the point tests, not only their numbers
+
+The file compared the scalars both sides derive. The cuts' angles and extents live in the two point
+tests themselves, so a disagreement there would have passed. The file now carries the generator's
+point test sampled at 9,216 points, and `brand.test` requires the component's to match, with the
+mark turned a tenth of a turn as the decoy.

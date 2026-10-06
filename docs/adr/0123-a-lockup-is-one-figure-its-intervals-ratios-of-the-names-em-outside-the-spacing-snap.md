@@ -51,7 +51,12 @@ token does not, so a lockup built from tokens changes shape at every text size b
    default size.
 4. **The figure's box is its ink.** A Text's line box is not its ink: centring Gelasio's line box
    would set the name's ink 2.5 dp high in `01`'s row. Each member's margins take its box to its
-   ink, computed from the faces' own metrics by the half-leading model both platforms document.
+   ink, computed from the faces' own metrics and placed as React Native 0.86 places each
+   platform's line: Android's half-leading (`CustomLineHeightSpan`), and iOS's, which matches it
+   only where the line is at least its face's own and otherwise sets the glyphs on the line's foot
+   (`RCTApplyBaselineOffsetForRange`). The name is set at the serif's own line, where the two agree
+   and nothing is clipped (ADR-0121, amended by F-230's review); the tagline keeps `title`'s
+   leading, and its two placements are each computed.
    Those metrics are `GELASIO` (units per em, `hhea`'s ascender and descender, the name's advance
    and ink) and `GOTHIC` (the same, plus `BASE`'s ideographic character face), and
    `apps/mobile/test/fonts.test.tsx` reads them again from the bundled TTFs. In the row the inks
@@ -80,9 +85,11 @@ token does not, so a lockup built from tokens changes shape at every text size b
   agreed. Recording ratios there looks like precision for its own sake. That is accepted, because
   the figure has one rule. The test says where the instrument cannot tell the ratio from the step
   (the tagline's interval) and claims no decoy there.
-- **Where a platform puts a line box's baseline is a device attestation.** The half-leading model
-  is what both platforms document, and jest has no layout. So are the name's fit
-  (`adjustsFontSizeToFit`) and the scale read from its laid-out line.
+- **Where a platform puts a line box's baseline is read from React Native's source, not
+  measured.** jest has no layout, so a device attests it. So are the name's fit
+  (`adjustsFontSizeToFit`) and the scale read from its laid-out line. The first version of this
+  ADR said both platforms follow the half-leading model; iOS does not below a face's own line,
+  which F-230's review found in the source before any device could.
 - **The row measures the width its column gives it.** Both drawn placements are columns. In a row
   parent it would measure only itself and scale no further than its content.
 
@@ -105,4 +112,5 @@ token does not, so a lockup built from tokens changes shape at every text size b
 
 - A mockup draws a lockup at other proportions, or a third lockup.
 - A drawn wordmark replaces the set name (the ratios stay; the metrics change).
-- A device run shows a platform placing the baseline other than the half-leading model.
+- A device run shows a platform placing the baseline other than its source does, or React Native
+  changes `RCTApplyBaselineOffsetForRange` or `CustomLineHeightSpan`.
