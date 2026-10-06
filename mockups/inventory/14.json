@@ -90,6 +90,20 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "petals": 5,
+        "phaseDeg": -0.12,
+        "orbitPx": 35.63,
+        "petalPx": 20.55,
+        "hubPx": 28.82,
+        "eyePx": 9.06,
+        "ringOuterPx": 13.04,
+        "stamenOuterPx": 28.14,
+        "stamenPx": 3.81,
+        "antherPx": 0,
+        "seamPx": 4.34,
+        "reachPx": 56.44
+      },
       "copy": null
     },
     {
@@ -118,6 +132,20 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "petals": 5,
+        "phaseDeg": -0.01,
+        "orbitPx": 36.02,
+        "petalPx": 21.11,
+        "hubPx": 29.14,
+        "eyePx": 9.79,
+        "ringOuterPx": 11.86,
+        "stamenOuterPx": 28.16,
+        "stamenPx": 2.3,
+        "antherPx": 0,
+        "seamPx": 2.56,
+        "reachPx": 57.44
+      },
       "copy": null
     },
     {
@@ -150,6 +178,12 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "emDp": 59.7,
+        "inkHeightPx": 34.2,
+        "inkWidthPx": 146.18,
+        "markGapPx": 24.04
+      },
       "copy": {
         "shape": "heading",
         "script": "latin"
@@ -178,13 +212,19 @@
       },
       "type": {
         "face": "gothic",
-        "size": "body",
+        "size": "title",
         "weight": 400
       },
       "icon": null,
       "illustration": null,
       "binding": "static:brand.taglineJa",
       "action": null,
+      "raw": {
+        "emDp": 22,
+        "inkHeightPx": 15.03,
+        "inkWidthPx": 113.78,
+        "gapAbovePx": 11.75
+      },
       "copy": {
         "shape": "label",
         "script": "japanese"

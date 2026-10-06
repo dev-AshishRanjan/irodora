@@ -26,6 +26,19 @@
  * ```
  *
  * An authoring tool: no gate runs it. Its output is recorded in ADR-0112.
+ *
+ * ## The em a word is drawn at (F-230, ADR-0121)
+ *
+ * `--em` reads the size the wordmarks are drawn at: the drawn ink height over the same word's ink
+ * height in Gelasio's outlines (at the weight ADR-0112 found, 400) gives the em; the ink width over
+ * the outlines' width gives it a second way, since ADR-0112 found no tracking. The two must agree.
+ * A box's height is not an em — "Irodora" has no descender, and its cap and ascender heights are the
+ * face's own — which is why 01's recorded 34 dp is re-read this way. `--em --calibrate` sets the
+ * word at known ems at each crop's pixel size, through GDI+ and a JPEG at quality 85, and must
+ * recover each by height within half a pixel of the ink height (or 1 %, whichever is larger). The
+ * width is not calibrated: GDI+ lays the word out about 2.5 % wider than its outlines' advances
+ * (every calibration render does, at every size), which is the renderer, not the drawing. On the
+ * mockups the two readings agree within 1.1 %, and that agreement is reported as the cross-check.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -37,6 +50,8 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 const FONT = join(ROOT, '.cache', 'fonts', 'gelasio', 'Gelasio[wght].ttf');
+/** The Japanese gothic 14's splash tagline is drawn in, for its em (F-230). */
+const GOTHIC = join(ROOT, '.cache', 'fonts', 'NotoSansJP-Variable.ttf');
 /** The Japanese serif 20's card is scored against (mincho-candidates.json), measured the same way. */
 const MINCHO = join(ROOT, '.cache', 'fonts', 'mincho', 'notoserifjp', 'NotoSerifJP[wght].ttf');
 const CALIB = join(ROOT, '.cache', 'fonts', 'gelasio', 'calibration');
@@ -77,6 +92,7 @@ const CROPS = [
     box: [170, 93, 212, 51],
     word: 'Irodora',
     polarity: 'light',
+    dpPerPx: 0.5,
   },
   {
     id: '14-wordmark',
@@ -85,6 +101,7 @@ const CROPS = [
     box: [485, 665, 147, 35],
     word: 'Irodora',
     polarity: 'light',
+    dpPerPx: 1.3521,
   },
   {
     id: '25-wordmark',
@@ -133,6 +150,20 @@ const CROPS = [
     box: [70, 284, 275, 30],
     word: 'Does it suit me.',
     polarity: 'light',
+  },
+  // 14's splash tagline, in the gothic: read for its em only (F-230), never for a weight. At 15 px of
+  // ink this instrument reads an em to about 0.6 px, not half a pixel, so the reading decides only
+  // which step band the tagline falls in (ADR-0121), which an error that size cannot change.
+  {
+    id: '14-tagline',
+    bandOnly: true,
+    role: 'em-only',
+    img: '14_app_icon_and_splash.jpg',
+    box: [496, 707, 125, 25],
+    word: '彩り・色の知性',
+    polarity: 'light',
+    font: GOTHIC,
+    dpPerPx: 1.3521,
   },
   // 20's card: the kanji 藍鼠 (C6), in the mincho — the check on the inventory's recorded 400.
   {
@@ -369,12 +400,105 @@ if (!existsSync(FONT)) {
 }
 const fontBytes = readFileSync(FONT);
 const bytesOf = (crop) => (crop.font === undefined ? fontBytes : readFileSync(crop.font));
+// The weight solver reads the weight-bearing crops only; the em-only crops are --em's.
+const WEIGHT_CROPS = CROPS.filter((c) => c.role !== 'em-only');
 const json = process.argv.includes('--json');
+
+if (process.argv.includes('--em')) {
+  const emOf = (drawn, crop) => {
+    const m400 = measureFont(bytesOf(crop), crop.word, 400);
+    return {
+      byHeight: (drawn.spaces.encoded.height * m400.upem) / m400.height,
+      byWidth: (drawn.spaces.encoded.width * m400.upem) / m400.width,
+    };
+  };
+  const crops = CROPS.filter((c) => c.dpPerPx !== undefined);
+  if (process.argv.includes('--calibrate')) {
+    mkdirSync(CALIB, { recursive: true });
+    let failed = 0;
+    for (const crop of crops) {
+      const file = join(CALIB, `${crop.font === undefined ? 'Gelasio' : 'Gothic'}-400-em.ttf`);
+      if (!existsSync(file))
+        writeFileSync(
+          file,
+          await subsetFont(
+            bytesOf(crop),
+            crops
+              .filter((c) => c.font === crop.font)
+              .map((c) => c.word)
+              .join(''),
+            {
+              targetFormat: 'truetype',
+              variationAxes: { wght: 400 },
+            },
+          ),
+        );
+      const read = emOf(drawnOf(crop), crop).byHeight;
+      for (const factor of [0.9, 1, 1.1]) {
+        const known = read * factor;
+        const jpg = join(CALIB, `${crop.id}-em-${String(factor)}.jpg`);
+        const rendered = stem([
+          '-render',
+          '-fontFile',
+          file,
+          '-codepoints',
+          [...crop.word].map((ch) => (ch.codePointAt(0) ?? 0).toString(16)).join(','),
+          '-emPx',
+          known.toFixed(3),
+          '-out',
+          jpg,
+          '-quality',
+          '85',
+          '-polarity',
+          crop.polarity,
+          '-fractions',
+          FRACTIONS.join(','),
+          '-band',
+          String(BAND),
+        ]);
+        const got = emOf(rendered, crop);
+        const errH = got.byHeight / known - 1;
+        const errW = got.byWidth / known - 1;
+        const tolerance = Math.max(0.01, 0.5 / rendered.spaces.encoded.height);
+        const ok = Math.abs(errH) <= tolerance || crop.bandOnly === true;
+        if (!ok) failed += 1;
+        console.log(
+          `${crop.id.padEnd(12)} known ${known.toFixed(2).padStart(6)}px -> height ${got.byHeight.toFixed(2)} (${(errH * 100).toFixed(2)} %), width ${got.byWidth.toFixed(2)} (${(errW * 100).toFixed(2)} %)${ok ? '' : '  FAILS'}${crop.bandOnly === true ? '  (decides a band only)' : ''}`,
+        );
+      }
+    }
+    if (failed > 0) {
+      console.error(
+        `serif-weight --em: calibration FAILED, ${String(failed)} reading(s) beyond tolerance`,
+      );
+      process.exit(1);
+    }
+    console.log(
+      'serif-weight --em: calibration passed — each wordmark em recovered by height within half a pixel; band-only crops reported',
+    );
+    process.exit(0);
+  }
+  const rows = crops.map((crop) => {
+    const drawn = drawnOf(crop);
+    const em = emOf(drawn, crop);
+    return {
+      crop: crop.id,
+      inkHeightPx: drawn.spaces.encoded.height,
+      inkWidthPx: drawn.spaces.encoded.width,
+      emPxByHeight: Number(em.byHeight.toFixed(2)),
+      emPxByWidth: Number(em.byWidth.toFixed(2)),
+      emDpByHeight: Number((em.byHeight * crop.dpPerPx).toFixed(2)),
+      emDpByWidth: Number((em.byWidth * crop.dpPerPx).toFixed(2)),
+    };
+  });
+  console.log(JSON.stringify(rows, null, 2));
+  process.exit(0);
+}
 
 if (process.argv.includes('--calibrate')) {
   mkdirSync(CALIB, { recursive: true });
   const rows = [];
-  for (const crop of CROPS.filter((c) => c.role !== 'reported')) {
+  for (const crop of WEIGHT_CROPS.filter((c) => c.role !== 'reported')) {
     const drawn = drawnOf(crop);
     const bytes = bytesOf(crop);
     const m400 = measureFont(bytes, crop.word, 400);
@@ -444,7 +568,7 @@ if (process.argv.includes('--calibrate')) {
 }
 
 const results = [];
-for (const crop of CROPS) {
+for (const crop of WEIGHT_CROPS) {
   const drawn = drawnOf(crop);
   results.push({
     crop: crop.id,

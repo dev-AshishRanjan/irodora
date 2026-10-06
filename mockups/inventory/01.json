@@ -70,6 +70,21 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "petals": 5,
+        "phaseDeg": 0.01,
+        "orbitPx": 24.86,
+        "petalPx": 14.48,
+        "hubPx": 20.11,
+        "eyePx": 4.66,
+        "ringOuterPx": 7.2,
+        "stamenOuterPx": 16.85,
+        "stamenPx": 2.74,
+        "stamenTipPx": 3.83,
+        "antherPx": 0,
+        "seamPx": 2.78,
+        "reachPx": 39.44
+      },
       "copy": null
     },
     {
@@ -98,7 +113,10 @@
       "binding": null,
       "action": null,
       "raw": {
-        "emDp": 34
+        "emDp": 31.6,
+        "inkHeightPx": 48.95,
+        "inkWidthPx": 210.51,
+        "markGapPx": 20.03
       },
       "copy": null
     },

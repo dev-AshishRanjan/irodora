@@ -35,6 +35,25 @@ export default {
       component: 'ui:Mark',
       box: { x: 157, y: 617, w: 109, h: 109 },
       tokens: { fg: 'text.secondary' },
+      // F-230 (2026-10-06), read with mark.ps1 and mark-fit.mjs (calibrated through a JPEG at q85 to
+      // 0.3 px, five decoys refused): five tangent petals over a hub filled to their tangency, petal 1
+      // straight up; a ring cut around the eye; a stamen cut along each petal and a seam along each
+      // notch, ring to edge. The icon's render draws its cuts wider and softer on the tile; the splash
+      // governs (ADR-0122).
+      raw: {
+        petals: 5,
+        phaseDeg: -0.12,
+        orbitPx: 35.63,
+        petalPx: 20.55,
+        hubPx: 28.82,
+        eyePx: 9.06,
+        ringOuterPx: 13.04,
+        stamenOuterPx: 28.14,
+        stamenPx: 3.81,
+        antherPx: 0,
+        seamPx: 4.34,
+        reachPx: 56.44,
+      },
       binding: null,
       action: null,
       copy: null,
@@ -45,6 +64,25 @@ export default {
       component: 'ui:Mark',
       box: { x: 503, y: 534, w: 111, h: 108 },
       tokens: { fg: 'text.primary' },
+      // F-230 (2026-10-06), read with mark.ps1 and mark-fit.mjs (calibrated through a JPEG at q85 to
+      // 0.3 px, five decoys refused): five tangent petals over a hub filled to their tangency, petal 1
+      // straight up; a ring cut around the eye; a stamen cut along each petal and a seam along each
+      // notch, ring to edge. The icon's render draws its cuts wider and softer on the tile; the splash
+      // governs (ADR-0122).
+      raw: {
+        petals: 5,
+        phaseDeg: -0.01,
+        orbitPx: 36.02,
+        petalPx: 21.11,
+        hubPx: 29.14,
+        eyePx: 9.79,
+        ringOuterPx: 11.86,
+        stamenOuterPx: 28.16,
+        stamenPx: 2.3,
+        antherPx: 0,
+        seamPx: 2.56,
+        reachPx: 57.44,
+      },
       binding: null,
       action: null,
       copy: null,
@@ -56,6 +94,9 @@ export default {
       box: { x: 485, y: 665, w: 147, h: 35 },
       tokens: { fg: 'text.primary' },
       type: { face: 'serif', size: 'display1', weight: 400 },
+      // F-230: the em from Gelasio's outlines (serif-weight.mjs --em): 59.7 dp by the ink's height,
+      // 59.9 by its width; 24.0 px under the mark's ink, centred on it within half a pixel.
+      raw: { emDp: 59.7, inkHeightPx: 34.2, inkWidthPx: 146.18, markGapPx: 24.04 },
       binding: null,
       action: null,
       copy: { shape: 'heading', script: 'latin' },
@@ -66,7 +107,10 @@ export default {
       component: 'ui:Text',
       box: { x: 501, y: 711, w: 115, h: 17 },
       tokens: { fg: 'text.primary' },
-      type: { face: 'gothic', size: 'body', weight: 400 },
+      // F-230: the em from Noto Sans JP's outlines, 22.0 dp by height and 22.2 by width — `title`, not
+      // the `body` first recorded; 11.75 px under the wordmark's ink, centred on it.
+      type: { face: 'gothic', size: 'title', weight: 400 },
+      raw: { emDp: 22, inkHeightPx: 15.03, inkWidthPx: 113.78, gapAbovePx: 11.75 },
       binding: 'static:brand.taglineJa',
       action: null,
       copy: { shape: 'label', script: 'japanese' },

@@ -55,10 +55,32 @@ export default {
     el('01.header.line-art', 'ui:Illustration', B(471, 15, 297, 261), {
       illustration: 'plum-branch',
     }),
-    el('01.header.mark', 'ui:Mark', B(73, 80, 78, 77), { tokens: { fg: 'text.primary' } }),
+    // F-230 (2026-10-06), read as 14's are, a cross-check only (C4 takes the geometry from 14): the
+    // same blossom, its eye smaller and each stamen ending in a dot 3.8 px across.
+    el('01.header.mark', 'ui:Mark', B(73, 80, 78, 77), {
+      tokens: { fg: 'text.primary' },
+      raw: {
+        petals: 5,
+        phaseDeg: 0.01,
+        orbitPx: 24.86,
+        petalPx: 14.48,
+        hubPx: 20.11,
+        eyePx: 4.66,
+        ringOuterPx: 7.2,
+        stamenOuterPx: 16.85,
+        stamenPx: 2.74,
+        stamenTipPx: 3.83,
+        antherPx: 0,
+        seamPx: 2.78,
+        reachPx: 39.44,
+      },
+    }),
+    // F-230: the em from Gelasio's outlines (serif-weight.mjs --em), 31.6 dp by the ink's height and
+    // 31.9 by its width; the 34 first recorded was a box's height. 20.0 px right of the mark's ink,
+    // their vertical centres 0.3 px apart.
     el('01.header.wordmark', 'ui:Wordmark', B(170, 93, 212, 51), {
       tokens: { fg: 'text.primary' },
-      raw: { emDp: 34 },
+      raw: { emDp: 31.6, inkHeightPx: 48.95, inkWidthPx: 210.51, markGapPx: 20.03 },
     }),
     el('01.header.tagline', 'ui:Text', B(73, 200, 269, 112), {
       tokens: { fg: 'text.primary' },
