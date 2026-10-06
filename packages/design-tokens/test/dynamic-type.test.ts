@@ -59,12 +59,16 @@ describe('THE PIN — the emitted table, asserted literally', () => {
     // right response is to read the new mapping and update this table deliberately — not to
     // relax the assertion.
     // F-226 (ADR-0113): board 00's scale — display1 72, title 22, body 16, label 14, caption 10.3.
+    // F-230 (ADR-0121): the two measured wordmark steps. 31.6 is nearest Apple's Large Title (34 pt;
+    // Title 1 is 28) and 59.7 is past the largest style, so both scale along Large Title's curve.
     expect(nativeDynamicTypeRamp).toEqual({
       display1: 'largeTitle',
       title: 'title2',
+      wordmark: 'largeTitle',
       body: 'callout',
       label: 'subheadline',
       caption: 'caption2',
+      wordmarkSplash: 'largeTitle',
     });
   });
 

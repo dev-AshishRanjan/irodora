@@ -297,6 +297,11 @@ export interface TypeStep {
   readonly tracking: string;
   readonly weight: number;
   readonly transform?: string;
+  /**
+   * A MEASURED step's elements (ADR-0121): the inventory elements drawn more than 4 dp from every
+   * board step, at this size. A board step has none.
+   */
+  readonly elements?: readonly string[];
 }
 
 /**
@@ -1116,13 +1121,24 @@ export function parseManifest(input: unknown): Manifest {
       tracking,
       weight: requireNumber(o['weight'], `typography.scale.${name}.weight`),
     };
-    typeScale[name] =
-      o['transform'] === undefined
-        ? step
-        : {
-            ...step,
-            transform: requireString(o['transform'], `typography.scale.${name}.transform`),
-          };
+    const elementsRaw = o['elements'];
+    if (
+      elementsRaw !== undefined &&
+      (!Array.isArray(elementsRaw) ||
+        elementsRaw.length === 0 ||
+        !elementsRaw.every((e) => typeof e === 'string'))
+    )
+      throw new ManifestError(
+        `typography.scale.${name}.elements`,
+        'expected a non-empty list of inventory element ids — a measured step is bound to what draws it',
+      );
+    typeScale[name] = {
+      ...step,
+      ...(o['transform'] === undefined
+        ? {}
+        : { transform: requireString(o['transform'], `typography.scale.${name}.transform`) }),
+      ...(elementsRaw === undefined ? {} : { elements: elementsRaw }),
+    };
   }
 
   const leadingRaw = requireRecord(typoRaw['lineHeight'], 'typography.lineHeight');

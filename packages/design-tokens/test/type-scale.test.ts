@@ -8,6 +8,11 @@
  *
  * And the manifest's steps are EXACTLY the inventory schema's `type.size` vocabulary, so a screen's
  * record and the scale it is built from cannot name different steps.
+ *
+ * ADR-0121 (F-230) adds the rule for type drawn off the scale: within 4 dp of a board step it takes
+ * the step; beyond, a MEASURED step bound to the elements drawn at that size, at their median em.
+ * The census below accounts for every such element — bound here, or owed in
+ * `.harness/verification/type-census.json` by the feature that builds it — both ways.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -21,6 +26,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /* ONE `join` per path, every segment literal, so verify-cache-scope can see what is read. */
 const INVENTORY = join(HERE, '..', '..', '..', 'mockups', 'inventory');
 const SCHEMA = join(HERE, '..', '..', '..', 'mockups', 'inventory.schema.json');
+const CENSUS = join(HERE, '..', '..', '..', '.harness', 'verification', 'type-census.json');
 const manifest = parseManifest(
   JSON.parse(
     readFileSync(
@@ -33,7 +39,27 @@ const manifest = parseManifest(
 interface Element {
   readonly id: string;
   readonly raw?: { readonly emDp?: number };
+  readonly type?: { readonly size?: string; readonly face?: string; readonly weight?: number };
   readonly children?: readonly Element[];
+}
+
+/** Every element of every inventory, children included. */
+function allElements(): Element[] {
+  const out: Element[] = [];
+  for (const file of readdirSync(INVENTORY)) {
+    if (!file.endsWith('.json')) continue;
+    const walk = (els: readonly Element[] | undefined): void => {
+      for (const e of els ?? []) {
+        out.push(e);
+        walk(e.children);
+      }
+    };
+    walk(
+      (JSON.parse(readFileSync(join(INVENTORY, file), 'utf8')) as { elements: readonly Element[] })
+        .elements,
+    );
+  }
+  return out;
 }
 
 /**
@@ -109,5 +135,79 @@ describe("the type scale is board 00's, plus the measured caption (ADR-0113)", (
     // Forty readings at 9 dp: a remeasure of that size moves a median over ~90 values.
     const moved = toTenth(median(smallEms(Array.from({ length: 40 }, () => 9))));
     expect(moved).not.toBe(manifest.typography.scale['caption']?.size);
+  });
+});
+
+/** The board's four printed steps (ADR-0113). */
+const BOARD = ['display1', 'title', 'body', 'label'] as const;
+const boardSize = (step: string): number => manifest.typography.scale[step]?.size ?? NaN;
+/** `25` governs the light palette and `00` is the board: neither sets a screen's type (P2, P3). */
+const governing = (id: string): boolean => !/^(00|25)./u.test(id) && !IN_A_DRAWN_DOCUMENT(id);
+/** ADR-0121's band: every governing element at or above 12 dp drawn more than 4 dp from every step. */
+function offScale(elements: readonly Element[]): string[] {
+  return elements
+    .filter((e) => governing(e.id))
+    .filter((e) => {
+      const em = e.raw?.emDp;
+      return (
+        typeof em === 'number' &&
+        em >= 12 &&
+        BOARD.every((step) => Math.abs(boardSize(step) - em) > 4)
+      );
+    })
+    .map((e) => e.id);
+}
+const measured = Object.entries(manifest.typography.scale).filter(
+  ([, step]) => step.elements !== undefined,
+);
+const owed = (
+  JSON.parse(readFileSync(CENSUS, 'utf8')) as {
+    owed: readonly { element: string; feature: string }[];
+  }
+).owed;
+
+describe('type drawn off the scale (ADR-0121)', () => {
+  const elements = allElements();
+  const byId = new Map(elements.map((e) => [e.id, e]));
+
+  it('declares the measured steps F-230 binds, and the serif sets them', () => {
+    expect(measured.map(([name]) => name).sort()).toStrictEqual(['wordmark', 'wordmarkSplash']);
+    const serif = manifest.typography.faces['serif'];
+    for (const [name] of measured) expect(serif?.steps).toContain(name);
+  });
+
+  it('sets each measured step at its elements’ median em, with the nearest board step’s leading', () => {
+    for (const [name, step] of measured) {
+      const ems = (step.elements ?? []).map((id) => {
+        const e = byId.get(id);
+        if (e === undefined) throw new Error(`${name} binds ${id}, which no inventory records`);
+        // Each bound element records the step, so the record and the scale name one size.
+        expect(e.type?.size).toBe(name);
+        return e.raw?.emDp ?? NaN;
+      });
+      expect(step.size).toBe(toTenth(median(ems)));
+      const nearest = [...BOARD].sort(
+        (a, b) => Math.abs(boardSize(a) - step.size) - Math.abs(boardSize(b) - step.size),
+      )[0];
+      expect(step.lineHeight).toBe(manifest.typography.scale[nearest ?? '']?.lineHeight);
+      expect([step.weight, step.tracking]).toStrictEqual([400, '0']);
+    }
+    // DECOY: the snap ADR-0121 replaces would have set the wordmark at title.
+    expect(manifest.typography.scale['wordmark']?.size).not.toBe(boardSize('title'));
+  });
+
+  it('accounts for every element drawn more than 4 dp from every step: bound, or owed', () => {
+    const bound = measured.flatMap(([, step]) => step.elements ?? []);
+    const owing = owed.map((row) => row.element);
+    expect(bound.filter((id) => owing.includes(id))).toStrictEqual([]);
+    // Both ways: nothing off the scale unaccounted, and no row for an element in the band.
+    expect(offScale(elements).sort()).toStrictEqual([...bound, ...owing].sort());
+  });
+
+  it('DECOY — an element drawn off the scale and accounted for nowhere is caught', () => {
+    const planted = [...elements, { id: '99.planted', raw: { emDp: 40 } }];
+    expect(offScale(planted)).toContain('99.planted');
+    // …while one drawn 4 dp from a step is in the band, as 05's and 07's titles are.
+    expect(offScale([{ id: '99.near', raw: { emDp: 26 } }])).toStrictEqual([]);
   });
 });

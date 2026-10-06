@@ -80,6 +80,9 @@ export default {
     // their vertical centres 0.3 px apart.
     el('01.header.wordmark', 'ui:Wordmark', B(170, 93, 212, 51), {
       tokens: { fg: 'text.primary' },
+      // ADR-0121: 9.6 dp from every board step, so a measured step.
+      type: text('serif', 'wordmark'),
+      copy: { shape: 'heading', script: 'latin' },
       raw: { emDp: 31.6, inkHeightPx: 48.95, inkWidthPx: 210.51, markGapPx: 20.03 },
     }),
     el('01.header.tagline', 'ui:Text', B(73, 200, 269, 112), {

@@ -397,5 +397,6 @@ content; it never re-draws a display's insides.
 - ~~**Type scale**~~ — settled as board `00`'s (F-226,
   [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)):
   `display1` 72 · `title` 22 · `body` 16 · `label` 14 · `caption` 10.3. The caption is the median
-  of every em the mockups draw below 12 dp, and a test recomputes it. Which governs type a screen
-  draws off the scale is OQ-13, open.
+  of every em the mockups draw below 12 dp, and a test recomputes it. Type a screen draws more
+  than 4 dp from every step is a **measured step** bound to its elements ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md)):
+  `wordmark` 31.6 and `wordmarkSplash` 59.7, read by `Wordmark` alone.

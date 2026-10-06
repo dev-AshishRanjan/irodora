@@ -39,7 +39,8 @@ snaps to the nearest step of the R9 scale (§5); where two steps are equally nea
 fits the box the mockup draws, and text set a step larger may not. **Siblings drawn alike** — the
 same element in each card, row or tile of one image — take one step, the one most of them snap to
 (a tie again takes the smaller), so a record never sets two identical things at two sizes.
-`raw.emDp` keeps each element's own estimate.
+`raw.emDp` keeps each element's own estimate. **For type, the snap reaches 4 dp** ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md)): type drawn more than 4 dp from every step is set at its drawn size, as a **measured step**
+bound to the elements drawn at it, at their median em; `type-scale.test` holds the census.
 
 **Not design — never materialised:**
 
@@ -349,8 +350,8 @@ Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and
 *Label* 14 in the sans; tabular figures for every number. **Adopted by `F-226`**
 ([ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)): the scale is those four steps plus a **`caption` at 10.3**, the
-measured median of every em the mockups draw below 12 dp (OQ-12). **Which governs type a screen
-draws off the scale — its drawn size or the nearest step — is OQ-13, still open.** **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
+measured median of every em the mockups draw below 12 dp (OQ-12). **Type a screen draws off the scale takes its step within
+4 dp and a measured step beyond** ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md), closing OQ-13): `wordmark` 31.6 and `wordmarkSplash` 59.7 so far. **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
 Noto Serif JP at 400** ([ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)). Both weights are measured against the drawn
 stems with a blur-invariant instrument, and calibrated. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
 (20 faces, each rendered as the drawn word and scored by mask overlap after scaling to it): `01`'s
@@ -658,7 +659,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
-| **OQ-13** | Measured type runs off the scale (`01`'s tagline ≈ 18.5 dp, `17`'s slider labels ≈ 9 dp, `22`'s figures ≈ 46 dp). The screens' sizes (P3), or §5's steps? ADR-0113 lists the seven elements drawn more than 4 dp from a step; its first version closed this on a false premise, and the closure is withdrawn | `F-230` `F-242` `F-247` `F-253` `F-258` |
 | **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
 | **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
@@ -696,6 +696,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-50** | `04`'s delta bars share one unit — the smaller side's room — in every row and on both sides, scaled by F-245's tolerance over each axis's weighted CIEDE2000 term; every bar takes the hue bar's drawn ink, `text.tertiary` on a card. The slate fails 3:1 (E3) and the green is a per-axis verdict by colour alone (E2, rule 13) | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-51** | `04`'s rows print what `04` prints; each row's accessible name carries the quantity and the space. FR-61 governs the professional surfaces, where `08` prints the notation | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-52** | `25`'s current page is a capsule in its drawn ink (a shape, rule 13), the other dots `foreground.3` (the drawn grey is 1.69:1, E3); at most four dots show, and a dot at the window's edge with pages beyond it is drawn small, as `25`'s fourth is | [ADR-0120](../adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md) |
+| **OQ-13** | Within 4 dp of a board step, type takes the step; beyond, a measured step bound to the elements drawn at it, at their median em. Every threshold from 4.0 to 9.6 dp gives the 85 governing readings the same outcome. F-230 binds the two wordmarks; 06's, 20's and 26's kanji and 22's figures are owed by the features that build them | [ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md) |
 | **OQ-15**, **OQ-20**, **OQ-21**, **OQ-37** | The multicoloured icons are followed as drawn, each colour a declared exception, over the one-ink silhouette F-228 registered; each already reads by shape and by the text beside it | [ADR-0110](../adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) |
 | **OQ-12** | A `caption` step at 10.3 dp: the median of the 92 ems the mockups draw below 12 dp, recomputed by a test. 14 as a floor would enlarge 121 drawn elements and nothing forces it | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
 | **OQ-29** | The serif is **Gelasio** (OFL), Georgia’s metric-compatible counterpart: first of 109 over the eight serif crops the mockups draw (§5) | [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) |

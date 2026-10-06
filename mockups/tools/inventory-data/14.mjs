@@ -93,7 +93,8 @@ export default {
       component: 'ui:Wordmark',
       box: { x: 485, y: 665, w: 147, h: 35 },
       tokens: { fg: 'text.primary' },
-      type: { face: 'serif', size: 'display1', weight: 400 },
+      // ADR-0121: 12.3 dp from every board step, so a measured step.
+      type: { face: 'serif', size: 'wordmarkSplash', weight: 400 },
       // F-230: the em from Gelasio's outlines (serif-weight.mjs --em): 59.7 dp by the ink's height,
       // 59.9 by its width; 24.0 px under the mark's ink, centred on it within half a pixel.
       raw: { emDp: 59.7, inkHeightPx: 34.2, inkWidthPx: 146.18, markGapPx: 24.04 },

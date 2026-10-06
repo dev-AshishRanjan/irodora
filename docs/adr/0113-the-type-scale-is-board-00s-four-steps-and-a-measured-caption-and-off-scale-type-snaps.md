@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Accepted. Its first version also closed OQ-13; that closure is **withdrawn** (below), and OQ-13 is open |
+| **Status** | Accepted. Its first version also closed OQ-13; that closure is **withdrawn** (below). OQ-13 is closed by [ADR-0121](0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md) |
 | **Date** | 2026-09-28 |
 | **Feature** | F-226 |
 | **Closes** | OQ-12 (type below 14 dp). **Not** OQ-13 |

@@ -107,7 +107,11 @@
       "tokens": {
         "fg": "text.primary"
       },
-      "type": null,
+      "type": {
+        "face": "serif",
+        "size": "wordmark",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": null,
@@ -118,7 +122,10 @@
         "inkWidthPx": 210.51,
         "markGapPx": 20.03
       },
-      "copy": null
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
     },
     {
       "id": "01.header.tagline",

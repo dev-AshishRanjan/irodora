@@ -1,0 +1,42 @@
+{
+  "$comment": "ADR-0121's census: every governing element drawn more than 4 dp from every board type step is bound to a measured step in the manifest, or owed here by the feature that builds it. packages/design-tokens/test/type-scale.test.ts requires the census and this list to agree both ways (no off-scale element unaccounted, no owed row that is in band or already bound), and scripts/verify-token-reach.mjs fails once an owner is done while its row is still owed, the closedBy pattern of unreached-tokens.json.",
+  "version": 1,
+  "updated": "2026-10-06",
+  "owed": [
+    {
+      "element": "06.kanji",
+      "feature": "F-247",
+      "why": "06's hero kanji, drawn at 53 dp: a measured step when F-247 builds the colour page."
+    },
+    {
+      "element": "26.hero.kanji",
+      "feature": "F-247",
+      "why": "26's hero kanji, drawn at 40.4 dp in the Japanese typography 26 governs (P2): a measured step when F-247 builds it."
+    },
+    {
+      "element": "20.card.kanji",
+      "feature": "F-253",
+      "why": "20's card kanji, drawn at 32.2 dp: a measured step when F-253 builds the shareable card."
+    },
+    {
+      "element": "22.stats.unlocked.figure",
+      "feature": "F-258",
+      "why": "22's tile figures, drawn at 45.3 to 47.4 dp alike: one measured step for the four when F-258 builds shopping check, read by MetricTile (E-170)."
+    },
+    {
+      "element": "22.stats.pairings.figure",
+      "feature": "F-258",
+      "why": "One of 22's four tile figures, drawn alike: the same measured step as its siblings."
+    },
+    {
+      "element": "22.stats.duplicates.figure",
+      "feature": "F-258",
+      "why": "One of 22's four tile figures, drawn alike: the same measured step as its siblings."
+    },
+    {
+      "element": "22.stats.gaps.figure",
+      "feature": "F-258",
+      "why": "One of 22's four tile figures, drawn alike: the same measured step as its siblings."
+    }
+  ]
+}

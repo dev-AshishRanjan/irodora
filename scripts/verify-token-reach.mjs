@@ -85,6 +85,13 @@ const GENERATED = [
 ];
 const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 const DECLARATIONS = join(ROOT, '.harness', 'verification', 'unreached-tokens.json');
+/** ADR-0121's census: off-scale type owed a measured step, each by the feature that builds it. */
+/**
+ * ADR-0121: a MEASURED type step (one the manifest binds to inventory elements) is the size those
+ * elements are drawn at, not a step a screen may pick. Only the component that draws them reads it.
+ */
+const MEASURED_STEP_READERS = ['packages/ui/src/brand.tsx'];
+const TYPE_CENSUS = join(ROOT, '.harness', 'verification', 'type-census.json');
 
 /**
  * The feature ids an exemption may name, and which of them are finished (ADR-0088).
@@ -481,6 +488,28 @@ function declarations(known, groupNames, override) {
     }
   }
 
+  /*
+   * ADR-0121's owed rows, the closedBy rule applied to type: an element drawn off the scale is owed
+   * a measured step by the feature that builds it, and that feature cannot be done while it still
+   * owes it. The census itself (every off-scale element accounted for, both ways) is
+   * type-scale.test's; this is the half that needs the feature list.
+   */
+  if (override === undefined && existsSync(TYPE_CENSUS)) {
+    const census = JSON.parse(readFileSync(TYPE_CENSUS, 'utf8'));
+    for (const [index, row] of (census.owed ?? []).entries()) {
+      const at = `type-census.json owed[${String(index)}] (${String(row.element)})`;
+      if (!FEATURE_IDS.has(row.feature))
+        problems.push(
+          `${at}: owed by "${String(row.feature)}", which is not a feature id in feature_list.json.`,
+        );
+      else if (DONE_FEATURES.has(row.feature))
+        problems.push(
+          `${at}: owed by ${String(row.feature)}, which is DONE. ADR-0121: the element takes its measured ` +
+            'step when its feature builds it, and the row goes; a done owner with the row still here is ' +
+            'a screen built at a size nobody decided.',
+        );
+    }
+  }
   return { byToken, problems, entries: file.unreached };
 }
 
@@ -522,7 +551,16 @@ export async function run(overrides = new Map(), declaredOverride = null) {
       if (!declared.byToken.has(k)) unreached.push({ group, name });
     }
 
-  return { bindings, readers, groups, known, declared, unreached, stale, files };
+  // A measured step read anywhere but by the component that draws its elements (ADR-0121).
+  const misread = [];
+  const scale = JSON.parse(readFileSync(MANIFEST, 'utf8')).typography.scale;
+  for (const [name, step] of Object.entries(scale)) {
+    if (name.startsWith('_') || !Array.isArray(step?.elements)) continue;
+    for (const by of readers.get(key('type step', name)) ?? [])
+      if (!by.startsWith('via ') && !MEASURED_STEP_READERS.includes(by)) misread.push({ name, by });
+  }
+
+  return { bindings, readers, groups, known, declared, unreached, stale, files, misread };
 }
 
 async function report() {
@@ -563,7 +601,19 @@ async function report() {
         `${DIM}      ${entry.why}${OFF}`,
     );
 
-  const bad = result.unreached.length + result.stale.length + result.declared.problems.length;
+  for (const { name, by } of result.misread)
+    console.log(
+      `  ${RED}✗${OFF} type step ${BOLD}${name}${OFF} read by ${by}
+` +
+        `${DIM}      A measured step (ADR-0121) is the size its elements are drawn at, and only ` +
+        `${MEASURED_STEP_READERS.join(', ')} draws them. Use a board step, or bind the element.${OFF}`,
+    );
+
+  const bad =
+    result.unreached.length +
+    result.stale.length +
+    result.declared.problems.length +
+    result.misread.length;
   if (bad > 0) {
     console.log(
       `\n${RED}${BOLD}Token reach FAILED.${OFF} ${String(bad)} problem(s).\n` +
@@ -641,9 +691,31 @@ async function prove() {
   // Asserted FIRST. A plant against an already-red baseline proves nothing.
   const base = await run();
   say(
-    base.unreached.length === 0 && base.stale.length === 0 && base.declared.problems.length === 0,
+    base.unreached.length === 0 &&
+      base.stale.length === 0 &&
+      base.declared.problems.length === 0 &&
+      base.misread.length === 0,
     'baseline clean',
     '(asserted first, or a plant proves nothing)',
+  );
+
+  // ADR-0121: a screen that sets type at a measured step is named.
+  const home = 'apps/mobile/src/screens/Home.tsx';
+  const homeSource = readFileSync(join(ROOT, home), 'utf8');
+  const planted = await run(
+    new Map([
+      [
+        home,
+        `${homeSource}
+const PLANT = <Text size="wordmark" color="foreground">x</Text>;
+`,
+      ],
+    ]),
+  );
+  say(
+    planted.misread.some((m) => m.name === 'wordmark' && m.by === home),
+    'a screen that reads a measured type step is named',
+    `size="wordmark" planted in ${home}`,
   );
 
   // Criterion 3, and F-019's exact defect replayed: remove the one real consumer.

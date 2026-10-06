@@ -1457,7 +1457,9 @@
         "steps": [
           "display1",
           "title",
-          "body"
+          "body",
+          "wordmark",
+          "wordmarkSplash"
         ]
       },
       "mincho": {
@@ -1484,6 +1486,16 @@
         "tracking": "-0.02em",
         "weight": 600
       },
+      "wordmark": {
+        "size": 31.6,
+        "lineHeight": 1.2,
+        "tracking": "0",
+        "weight": 400,
+        "elements": [
+          "01.header.wordmark"
+        ],
+        "_note": "MEASURED (ADR-0121): 01's wordmark, drawn 9.6 dp from every board step. Its em from Gelasio's outlines (serif-weight.mjs --em), the leading title's — the nearest board step — and the serif's tracking and weight (ADR-0112). Read by Wordmark alone."
+      },
       "body": {
         "size": 16,
         "lineHeight": 1.65,
@@ -1501,6 +1513,16 @@
         "lineHeight": 1.5,
         "tracking": "0",
         "weight": 400
+      },
+      "wordmarkSplash": {
+        "size": 59.7,
+        "lineHeight": 0.98,
+        "tracking": "0",
+        "weight": 400,
+        "elements": [
+          "14.splash.wordmark"
+        ],
+        "_note": "MEASURED (ADR-0121): 14's splash wordmark, drawn 12.3 dp from every board step. Its em from Gelasio's outlines, the leading display1's — the nearest board step — and the serif's tracking and weight. Read by Wordmark alone."
       }
     },
     "lineHeight": {
