@@ -83,3 +83,12 @@ call it.
 Put ΔE00 behind a spatial index. It is not a metric — it violates the triangle inequality by
 design — and every spatial index assumes otherwise. See
 [[deltae00-is-not-a-metric-and-cannot-be-indexed]].
+
+## F-222: the terms are read now, so they are checked now
+
+`deltaE00Terms` returns the weighted terms the total is made of, from the same internal core, so the
+total is the same double either way. The terms carry meaning of their own — each component's band
+(ADR-0125) and the delta bars' unit (ADR-0119) — and a term can be wrong while the total is right: a
+swap of ΔL′ and ΔC′ keeps the sum of squares. So the 34 Sharma–Wu–Dalal pairs now check Table I's
+SL, SC, SH and RT, and the three terms by hand from its printed columns. Never recompose the total
+from the terms: the same sum in another order differs in the last bit.

@@ -38,6 +38,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 - [lessons/the-constraint-and-the-taste-usually-agree.md](lessons/the-constraint-and-the-taste-usually-agree.md) — a constraint is a design direction, not a licence to be austere; find the field that already works under it.
 - [lessons/a-line-box-is-not-its-ink.md](lessons/a-line-box-is-not-its-ink.md) — centring Gelasio’s line box set the name’s ink 2.5 dp high; align ink from the face’s metrics, and lay the margins out in the test to recover it.
+- [lessons/describe-the-number-you-print-not-the-number-you-computed.md](lessons/describe-the-number-you-print-not-the-number-you-computed.md) — a computed 0.7999 prints as 0.80; band and word the printed value, and floor a percentage with a float64 guard.
 
 ### Engineering discipline
 
@@ -309,4 +310,7 @@ which is after they exist, not before.*
 - [effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md](effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md) — **E-172** · one neutral ink by type, one declared tint, and every ground a mark is drawn on a scored CVD pair.
 - [effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md](effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md) — **E-173** · a caller names 01’s row or 14’s stack, places it by its ink, and the figure scales with the name.
 - [effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md](effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md) — **E-174** · the lockup aligns ink from the faces’ metrics, read back from the TTFs, so a re-subset cannot leave it a dp off.
+- [effects/a-delta-is-described-by-one-table-and-the-printed-number.md](effects/a-delta-is-described-by-one-table-and-the-printed-number.md) — **E-175** · every word beside a ΔE00 comes from one cited table, banded on the printed value; the edges are golden data.
+- [effects/a-figure-a-mockup-prints-is-a-function-or-it-is-not-shipped.md](effects/a-figure-a-mockup-prints-is-a-function-or-it-is-not-shipped.md) — **E-176** · OQ-9’s figures are computations; countsAsOutfit is both the count and 13’s label.
+- [effects/a-confidence-has-one-format-and-says-what-it-is.md](effects/a-confidence-has-one-format-and-says-what-it-is.md) — **E-177** · a reading’s confidence prints one way, floored, with what it means; a second format is refused in both packages.
 - [lessons/a-package-gate-is-not-the-repository-gate.md](lessons/a-package-gate-is-not-the-repository-gate.md) — F-223's increments were committed on the changed packages' eslint and the new test files while the root lint chain and the app suite were red; iterate on subsets, commit on the root commands.

@@ -104,3 +104,9 @@ the element keeps its shape, and its wording or value comes from a defined compu
 - A mockup draws one of these figures differently, or a new figure §8 cannot bind.
 - F-037 validates the profile against people, which would let *concordance* say more.
 - FR-42's threshold or ADR-0048's half-life changes: both figures move with it, by construction.
+
+## Implemented in
+
+- [`countsAsOutfit`, `gapsAddressedBy`, `wardrobePairings`](../../packages/optimization/src/coverage.ts) and their [tests](../../packages/optimization/test/shopping-figures.test.ts)
+- [`profileConcordance`](../../packages/recommendation/src/concordance.ts) and its [tests](../../packages/recommendation/test/concordance.test.ts)
+- [`confidenceText`](../../packages/ui/src/percent.ts), its [tests](../../packages/ui/test/percent.test.tsx) and the app's [guard](../../apps/mobile/test/confidence-format.test.ts)

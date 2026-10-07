@@ -115,6 +115,14 @@
         {
           "kind": "module",
           "ref": "apps/mobile/src/compare.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/color-difference/src/bands.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/color-difference/test/golden/ciede2000-terms.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -124,9 +132,9 @@
         "packages/recommendation"
       ],
       "severity": "critical",
-      "guard": "gate:color-golden",
+      "guard": "gate:color-golden F-222: deltaE00 and the new deltaE00Terms run ONE internal core (deltaE00 passes no sink), guarded by the ciede2000-terms golden set (Table I's SL, SC, SH, RT and the three weighted terms for all 34 pairs, with a transcription check rebuilding every printed ΔE00) and an Object.is property over the identity fixture's 10,000 inputs — the cross-platform fixture untouched and green, DIFFERENCE_VERSION unchanged.",
       "memory": "memory/effects/deltae00-is-the-ranking-authority.md",
-      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only. AS OF F-013 THE FIRST CONSUMER EXISTS: @irodora/color-naming ranks with deltaE00 and nothing else — its two-stage search narrows WHICH candidates are examined, never HOW they are ordered, and packages/color-naming/test/equivalence.test.ts asserts the two are identical over thousands of adversarial records with a culori cross-check (which is what would catch the whole suite agreeing with a defect in our own deltaE00, since both paths call it). TWO THINGS F-013 ADDED. Ranking on distance ALONE is not a total order: two records can share a Lab and Array.prototype.sort is stable, so a comparator on distance only inherits input order and two paths enumerating differently disagree on ties — intermittently, looking like flakiness rather than a metric error. compareScored breaks ties on id. And the ADR-0048 similarity percentage must NEVER become a second ranking authority: it is monotone but NOT injective in float64, so sorting by it ties where deltaE00 does not. AS OF F-019 IT ALSO REACHES A SURFACE. Compare shows ΔE00 as a number a professional reads and acts on, so a defect here stops being a subtle reordering in a candidate list and becomes a wrong figure on screen with its units and its space printed beside it — which is more convincing, not less. The destination end is guarded by a PINNED value: `apps/mobile/test/compare.test.ts` asserts usu-gami to soko-zumi is 89.73 ΔE00, so a change to the metric fails here as well as in the golden set. That number was MEASURED after a first draft carried a plausible-looking 76.86 that nobody had computed — which is the argument for pinning one rather than describing the pair in words.",
+      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only. AS OF F-013 THE FIRST CONSUMER EXISTS: @irodora/color-naming ranks with deltaE00 and nothing else — its two-stage search narrows WHICH candidates are examined, never HOW they are ordered, and packages/color-naming/test/equivalence.test.ts asserts the two are identical over thousands of adversarial records with a culori cross-check (which is what would catch the whole suite agreeing with a defect in our own deltaE00, since both paths call it). TWO THINGS F-013 ADDED. Ranking on distance ALONE is not a total order: two records can share a Lab and Array.prototype.sort is stable, so a comparator on distance only inherits input order and two paths enumerating differently disagree on ties — intermittently, looking like flakiness rather than a metric error. compareScored breaks ties on id. And the ADR-0048 similarity percentage must NEVER become a second ranking authority: it is monotone but NOT injective in float64, so sorting by it ties where deltaE00 does not. AS OF F-019 IT ALSO REACHES A SURFACE. Compare shows ΔE00 as a number a professional reads and acts on, so a defect here stops being a subtle reordering in a candidate list and becomes a wrong figure on screen with its units and its space printed beside it — which is more convincing, not less. The destination end is guarded by a PINNED value: `apps/mobile/test/compare.test.ts` asserts usu-gami to soko-zumi is 89.73 ΔE00, so a change to the metric fails here as well as in the golden set. That number was MEASURED after a first draft carried a plausible-looking 76.86 that nobody had computed — which is the argument for pinning one rather than describing the pair in words. ---- F-222: the weighted terms are now read as well as the total — ADR-0125 bands each component on its term, and DeltaBars' unit is the terms (ADR-0119) — so a term can now be wrong in a way the total cannot see (a swap of ΔL′ and ΔC′ keeps the sum of squares). That is why the terms have their own published check, and why the total is never recomposed from them: the same sum in another order differs in the last bit.",
       "confidence": 0.97,
       "origin": "manual",
       "status": "active"
@@ -1688,6 +1696,10 @@
         {
           "kind": "gate",
           "ref": "content"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/optimization/test/shopping-figures.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1697,7 +1709,7 @@
         "content"
       ],
       "severity": "high",
-      "guard": "gate:content (the lexicon parses, is digest-verified, carries a rationale per term) plus gate:test (removing a term removes the gap names that used it, watched failing). NEITHER reaches an editor removing a term nobody is currently missing — see the rationale.",
+      "guard": "gate:content (the lexicon parses, is digest-verified, carries a rationale per term) plus gate:test (removing a term removes the gap names that used it, watched failing). NEITHER reaches an editor removing a term nobody is currently missing — see the rationale. F-222: gapsAddressedBy counts REGIONS (Gap.region), because the published lexicon names one region under several term pairs — the dark near-neutral region is named four ways (dark, 暗い × grey, neutral), measured in shopping-figures.test — so a term an editor adds as a synonym cannot inflate 22's figure.",
       "memory": "memory/effects/the-phrase-lexicon-has-two-readers-now-and-they-fail-differently.md",
       "rationale": "THE PHRASE LEXICON HAS TWO READERS NOW, AND THEY FAIL DIFFERENTLY. Until F-048 `content/rules/phrase-lexicon.*.json` had one consumer — the Finder (F-021), which matches what a person types. F-048's `gaps` added a second, naming a missing region from the same 18 published terms. WHEN AN EDITOR REMOVES A TERM the two break in ways that are not comparable: the Finder stops matching a phrase somebody types, which is visible and self-reporting because they search and get nothing; `gaps` loses the ability to NAME a region, so no gap is reported there — and SILENCE IS EXACTLY WHAT \"you have no gaps\" LOOKS LIKE. A removed term does not make gap analysis wrong, it makes it QUIETER, and a wardrobe with a real hole reports nothing while nobody types a query that comes back empty. WHY THE VOCABULARY LIVES IN CONTENT ANYWAY: inventing a second one inside coverage.ts would be E-013's shape, one content rule in two places drifting the first time an editor publishes. The lexicon has a rationale per term, a version and a digest; a hard-coded list in the engine has none of those and nobody would notice it diverging. So the trade is deliberate — THE GAPS THIS FEATURE CAN NAME ARE EXACTLY THE ONES THE LEXICON CAN EXPRESS — and it is written into the function's own header rather than left to be deduced from an empty result. THE GUARD AND ITS LIMIT: gate:content verifies the lexicon parses, is digest-verified and carries a rationale per term; gate:test asserts that REMOVING A TERM REMOVES THE GAP NAMES THAT USED IT, which is the decoy proving the words come from content rather than from the file, watched failing by hard-coding two term names and seeing exactly that one test of 139 go red. WHAT NEITHER REACHES is an editor removing a term nobody is currently missing — there is no check saying \"this lexicon can still express every region a wardrobe might lack\", because that would require knowing every wardrobe. The honest mitigation is that the term count is small and each carries a rationale an editor had to write, so removal is a deliberate act rather than a drift. THE NEAR-NEUTRAL BOUNDARY IS THE SAME NUMBER IN TWO PLACES AND THAT IS CORRECT: `gaps` only names regions below NEUTRAL_CHROMA (0.039) because above it a lightness-and-chroma region has a hue nobody published, and the lexicon's own `neutral` term ends at exactly 0.039. One is a CONTENT boundary an editor chose for a word and the other is an ENGINE boundary F-101 measured for when a hue angle stops meaning anything. They agree today and are free to disagree: if an editor widened `neutral`, `gaps` should still refuse to invent a hue above where the engine says hue is real. MOVED IN F-110: `coverage.ts` and its test now live in `@irodora/optimization`, the package F-048's own row named. Nothing above changes in substance — the reader is the same code at a new address. The \"one test of 139\" watched failing above was counted when the file was in `recommendation`; those 18 coverage tests are now 18 of 28 in `optimization`, and the decoy is the same decoy.",
       "confidence": 0.9,
@@ -1774,7 +1786,7 @@
         "packages/optimization"
       ],
       "severity": "high",
-      "guard": "gate:test — the capsule tests build their fixtures with the SAME join that coverage.ts uses, so a change to the separator or the sort breaks parsing and the brute-force comparison disagrees loudly. NEITHER that nor any type reaches a garment id that CONTAINS the separator, which is the silent case — see the rationale.",
+      "guard": "gate:test — the capsule tests build their fixtures with the SAME join that coverage.ts uses, so a change to the separator or the sort breaks parsing and the brute-force comparison disagrees loudly. NEITHER that nor any type reaches a garment id that CONTAINS the separator, which is the silent case — see the rationale. F-222: wardrobePairings decodes the combination keys too, in the same module as the join, so the encoding still has one reader that knows it.",
       "memory": "memory/effects/a-join-is-a-private-encoding-until-somebody-splits-it.md",
       "rationale": "F-048 built `Coverage.combinations` as a `ReadonlySet<string>` of sorted, `|`-joined garment ids, and documented it as state `applyChange` needs so an increment is a set operation rather than a guess. THE JOIN WAS AN IMPLEMENTATION DETAIL: `applyChange` only ever compares and subtracts whole keys, so it never has to know what is inside one. F-050 SPLITS THEM. `solveCapsule` reads the set as its problem instance and does `c.split('|')` to recover the garment ids, so a private encoding became a contract between two modules the moment a second reader parsed it. Nothing in the type system says so — both sides see `string`. THE LOUD FAILURE AND THE SILENT ONE. Changing the separator, or dropping the sort, breaks parsing in a way the capsule tests catch immediately, because their fixtures build keys with the same join and the brute-force oracle then disagrees. That is fine. The SILENT failure is a garment id that contains a `|`: the key still parses, into the WRONG NUMBER OF WRONG IDS. The solver would then optimise over garments that do not exist and return a capsule naming them, with an outfit count that is internally consistent and wrong. No gate here can see it. WHY IT IS NOT A LIVE DEFECT TODAY: garment ids are UUIDv7 from `@irodora/store` and slot-index strings in fixtures, and neither can contain a separator. This is recorded because THE CONSTRAINT NOW EXISTS AND IS WRITTEN DOWN NOWHERE ELSE — the day an id becomes user-supplied, or a slug, or anything a person types, this is the link that says why that is not free. THE FIX IF IT EVER BINDS is not to escape the separator, which moves the problem, but to carry the combination as the ids it already is rather than a string that has to be taken apart again. That is a change to F-048s public type and it is deliberately not made here: there is no defect to fix yet, and a type change to satisfy a hypothetical is how a small file becomes a large one.",
       "confidence": 0.9,
@@ -5105,7 +5117,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed.",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced.",
       "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
       "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it. F-232 (2026-09-28): 00, 05, 09, 12, 15, 17 and 23 re-recorded from measurement (control tokens, plate radii, dots, the switch's true track, 12's level3 fills, 05's filled chips, 17's options as ui:Chip); the schema gains `raw.trackPx`/`thumbPx`/`glyphPx` and ADR-0115's plate rule in the `component` description, held by icon-control-forms.test (30 icon-only controls, 15 plated, 15 bare, with an ambiguous decoy). Control defaults are now DERIVED from these records (E-157).",
       "confidence": 0.9,
@@ -7197,9 +7209,159 @@
           "ref": "docs/design/design-system.manifest.json"
         }
       ],
-      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up.",
+      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up. F-222 re-subset Noto Sans JP twice (知 for 知覚できる差; 頼 and 率 for 信頼度 and 確率), and the guard held: GOTHIC's metrics matched the new subset's tables, and the test now reads 14's full tagline.",
       "memory": "memory/effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md",
       "rationale": "The lockups align ink, not boxes (ADR-0123), and the arithmetic is the faces' metrics written down as constants, since a component cannot read a TTF. Re-subsetting Noto Sans JP (F-231 adds 知 with the splash copy) or updating Gelasio could move an ascender, the character face or the name's advance; the lockup would then sit off by a dp or two with every component test green. The font test fails instead."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-222",
+      "scope": [
+        "packages/color-difference",
+        "apps/mobile",
+        "packages/ui",
+        "mockups"
+      ],
+      "severity": "high",
+      "id": "E-175",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/color-difference/src/bands.ts#DELTA_E00_BANDS"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/delta-readings.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/en.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-245"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-249"
+        },
+        {
+          "kind": "content",
+          "ref": "mockups/inventory"
+        },
+        {
+          "kind": "gate",
+          "ref": "color-golden"
+        }
+      ],
+      "guard": "gate:color-golden — deltae00-bands.golden.json holds the edges as their sources state them (0.8 and 1.8 from the 2019 review, 5 from CIEDE2000's range), with ΔE*ab's 2.3 as the decoy. gate:test — delta-readings.ts maps every band to a key, total by type; delta-readings.test holds the 27 words in both languages free of a match or an identity, the predicate tested against the drawn claims; bands.test holds the printed-value rule (0.7999 reads close) and the component rule.",
+      "memory": "memory/effects/a-delta-is-described-by-one-table-and-the-printed-number.md",
+      "rationale": "ADR-0125: every word beside a ΔE00 or one of its components comes from one table, banded on the PRINTED value, so the figure and its word cannot disagree. Moving an edge moves 04's headline, 08's readings and every later instrument at once — which is the point, and why the edges are golden data and the ADR is where a change is argued."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-222",
+      "scope": [
+        "packages/optimization",
+        "packages/recommendation",
+        "mockups",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-176",
+      "from": {
+        "kind": "decision",
+        "ref": "docs/adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/optimization/src/coverage.ts#countsAsOutfit"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/recommendation/src/concordance.ts"
+        },
+        {
+          "kind": "content",
+          "ref": "mockups/inventory"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-244"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-257"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-258"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-260"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "gate:lint — verify-mockups refuses a binding to a closed question and checks the binding grammar, so 03, 13, 22 and 23 stay bound to their computations; verify-claims holds the honest composed forms in near-misses.md, in both languages. gate:test — shopping-figures.test (the predicate equals coverage().valid at four thresholds, an inclusivity decoy; gaps addressed by region; pairings) and concordance.test (the boundary at exactly 66; both refusals).",
+      "memory": "memory/effects/a-figure-a-mockup-prints-is-a-function-or-it-is-not-shipped.md",
+      "rationale": "ADR-0124 gives four drawn figures a definition and three drawn words a replacement. countsAsOutfit is now what BOTH coverage() and 13's label count with, so changing FR-42's threshold or its inclusivity moves the count and the label together, by construction. The screens that print these figures (F-244, F-257, F-258, F-260) read them; none decides one."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-222",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-177",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/percent.ts#confidenceText"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-244"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-236"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "gate:test — percent.test (the float64 guard and never-round-up decoys) and the shared secondConfidenceFormats rule, scanned by @irodora/ui over its src and by the app over its own (comments stripped), with planted decoys; Shopping.tsx's CompatibilityScore.confidence is the one named exception, owned by F-258. The Lens screen test asserts the format and the meaning line, and that the bare figure is gone.",
+      "memory": "memory/effects/a-confidence-has-one-format-and-says-what-it-is.md",
+      "rationale": "A reading's confidence is a ceiling, not a probability, and a percentage beside a colour reads as the chance it is right. One format, floored, with the meaning beside it on the Lens, is the mitigation; a second format anywhere would undo it. F-244 (03's chip) and F-236 (27's refused state) discharge the drawn half of F-222's attested criterion."
     }
   ]
 }

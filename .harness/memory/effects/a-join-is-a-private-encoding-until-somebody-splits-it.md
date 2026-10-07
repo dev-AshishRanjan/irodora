@@ -59,3 +59,8 @@ thing a future session would otherwise have to rediscover by debugging.
 
 `gate:test` catches every change to the *encoding*. Nothing catches a change to what an **id**
 is allowed to contain, and that is the half worth remembering.
+
+## F-222: a second decoder, in the same module
+
+`wardrobePairings` splits the combination keys to find the garments a candidate pairs with. It
+lives beside the join in `coverage.ts`, so the encoding still has one module that knows it.

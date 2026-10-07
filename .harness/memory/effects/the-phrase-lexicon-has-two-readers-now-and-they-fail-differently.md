@@ -61,3 +61,9 @@ still refuse to invent a hue above where the engine says hue is real.
 [[a-generated-value-with-no-consumer-satisfies-its-own-test-and-reaches-nothing]] is the
 mirror: there a value had no reader, here a value gained a second one. Both are questions about
 the edges of a content artefact, and both are invisible to a schema.
+
+## F-222: a third reader, which counts regions
+
+`gapsAddressedBy` (22's *Gaps Addressed*) counts the REGIONS a candidate fills, because the lexicon
+names one region under several term pairs: the dark near-neutral region is named four ways. An editor
+adding a synonym changes how many names `gaps()` lists, and must not change the figure.

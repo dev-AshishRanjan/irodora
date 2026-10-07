@@ -111,3 +111,8 @@ different metric; ADR-0048 already refused that conflation.
   conditions.
 - CIE TC 1-63 or its successor publishes a validated range for CIEDE2000 above 5.
 - The precision a ΔE00 is printed at changes: the band reads the printed value.
+
+## Implemented in
+
+- [`DELTA_E00_BANDS`, `deltaE00Band`, `axisReading`](../../packages/color-difference/src/bands.ts), the [edges' golden set](../../packages/color-difference/golden/deltae00-bands.golden.json) and [`deltaE00Terms`](../../packages/color-difference/src/ciede2000.ts)
+- [the words, in both languages](../../apps/mobile/src/delta-readings.ts) and their [tests](../../apps/mobile/test/delta-readings.test.ts)
