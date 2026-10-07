@@ -46,6 +46,17 @@ export {
   type DeltaE94Weights,
 } from './deltae.js';
 
+export {
+  axisReading,
+  DELTA_E00_BANDS,
+  DELTA_E00_DISPLAY_DECIMALS,
+  deltaE00Band,
+  printedDeltaE00,
+  type AxisDirection,
+  type AxisReading,
+  type DeltaE00Band,
+} from './bands.js';
+
 export { WCAG_FLARE, wcagContrast } from './wcag.js';
 
 export {

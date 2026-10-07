@@ -1,0 +1,30 @@
+{
+  "id": "deltae00-bands",
+  "description": "The edges of ADR-0125's ΔE00 band table, each as its source states it (F-222). The first two are the 50:50 % perceptibility and acceptability thresholds in CIEDE2000 units; the third is the top of the colour-difference range CIEDE2000 was built for, a secondary statement of the formula's reference range rather than a threshold of perception. Exact: the table's edges are these numbers, not approximations of them.",
+  "entries": [
+    {
+      "id": "perceptibility-threshold",
+      "source": "Paravina RD, Pérez MM, Ghinea R (2019), \"Acceptability and perceptibility thresholds in dentistry: A comprehensive review of clinical and research applications\", Journal of Esthetic and Restorative Dentistry 31(2):103–112, doi:10.1111/jerd.12465, abstract: \"The CIELAB 50:50% PT was ΔEab = 1.2, whereas 50:50% AT was ΔEab = 2.7. Corresponding CIEDE2000 (ΔE00) values were 0.8 and 1.8, respectively.\" Measured on dental ceramic (Paravina et al. 2015, J Esthet Restor Dent 27(S1):S1–S9)",
+      "derivation": "published-value",
+      "input": { "band": "close" },
+      "expected": 0.8,
+      "tolerance": 0
+    },
+    {
+      "id": "acceptability-threshold",
+      "source": "Paravina RD, Pérez MM, Ghinea R (2019), Journal of Esthetic and Restorative Dentistry 31(2):103–112, doi:10.1111/jerd.12465, abstract — the 50:50% acceptability threshold, ΔE00 1.8",
+      "derivation": "published-value",
+      "input": { "band": "perceptible" },
+      "expected": 1.8,
+      "tolerance": 0
+    },
+    {
+      "id": "ciede2000-range-top",
+      "source": "K. Richter (BAM and TU Berlin), \"Data, methods and formula to bridge the gap for colour differences between threshold differences, the formula CIE DE2000 and large CIELAB colour differences\": \"CIE DE2000 is for the range between 0 to 5 CIELAB\"; CIE TC 1-63's terms of reference, \"to investigate the application of the CIE DE2000 equation at threshold up to CIELAB colour differences greater than 5\"",
+      "derivation": "published-value",
+      "input": { "band": "clear" },
+      "expected": 5,
+      "tolerance": 0
+    }
+  ]
+}
