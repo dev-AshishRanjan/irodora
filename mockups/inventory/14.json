@@ -38,29 +38,33 @@
       "component": "app:AppIcon",
       "box": {
         "x": 119,
-        "y": 578,
-        "w": 186,
-        "h": 161
+        "y": 579,
+        "w": 185,
+        "h": 185
       },
       "dp": {
         "x": 66.5,
-        "y": 315,
-        "w": 251.5,
-        "h": 217.5
+        "y": 316.5,
+        "w": 250,
+        "h": 250
       },
-      "tokens": {},
+      "tokens": {
+        "bgTop": "level2",
+        "bgBottom": "ground"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
       "measured": {
-        "bgTop": "#2B2F34",
-        "bgBottom": "#1B2024"
+        "bgTop": "#2E3239",
+        "bgBottom": "#15171C"
       },
       "raw": {
-        "visibleHeightPx": 161,
-        "cornerPx": 34
+        "cornerPx": 34,
+        "gradientDeg": 15.2,
+        "rimPx": 1.6
       },
       "copy": null
     },
@@ -91,6 +95,8 @@
       "binding": null,
       "action": null,
       "raw": {
+        "centreDyPx": 4.83,
+        "inkCentreDyPx": 1.27,
         "petals": 5,
         "phaseDeg": -0.12,
         "orbitPx": 35.63,
@@ -107,8 +113,40 @@
       "copy": null
     },
     {
-      "id": "14.splash.lockup",
+      "id": "14.splash.glow",
       "order": 3,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "app:LaunchGlow",
+      "box": {
+        "x": 464,
+        "y": 497,
+        "w": 190,
+        "h": 190
+      },
+      "dp": {
+        "x": 67.5,
+        "y": 205.5,
+        "w": 257,
+        "h": 257
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "alpha": 0.602,
+        "sigmaPx": 18.09
+      },
+      "copy": null
+    },
+    {
+      "id": "14.splash.lockup",
+      "order": 4,
       "parent": null,
       "screen": "14.splash",
       "component": "ui:Wordmark",
@@ -134,7 +172,7 @@
     },
     {
       "id": "14.splash.mark",
-      "order": 4,
+      "order": 5,
       "parent": "14.splash.lockup",
       "screen": "14.splash",
       "component": "ui:Mark",
@@ -176,7 +214,7 @@
     },
     {
       "id": "14.splash.wordmark",
-      "order": 5,
+      "order": 6,
       "parent": "14.splash.lockup",
       "screen": "14.splash",
       "component": "ui:Text",
@@ -217,7 +255,7 @@
     },
     {
       "id": "14.splash.tagline",
-      "order": 6,
+      "order": 7,
       "parent": "14.splash.lockup",
       "screen": "14.splash",
       "component": "ui:Text",
@@ -258,21 +296,21 @@
     },
     {
       "id": "14.splash.subline",
-      "order": 7,
+      "order": 8,
       "parent": null,
       "screen": "14.splash",
       "component": "ui:Text",
       "box": {
-        "x": 431,
-        "y": 743,
-        "w": 251,
-        "h": 12
+        "x": 433,
+        "y": 744,
+        "w": 248,
+        "h": 10
       },
       "dp": {
-        "x": 23,
-        "y": 538,
-        "w": 339.5,
-        "h": 16
+        "x": 25.5,
+        "y": 539.5,
+        "w": 335.5,
+        "h": 13.5
       },
       "tokens": {
         "fg": "text.secondary"
@@ -286,6 +324,9 @@
       "illustration": null,
       "binding": "static:brand.splashSubline",
       "action": null,
+      "raw": {
+        "gapAbovePx": 16.93
+      },
       "copy": {
         "shape": "caption",
         "script": "latin"
@@ -293,7 +334,7 @@
     },
     {
       "id": "14.splash.wave",
-      "order": 8,
+      "order": 9,
       "parent": null,
       "screen": "14.splash",
       "component": "ui:Illustration",
@@ -301,13 +342,13 @@
         "x": 414,
         "y": 835,
         "w": 284,
-        "h": 71
+        "h": 54
       },
       "dp": {
         "x": 0,
         "y": 662.5,
         "w": 384,
-        "h": 96
+        "h": 73
       },
       "tokens": {
         "fg": "text.tertiary"
@@ -321,21 +362,21 @@
     },
     {
       "id": "14.splash.progress",
-      "order": 9,
+      "order": 10,
       "parent": null,
       "screen": "14.splash",
       "component": "new:ProgressBar",
       "box": {
         "x": 434,
         "y": 901,
-        "w": 244,
-        "h": 5
+        "w": 243,
+        "h": 4
       },
       "dp": {
         "x": 27,
         "y": 752,
-        "w": 330,
-        "h": 7
+        "w": 328.5,
+        "h": 5.5
       },
       "tokens": {
         "track": "border.subtle",
@@ -347,6 +388,11 @@
       "illustration": null,
       "binding": "engine:launch.progress",
       "action": null,
+      "raw": {
+        "trackPx": 3.1,
+        "insetPx": 20.5,
+        "footPx": 35.3
+      },
       "copy": null
     }
   ],
@@ -379,6 +425,16 @@
         "y": 478,
         "w": 240,
         "h": 357
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the light the system draws along an icon’s mask: a 1.6 px rim on the tile’s edge, brightest at its top (luma 88 against 54 at its foot) — iOS 26 lays its glass over an icon like this one, and an asset cannot place a line on a mask it does not draw (ADR-0126)",
+      "box": {
+        "x": 119,
+        "y": 579,
+        "w": 185,
+        "h": 185
       }
     },
     {
@@ -469,6 +525,7 @@
     {
       "id": "C17",
       "elements": [
+        "14.splash.glow",
         "14.splash.mark",
         "14.splash.wordmark",
         "14.splash.tagline",
