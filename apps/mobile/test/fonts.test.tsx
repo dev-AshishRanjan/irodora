@@ -360,9 +360,9 @@ describe('the lockup’s metrics are the bundled faces’ (F-230, ADR-0123)', ()
       faceTop: baselines['icft'],
       faceBottom: baselines['icfb'],
     }).toStrictEqual(GOTHIC);
-    // 14's tagline, as drawn, fills the character face within five units. Its 知 is not in the
-    // subset until the splash's copy is (F-231), so the drawn line is read without it.
-    const drawn = gothic.word('彩り・色の性');
+    // 14's tagline, as drawn, fills the character face within five units. (Its 知 entered the
+    // subset with F-222's 知覚できる差.)
+    const drawn = gothic.word('彩り・色の知性');
     expect(Math.abs(drawn.inkTop - GOTHIC.faceTop)).toBeLessThanOrEqual(5);
     expect(Math.abs(drawn.inkBottom - GOTHIC.faceBottom)).toBeLessThanOrEqual(5);
   });
