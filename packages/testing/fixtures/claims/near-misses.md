@@ -119,3 +119,28 @@ or instrument (F-219). Joined to accuracy it is refused — see variants.md.
 - 推定値（カメラ）・信頼度81%
 - Lab-grown indigo
 - Not CVD-safe: separation 18 under deuteranopia
+
+## The figures F-222 defines, as their slots print them (ADR-0124, ADR-0125)
+
+03's percentage with the word FR-7 allows, 13's label over its threshold, 23's concordance, the band
+words beside a ΔE00 and its components, and a reading's confidence in its one format — in both
+languages, so the lint can never refuse the copy that replaced the drawn claims.
+
+- ΔE00 1.18 • 97% Similar
+- ΔE00 1.18 • 類似度97%
+- Outfit Score: 93 / 100 • Valid Outfit (≥ 60)
+- Outfit Score: 52 / 100 • Not Counted (under 60)
+- コーデスコア 93 / 100 • 有効なコーデ（60以上）
+- コーデスコア 52 / 100 • 対象外（60未満）
+- Garment Profile History · 28 garments profiled · 94% concordance
+- 手持ちの服の照合履歴 · 28着を照合・94%がプロフィールに適合
+- ΔE00 1.42 · Close
+- ΔE00 0.62 · Very Close
+- ΔE00 3.42 · Perceptible Shift
+- ΔE00 7.10 · Clear Difference
+- ΔL* −1.2 · Slightly Darker
+- ΔH 0.3 · Slight Hue Shift
+- ΔE00 1.42 · 近い
+- ΔL* −1.2 · わずかに暗い
+- 95% Confidence
+- 信頼度95%

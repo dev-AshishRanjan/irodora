@@ -477,7 +477,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:deltaE00Band",
       "action": null,
       "copy": {
         "shape": "label",
@@ -758,7 +758,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:axisReading.lightness",
       "action": null,
       "measured": {
         "fg": "#9A9CA0"
@@ -900,7 +900,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:axisReading.chroma",
       "action": null,
       "measured": {
         "fg": "#9A9CA0"
@@ -1042,7 +1042,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:axisReading.hue",
       "action": null,
       "measured": {
         "fg": "#9A9CA0"
@@ -1514,7 +1514,7 @@
     {
       "rule": "E2",
       "element": "04.gauge.band",
-      "why": "the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — bands defined in F-222"
+      "why": "the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — the band is ADR-0125’s table"
     },
     {
       "rule": "E2",

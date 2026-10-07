@@ -95,11 +95,12 @@ const row = ([swatch, name, rank, delta, match, link], i) => {
         binding: `engine:nearest.${i}.deltaE00`,
         copy: { shape: 'value', script: 'figures' },
       }),
-      el(`${p}.match`, 'ui:Text', match, {
+      // ADR-0124: FR-7's similarity percentage (ADR-0048), floored, with "Similar".
+      el(`${p}.similarity`, 'ui:Text', match, {
         parent: sheet,
         tokens: { fg: 'text.secondary' },
         type: text('sans', 'label', 400, { tabular: true }),
-        binding: 'oq:OQ-9',
+        binding: `engine:nearest.${i}.similarityPercent`,
         copy: { shape: 'value', script: 'mixed' },
       }),
       ...(link
@@ -272,8 +273,8 @@ export default {
     },
     ...[1, 2, 3].map((n) => ({
       rule: 'E2',
-      element: `03.matches.row-${n}.match`,
-      why: 'no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9',
+      element: `03.matches.row-${n}.similarity`,
+      why: 'the percentage is FR-7’s similarity percentage (ADR-0048), and the drawn word that makes it a match does not ship: naming returns the closest references ranked by ΔE00, never a match (FR-7, ADR-0124)',
     })),
     {
       rule: 'E2',

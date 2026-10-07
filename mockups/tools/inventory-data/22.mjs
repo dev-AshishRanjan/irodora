@@ -160,10 +160,11 @@ export default {
       bg: '#1F232A',
       figure: B(487, 521, 37, 47),
       figureEm: 47.4,
-      binding: 'oq:OQ-9',
+      // ADR-0124: the owned garments forming a valid outfit with the candidate.
+      binding: 'engine:wardrobePairings',
       label: B(418, 583, 175, 22),
       detail: B(422, 611, 168, 16),
-      detailBinding: 'oq:OQ-9',
+      detailBinding: 'static:shopping.pairingsDetail',
     }),
     ...stat('duplicates', {
       box: B(148, 660, 230, 153),
@@ -180,10 +181,11 @@ export default {
       bg: '#1F242C',
       figure: B(492, 689, 22, 45),
       figureEm: 45.3,
-      binding: 'derived:F-222',
+      // ADR-0124: the regions gaps() reports before the candidate and not after, by region.
+      binding: 'engine:gapsAddressedBy',
       label: B(427, 750, 155, 21),
       detail: B(404, 778, 203, 16),
-      detailBinding: 'derived:F-222',
+      detailBinding: 'engine:gapsAddressedBy.0.named',
     }),
     // ---- compatibility with what is owned (the third card runs off the screen's edge)
     el('22.compat.heading', 'ui:Text', B(153, 843, 331, 24), {

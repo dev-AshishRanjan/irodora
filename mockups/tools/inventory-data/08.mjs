@@ -75,11 +75,18 @@ const metric = (key, label, value, reading, formula = null) => [
   }),
   ...(reading
     ? [
-        t(`08.metrics.${key}.reading`, reading, `08.metrics.${key}`, 'derived:F-222', {
-          tokens: { fg: 'text.secondary' },
-          type: text('sans', 'caption'),
-          raw: { emDp: 10.3 },
-        }),
+        // ADR-0125: the total's band, or the axis's weighted term banded on the same table.
+        t(
+          `08.metrics.${key}.reading`,
+          reading,
+          `08.metrics.${key}`,
+          key === 'delta-e00' ? 'engine:deltaE00Band' : `engine:axisReading.${key}`,
+          {
+            tokens: { fg: 'text.secondary' },
+            type: text('sans', 'caption'),
+            raw: { emDp: 10.3 },
+          },
+        ),
       ]
     : []),
 ];

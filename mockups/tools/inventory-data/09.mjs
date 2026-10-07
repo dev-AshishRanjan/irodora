@@ -38,7 +38,8 @@ const slider = (key, label, track, value, m) => [
     binding: `store:finder.${key}`,
     action: `adjust:finder.${key}`,
   }),
-  t(`09.sliders.${key}.value`, value, '09.sliders', 'derived:F-222', {
+  // Not in R9 §8's F-222 rows: the lexicon terms that hold the value are F-250's (ADR-0124).
+  t(`09.sliders.${key}.value`, value, '09.sliders', 'derived:F-250', {
     tokens: { fg: 'text.secondary' },
     type: text('sans', 'label', 400, { tabular: true }),
     copy: { shape: 'value', script: 'mixed' },

@@ -567,8 +567,8 @@ claims-lint patterns; bumping `DIFFERENCE_VERSION`.
 
 | increment | commit | notes |
 |---|---|---|
-| 0 | this commit | Claimed; this plan (the planner subagent's, adopted with five amendments). |
-| 1 | | |
+| 0 | `8305d13` | Claimed; this plan (the planner subagent's, adopted with five amendments). |
+| 1 | this commit | **OQ-9 decided; ADR-0124 and ADR-0125.** PRD §10 and R9 §11 record the closure, R9 §8 binds each figure to its computation (a 09 row → F-250 added), R9 §4 E2 gains the 23 title row and points 03, 04 and 13 at the ADRs. Inventories 03, 04, 08, 09, 13, 22, 23 rebound and regenerated: 03's leaves are `.similarity`, 13 and 23 gain E2 departures, 09's readings are F-250's; `verify-mockups` and its proof pass with no binding to a closed question. The honest composed forms, en and ja, are in `near-misses.md`; the claims lint passes and its proof discriminates on all 41 cases. F-222 drops OQ-9 and carries its attested criterion; notes on F-236, F-244, F-245, F-249, F-250, F-257, F-258, F-260, F-267, and F-222 in `blockedBy` for F-236, F-249, F-260; backlog F-316 (gaps named once, in the reader's language). **The sources, read before citing (amendment 5):** the 2019 review's abstract gives PT 0.8 / AT 1.8 ΔE00 (ΔE*ab 1.2 / 2.7), from the 2015 multicentre study of dental ceramic; the 5 edge rests on a secondary statement of CIEDE2000's 0–5 range (Richter, BAM/TU Berlin, and CIE TC 1-63's terms of reference), and the ADR says so; **ISO/TR 28642 is not claimed** — the literature cites it for a competency test, not these values. Sharma–Wu–Dalal's Table I (with SL, SC, SH, RT and the primed coordinates) was read out of the paper's own PDF for increment 2; the extraction drops minus signs, which increment 2 recovers from the signed inputs and the published ΔE00. **Changed from the plan:** ADR-0061 does not set the display precision — it reasons about a ΔE00 printed to two decimals — so ADR-0125 says *the two decimals every screen prints*; and **F-317** records the ui conformance suite's cleanup-hook timeout, which failed the first full test run three times running (each passed alone). |
 | 2 | | |
 | 3 | | |
 | 4 | | |

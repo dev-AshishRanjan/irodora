@@ -51,7 +51,8 @@ const delta = (key, label, bar, barInk, figure, reading, parentBar = '04.gauge.d
     tokens: { fg: 'text.secondary' },
     measured: { fg: '#9A9CA0' },
     type: text('sans', 'label'),
-    binding: 'derived:F-222',
+    // ADR-0125: the axis's weighted CIEDE2000 term, banded on the one table.
+    binding: `engine:axisReading.${key}`,
     copy: { shape: 'label', script: 'latin' },
   }),
 });
@@ -152,7 +153,7 @@ export default {
     el('04.gauge.band', 'ui:Text', B(380, 715, 215, 28), {
       parent: '04.gauge.headline',
       type: text('sans', 'body', 500),
-      binding: 'derived:F-222',
+      binding: 'engine:deltaE00Band',
       copy: { shape: 'label', script: 'latin' },
     }),
     // Two samples that touch: a Strip with two members (F-233), where it was recorded as its own kind.
@@ -288,7 +289,7 @@ export default {
     {
       rule: 'E2',
       element: '04.gauge.band',
-      why: 'the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — bands defined in F-222',
+      why: 'the ΔE00 descriptor band stays; the word that asserts a match does not (FR-74) — the band is ADR-0125’s table',
     },
     {
       rule: 'E2',

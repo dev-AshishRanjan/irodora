@@ -200,7 +200,8 @@ export default {
       icon: 'score',
       copy: { shape: 'value', script: 'mixed' },
     }),
-    t('13.score.verdict', B(420, 766, 230, 49), '13.score.pill', 'oq:OQ-9', {
+    // ADR-0124: whether the outfit counts toward the valid outfits, with the threshold.
+    t('13.score.verdict', B(420, 766, 230, 49), '13.score.pill', 'engine:countsAsOutfit', {
       tokens: { fg: 'text.primary' },
       type: text('sans', 'body', 600),
     }),
@@ -286,6 +287,11 @@ export default {
   ],
   notDesign: [],
   departures: [
+    {
+      rule: 'E2',
+      element: '13.score.verdict',
+      why: 'the verdict word after the score does not ship (FR-32, the claims gate’s verdict class); the slot states whether the outfit counts toward the valid outfits, with the threshold (ADR-0124)',
+    },
     {
       rule: 'E2',
       element: '13.score.fit.note',

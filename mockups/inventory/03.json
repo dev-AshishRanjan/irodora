@@ -718,7 +718,7 @@
       }
     },
     {
-      "id": "03.matches.row-1.match",
+      "id": "03.matches.row-1.similarity",
       "order": 22,
       "parent": "03.sheet",
       "component": "ui:Text",
@@ -745,7 +745,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "engine:nearest.0.similarityPercent",
       "action": null,
       "copy": {
         "shape": "value",
@@ -925,7 +925,7 @@
       }
     },
     {
-      "id": "03.matches.row-2.match",
+      "id": "03.matches.row-2.similarity",
       "order": 28,
       "parent": "03.sheet",
       "component": "ui:Text",
@@ -952,7 +952,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "engine:nearest.1.similarityPercent",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1098,7 +1098,7 @@
       }
     },
     {
-      "id": "03.matches.row-3.match",
+      "id": "03.matches.row-3.similarity",
       "order": 33,
       "parent": "03.sheet",
       "component": "ui:Text",
@@ -1125,7 +1125,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "engine:nearest.2.similarityPercent",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1438,18 +1438,18 @@
     },
     {
       "rule": "E2",
-      "element": "03.matches.row-1.match",
-      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+      "element": "03.matches.row-1.similarity",
+      "why": "the percentage is FR-7’s similarity percentage (ADR-0048), and the drawn word that makes it a match does not ship: naming returns the closest references ranked by ΔE00, never a match (FR-7, ADR-0124)"
     },
     {
       "rule": "E2",
-      "element": "03.matches.row-2.match",
-      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+      "element": "03.matches.row-2.similarity",
+      "why": "the percentage is FR-7’s similarity percentage (ADR-0048), and the drawn word that makes it a match does not ship: naming returns the closest references ranked by ΔE00, never a match (FR-7, ADR-0124)"
     },
     {
       "rule": "E2",
-      "element": "03.matches.row-3.match",
-      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+      "element": "03.matches.row-3.similarity",
+      "why": "the percentage is FR-7’s similarity percentage (ADR-0048), and the drawn word that makes it a match does not ship: naming returns the closest references ranked by ΔE00, never a match (FR-7, ADR-0124)"
     },
     {
       "rule": "E2",

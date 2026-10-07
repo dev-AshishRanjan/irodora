@@ -116,17 +116,18 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 
 | mockup | drawn | resolution |
 |---|---|---|
-| `03` | *"97% Match"*, *"92%"*, *"88%"* beside ΔE00 | no such figure exists and FR-7 says naming returns a closest reference, never a match — **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `03` | *"97% Match"*, *"92%"*, *"88%"* beside ΔE00 | the similarity percentage FR-7 requires (ADR-0048), floored, followed by *Similar*: FR-7 says naming returns a closest reference, never a match ([ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md)) (claims-ok: quotes the drawn construction this row resolves) |
 | `03` | *"Ranked Japanese Corpus Matches (ranked by ΔE00)"* | FR-7 returns the nearest references ranked by ΔE00, never a match; the heading names them as nearest references (claims-ok: quotes the drawn construction this row resolves) |
 | `07` `13` | *"94% Match (Cool-Muted profile)"*, *"92% (Cool-Muted Match)"* beside the personal-fit score | the FR-29 score stays; "Match" to a seasonal type does not (C12, `F-223`) (claims-ok: quotes the drawn construction this row resolves) |
-| `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — bands defined in `F-222` |
+| `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — the band is ADR-0125's table |
 | `02` | *"Excellent Exposure"* | the capture-conditions assessment the engine produces (FR-17), in its own words |
 | `07` `16` | *"6.2:1 (APCA Passed)"*, *"11.4:1 (APCA Passed - AAA)"* | the same element shows the WCAG ratio **and** the APCA Lc as two figures — APCA has no ratio (FR-3) |
 | `00` `10` `15` `16` | *"100% CVD Safe"*, *"CVD 100% Distinction"*, *"100% CVD-Safe"*, *"100% Distinguishable"* | the computed separation score (FR-5) for the palettes actually shown; it prints 100 only when it is 100 (claims-ok: quotes the drawn construction this row resolves) |
 | `07` `08` `13` | *"98% Separation (Protan/Deutan Safe)"*, *"(Safe)"* after each separation figure, *"98% (Safe for Protan/Deutan)"* | the computed separation (FR-5) with the model it was computed under; "Safe" is a claim about people and does not ship (claims-ok: quotes the drawn construction this row resolves) |
-| `13` | *"Master Harmony"* | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `13` | *"Master Harmony"* | whether the outfit counts toward the valid outfits, with the threshold: *Valid Outfit (≥ 60)* or *Not Counted (under 60)* — the verdict word does not ship (FR-32, ADR-0124) (claims-ok: quotes the drawn construction this row resolves) |
+| `23` | *"Garment Calibration History"* | *Garment Profile History*: in this product *calibrated* is a provenance level (FR-16, ADR-0031 §1), and nothing about garments calibrates a profile (ADR-0124) |
 | `08` `13` | *"1.48:1 • Non-Text / Harmonious Pairing"*, *"90% (APCA Lc 48 • Optimal)"* | the figures stay — the ratio, the Lc and the threshold they pass; the one-word verdict after them does not (FR-32, FR-3), and a pair shows its harmony relationship (FR-6) where it has one (claims-ok: quotes the drawn construction this row resolves) |
-| `04` | *"(Identical Hue)"* | the ΔH figure and its descriptor band; FR-74 never asserts identity. Outside `F-219`’s five classes, so this row and `F-245` hold it, not the lint |
+| `04` | *"(Identical Hue)"* | the ΔH figure and its descriptor band (ADR-0125's hue phrase); FR-74 never asserts identity. Outside `F-219`’s five classes, so this row and `F-245` hold it, not the lint |
 | `02` `27` | *"色の測定"*, *"Measurement Refused"* | a camera estimate is never called a measurement (golden rule 11, E-089): the Lens is an estimate in both languages, and the refused state names a reading. Outside `F-219`’s five classes; held by this row, `F-243` and `F-236` |
 | `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
 | `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps (claims-ok: quotes the drawn construction this row resolves) |
@@ -589,26 +590,27 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 |---|---|---|---|
 | `01` | hero OKLCh; *"14 Garments • 38 Valid Outfits"* | corpus derivation; wardrobe count and `coverage()` | exists |
 | `02` | live OKLCh, sRGB, three nearest with ΔE00 | the Lens reading and naming | exists |
-| `03` | Hex · OKLCh · CIELAB; *"95% Confidence"* | the reading; `provenance.confidence` ∈ [0,1] — display format in `F-222` | exists |
-| `03` | *"97% Match"* | — | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
-| `04` | ΔE00, ΔL\*, ΔC\*, ΔH and their readings | the FR-48 metric set (FR-74) | exists; bands `F-222` |
+| `03` | Hex · OKLCh · CIELAB; *"95% Confidence"* | the reading; `provenance.confidence` ∈ [0,1], printed by `confidenceText` — one format, with what the number means ([ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md)) | `F-222` |
+| `03` | *"97% Match"* | `similarityPercent` (FR-7, ADR-0048), floored, with *Similar* — the drawn word does not ship (ADR-0124) | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
+| `04` | ΔE00, ΔL\*, ΔC\*, ΔH and their readings | the FR-48 metric set (FR-74); the readings `deltaE00Band` and `axisReading` over `deltaE00Terms` — one table ([ADR-0125](../adr/0125-a-delta-e00-is-described-by-one-table-of-four-bands-anchored-on-published-thresholds.md)) | `F-222` |
 | `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season | engine conversions — P3 is a real conversion; taxonomy, where era is empty for all 120 | exists |
 | `07` | personal fit %, CVD separation %, contrast | FR-29, FR-5, FR-3 (ratio and Lc apart) | exists |
-| `08` | ΔE00 · ΔEok · ΔL\* · ΔC\* · ΔH · WCAG · APCA · three separations | FR-48, FR-3, FR-5 | exists |
+| `08` | ΔE00 · ΔEok · ΔL\* · ΔC\* · ΔH · WCAG · APCA · three separations | FR-48, FR-3, FR-5; the four readings beside ΔE00 and its components, ADR-0125's table | exists; readings `F-222` |
+| `09` | three slider readings | the lexicon terms holding the value | `F-250` |
 | `10` `16` | contrast ratio; CVD separation | FR-3; FR-5 per palette | exists |
 | `11` | coverage %, outfits, outfits per garment, the gap; wears, cost per wear | `coverage()`, `gaps()`; wardrobe cost | exists |
 | `12` | duplicate check with ΔE00 | `findDuplicates` | exists |
 | `13` | overall and five components; capsule *"5 → 12"* | `scoreOutfit` (FR-32, [ADR-0073](../adr/0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md)); `solveCapsule` | exists |
-| `13` | *"Master Harmony"* | — | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `13` | *"Master Harmony"* | `countsAsOutfit(overall)` — whether the outfit counts toward the valid outfits, with the threshold (FR-42, ADR-0124) | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | `15` | learned weights | preference weights | exists |
 | `17` `23` | four dimensions, radar, trials per dimension | the profile's ranges and agreement ([ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md)) | exists |
 | `23` | seasonal label — a season and a modifier | `summariseSeason` over the published seasonal-summary rule ([ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)) | `F-223` |
 | `23` | the label's second half, *"Kasane Harmony"* | — | **OQ-31** |
-| `23` | *"Garment Calibration History · 94% concordance"* | — | **OQ-9** |
+| `23` | *"Garment Calibration History · 94% concordance"* | `profileConcordance` — the owned garments FR-29 scores at or above 66, floored; *Calibration* becomes *Profile* (ADR-0124) | `F-222` |
 | `19` `21` `24` | ΔE00 per row; *"5 matches"*, *"120 colors"* | color-difference; counts | exists |
 | `22` | outfits unlocked; duplicates and their threshold | `shoppingCheck` | exists |
-| `22` | *"Gaps Addressed"* | `gaps()` before and after the candidate | derivable — `F-222` |
-| `22` | *"Wardrobe Pairings"* | — | **OQ-9** |
+| `22` | *"Gaps Addressed"* | `gapsAddressedBy` — the regions `gaps()` reports before the candidate and not after, by region (ADR-0124) | `F-222` |
+| `22` | *"Wardrobe Pairings"* | `wardrobePairings` — the owned garments forming a valid outfit with the candidate (ADR-0124) | `F-222` |
 | `27` | the refusal reason and its threshold | the Lens's own refusal reasons and thresholds | exists |
 
 ---
@@ -656,7 +658,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 |---|---|---|
 | **OQ-7** | `profile/measure` has no mockup. Generate one, or compose it from `08`'s readout table and `12`'s form? | `F-261` |
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
-| **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
 | **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
@@ -693,6 +694,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-9** | Each figure is a defined computation and none is a match: 03's percentage is FR-7's similarity percentage with *Similar*; 13's label says whether the outfit counts toward the valid outfits (≥ 60); 23's line is a profile concordance, its title *Garment Profile History*; 22's pairings count the owned garments the candidate forms a valid outfit with. The ΔE00 words are one cited table (ADR-0125) | [ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md) |
 | **OQ-50** | `04`'s delta bars share one unit — the smaller side's room — in every row and on both sides, scaled by F-245's tolerance over each axis's weighted CIEDE2000 term; every bar takes the hue bar's drawn ink, `text.tertiary` on a card. The slate fails 3:1 (E3) and the green is a per-axis verdict by colour alone (E2, rule 13) | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-51** | `04`'s rows print what `04` prints; each row's accessible name carries the quantity and the space. FR-61 governs the professional surfaces, where `08` prints the notation | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-52** | `25`'s current page is a capsule in its drawn ink (a shape, rule 13), the other dots `foreground.3` (the drawn grey is 1.69:1, E3); at most four dots show, and a dot at the window's edge with pages beyond it is drawn small, as `25`'s fourth is | [ADR-0120](../adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md) |

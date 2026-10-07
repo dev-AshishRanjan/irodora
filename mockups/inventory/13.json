@@ -1074,7 +1074,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "engine:countsAsOutfit",
       "action": null,
       "copy": {
         "shape": "label",
@@ -2208,6 +2208,11 @@
   ],
   "notDesign": [],
   "departures": [
+    {
+      "rule": "E2",
+      "element": "13.score.verdict",
+      "why": "the verdict word after the score does not ship (FR-32, the claims gate’s verdict class); the slot states whether the outfit counts toward the valid outfits, with the threshold (ADR-0124)"
+    },
     {
       "rule": "E2",
       "element": "13.score.fit.note",

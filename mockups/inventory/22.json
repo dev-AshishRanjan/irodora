@@ -429,7 +429,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "engine:wardrobePairings",
       "action": null,
       "raw": {
         "emDp": 47.4
@@ -571,7 +571,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-9",
+      "binding": "static:shopping.pairingsDetail",
       "action": null,
       "copy": {
         "shape": "body",
@@ -708,7 +708,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:gapsAddressedBy",
       "action": null,
       "raw": {
         "emDp": 45.3
@@ -847,7 +847,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-222",
+      "binding": "engine:gapsAddressedBy.0.named",
       "action": null,
       "copy": {
         "shape": "body",
