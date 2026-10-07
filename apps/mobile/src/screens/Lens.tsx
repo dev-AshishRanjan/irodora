@@ -63,6 +63,7 @@ import {
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  confidenceText,
   Chip,
   Row,
   Screen,
@@ -942,18 +943,20 @@ export function Lens({
                   {/*
                     THE NUMBER STAYS, AND STOPS BEING THE HEADLINE. FR-15 produces it and it is
                     the honest ceiling, so removing it would be hiding the one figure that says
-                    how far the engine is willing to go. It is subordinate to the word above,
-                    and its label states the scale — a bare 0.87 reads as a percentage to
-                    everyone who has ever seen one.
+                    how far the engine is willing to go. It is subordinate to the word above.
+
+                    ONE FORMAT (F-222, ADR-0124): the percentage `03` draws, floored, through
+                    `confidenceText` — and the sentence under it says what the number is, because
+                    a percentage beside a colour reads as the chance it is right, and it is not.
                   */}
-                  <Row gap="sm">
-                    <Text size="caption" color="foreground.2" script={script} numeric>
-                      {t('lens.confidence')}
+                  <Stack gap="xs">
+                    <Text size="caption" color="foreground.2" script={script} numeric selectable>
+                      {confidenceText(capture.confidence, t('confidence.word'), script)}
                     </Text>
-                    <Text size="caption" color="foreground.2" numeric selectable>
-                      {capture.confidence.toFixed(2)}
+                    <Text size="caption" color="foreground.2" script={script}>
+                      {t('confidence.meaning')}
                     </Text>
-                  </Row>
+                  </Stack>
 
                   {/*
                     WHAT TO DO NEXT (FR-18). Inside the readout rather than shouted from the

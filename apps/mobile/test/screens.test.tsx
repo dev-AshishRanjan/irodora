@@ -3848,16 +3848,18 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     // BEFORE the result, "because a number shown first has already been read by the time its
     // qualifier arrives" — so a test that only checked presence would pass on the arrangement
     // the requirement exists to forbid.
-    expect(text.indexOf(en['lens.quality.poor'])).toBeLessThan(text.indexOf('0.21'));
+    expect(text.indexOf(en['lens.quality.poor'])).toBeLessThan(text.indexOf('21% Confidence'));
   });
 
-  it('keeps the confidence figure, subordinate and with its scale stated', () => {
+  it('keeps the confidence figure in its one format, with what the number is (F-222)', () => {
     const text = shown(POOR);
     // Kept rather than hidden: it is the honest ceiling FR-15 produces, and removing it would
-    // conceal how far the engine is willing to go. The label is what stops a bare 0.21 reading
-    // as a percentage.
-    expect(text).toContain('0.21');
-    expect(text).toContain(en['lens.confidence']);
+    // conceal how far the engine is willing to go. ADR-0124 gives it one format — the percentage
+    // 03 draws, floored — and the sentence under it says it is not the chance the colour is right.
+    expect(text).toContain('21% Confidence');
+    expect(text).toContain(en['confidence.meaning']);
+    // DECOY: the old bare figure is gone, so a second format cannot survive beside the first.
+    expect(text).not.toContain('0.21');
   });
 
   it('gives the instruction as a next step, not as a warning (criterion 4)', () => {

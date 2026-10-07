@@ -45,6 +45,7 @@ import type { Color } from '@irodora/color-core';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { hitArea, platformTapTarget } from './hitArea.js';
 import { usePress } from './motion.js';
+import { confidencePercent } from './percent.js';
 import { sampleEdge } from './sampleInk.js';
 import { SelectionFrame, SelectionMark, selectionTone } from './selection.js';
 import { Text } from './Text.js';
@@ -145,7 +146,8 @@ export interface SwatchProps {
  */
 export function swatchAccessibleName(name: string, hex: string, color: Color): string {
   const { source, confidence } = color.provenance;
-  const percent = Math.round(confidence * 100);
+  // The one format (F-222, ADR-0124): floored, so a name never claims more than the value holds.
+  const percent = confidencePercent(confidence);
   return `${name}. Hex ${hex.replace('#', '')}. ${source}, ${String(percent)} percent confidence.`;
 }
 

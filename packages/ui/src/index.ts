@@ -428,3 +428,5 @@ export {
 } from './motion.js';
 
 export const UI_VERSION = '0.0.0' as const;
+
+export { confidencePercent, confidenceText, floorPercent } from './percent.js';

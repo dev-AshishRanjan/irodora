@@ -304,7 +304,10 @@ export const en = {
   'lens.light': 'Light',
   'lens.space': 'Colour space',
   'lens.next': 'To improve it',
-  'lens.confidence': 'How sure this reading is, from 0 to 1',
+  // F-222 (ADR-0124): a reading's confidence, in its one format, and what the number is.
+  'confidence.word': 'Confidence',
+  'confidence.meaning':
+    'A ceiling set by the light, the capture and the colour space — not the chance that the colour is right.',
   'lens.reading': 'The colour under the crosshair',
   'lens.samples': 'Pixels used',
   'lens.nearest': 'Closest colours in the corpus',
