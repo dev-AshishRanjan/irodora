@@ -28,7 +28,8 @@ the element keeps its shape, and its wording or value comes from a defined compu
 1. **`03`, the percentage beside each ΔE00, is the similarity percentage FR-7 already asks for.**
    `similarityPercent(ΔE00) = 100 × 2^(−ΔE00/10)`, the stated scale of ADR-0048, already on every
    ranked candidate. It is printed floored, as an integer, followed by *Similar* (ja: 類似度 before
-   the figure) — so 100 appears only at ΔE00 = 0. Only the word that made it a match changes.
+   the figure) — so 100 appears only at a ΔE00 indistinguishable from zero (below 1.5 × 10⁻¹⁰, inside
+   the floor's 10⁻⁹ guard). Only the word that made it a match changes.
 2. **`13`, the verdict after the overall score, says whether the outfit counts.**
    `countsAsOutfit(overall, threshold = COVERAGE_THRESHOLD)` is `overall >= threshold`, the very
    predicate `coverage()` counts valid outfits with (FR-42), shared rather than copied. The label is
@@ -41,8 +42,10 @@ the element keeps its shape, and its wording or value comes from a defined compu
    reads *supports*. The line prints *N garments profiled · X% concordance*, X floored; it is `null`,
    never 0 %, when the wardrobe is empty or the profile carries no evidence. **The title's word
    *Calibration* does not ship**: in this product *calibrated* is a provenance level (FR-16,
-   ADR-0031 §1), and nothing about garments calibrates a profile. The title reads *Garment Profile
-   History* (ja: 手持ちの服の照合履歴).
+   ADR-0031 §1), and nothing about garments calibrates a profile. **Nor does *History***: the figure
+   is the wardrobe as it is now, and the product keeps no history of it. The title reads *Garment
+   Concordance* (ja: 手持ちの服の適合度), and the Japanese detail 28着のうち94%がプロフィールに適合
+   avoids 照合, which can read as verification.
 4. **`22`, *Wardrobe Pairings*, counts the owned garments the candidate pairs with.**
    `wardrobePairings(after, candidateId)` lists every owned garment that forms at least one valid
    outfit with the candidate, by outfits shared; the figure is its length, `null` where the shopping
@@ -53,6 +56,12 @@ the element keeps its shape, and its wording or value comes from a defined compu
    not, keyed by slot, lightness range and chroma range. The published lexicon names one region under
    several terms, and a garment can open new gaps, so a difference of list lengths is wrong both ways.
    `gaps()` names near-neutral regions only, so a vivid candidate fills none — an answer.
+   **Its ceiling, stated:** with today's lexicon a slot has three lightness ranges and ONE
+   near-neutral chroma range (*grey* and *neutral* share it), so a candidate fills at most one region
+   — two only exactly on a lightness boundary — and the figure is 0 or 1. `22`'s drawn candidate
+   (chroma 0.04, just past `NEUTRAL_CHROMA`) and its drawn *mid-tone green* gap are outside what
+   `gaps()` names, so the drawn case reads 0; the drawn detail is sample content (E1), and F-258 states
+   the zero state. Hue-bearing gaps are F-318.
 6. **A reading's confidence has one display format.** `confidencePercent(c) = ⌊100c + 10⁻⁹⌋` (the
    guard term because float64 holds 0.57 × 100 as 56.99999999999999), printed *95% Confidence* (ja:
    信頼度95%), with what it means beside it: a ceiling set by the light, the capture and the colour
@@ -72,8 +81,12 @@ the element keeps its shape, and its wording or value comes from a defined compu
 **Bad**
 
 - **Three words a person will see differ from the drawings**: *Similar* for 03's drawn word,
-  `13`'s label, and *Profile* in `23`'s title. Each is forced (rule 11, FR-7, the claims gate,
-  FR-16) and listed in R9 §4 E2.
+  `13`'s label, and `23`'s title (*Garment Concordance* for the drawn *Garment Calibration
+  History*). Each is forced (rule 11, FR-7, the claims gate, FR-16, and a history the product does not
+  keep) and listed in R9 §4 E2. `23`'s drawn history icon stays, as the element's shape does.
+- **`22`'s pairings detail keeps *Matches owned garments*** though this ADR's title says no figure is
+  a match: the words are the clothing sense of *goes with*, backed by the valid-outfit threshold, and
+  the claims lint holds them as honest copy (`near-misses.md`). The figure beside them is a count.
 - *Valid Outfit* can still be read as praise, and *concordance* as validation of the profile. The
   threshold is printed beside the first, and the second states what it counts; F-037 (validating the
   profile against people) is not done, and nothing here claims it.

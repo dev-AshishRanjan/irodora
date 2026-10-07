@@ -126,21 +126,23 @@ or instrument (F-219). Joined to accuracy it is refused — see variants.md.
 words beside a ΔE00 and its components, and a reading's confidence in its one format — in both
 languages, so the lint can never refuse the copy that replaced the drawn claims.
 
-- ΔE00 1.18 • 97% Similar
-- ΔE00 1.18 • 類似度97%
+- ΔE00 1.18 • 92% Similar
+- ΔE00 1.18 • 類似度92%
 - Outfit Score: 93 / 100 • Valid Outfit (≥ 60)
 - Outfit Score: 52 / 100 • Not Counted (under 60)
 - コーデスコア 93 / 100 • 有効なコーデ（60以上）
 - コーデスコア 52 / 100 • 対象外（60未満）
-- Garment Profile History · 28 garments profiled · 94% concordance
-- 手持ちの服の照合履歴 · 28着を照合・94%がプロフィールに適合
-- ΔE00 1.42 · Close
+- Garment Concordance · 28 garments profiled · 94% concordance
+- 手持ちの服の適合度 · 28着のうち94%がプロフィールに適合
+- ΔE00 1.42 · Slight Shift
 - ΔE00 0.62 · Very Close
 - ΔE00 3.42 · Perceptible Shift
-- ΔE00 7.10 · Clear Difference
+- ΔE00 7.10 · Perceptible Shift
 - ΔL* −1.2 · Slightly Darker
 - ΔH 0.3 · Slight Hue Shift
-- ΔE00 1.42 · 近い
+- ΔC* +0.3 · Slightly Richer
+- ΔH 0.0 · Very Close in Hue
+- ΔE00 1.42 · わずかな差
 - ΔL* −1.2 · わずかに暗い
 - 95% Confidence
 - 信頼度95%

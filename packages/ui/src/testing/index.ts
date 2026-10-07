@@ -30,7 +30,7 @@ export {
 
 export { isStatusToken, resolveColor, tokensForValue, type ColorResolution } from './tokens.js';
 
-export { secondConfidenceFormats } from './confidence.js';
+export { secondConfidenceFormats, type SecondConfidenceFormat } from './confidence.js';
 
 export {
   checkAll,

@@ -266,7 +266,7 @@ export default {
     {
       rule: 'E2',
       element: '23.history.title',
-      why: 'the word Calibration does not ship: in this product calibrated is a provenance level (FR-16, ADR-0031 §1), and nothing about garments calibrates a profile — the title reads Garment Profile History (ADR-0124)',
+      why: 'Calibration History does not ship: in this product calibrated is a provenance level (FR-16, ADR-0031 §1), nothing about garments calibrates a profile, and the figure is the wardrobe now, with no history kept — the title reads Garment Concordance (ADR-0124)',
     },
   ],
   conflicts: [

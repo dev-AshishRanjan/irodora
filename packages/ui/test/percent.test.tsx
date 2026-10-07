@@ -75,16 +75,45 @@ describe('the only format in this package', () => {
       // The scanner's own patterns describe the formats it refuses.
       .filter((path) => !path.endsWith(join('testing', 'confidence.ts')))
       .flatMap((path) =>
-        secondConfidenceFormats(readFileSync(path, 'utf8')).map((m) => `${path}: ${m}`),
+        secondConfidenceFormats(readFileSync(path, 'utf8')).map((m) => `${path}: ${m.text}`),
       );
     expect(found).toStrictEqual([]);
   });
 
-  it('DECOY — the scanner finds the two formats this replaced', () => {
-    expect(secondConfidenceFormats('{capture.confidence.toFixed(2)}')).toHaveLength(1);
-    expect(
-      secondConfidenceFormats('const percent = Math.round(confidence * 100);').length,
-    ).toBeGreaterThan(0);
-    expect(secondConfidenceFormats('confidenceText(c, word, script)')).toStrictEqual([]);
+  it('DECOY — the scanner finds the formats this replaced, and the obvious variants', () => {
+    for (const planted of [
+      '{capture.confidence.toFixed(2)}',
+      'const percent = Math.round(confidence * 100);',
+      'Math.round(100 * capture.confidence)',
+      'capture?.confidence?.toFixed(2)',
+      'reading.confidence.toPrecision(2)',
+      'x.confidence.toLocaleString()',
+      'String(capture.confidence)',
+      '<Text>{capture.confidence}</Text>',
+      '`${reading?.confidence}`',
+    ])
+      expect({ planted, found: secondConfidenceFormats(planted).length > 0 }).toStrictEqual({
+        planted,
+        found: true,
+      });
+  });
+
+  it('DECOY — and leaves the one format, and a destructuring, alone', () => {
+    for (const honest of [
+      'confidenceText(c, word, script)',
+      'confidencePercent(capture.confidence)',
+      'const { source, confidence } = color.provenance;',
+      '`${String(confidencePercent(confidence))}%`',
+    ])
+      expect({ honest, found: secondConfidenceFormats(honest) }).toStrictEqual({
+        honest,
+        found: [],
+      });
+  });
+
+  it('reports every occurrence, in order, so an exception can name one', () => {
+    const found = secondConfidenceFormats('a.confidence.toFixed(1); b.confidence.toFixed(2);');
+    expect(found.map((m) => m.text)).toStrictEqual(['confidence.toFixed(', 'confidence.toFixed(']);
+    expect(found[0]?.index).toBeLessThan(found[1]?.index ?? 0);
   });
 });

@@ -7261,7 +7261,7 @@
           "ref": "color-golden"
         }
       ],
-      "guard": "gate:color-golden — deltae00-bands.golden.json holds the edges as their sources state them (0.8 and 1.8 from the 2019 review, 5 from CIEDE2000's range), with ΔE*ab's 2.3 as the decoy. gate:test — delta-readings.ts maps every band to a key, total by type; delta-readings.test holds the 27 words in both languages free of a match or an identity, the predicate tested against the drawn claims; bands.test holds the printed-value rule (0.7999 reads close) and the component rule.",
+      "guard": "gate:color-golden — deltae00-bands.golden.json holds the edges as their sources state them (0.8 and 1.8 from the 2019 review; no edge above them, with the near-neutral pair that a CIELAB-range edge would misdescribe as the decoy), with ΔE*ab's 2.3 as the decoy. gate:test — delta-readings.ts maps every band to a key, total by type; delta-readings.test holds the 27 words in both languages free of a match or an identity, the predicate tested against the drawn claims; bands.test holds the printed-value rule (0.7999 reads close) and the component rule.",
       "memory": "memory/effects/a-delta-is-described-by-one-table-and-the-printed-number.md",
       "rationale": "ADR-0125: every word beside a ΔE00 or one of its components comes from one table, banded on the PRINTED value, so the figure and its word cannot disagree. Moving an edge moves 04's headline, 08's readings and every later instrument at once — which is the point, and why the edges are golden data and the ADR is where a change is argued."
     },

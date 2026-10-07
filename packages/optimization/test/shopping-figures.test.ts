@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fromXyz, type Color } from '@irodora/color-core';
 import { oklchToXyz } from '@irodora/color-spaces';
-import { parsePhraseLexicon } from '@irodora/corpus';
+import { parsePhraseLexicon, type LexiconTerm } from '@irodora/corpus';
 import {
   outfitWeights,
   parseWeightContent,
@@ -171,13 +171,47 @@ describe('gaps addressed are counted by region (22, criterion 4)', () => {
   });
 
   it('orders its answer the same way every time', () => {
-    const wardrobe = [garment('top', 'top', LIGHT)];
-    const candidate = garment('candidate', 'shoe', DARK);
-    const once = gapsAddressedBy(candidate, wardrobe, LEXICON, context(0));
+    // With the published lexicon one candidate fills at most one region (ADR-0124), so the order is
+    // only observable with ranges that overlap: a fixture lexicon whose two dark terms both hold the
+    // candidate gives it two regions to fill.
+    const overlapping: readonly LexiconTerm[] = [
+      {
+        term: 'deep',
+        locale: 'en',
+        constrains: { lightness: { min: 0, max: 0.3 } },
+        rationale: 'fixture',
+      },
+      {
+        term: 'darkish',
+        locale: 'en',
+        constrains: { lightness: { min: 0.1, max: 0.5 } },
+        rationale: 'fixture',
+      },
+      {
+        term: 'pale',
+        locale: 'en',
+        constrains: { lightness: { min: 0.7, max: 1 } },
+        rationale: 'fixture',
+      },
+      {
+        term: 'grey',
+        locale: 'en',
+        constrains: { chroma: { min: 0, max: 0.039 } },
+        rationale: 'fixture',
+      },
+    ];
+    const wardrobe = [
+      garment('top', 'top', LIGHT),
+      garment('trouser', 'trouser', LIGHT),
+      garment('shoe', 'shoe', LIGHT),
+    ];
+    const candidate = garment('candidate', 'top', DARK);
+    const once = gapsAddressedBy(candidate, wardrobe, overlapping, context(0));
+    expect(once.length).toBeGreaterThanOrEqual(2);
     const twice = gapsAddressedBy(
       candidate,
       [...wardrobe].reverse(),
-      [...LEXICON].reverse(),
+      [...overlapping].reverse(),
       context(0),
     );
     expect(twice.map((a) => keyOf(a.region))).toStrictEqual(once.map((a) => keyOf(a.region)));
@@ -217,6 +251,61 @@ describe('wardrobe pairings (22)', () => {
   it('pairs with nothing where nothing counts, and never with itself', () => {
     expect(wardrobePairings(after(101), 'candidate')).toStrictEqual([]);
     expect(wardrobePairings(after(0), 'candidate').some((p) => p.id === 'candidate')).toBe(false);
+  });
+});
+
+describe('at the threshold 22 ships at (COVERAGE_THRESHOLD)', () => {
+  const owned = [
+    garment('top', 'top', LIGHT),
+    garment('trouser-1', 'trouser', oklch(0.5, 0.02)),
+    garment('trouser-2', 'trouser', DARK),
+    garment('shoe', 'shoe', DARK),
+  ];
+  const at = context(COVERAGE_THRESHOLD);
+  const scoreOf = (combo: readonly CoverageGarment[]): number =>
+    scoreOutfit(
+      combo.map((g) => ({ slot: g.slot, color: g.color })),
+      REFERENCE,
+      PROFILE,
+      RULES,
+      WEIGHTS,
+    ).overall;
+
+  it('has outfits that count there, so the checks below are not vacuous', () => {
+    expect(coverage(owned, at).valid).toBeGreaterThan(0);
+  });
+
+  it('pairs a candidate with exactly the garments a counted outfit holds it with', () => {
+    const candidate = garment('candidate', 'top', oklch(0.85, 0.01));
+    const after = applyChange(
+      coverage(owned, at),
+      [...owned, candidate],
+      { kind: 'added', garment: candidate },
+      at,
+    );
+    // The oracle scores every outfit the candidate is in, independently of the combination keys.
+    const counted = new Map<string, number>();
+    for (const trouser of owned.filter((g) => g.slot === 'trouser'))
+      for (const shoe of owned.filter((g) => g.slot === 'shoe'))
+        if (countsAsOutfit(scoreOf([candidate, trouser, shoe]), COVERAGE_THRESHOLD))
+          for (const id of [trouser.id, shoe.id]) counted.set(id, (counted.get(id) ?? 0) + 1);
+    expect(counted.size).toBeGreaterThan(0);
+    expect(
+      wardrobePairings(after, 'candidate')
+        .map((p) => `${p.id}:${String(p.outfits)}`)
+        .sort(),
+    ).toStrictEqual([...counted].map(([id, n]) => `${id}:${String(n)}`).sort());
+  });
+
+  it('addresses exactly the regions gaps() reports before and not after', () => {
+    const candidate = garment('candidate', 'top', DARK);
+    const before = new Set(gaps(owned, LEXICON, at).map((gap) => keyOf(gap.region)));
+    const after = new Set(gaps([...owned, candidate], LEXICON, at).map((gap) => keyOf(gap.region)));
+    expect(
+      gapsAddressedBy(candidate, owned, LEXICON, at)
+        .map((a) => keyOf(a.region))
+        .sort(),
+    ).toStrictEqual([...before].filter((k) => !after.has(k)).sort());
   });
 });
 

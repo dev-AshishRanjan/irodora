@@ -33,12 +33,13 @@ describe('the band of a ΔE00', () => {
 
   it('puts each edge in the band above it', () => {
     expect(deltaE00Band(0)).toBe('veryClose');
-    expect(deltaE00Band(0.8)).toBe('close');
+    expect(deltaE00Band(0.8)).toBe('slight');
     expect(deltaE00Band(0.79999)).toBe('veryClose');
     expect(deltaE00Band(1.8)).toBe('perceptible');
-    expect(deltaE00Band(1.79999)).toBe('close');
-    expect(deltaE00Band(5)).toBe('clear');
-    expect(deltaE00Band(4.99999)).toBe('perceptible');
+    expect(deltaE00Band(1.79999)).toBe('slight');
+    // Past acceptability there is no further edge: a large difference is still "perceptible".
+    expect(deltaE00Band(5)).toBe('perceptible');
+    expect(deltaE00Band(40)).toBe('perceptible');
   });
 
   it('refuses what is not a ΔE00 rather than banding it', () => {
@@ -51,7 +52,7 @@ describe('the band of a ΔE00', () => {
   it('bands a total as it is printed, so the word never contradicts the figure', () => {
     // 0.7999 prints as 0.80, which is at the perceptibility edge.
     expect(printedDeltaE00(0.7999)).toBe(0.8);
-    expect(deltaE00Band(printedDeltaE00(0.7999))).toBe('close');
+    expect(deltaE00Band(printedDeltaE00(0.7999))).toBe('slight');
     // DECOY: banding the raw value would call a printed 0.80 "very close".
     expect(deltaE00Band(0.7999)).toBe('veryClose');
   });

@@ -1,5 +1,5 @@
 /**
- * The words beside a ΔE00 — one table (F-222, [ADR-0125](../../../docs/adr/0125-a-delta-e00-is-described-by-one-table-of-four-bands-anchored-on-published-thresholds.md)).
+ * The words beside a ΔE00 — one table (F-222, [ADR-0125](../../../docs/adr/0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md)).
  *
  * `04` and `08` print a word beside a ΔE00 and beside its lightness, chroma and hue components. This
  * is the one table every such word comes from, and it holds bands, not words: the words live in
@@ -9,9 +9,12 @@
  *
  * - **0.8 and 1.8** are the 50:50 % perceptibility and acceptability thresholds in ΔE00 that
  *   Paravina, Pérez & Ghinea's 2019 review reports (J Esthet Restor Dent 31(2):103–112), measured on
- *   dental ceramic by 175 observers under simulated clinical conditions.
- * - **5** is the top of the range CIEDE2000 was built for (0–5 CIELAB units), a secondary statement
- *   of the formula's reference range — not a threshold of perception.
+ *   dental ceramic under simulated clinical conditions.
+ * - **There is no edge above 1.8**, because no threshold stated in ΔE00 bounds a larger difference.
+ *   CIEDE2000's reference range (0–5) is stated in CIELAB units, and near neutral a ΔE\*ab of 4 is
+ *   already a ΔE00 of 5.8, so an edge borrowed from it would misdescribe the printed number (F-222's
+ *   review). Past acceptability the difference is described as perceptible, which is all the source
+ *   supports.
  *
  * So a band describes the PRINTED NUMBER, never what a given person will see, and never a garment's
  * true distance: a camera estimate carries its own uncertainty.
@@ -23,15 +26,14 @@
  * as 0.80 is never described as below 0.8.
  */
 
-/** The four bands, lowest first. */
-export type DeltaE00Band = 'veryClose' | 'close' | 'perceptible' | 'clear';
+/** The three bands, lowest first: below perceptibility, between the two thresholds, past acceptability. */
+export type DeltaE00Band = 'veryClose' | 'slight' | 'perceptible';
 
 /** Each band and the ΔE00 it starts at. The table ADR-0125 states; `deltae00-bands.golden.json` holds the edges. */
 export const DELTA_E00_BANDS = [
   { band: 'veryClose', from: 0 },
-  { band: 'close', from: 0.8 },
+  { band: 'slight', from: 0.8 },
   { band: 'perceptible', from: 1.8 },
-  { band: 'clear', from: 5 },
 ] as const satisfies readonly { readonly band: DeltaE00Band; readonly from: number }[];
 
 /** The decimals every screen prints a ΔE00 at. */

@@ -140,7 +140,7 @@ Two rules that matter more than the format:
 | [0122](0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md) | The mark is 14’s blossom, in one ink everywhere, its cuts drawn as holes | Accepted; supersedes 0093 |
 | [0123](0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md) | A lockup is one figure: its intervals are ratios of the name’s em, outside the spacing snap | Accepted |
 | [0124](0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md) | Every printed figure is a defined computation, and none of them is a match | Accepted; closes OQ-9 |
-| [0125](0125-a-delta-e00-is-described-by-one-table-of-four-bands-anchored-on-published-thresholds.md) | A ΔE00 is described by one table of four bands, anchored on published thresholds | Accepted |
+| [0125](0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md) | A ΔE00 is described by one table of three bands, anchored on published thresholds | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

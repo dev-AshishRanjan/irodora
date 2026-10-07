@@ -9,11 +9,11 @@
  *
  * ## Floored, with a guard
  *
- * The percentage is FLOORED, so it never shows more confidence than the value holds — 0.9999 is 99,
- * never 100. And the floor carries a guard of 10⁻⁹, because float64 cannot hold most two-decimal
- * confidences: 0.57 × 100 is 56.99999999999999, and a bare floor would print 56 for a value its
- * author wrote as 0.57. The guard is far below any confidence a ceiling produces and far above the
- * error of one multiplication.
+ * The percentage is FLOORED, so it never shows more confidence than the value holds by more than the
+ * guard below — 0.9999 is 99, never 100. And the floor carries a guard of 10⁻⁹, because float64 cannot
+ * hold most two-decimal confidences: 0.57 × 100 is 56.99999999999999, and a bare floor would print 56
+ * for a value its author wrote as 0.57. The guard rounds up only a value within 10⁻⁹ of the next whole
+ * percent — far below any difference a ceiling produces, far above the error of one multiplication.
  */
 
 import type { Script } from './layout.js';

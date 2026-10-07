@@ -2,7 +2,8 @@
  * The words beside a ΔE00 and its components (F-222, ADR-0125, FR-74).
  *
  * One table of bands in the engine; here, the words for each band in both languages — every band
- * said, every word free of a match or an identity.
+ * said, every word free of a match, an identity, or a claim of no difference at all (a camera
+ * estimate whose figure rounds to zero is very close, never the same: FR-74, golden rule 11).
  */
 
 import { axisReading, DELTA_E00_BANDS } from '@irodora/color-difference';
@@ -19,11 +20,14 @@ import {
 const DELTA_KEYS = MESSAGE_KEYS.filter((k) => k.startsWith('delta.'));
 
 /**
- * Whether a word claims a match or an identity (FR-74: a difference is described, never called a
- * match). English: match, identical, same. Japanese: 一致, マッチ, 合致, and 同 (同じ, 同一).
+ * Whether a word claims a match, an identity, or no difference (FR-74: a difference is described,
+ * never called a match or nothing). English: match, identical, same, and "no … shift / difference /
+ * change". Japanese: 一致, マッチ, 合致, 同 (同じ, 同一), and 差なし, 差がない, 変化なし, ずれなし.
  */
 const claimsIdentity = (text: string): boolean =>
-  /\b(match\w*|identical\w*|same)\b/iu.test(text) || /一致|マッチ|合致|同/u.test(text);
+  /\b(match\w*|identical\w*|same)\b/iu.test(text) ||
+  /\bno\b[^.]*\b(shift|difference|change)\b/iu.test(text) ||
+  /一致|マッチ|合致|同|差なし|差がない|変化なし|ずれなし/u.test(text);
 
 describe('every band is said, in both languages', () => {
   it('maps every band of the table to a word, for the total and each component', () => {
@@ -53,7 +57,7 @@ describe('every band is said, in both languages', () => {
       ...Object.values(HUE_KEYS),
     ]);
     expect([...read].sort()).toStrictEqual([...DELTA_KEYS].sort());
-    expect(DELTA_KEYS).toHaveLength(27);
+    expect(DELTA_KEYS).toHaveLength(20);
   });
 
   it('says each word once per language: no two bands read alike', () => {
@@ -79,31 +83,46 @@ describe('no word claims a match or an identity (FR-74)', () => {
       'Very Close Match',
       '(Identical Hue)',
       'the same colour',
+      'No Hue Shift',
+      'No Lightness Shift',
       'マッチ',
       '一致',
       '同じ色',
+      '色相の差なし',
     ])
       expect({ drawn, flagged: claimsIdentity(drawn) }).toStrictEqual({ drawn, flagged: true });
-    for (const honest of ['Very Close', 'Slight Hue Shift', '非常に近い', '色相のずれ'])
+    for (const honest of [
+      'Very Close',
+      'Very Close in Hue',
+      'Slight Hue Shift',
+      'Slightly Richer',
+      '非常に近い',
+      '色相は非常に近い',
+    ])
       expect({ honest, flagged: claimsIdentity(honest) }).toStrictEqual({ honest, flagged: false });
   });
 });
 
 describe('a figure and its word', () => {
   it('bands a total as it is printed', () => {
-    expect(bandKey(0.7999)).toBe('delta.band.close');
+    expect(bandKey(0.7999)).toBe('delta.band.slight');
     expect(bandKey(0.794)).toBe('delta.band.veryClose');
+    expect(bandKey(1.42)).toBe('delta.band.slight');
+    // 08 draws "Perceptible Shift" at 3.42; past acceptability there is no further band.
     expect(bandKey(3.42)).toBe('delta.band.perceptible');
-    expect(bandKey(7.1)).toBe('delta.band.clear');
+    expect(bandKey(30)).toBe('delta.band.perceptible');
   });
 
   it('reads a component by its band and the printed figure’s sign', () => {
     expect(axisKey('lightness', axisReading(-1.2, -0.5))).toBe('delta.lightness.less.veryClose');
     expect(axisKey('lightness', axisReading(2.4, 2))).toBe('delta.lightness.more.perceptible');
-    expect(axisKey('chroma', axisReading(-6, -5.4))).toBe('delta.chroma.less.clear');
+    expect(axisKey('chroma', axisReading(-6, -5.4))).toBe('delta.chroma.less.perceptible');
     expect(axisKey('chroma', axisReading(0, 0))).toBe('delta.chroma.level');
-    expect(axisKey('hue', axisReading(1.1, 1.1))).toBe('delta.hue.close');
-    expect(axisKey('hue', axisReading(0, 0))).toBe('delta.hue.level');
+    // 04 draws "+0.3 (Slightly Richer)": the drawn word, for the drawn reading.
+    expect(t('en', axisKey('chroma', axisReading(0.3, 0.2)))).toBe('Slightly Richer');
+    expect(axisKey('hue', axisReading(1.1, 1.1))).toBe('delta.hue.slight');
+    // A printed zero is very close in hue, never "no shift".
+    expect(axisKey('hue', axisReading(0, 0))).toBe('delta.hue.veryClose');
   });
 
   it('gives hue no direction: a turn either way is the same words', () => {

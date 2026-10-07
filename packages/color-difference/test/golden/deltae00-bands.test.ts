@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { assertGoldenDataset } from '@irodora/testing';
 import raw from '../../golden/deltae00-bands.golden.json' with { type: 'json' };
-import { DELTA_E00_BANDS, type DeltaE00Band } from '../../src/index.js';
+import { deltaE00, deltaE76, DELTA_E00_BANDS, type DeltaE00Band } from '../../src/index.js';
 
 const dataset = assertGoldenDataset(raw, 'deltae00-bands');
 
@@ -32,6 +32,16 @@ describe('the band edges are their sources’ numbers', () => {
         entry.tolerance,
       );
     });
+
+  it('has no edge above acceptability: no ΔE00 threshold bounds a larger difference', () => {
+    expect(DELTA_E00_BANDS.map((edge) => edge.from)).toStrictEqual([0, 0.8, 1.8]);
+    // DECOY — why a range stated in CIELAB units is not a ΔE00 edge: near neutral, a ΔE*ab of 4
+    // (inside CIEDE2000's 0–5 CIELAB range) is already a ΔE00 above 5.
+    const a = [50, -2, 0] as const;
+    const b = [50, 2, 0] as const;
+    expect(deltaE76(a, b)).toBeCloseTo(4, 10);
+    expect(deltaE00(a, b)).toBeGreaterThan(5);
+  });
 
   it('DECOY — an edge at ΔE*ab’s JND of 2.3 is not a published ΔE00 edge', () => {
     // The conflation ADR-0048 refused: 2.3 is a CIELAB just-noticeable difference.

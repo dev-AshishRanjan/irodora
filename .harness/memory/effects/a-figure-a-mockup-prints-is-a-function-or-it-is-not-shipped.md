@@ -10,7 +10,7 @@ gap and concordance tests **Severity:** medium **Feature:** F-222
 
 OQ-9 held four drawn figures with no definition. ADR-0124 gives each a computation or a defined figure
 in its slot, and replaces three drawn words a claim rule forbids: *Similar* (03), the valid-outfit
-label (13), *Profile* (23). The screens read these; none decides one.
+label (13), *Garment Concordance* (23). The screens read these; none decides one.
 
 ## The shared predicate
 
