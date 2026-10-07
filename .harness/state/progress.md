@@ -8,6 +8,55 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-07 — F-222 Every figure the mockups print is a defined computation
+
+**Done.** OQ-9 is closed, and every figure R9 §8 marked OQ-9 or F-222 is a defined computation. It
+shipped in eleven commits, `8305d13` through this one
+([ADR-0124](../../docs/adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md),
+[ADR-0125](../../docs/adr/0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md)).
+
+- **OQ-9 decided (ADR-0124).** Each drawn figure now has a definition:
+  - 03's percentage beside each ΔE00 is FR-7's similarity percentage (ADR-0048), floored, with *Similar*.
+  - 13's label is `countsAsOutfit`: *Valid Outfit (≥ 60)* or *Not Counted (under 60)*. It is the very predicate `coverage()` counts with.
+  - 23's line is `profileConcordance`: the owned garments FR-29 scores at or above 66, under the title *Garment Concordance*.
+  - 22's pairings are `wardrobePairings`, and its gaps addressed are `gapsAddressedBy`, counted by region.
+- **One band table (ADR-0125).**
+  - `DELTA_E00_BANDS` has three bands on the two published ΔE00 thresholds, 0.8 and 1.8: Very Close · Slight Shift · Perceptible Shift.
+  - A total is banded as it is printed. A component is banded on its weighted CIEDE2000 term, from the new `deltaE00Terms`, which runs the same core as `deltaE00`.
+  - The words are 04's where 04 draws them. A printed zero reads *Very Close in …*. No word claims a match, an identity or no difference.
+- **One confidence format.** `confidenceText` floors the figure with a float64 guard, and the Lens says what the number is: a ceiling, not the chance the colour is right. A shared scanner refuses a second format in both packages.
+- **Golden data.**
+  - `ciede2000-terms` covers all 34 Sharma–Wu–Dalal pairs: SL, SC, SH and RT, and the three terms by hand from Table I, with a transcription check against every printed ΔE00.
+  - `deltae00-bands` holds the two edges as their source states them.
+  - The cross-platform identity fixture and `DIFFERENCE_VERSION` are unchanged.
+- **Sources read before citing.** The 2019 review's abstract gives 0.8 and 1.8 in ΔE00, measured on dental ceramic. No ISO adoption is claimed.
+
+**Review (once, on `172a5aa`): FAIL**, with every gate green: 1 blocking, 7 significant, 10 minor.
+
+- **B1, the blocker.** The band table's fourth edge, 5, was CIEDE2000's range stated in CIELAB units, filed as a ΔE00 value. Near neutral it fired at a ΔE\*ab of 4. The table now has three bands.
+- **Also fixed:** the words between the thresholds (S1); no *no shift* claims (S2); 04's *Richer* (S3); the ceiling on Gaps Addressed (S4); 23's title (S5); a wider scanner, with the Shopping exception narrowed to one expression (S6); F-063's note (S7); and M1–M6, M8 and M10.
+- **Recorded:** M7 and M9 as notes on F-245, F-249 and F-257, and F-318 (hue-bearing gaps). F-316 (gaps named once) and F-317 (the conformance cleanup timeout) were recorded during the feature.
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm typecheck` · `pnpm format:check` · `pnpm build` · `pnpm lint`
+- `pnpm test` (ui 848, mobile 1107; 35/35) · `pnpm test:golden` · `pnpm test:cvd` · `pnpm test:a11y` · `pnpm test:content`
+- `pnpm verify:claims:prove` (41 cases) · `node scripts/verify-mockups.mjs --prove` · `node scripts/verify-cache-scope.mjs`
+- `pnpm bench`, run in increment 2: unchanged within noise. A direct micro-benchmark gave 321 → 315–320 ns per call, with an identical checksum.
+
+`pnpm test` failed first on the ui conformance suite's 5 s cleanup-hook timeout (F-317), with no assertion failing. Re-run whole and alone, it passed.
+
+**Not run:**
+
+- `e2e`, which is pending and has no journey here.
+- `contrast`: no token changed.
+- Any device run.
+
+The attested half of criterion 3 (03's chip and 27's refused state) is F-244's and F-236's to discharge.
+
+---
+
 ## 2026-10-07 — F-230 The mark, the wordmark and the lockup are redrawn to the mockups
 
 **Done.** The mark is `14`'s 梅鉢, drawn from code. It is five tangent petals over a hub, the first
