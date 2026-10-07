@@ -33,7 +33,7 @@
 
 import { fromXyz, type Color } from '@irodora/color-core';
 import { oklchToXyz, xyzToOklch } from '@irodora/color-spaces';
-import type { LexiconTerm } from '@irodora/corpus';
+import type { LexiconRange, LexiconTerm } from '@irodora/corpus';
 // A solver over a scoring function, which is the direction this dependency runs:
 // `optimization` imports `recommendation`, and never the reverse. `lint` fails on cycles.
 import {
@@ -110,6 +110,17 @@ function bySlot(
 const pieces = (combo: readonly CoverageGarment[]): OutfitPiece[] =>
   combo.map((g) => ({ slot: g.slot, color: g.color, family: g.family }));
 
+/**
+ * Whether an outfit's overall score counts it among the wardrobe's valid outfits (FR-42).
+ *
+ * The ONE predicate: `coverage()` counts with it, and an outfit's score says with it whether this
+ * outfit is one of those (`13`'s label, ADR-0124). Inclusive — an outfit AT the threshold counts — so
+ * the label and the count cannot disagree about the outfit on the line.
+ */
+export function countsAsOutfit(overall: number, threshold: number = COVERAGE_THRESHOLD): boolean {
+  return overall >= threshold;
+}
+
 /** Whether one combination clears the bar. The engine judges; this compares. */
 function clears(
   combo: readonly CoverageGarment[],
@@ -123,7 +134,7 @@ function clears(
     context.rules,
     context.weights,
   );
-  return score.overall >= threshold;
+  return countsAsOutfit(score.overall, threshold);
 }
 
 /** Every combination that takes one garment from each slot. */
@@ -240,7 +251,25 @@ export interface Gap {
   readonly representative: Color;
   /** The slot the projection filled. A gap is only a gap somewhere. */
   readonly slot: OutfitSlot;
+  /**
+   * The region itself: the slot and the two published ranges (F-222).
+   *
+   * The lexicon names one region under several terms — `dark` and `暗い`, `grey` and `neutral` —
+   * so the same region can appear here under four names. Anything that COUNTS gaps counts regions.
+   */
+  readonly region: GapRegion;
 }
+
+/** A region of colour space in one slot: what a gap is, whatever the lexicon calls it. */
+export interface GapRegion {
+  readonly slot: OutfitSlot;
+  readonly lightness: LexiconRange;
+  readonly chroma: LexiconRange;
+}
+
+/** One key per region, so synonyms collapse. */
+const regionKey = (r: GapRegion): string =>
+  [r.slot, r.lightness.min, r.lightness.max, r.chroma.min, r.chroma.max].join('|');
 
 /**
  * Regions the wardrobe does not cover, named from the published lexicon.
@@ -309,7 +338,17 @@ export function gaps(
 
         const wouldUnlock = after.valid - base.valid;
         if (wouldUnlock <= 0) continue;
-        found.push({ terms: [light.term, chroma.term], wouldUnlock, representative, slot });
+        const lightness = light.constrains.lightness;
+        const chromaRange = chroma.constrains.chroma;
+        // The filters above guarantee both; the check makes the type say so.
+        if (lightness === undefined || chromaRange === undefined) continue;
+        found.push({
+          terms: [light.term, chroma.term],
+          wouldUnlock,
+          representative,
+          slot,
+          region: { slot, lightness, chroma: chromaRange },
+        });
       }
 
   // Best first, ties broken by the name so the ordering is TOTAL. Same reason F-045 breaks ties
@@ -318,6 +357,81 @@ export function gaps(
   return found.sort(
     (a, b) => b.wouldUnlock - a.wouldUnlock || a.terms.join(' ').localeCompare(b.terms.join(' ')),
   );
+}
+
+/** A region a candidate garment fills, with every name the lexicon gives it. */
+export interface AddressedGap {
+  readonly region: GapRegion;
+  /** The gaps naming this region before the candidate — one per published term pair. */
+  readonly named: readonly Gap[];
+  /** What a garment in the region was projected to unlock (the same for every name). */
+  readonly wouldUnlock: number;
+}
+
+/**
+ * The gaps a candidate garment addresses: the regions `gaps(wardrobe)` reports and
+ * `gaps([...wardrobe, candidate])` does not (F-222, `22`'s *Gaps Addressed*, ADR-0124).
+ *
+ * **Counted by region, never by name, and never as a difference of lengths.** The lexicon names one
+ * region under several term pairs, so the names would count it up to four times; and a garment can
+ * OPEN gaps — a first shoe makes every top and trouser region start unlocking outfits — so the after
+ * list can be longer than the before list while one region was filled.
+ *
+ * `gaps()` names near-neutral regions only (E-044), so a vivid candidate addresses none: 0 is an
+ * answer. Ordered by what the region was projected to unlock, then by region, so the order is total.
+ */
+export function gapsAddressedBy(
+  candidate: CoverageGarment,
+  wardrobe: readonly CoverageGarment[],
+  lexicon: readonly LexiconTerm[],
+  context: CoverageContext,
+): readonly AddressedGap[] {
+  const before = gaps(wardrobe, lexicon, context);
+  const after = new Set(
+    gaps([...wardrobe, candidate], lexicon, context).map((gap) => regionKey(gap.region)),
+  );
+  const regions = new Map<string, Gap[]>();
+  for (const gap of before) {
+    const k = regionKey(gap.region);
+    if (after.has(k)) continue;
+    regions.set(k, [...(regions.get(k) ?? []), gap]);
+  }
+  return [...regions.entries()]
+    .map(([, named]) => {
+      const [first] = named;
+      if (first === undefined) throw new Error('gapsAddressedBy: a region with no gap');
+      return { region: first.region, named, wouldUnlock: first.wouldUnlock };
+    })
+    .sort(
+      (a, b) =>
+        b.wouldUnlock - a.wouldUnlock || regionKey(a.region).localeCompare(regionKey(b.region)),
+    );
+}
+
+/** One owned garment the candidate pairs with, and in how many valid outfits. */
+export interface Pairing {
+  readonly id: string;
+  readonly outfits: number;
+}
+
+/**
+ * The owned garments a candidate pairs with (F-222, `22`'s *Wardrobe Pairings*, ADR-0124): every
+ * garment that forms at least one valid outfit with it, read from coverage AFTER the candidate is
+ * added. Ordered by outfits shared, then by id. The candidate is never in its own list.
+ *
+ * The combination keys are decoded here, in the module that joins them (E-046), so the join has one
+ * reader that knows its format.
+ */
+export function wardrobePairings(after: Coverage, candidateId: string): readonly Pairing[] {
+  const shared = new Map<string, number>();
+  for (const combo of after.combinations) {
+    const ids = combo.split('|');
+    if (!ids.includes(candidateId)) continue;
+    for (const id of ids) if (id !== candidateId) shared.set(id, (shared.get(id) ?? 0) + 1);
+  }
+  return [...shared.entries()]
+    .map(([id, outfits]) => ({ id, outfits }))
+    .sort((a, b) => b.outfits - a.outfits || a.id.localeCompare(b.id));
 }
 
 /** The id a projected garment carries. Distinctive, so it cannot collide with a real one. */

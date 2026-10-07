@@ -26,8 +26,14 @@ export {
   type Coverage,
   type CoverageContext,
   type CoverageGarment,
+  countsAsOutfit,
   gaps,
+  gapsAddressedBy,
+  wardrobePairings,
+  type AddressedGap,
   type Gap,
+  type GapRegion,
+  type Pairing,
   type WardrobeChange,
 } from './coverage.js';
 
