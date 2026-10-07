@@ -50,7 +50,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
 import { decodePng, carriesMark } from './png.mjs';
-import { ADAPTIVE_GRID, expectedSignature } from './generate-brand-assets.mjs';
+import { drawings, signatureOf } from './generate-brand-assets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -1209,17 +1209,20 @@ if (!isEntryPoint) {
    * Deliberately not a `--expect-mark` flag, for the reason the permission list above stopped
    * being one: a security- or identity-relevant expectation duplicated into a workflow file is
    * two copies to keep in agreement, and keeping two copies in agreement is not a thing to rely
-   * on a person for. `expectedSignature()` derives them from the same `MARK` the assets were
-   * generated from, so the gate and the icon cannot disagree about what the mark is.
+   * on a person for. `signatureOf()` derives them from the same `MARK` the assets were generated
+   * from, and from the generator's drawings table (F-231) — each layer's canvas, grid and offset —
+   * so the gate and the icon cannot disagree about what the mark is or where it sits.
    *
    * `--skip-mark` exists for an artefact that legitimately has no icon of ours — nothing builds
    * one today, and the flag is here so that case is stated rather than silently tolerated.
    */
-  if (args['skip-mark'] !== true)
+  if (args['skip-mark'] !== true) {
+    const table = drawings();
     expected.markSignature = {
-      icon: expectedSignature(),
-      adaptive: expectedSignature(ADAPTIVE_GRID),
+      icon: signatureOf(table.icon),
+      adaptive: signatureOf(table.adaptive),
     };
+  }
 
   if (args['expect-package']) expected.package = String(args['expect-package']);
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);

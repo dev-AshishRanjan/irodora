@@ -225,8 +225,8 @@ export function decodePng(buf) {
  * whose luminance differs from the first pixel of the row — which is how a light mark on dark
  * and a dark mark on light are the same measurement.
  */
-export function rowSignature(image) {
-  return axisSignature(image, 'row');
+export function rowSignature(image, centreY = 0.5) {
+  return axisSignature(image, 'row', centreY);
 }
 
 /**
@@ -242,10 +242,14 @@ export function columnSignature(image) {
   return axisSignature(image, 'column');
 }
 
-/** One scan, either way. `fraction` is of the scanned dimension. */
-function axisSignature({ width, height, rgba }, axis) {
+/**
+ * One scan, either way. `fraction` is of the scanned dimension. A row is read through the mark's
+ * centre, `centreY` of the height — the middle, unless the drawing centres the mark by its ink
+ * (F-231) — and a column down the middle, where the mark is always centred across.
+ */
+function axisSignature({ width, height, rgba }, axis, centreY = 0.5) {
   const along = axis === 'row' ? width : height;
-  const fixed = Math.floor((axis === 'row' ? height : width) / 2);
+  const fixed = axis === 'row' ? Math.floor(height * centreY) : Math.floor(width / 2);
   const at = (i) => {
     const [x, y] = axis === 'row' ? [i, fixed] : [fixed, i];
     const d = (y * width + x) * 4;
@@ -294,7 +298,8 @@ function axisSignature({ width, height, rgba }, axis) {
 export function carriesMark(image, expected, tolerance = 0.03) {
   const want = expected.at(image.width);
   const tol = Math.max(tolerance, 3 / image.width);
-  const row = rowSignature(image);
+  const centreY = want.centreY ?? 0.5;
+  const row = rowSignature(image, centreY);
   const column = columnSignature(image);
   const pct = (v) => `${(v * 100).toFixed(1)}%`;
   const describe = (runs) =>
@@ -327,8 +332,8 @@ export function carriesMark(image, expected, tolerance = 0.03) {
       };
     if (Math.abs(0.5 - across[0] - (across[1] - 0.5)) > tol)
       return { ok: false, why: 'the row is not symmetric — the mark is not centred' };
-    const above = 0.5 - down[0];
-    const below = down[1] - 0.5;
+    const above = centreY - down[0];
+    const below = down[1] - centreY;
     if (Math.abs(above - want.above) > tol)
       return {
         ok: false,
