@@ -80,6 +80,8 @@ export {
   type RankedCandidate,
 } from './outfit.js';
 
+export { profileConcordance, type ProfileConcordance } from './concordance.js';
+
 export {
   COMPONENT_OPPOSES_BELOW,
   COMPONENT_SUPPORTS_ABOVE,
