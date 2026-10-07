@@ -64,18 +64,24 @@ const pow7 = (value: number): number => {
   return squared * squared * squared * value;
 };
 
+/** Where the core writes the weighted terms when a caller asks for them (F-222). */
+interface TermsSink {
+  termL: number;
+  termC: number;
+  termH: number;
+  sl: number;
+  sc: number;
+  sh: number;
+  rt: number;
+}
+
 /**
- * ΔE00 between two CIELAB colours.
+ * The one CIEDE2000 computation. `deltaE00` and `deltaE00Terms` both run it, so the terms a caller
+ * reads are the terms the total was made of, and the total is the same double either way.
  *
- * Both inputs must be in the **same** reference white. This package does not adapt, because a
- * function that silently adapted would make a comparison between a D50 measurement and a D65
- * one look like a valid answer.
+ * `sink` is null on the hot path, which therefore allocates nothing it did not before.
  */
-export function deltaE00(
-  a: Lab,
-  b: Lab,
-  weights: Ciede2000Weights = CIEDE2000_DEFAULT_WEIGHTS,
-): number {
+function core(a: Lab, b: Lab, weights: Ciede2000Weights, sink: TermsSink | null): number {
   const [l1, a1, b1] = a;
   const [l2, a2, b2] = b;
   const { kL, kC, kH } = weights;
@@ -151,7 +157,69 @@ export function deltaE00(
   const termC = deltaCp / (kC * sc);
   const termH = deltaHp / (kH * sh);
 
+  if (sink !== null) {
+    sink.termL = termL;
+    sink.termC = termC;
+    sink.termH = termH;
+    sink.sl = sl;
+    sink.sc = sc;
+    sink.sh = sh;
+    sink.rt = rt;
+  }
   return Math.sqrt(termL * termL + termC * termC + termH * termH + rt * termC * termH);
+}
+
+/**
+ * ΔE00 between two CIELAB colours.
+ *
+ * Both inputs must be in the **same** reference white. This package does not adapt, because a
+ * function that silently adapted would make a comparison between a D50 measurement and a D65
+ * one look like a valid answer.
+ */
+export function deltaE00(
+  a: Lab,
+  b: Lab,
+  weights: Ciede2000Weights = CIEDE2000_DEFAULT_WEIGHTS,
+): number {
+  return core(a, b, weights, null);
+}
+
+/**
+ * A ΔE00 and the weighted terms it is made of (F-222, ADR-0125).
+ *
+ * Each term is in ΔE00's own unit, which is why a lightness, chroma or hue reading can be banded on
+ * the same table as the total, and why the delta bars share one unit (ADR-0119).
+ */
+export interface Ciede2000Terms {
+  /** ΔL′/(k<sub>L</sub>·S<sub>L</sub>), signed: positive when `b` is lighter than `a`. */
+  readonly termL: number;
+  /** ΔC′/(k<sub>C</sub>·S<sub>C</sub>), signed: positive when `b` is more chromatic. */
+  readonly termC: number;
+  /** ΔH′/(k<sub>H</sub>·S<sub>H</sub>), signed with Δh′; zero when either chroma is zero. */
+  readonly termH: number;
+  /** The compensations and the rotation term, as the paper names them. */
+  readonly sl: number;
+  readonly sc: number;
+  readonly sh: number;
+  /** Never positive: −sin(2Δθ)·R<sub>C</sub>, with Δθ in (0°, 30°]. */
+  readonly rt: number;
+  /**
+   * The total — the SAME double `deltaE00(a, b, weights)` returns, because it is the same
+   * computation. Never recompose it from the terms: the same sum in another order can differ in
+   * the last bit, and NFR-3 is about the bit.
+   */
+  readonly deltaE00: number;
+}
+
+/** ΔE00 between two CIELAB colours, with the weighted terms it is made of. */
+export function deltaE00Terms(
+  a: Lab,
+  b: Lab,
+  weights: Ciede2000Weights = CIEDE2000_DEFAULT_WEIGHTS,
+): Ciede2000Terms {
+  const sink: TermsSink = { termL: 0, termC: 0, termH: 0, sl: 0, sc: 0, sh: 0, rt: 0 };
+  const total = core(a, b, weights, sink);
+  return { ...sink, deltaE00: total };
 }
 
 /** Re-exported for the property tests and for anything needing a stated hue convention. */

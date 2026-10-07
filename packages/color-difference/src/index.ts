@@ -32,6 +32,8 @@ export {
   CIEDE2000_T_COEFFICIENTS,
   CIEDE2000_T_PHASES,
   deltaE00,
+  deltaE00Terms,
+  type Ciede2000Terms,
   type Ciede2000Weights,
 } from './ciede2000.js';
 

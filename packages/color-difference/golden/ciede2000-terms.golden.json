@@ -1,0 +1,1094 @@
+{
+  "id": "ciede2000-terms",
+  "description": "CIEDE2000's weighted terms for all 34 Sharma-Wu-Dalal pairs (F-222, ADR-0125). Each pair has two entries: the WEIGHTS SL, SC, SH and RT as Table I prints them, and the TERMS ΔL′/SL, ΔC′/SC and ΔH′/SH computed by hand from Table I's printed L, C′ and h′ columns with the paper's equations, never by running this package. Table I was read from the paper's own PDF; that extraction drops minus glyphs, so every magnitude was checked against the signed transcription in ciede2000.golden.json, and RT takes its sign from its definition (−sin(2Δθ)·Rc, with Δθ in (0°, 30°] and Rc ≥ 0, is never positive). The weights' tolerance is the table's own rounding, 5e-5; each term's is that rounding propagated to first order through the arithmetic in its derivationNote. The terms rebuild every printed ΔE00 within 6.7e-4, which is the transcription check.",
+  "entries": [
+    {
+      "id": "pair-01-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 1: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.6772, -79.7751],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.6578,
+        "sh": 1.8421,
+        "rt": -1.7042
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-01-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 1: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 79.8200; termC = ΔC′/SC = 2.9285/4.6578. Δh′ = h′2 − h′1 = 270.0000 − 271.9222, wrapped into ±180° = -1.9222°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -2.726412; termH = ΔH′/SH = -2.726412/1.8421. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.7042 = 2.04248 against the printed ΔE00 2.0425. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.6772, -79.7751],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0.6287303018592498,
+        "termH": -1.4800565102382612
+      },
+      "tolerance": 0.00012
+    },
+    {
+      "id": "pair-02-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 2: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 3.1571, -77.2803],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.6021,
+        "sh": 1.8216,
+        "rt": -1.707
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-02-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 2: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 77.3448; termC = ΔC′/SC = 5.4037/4.6021. Δh′ = h′2 − h′1 = 270.0000 − 272.3395, wrapped into ±180° = -2.3395°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -3.266374; termH = ΔH′/SH = -3.266374/1.8216. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.7070 = 2.86148 against the printed ΔE00 2.8615. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 3.1571, -77.2803],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 1.1741813519914823,
+        "termH": -1.7931344508094647
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-03-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 3: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.8361, -74.02],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.5285,
+        "sh": 1.8074,
+        "rt": -1.706
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-03-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 3: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 74.0743; termC = ΔC′/SC = 8.6742/4.5285. Δh′ = h′2 − h′1 = 270.0000 − 272.1944, wrapped into ±180° = -2.1944°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -2.998337; termH = ΔH′/SH = -2.998337/1.8074. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.7060 = 3.44123 against the printed ΔE00 3.4412. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.8361, -74.02],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 1.9154686982444546,
+        "termH": -1.6589228279203907
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-04-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 4: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -1.3802, -84.2814],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.7584,
+        "sh": 1.9217,
+        "rt": -1.6809
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-04-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 4: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 84.2927; termC = ΔC′/SC = -1.5442/4.7584. Δh′ = h′2 − h′1 = 270.0000 − 269.0618, wrapped into ±180° = 0.9382°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 1.367549; termH = ΔH′/SH = 1.367549/1.9217. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.6809 = 0.99996 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -1.3802, -84.2814],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -0.32452084734364267,
+        "termH": 0.7116351670577961
+      },
+      "tolerance": 0.0001
+    },
+    {
+      "id": "pair-05-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 5: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -1.1848, -84.8006],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.77,
+        "sh": 1.9218,
+        "rt": -1.6822
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-05-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 5: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 84.8089; termC = ΔC′/SC = -2.0604/4.7700. Δh′ = h′2 − h′1 = 270.0000 − 269.1995, wrapped into ±180° = 0.8005°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 1.170404; termH = ΔH′/SH = 1.170404/1.9218. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.6822 = 1.00000 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -1.1848, -84.8006],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -0.4319496855345885,
+        "termH": 0.6090146820624298
+      },
+      "tolerance": 0.0001
+    },
+    {
+      "id": "pair-06-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 6: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -0.9009, -85.5211],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 4.7862,
+        "sh": 1.9217,
+        "rt": -1.684
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-06-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 6: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 82.7485 − 85.5258; termC = ΔC′/SC = -2.7773/4.7862. Δh′ = h′2 − h′1 = 270.0000 − 269.3964, wrapped into ±180° = 0.6036°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.886244; termH = ΔH′/SH = 0.886244/1.9217. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.6840 = 1.00003 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -0.9009, -85.5211],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -0.5802724499603018,
+        "termH": 0.4611769978767175
+      },
+      "tolerance": 0.0001
+    },
+    {
+      "id": "pair-07-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 7: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 0, 0],
+        "lab2": [50, -1, 2]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.0562,
+        "sh": 1.0229,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-07-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 7: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.5000 − 0.0000; termC = ΔC′/SC = 2.5000/1.0562. Δh′ = h′2 − h′1 = 126.8697 − 0.0000, zero because a chroma is zero; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.000000; termH = ΔH′/SH = 0.000000/1.0229. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 2.36698 against the printed ΔE00 2.3669. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 0, 0],
+        "lab2": [50, -1, 2]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 2.3669759515243323,
+        "termH": 0
+      },
+      "tolerance": 0.00021
+    },
+    {
+      "id": "pair-08-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 8: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -1, 2],
+        "lab2": [50, 0, 0]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.0562,
+        "sh": 1.0229,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-08-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 8: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 0.0000 − 2.5000; termC = ΔC′/SC = -2.5000/1.0562. Δh′ = h′2 − h′1 = 0.0000 − 126.8697, zero because a chroma is zero; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.000000; termH = ΔH′/SH = 0.000000/1.0229. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 2.36698 against the printed ΔE00 2.3669. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -1, 2],
+        "lab2": [50, 0, 0]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -2.3669759515243323,
+        "termH": 0
+      },
+      "tolerance": 0.00021
+    },
+    {
+      "id": "pair-09-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 9: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0009]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1681,
+        "sh": 1.0404,
+        "rt": -0.0022
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-09-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 9: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 3.7346 − 3.7346; termC = ΔC′/SC = 0.0000/1.1681. Δh′ = h′2 − h′1 = 179.9862 − 359.9847, wrapped into ±180° = -179.9985°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -7.469200; termH = ΔH′/SH = -7.469200/1.0404. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0022 = 7.17916 against the printed ΔE00 7.1792. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0009]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": -7.179161860207695
+      },
+      "tolerance": 0.00046
+    },
+    {
+      "id": "pair-10-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 10: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.001]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1681,
+        "sh": 1.0404,
+        "rt": -0.0022
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-10-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 10: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 3.7346 − 3.7346; termC = ΔC′/SC = 0.0000/1.1681. Δh′ = h′2 − h′1 = 179.9847 − 359.9847, wrapped into ±180° = -180.0000°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -7.469200; termH = ΔH′/SH = -7.469200/1.0404. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0022 = 7.17916 against the printed ΔE00 7.1792. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.001]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": -7.17916186082276
+      },
+      "tolerance": 0.00046
+    },
+    {
+      "id": "pair-11-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 11: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0011]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1681,
+        "sh": 1.0346,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-11-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 11: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 3.7346 − 3.7346; termC = ΔC′/SC = 0.0000/1.1681. Δh′ = h′2 − h′1 = 179.9831 − 359.9847, wrapped into ±180° = 179.9984°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 7.469200; termH = ΔH′/SH = 7.469200/1.0346. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 7.21941 against the printed ΔE00 7.2195. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0011]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": 7.219408466336671
+      },
+      "tolerance": 0.00045
+    },
+    {
+      "id": "pair-12-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 12: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0012]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1681,
+        "sh": 1.0346,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-12-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 12: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 3.7346 − 3.7346; termC = ΔC′/SC = 0.0000/1.1681. Δh′ = h′2 − h′1 = 179.9816 − 359.9847, wrapped into ±180° = 179.9969°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 7.469200; termH = ΔH′/SH = 7.469200/1.0346. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 7.21941 against the printed ΔE00 7.2195. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.49, -0.001],
+        "lab2": [50, -2.49, 0.0012]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": 7.219408464398665
+      },
+      "tolerance": 0.00045
+    },
+    {
+      "id": "pair-13-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 13: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.0009, -2.49]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1121,
+        "sh": 1.0365,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-13-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 13: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.4900 − 2.4900; termC = ΔC′/SC = 0.0000/1.1121. Δh′ = h′2 − h′1 = 270.0311 − 90.0345, wrapped into ±180° = 179.9966°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 4.980000; termH = ΔH′/SH = 4.980000/1.0365. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 4.80463 against the printed ΔE00 4.8045. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.0009, -2.49]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": 4.804630967494398
+      },
+      "tolerance": 0.00033
+    },
+    {
+      "id": "pair-14-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 14: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.001, -2.49]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1121,
+        "sh": 1.0365,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-14-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 14: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.4900 − 2.4900; termC = ΔC′/SC = 0.0000/1.1121. Δh′ = h′2 − h′1 = 270.0345 − 90.0345, wrapped into ±180° = 180.0000°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 4.980000; termH = ΔH′/SH = 4.980000/1.0365. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 4.80463 against the printed ΔE00 4.8045. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.001, -2.49]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": 4.804630969609263
+      },
+      "tolerance": 0.00033
+    },
+    {
+      "id": "pair-15-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 15: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.0011, -2.49]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1121,
+        "sh": 1.0493,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-15-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 15: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.4900 − 2.4900; termC = ΔC′/SC = 0.0000/1.1121. Δh′ = h′2 − h′1 = 270.0380 − 90.0345, wrapped into ±180° = -179.9965°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -4.980000; termH = ΔH′/SH = -4.980000/1.0493. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 4.74602 against the printed ΔE00 4.7461. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, -0.001, 2.49],
+        "lab2": [50, 0.0011, -2.49]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0,
+        "termH": -4.746021154748025
+      },
+      "tolerance": 0.00034
+    },
+    {
+      "id": "pair-16-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 16: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 0, -2.5]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1406,
+        "sh": 1.0396,
+        "rt": -0.0001
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-16-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 16: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.5000 − 3.7496; termC = ΔC′/SC = -1.2496/1.1406. Δh′ = h′2 − h′1 = 270.0000 − 0.0000, wrapped into ±180° = -90.0000°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -4.329896; termH = ΔH′/SH = -4.329896/1.0396. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0001 = 4.30659 against the printed ΔE00 4.3065. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 0, -2.5]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -1.095563738383307,
+        "termH": -4.164963517368013
+      },
+      "tolerance": 0.00029
+    },
+    {
+      "id": "pair-17-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 17: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [73, 25, -18]
+      },
+      "expected": {
+        "sl": 1.1608,
+        "sc": 1.9547,
+        "sh": 1.4599,
+        "rt": -0.0003
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-17-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 17: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 73.0000 − 50.0000; termL = ΔL′/SL = 23.0000/1.1608. ΔC′ = C′2 − C′1 = 38.9743 − 3.4569; termC = ΔC′/SC = 35.5174/1.9547. Δh′ = h′2 − h′1 = 332.4939 − 0.0000, wrapped into ±180° = -27.5061°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -5.519001; termH = ΔH′/SH = -5.519001/1.4599. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0003 = 27.14888 against the printed ΔE00 27.1492. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [73, 25, -18]
+      },
+      "expected": {
+        "termL": 19.81392143349414,
+        "termC": 18.170256305315394,
+        "termH": -3.7803963011267894
+      },
+      "tolerance": 0.00094
+    },
+    {
+      "id": "pair-18-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 18: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [61, -5, 29]
+      },
+      "expected": {
+        "sl": 1.064,
+        "sc": 1.7498,
+        "sh": 1.1612,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-18-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 18: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 61.0000 − 50.0000; termL = ΔL′/SL = 11.0000/1.0640. ΔC′ = C′2 − C′1 = 29.8307 − 3.4954; termC = ΔC′/SC = 26.3353/1.7498. Δh′ = h′2 − h′1 = 103.5532 − 0.0000, wrapped into ±180° = 103.5532°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 16.044049; termH = ΔH′/SH = 16.044049/1.1612. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 22.89763 against the printed ΔE00 22.8977. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [61, -5, 29]
+      },
+      "expected": {
+        "termL": 10.338345864661653,
+        "termC": 15.050462910046862,
+        "termH": 13.816783878478676
+      },
+      "tolerance": 0.00075
+    },
+    {
+      "id": "pair-19-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 19: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [56, -27, -3]
+      },
+      "expected": {
+        "sl": 1.0251,
+        "sc": 1.9455,
+        "sh": 1.2055,
+        "rt": -0.8219
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-19-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 19: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 56.0000 − 50.0000; termL = ΔL′/SL = 6.0000/1.0251. ΔC′ = C′2 − C′1 = 38.4728 − 3.5514; termC = ΔC′/SC = 34.9214/1.9455. Δh′ = h′2 − h′1 = 184.4723 − 0.0000, wrapped into ±180° = -175.5277°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -23.360162; termH = ΔH′/SH = -23.360162/1.2055. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.8219 = 31.90367 against the printed ΔE00 31.9030. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [56, -27, -3]
+      },
+      "expected": {
+        "termL": 5.85308750365818,
+        "termC": 17.94983294782832,
+        "termH": -19.37798570171613
+      },
+      "tolerance": 0.001
+    },
+    {
+      "id": "pair-20-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 20: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [58, 24, 15]
+      },
+      "expected": {
+        "sl": 1.04,
+        "sc": 1.912,
+        "sh": 1.3353,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-20-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 20: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 58.0000 − 50.0000; termL = ΔL′/SL = 8.0000/1.0400. ΔC′ = C′2 − C′1 = 37.0102 − 3.5244; termC = ΔC′/SC = 33.4858/1.9120. Δh′ = h′2 − h′1 = 23.9095 − 0.0000, wrapped into ±180° = 23.9095°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 4.731463; termH = ΔH′/SH = 4.731463/1.3353. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 19.45378 against the printed ΔE00 19.4535. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [58, 24, 15]
+      },
+      "expected": {
+        "termL": 7.692307692307692,
+        "termC": 17.513493723849372,
+        "termH": 3.5433707155983423
+      },
+      "tolerance": 0.00054
+    },
+    {
+      "id": "pair-21-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 21: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.1736, 0.5854]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1923,
+        "sh": 1.0808,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-21-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 21: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 4.7954 − 3.7494; termC = ΔC′/SC = 1.0460/1.1923. Δh′ = h′2 − h′1 = 7.0113 − 0.0000, wrapped into ±180° = 7.0113°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.518559; termH = ΔH′/SH = 0.518559/1.0808. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 0.99992 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.1736, 0.5854]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0.8772959825547261,
+        "termH": 0.47979186772227794
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-22-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 22: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.2972, 0]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1956,
+        "sh": 1.0861,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-22-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 22: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 4.9450 − 3.7493; termC = ΔC′/SC = 1.1957/1.1956. Δh′ = h′2 − h′1 = 0.0000 − 0.0000, wrapped into ±180° = 0.0000°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.000000; termH = ΔH′/SH = 0.000000/1.0861. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.00008 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.2972, 0]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 1.0000836400133828,
+        "termH": 0
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-23-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 23: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 1.8634, 0.5757]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1486,
+        "sh": 1.0604,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-23-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 23: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 2.8536 − 3.7497; termC = ΔC′/SC = -0.8961/1.1486. Δh′ = h′2 − h′1 = 11.6380 − 0.0000, wrapped into ±180° = 11.6380°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.663290; termH = ΔH′/SH = 0.663290/1.0604. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 0.99996 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 1.8634, 0.5757]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": -0.7801671600208947,
+        "termH": 0.6255095721235306
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-24-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 24: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.2592, 0.335]
+      },
+      "expected": {
+        "sl": 1,
+        "sc": 1.1946,
+        "sh": 1.0836,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-24-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 24: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 50.0000 − 50.0000; termL = ΔL′/SL = 0.0000/1.0000. ΔC′ = C′2 − C′1 = 4.8994 − 3.7493; termC = ΔC′/SC = 1.1501/1.1946. Δh′ = h′2 − h′1 = 3.9206 − 0.0000, wrapped into ±180° = 3.9206°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.293219; termH = ΔH′/SH = 0.293219/1.0836. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.00005 against the printed ΔE00 1.0000. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [50, 2.5, 0],
+        "lab2": [50, 3.2592, 0.335]
+      },
+      "expected": {
+        "termL": 0,
+        "termC": 0.9627490373346728,
+        "termH": 0.2705968391000246
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-25-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 25: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [60.2574, -34.0099, 36.2677],
+        "lab2": [60.4626, -34.1751, 39.4387]
+      },
+      "expected": {
+        "sl": 1.1427,
+        "sc": 3.2946,
+        "sh": 1.9951,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-25-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 25: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 60.4626 − 60.2574; termL = ΔL′/SL = 0.2052/1.1427. ΔC′ = C′2 − C′1 = 52.2238 − 49.7590; termC = ΔC′/SC = 2.4648/3.2946. Δh′ = h′2 − h′1 = 130.9584 − 133.2085, wrapped into ±180° = -2.2501°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -2.001803; termH = ΔH′/SH = -2.001803/1.9951. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.26439 against the printed ΔE00 1.2644. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [60.2574, -34.0099, 36.2677],
+        "lab2": [60.4626, -34.1751, 39.4387]
+      },
+      "expected": {
+        "termL": 0.17957469152008831,
+        "termC": 0.7481333090511737,
+        "termH": -1.0033597304654085
+      },
+      "tolerance": 0.0001
+    },
+    {
+      "id": "pair-26-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 26: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [63.0109, -31.0961, -5.8663],
+        "lab2": [62.8187, -29.7946, -4.0864]
+      },
+      "expected": {
+        "sl": 1.1831,
+        "sc": 2.4549,
+        "sh": 1.456,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-26-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 26: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 62.8187 − 63.0109; termL = ΔL′/SL = -0.1922/1.1831. ΔC′ = C′2 − C′1 = 31.5202 − 33.1427; termC = ΔC′/SC = -1.6225/2.4549. Δh′ = h′2 − h′1 = 187.4490 − 190.1951, wrapped into ±180° = -2.7461°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -1.548961; termH = ΔH′/SH = -1.548961/1.4560. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.26293 against the printed ΔE00 1.2630. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [63.0109, -31.0961, -5.8663],
+        "lab2": [62.8187, -29.7946, -4.0864]
+      },
+      "expected": {
+        "termL": -0.1624545685064658,
+        "termC": -0.6609230518554723,
+        "termH": -1.063847058062916
+      },
+      "tolerance": 0.000096
+    },
+    {
+      "id": "pair-27-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 27: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [61.2901, 3.7196, -5.3901],
+        "lab2": [61.4292, 2.248, -4.962]
+      },
+      "expected": {
+        "sl": 1.1586,
+        "sc": 1.3092,
+        "sh": 1.0717,
+        "rt": -0.0032
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-27-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 27: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 61.4292 − 61.2901; termL = ΔL′/SL = 0.1391/1.1586. ΔC′ = C′2 − C′1 = 5.9950 − 7.7487; termC = ΔC′/SC = -1.7537/1.3092. Δh′ = h′2 − h′1 = 304.1385 − 315.9240, wrapped into ±180° = -11.7855°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -1.399486; termH = ΔH′/SH = -1.399486/1.0717. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0032 = 1.87307 against the printed ΔE00 1.8731. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [61.2901, 3.7196, -5.3901],
+        "lab2": [61.4292, 2.248, -4.962]
+      },
+      "expected": {
+        "termL": 0.12005869152425264,
+        "termC": -1.3395203177512989,
+        "termH": -1.3058559058846197
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-28-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 28: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [35.0831, -44.1164, 3.7933],
+        "lab2": [35.0232, -40.0716, 1.5901]
+      },
+      "expected": {
+        "sl": 1.2148,
+        "sc": 2.9105,
+        "sh": 1.6476,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-28-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 28: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 35.0232 − 35.0831; termL = ΔL′/SL = -0.0599/1.2148. ΔC′ = C′2 − C′1 = 40.3550 − 44.5557; termC = ΔC′/SC = -4.2007/2.9105. Δh′ = h′2 − h′1 = 177.7418 − 175.1161, wrapped into ±180° = 2.6257°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 1.943054; termH = ΔH′/SH = 1.943054/1.6476. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.86449 against the printed ΔE00 1.8645. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [35.0831, -44.1164, 3.7933],
+        "lab2": [35.0232, -40.0716, 1.5901]
+      },
+      "expected": {
+        "termL": -0.049308528152781486,
+        "termC": -1.443291530664836,
+        "termH": 1.179323618131534
+      },
+      "tolerance": 0.000089
+    },
+    {
+      "id": "pair-29-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 29: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [22.7233, 20.0904, -46.694],
+        "lab2": [23.0331, 14.973, -42.5619]
+      },
+      "expected": {
+        "sl": 1.4014,
+        "sc": 3.1597,
+        "sh": 1.2617,
+        "rt": -1.2537
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-29-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 29: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 23.0331 − 22.7233; termL = ΔL′/SL = 0.3098/1.4014. ΔC′ = C′2 − C′1 = 45.1317 − 50.8532; termC = ΔC′/SC = -5.7215/3.1597. Δh′ = h′2 − h′1 = 289.4279 − 293.3339, wrapped into ±180° = -3.9060°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -3.265318; termH = ΔH′/SH = -3.265318/1.2617. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -1.2537 = 2.03726 against the printed ΔE00 2.0373. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [22.7233, 20.0904, -46.694],
+        "lab2": [23.0331, 14.973, -42.5619]
+      },
+      "expected": {
+        "termL": 0.22106464963608016,
+        "termC": -1.810773174668481,
+        "termH": -2.588030502259961
+      },
+      "tolerance": 0.00018
+    },
+    {
+      "id": "pair-30-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 30: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [36.4612, 47.858, 18.3852],
+        "lab2": [36.2715, 50.5065, 21.2231]
+      },
+      "expected": {
+        "sl": 1.1943,
+        "sc": 3.3888,
+        "sh": 1.7357,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-30-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 30: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 36.2715 − 36.4612; termL = ΔL′/SL = -0.1897/1.1943. ΔC′ = C′2 − C′1 = 54.8444 − 51.3256; termC = ΔC′/SC = 3.5188/3.3888. Δh′ = h′2 − h′1 = 22.7660 − 20.9901, wrapped into ±180° = 1.7759°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 1.644416; termH = ΔH′/SH = 1.644416/1.7357. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.41457 against the printed ΔE00 1.4146. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [36.4612, 47.858, 18.3852],
+        "lab2": [36.2715, 50.5065, 21.2231]
+      },
+      "expected": {
+        "termL": -0.15883781294481694,
+        "termC": 1.0383616619452312,
+        "termH": 0.9474078719767747
+      },
+      "tolerance": 0.000095
+    },
+    {
+      "id": "pair-31-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 31: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [90.8027, -2.0831, 1.441],
+        "lab2": [91.1528, -1.6435, 0.0447]
+      },
+      "expected": {
+        "sl": 1.611,
+        "sc": 1.1329,
+        "sh": 1.0511,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-31-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 31: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 91.1528 − 90.8027; termL = ΔL′/SL = 0.3501/1.6110. ΔC′ = C′2 − C′1 = 2.4655 − 3.4408; termC = ΔC′/SC = -0.9753/1.1329. Δh′ = h′2 − h′1 = 178.9612 − 155.2410, wrapped into ±180° = 23.7202°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 1.197215; termH = ΔH′/SH = 1.197215/1.0511. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.44420 against the printed ΔE00 1.4441. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [90.8027, -2.0831, 1.441],
+        "lab2": [91.1528, -1.6435, 0.0447]
+      },
+      "expected": {
+        "termL": 0.21731843575418847,
+        "termC": -0.8608879865831052,
+        "termH": 1.1390112312693352
+      },
+      "tolerance": 0.00013
+    },
+    {
+      "id": "pair-32-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 32: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [90.9257, -0.5406, -0.9208],
+        "lab2": [88.6381, -0.8985, -0.7239]
+      },
+      "expected": {
+        "sl": 1.593,
+        "sc": 1.062,
+        "sh": 1.0288,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-32-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 32: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 88.6381 − 90.9257; termL = ΔL′/SL = -2.2876/1.5930. ΔC′ = C′2 − C′1 = 1.5298 − 1.2270; termC = ΔC′/SC = 0.3028/1.0620. Δh′ = h′2 − h′1 = 208.2412 − 228.6315, wrapped into ±180° = -20.3903°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -0.485005; termH = ΔH′/SH = -0.485005/1.0288. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 1.53809 against the printed ΔE00 1.5381. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [90.9257, -0.5406, -0.9208],
+        "lab2": [88.6381, -0.8985, -0.7239]
+      },
+      "expected": {
+        "termL": -1.4360326428123114,
+        "termC": 0.2851224105461393,
+        "termH": -0.4714280531671244
+      },
+      "tolerance": 0.00011
+    },
+    {
+      "id": "pair-33-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 33: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [6.7747, -0.2908, -2.4247],
+        "lab2": [5.8714, -0.0985, -2.2286]
+      },
+      "expected": {
+        "sl": 1.6517,
+        "sc": 1.1057,
+        "sh": 1.0337,
+        "rt": -0.0004
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-33-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 33: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 5.8714 − 6.7747; termL = ΔL′/SL = -0.9033/1.6517. ΔC′ = C′2 − C′1 = 2.2335 − 2.4636; termC = ΔC′/SC = -0.2301/1.1057. Δh′ = h′2 − h′1 = 266.2073 − 259.8025, wrapped into ±180° = 6.4048°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = 0.262081; termH = ΔH′/SH = 0.262081/1.0337. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT -0.0004 = 0.63773 against the printed ΔE00 0.6377. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [6.7747, -0.2908, -2.4247],
+        "lab2": [5.8714, -0.0985, -2.2286]
+      },
+      "expected": {
+        "termL": -0.546891081915602,
+        "termC": -0.20810346386904244,
+        "termH": 0.2535364217334163
+      },
+      "tolerance": 0.0001
+    },
+    {
+      "id": "pair-34-weights",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 34: the columns SL, SC, SH and RT",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [2.0776, 0.0795, -1.135],
+        "lab2": [0.9033, -0.0636, -0.5514]
+      },
+      "expected": {
+        "sl": 1.7246,
+        "sc": 1.0383,
+        "sh": 1.01,
+        "rt": 0
+      },
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-34-terms",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), Table I, pair 34: the columns L, C′ and h′, with the paper's equations (2)–(17)",
+      "derivation": "published-formula",
+      "derivationNote": "ΔL′ = L2 − L1 = 0.9033 − 2.0776; termL = ΔL′/SL = -1.1743/1.7246. ΔC′ = C′2 − C′1 = 0.5596 − 1.1412; termC = ΔC′/SC = -0.5816/1.0383. Δh′ = h′2 − h′1 = 260.1842 − 275.9978, wrapped into ±180° = -15.8136°; ΔH′ = 2·√(C′1·C′2)·sin(Δh′/2) = -0.219861; termH = ΔH′/SH = -0.219861/1.0100. Check: √(termL² + termC² + termH² + RT·termC·termH) with RT 0.0000 = 0.90818 against the printed ΔE00 0.9082. Each tolerance is the first-order propagation of the table rounding every printed figure to four decimals.",
+      "input": {
+        "lab1": [2.0776, 0.0795, -1.135],
+        "lab2": [0.9033, -0.0636, -0.5514]
+      },
+      "expected": {
+        "termL": -0.6809115157137887,
+        "termC": -0.560146393142637,
+        "termH": -0.2176843246508771
+      },
+      "tolerance": 0.00013
+    }
+  ]
+}
