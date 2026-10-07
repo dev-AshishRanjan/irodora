@@ -101,7 +101,33 @@ unit — rounded to a whole pixel (19 px at 624), and the drawn ink box lands 0.
 
 The ink stays ADR-0122's: dark `foreground.2` (`14`'s `text.secondary`), one ink.
 
-### 5. One table of drawings, generated and proven
+### 5. Android's adaptive icon is the same picture, in two layers, inside every mask
+
+A launcher crops an adaptive icon to a shape it chooses and shows the middle 72 of its 108 dp,
+guaranteeing the middle 66 (`AdaptiveIconDrawable`: `MASK_SIZE` 100 over the viewport,
+`EXTRA_INSET_PERCENTAGE` ¼, `SAFEZONE_SCALE` 66/72). F-230 sized the foreground to fill that safe
+zone, which made the mark **0.914** of the tile a person sees, against `14`'s 0.611. So:
+
+- **The foreground** is the mark at `14`'s share of the **72 dp viewport**, not of the 108 dp layer:
+  drawn at 12 px a dp (1296 px), the viewport is 864 px and the grid 528 (unit 22, 0.611), centred by
+  its ink (16 px down). It reaches 32.5 mask units from the centre; the safe zone is 45.8.
+- **The background** is the tile across the viewport — its ends at the viewport's corners — and held
+  at its end colours beyond them, so a launcher's parallax shows no edge. `adaptiveIcon.backgroundImage`
+  carries it; `backgroundColor` stays the dark `background`, which Expo writes as `iconBackground`.
+- **The themed icon** (Android 13) is the mark alone on the foreground's grid and offset: its
+  silhouette is the foreground's pixel for pixel, and the launcher tints it.
+
+`--prove` holds the layers to **every mask, verbatim from AOSP** (`config_icon_mask` at
+`android-10.0.0_r1`: the platform default rounded square, unchanged through `main`, and the squircle,
+rounded-rectangle, teardrop and square overlays; and the circle Pixel launchers use). Each mask must
+contain the 66 dp safe zone — a check on the transcription — and every inked pixel of the foreground
+and the themed layer at 432 px (xxxhdpi), all four corners of it, must lie inside the zone and every
+mask. Decoys: a mask shrunk to 90 % does not contain the zone; a foreground at the icon's share of the
+whole layer is refused (55.7 units out); F-230's layer is refused as `14`'s share; a themed layer with
+the tile baked in is refused. Real launchers may draw shapes AOSP does not; every one must contain the
+safe zone, which is why the zone is checked as well as the six.
+
+### 6. One table of drawings, generated and proven
 
 `scripts/generate-brand-assets.mjs` holds one table — each drawing's file, canvas, grid, offset, ink
 and ground — and everything reads it: the assets, `--prove`, `apps/mobile/assets/brand/brand-assets.json`

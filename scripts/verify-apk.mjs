@@ -76,10 +76,10 @@ const GREEN = '\x1b[32m',
  *
  * Expo's prebuild (`withAndroidIcons`) makes the legacy `ic_launcher` and `ic_launcher_round` from
  * `icon.png`, and the adaptive `ic_launcher_foreground` and `ic_launcher_monochrome` from the
- * adaptive and monochrome layers; `splashscreen_logo` is the splash image. The icon and the splash
- * draw the mark on the 768 px grid of their 1024 px canvas, and the adaptive layers on
- * `ADAPTIVE_GRID`, inside Android's safe circle. One signature for all of them refused a correct
- * adaptive layer: its row is about 56 % of the image, where the icon's is 68.5 %.
+ * adaptive and monochrome layers; `splashscreen_logo` is the splash image. Each draws the mark at
+ * its own canvas, grid and offset, all in the generator's drawings table (F-231: the icon 624/1024
+ * centred by its ink, the adaptive layers 528/1296). One signature for all of them refused a
+ * correct adaptive layer (F-230's review), so each is picked by its layer and read from the table.
  *
  * A release build shortens every resource path (`res/xa.webp`), and the name no longer says which
  * drawing it is. Such an entry may carry either: both are this mark, at a proportion the generator

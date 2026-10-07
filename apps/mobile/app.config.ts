@@ -167,19 +167,20 @@ const config: ExpoConfig = {
     package: 'com.irodora.app',
     versionCode,
     /*
-     * THE FOREGROUND IS TRANSPARENT AND SMALLER THAN THE ICON, and the number behind that is
-     * Android's rather than a taste: an adaptive icon is masked to a shape the launcher chooses,
-     * and only the central **66 of 108** units are guaranteed visible — a circle of Ø 625.8 px on
-     * this 1024 canvas. The foreground's grid is derived from that (F-230): 26 px a unit, so 14's
-     * blossom reaches 312 px from the centre, inside the 312.9 px radius whichever mask the device
-     * applies. `generate-brand-assets.mjs --prove` (in `lint`) asserts the arithmetic rather
-     * than trusting this comment.
+     * TWO LAYERS THAT COMPOSE INTO `icon.png` (F-231, ADR-0126). A launcher crops an adaptive icon
+     * to a shape of its own and shows the middle 72 of its 108 dp, guaranteeing the middle 66.
+     * The FOREGROUND is the mark, transparent, at 14's share of those 72 dp (528 of 864 px) and
+     * centred by its ink, so the mark sits on the tile as it does on iOS; it reaches 32.5 mask units
+     * from the centre, inside the 45.8 the safe zone guarantees. The BACKGROUND is 14's tile across
+     * the 72 dp, held at its end colours beyond them for parallax. `generate-brand-assets.mjs
+     * --prove` (in `lint`) checks both against every AOSP mask rather than trusting this comment.
      *
-     * `backgroundColor` is the manifest's dark `background`, so the two layers compose into the
-     * same image `icon.png` already is.
+     * `backgroundColor` stays the manifest's dark `background`: Expo writes it as `iconBackground`
+     * whatever the background layer is, and it is the nearest flat colour to the tile's foot.
      */
     adaptiveIcon: {
       foregroundImage: './assets/brand/adaptive-icon.png',
+      backgroundImage: './assets/brand/adaptive-background.png',
       backgroundColor: nativeColors.dark.background,
       /*
        * THE THEMED ICON (F-192). Android 13+ lets a person tint every icon to their wallpaper,

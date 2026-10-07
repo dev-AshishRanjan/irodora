@@ -9,9 +9,13 @@
     },
     "adaptive": {
       "file": "adaptive-icon.png",
-      "canvas": 1024,
-      "grid": 624,
-      "dy": 0
+      "canvas": 1296,
+      "grid": 528,
+      "dy": 16
+    },
+    "background": {
+      "file": "adaptive-background.png",
+      "canvas": 1296
     },
     "splashLight": {
       "file": "splash-icon-light.png",
@@ -27,9 +31,9 @@
     },
     "monochrome": {
       "file": "monochrome-icon.png",
-      "canvas": 1024,
-      "grid": 624,
-      "dy": 0
+      "canvas": 1296,
+      "grid": 528,
+      "dy": 16
     }
   }
 }

@@ -30,7 +30,8 @@
  * | asset | canvas | grid at | unit | reach | why that size |
  * |---|---:|---:|---:|---:|---|
  * | `icon` | 1024 | 624 | 26 | 312 | 14's share of its tile, 0.611 (F-231, ADR-0126), on 14's gradient tile, centred by its ink (19 px down) |
- * | `adaptive-icon`, `monochrome-icon` | 1024 | 624 | 26 | 312 | Android guarantees only a **66/108** circle — radius 312.9 (`ADAPTIVE_GRID`, derived) |
+ * | `adaptive-icon`, `monochrome-icon` | 1296 | 528 | 22 | 264 | 14's share of the 72 dp a launcher shows (864 px), centred by its ink (16 px down); inside the 66 dp safe zone (radius 396) and every AOSP mask (F-231) |
+ * | `adaptive-background` | 1296 | — | — | — | 14's tile across the 72 dp viewport, its ends held beyond it |
  * | `splash-icon-*` | 1024 | 768 | 32 | 384 | Expo composites it over the theme background |
  *
  * ## One ink everywhere, the icon included
@@ -52,7 +53,14 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { encodePng, decodePng, carriesMark, downscale } from './png.mjs';
-import { carriesTile } from './brand-checks.mjs';
+import {
+  carriesTile,
+  insideEveryMask,
+  insidePolygon,
+  LAUNCHER_MASKS,
+  maskPolygon,
+  SAFE_RADIUS,
+} from './brand-checks.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'apps/mobile/assets/brand');
@@ -375,15 +383,15 @@ function shapesInPixels(g, gridPx, canvas, ink, dyPx = 0) {
  * coverage is the share of its samples the mark's point test accepts.
  */
 function render(canvas, gridPx, ink, ground, g, dyPx = 0) {
+  const px = paintGround(canvas, ground);
+  // A ground with no mark — the adaptive icon's background layer (F-231).
+  if (ink === null) return encodePng(canvas, canvas, px);
   const unit = gridPx / g.grid;
   if (!Number.isInteger(unit))
     throw new Error(
       `unit is ${String(unit)}px and must be a whole number — a fractional unit puts the mark's` +
         ' shapes out of proportion with each other and makes the artefact signature approximate.',
     );
-
-  const px = paintGround(canvas, ground);
-  if (ink === null) return encodePng(canvas, canvas, px);
 
   for (const shape of shapesInPixels(g, gridPx, canvas, ink, dyPx)) {
     const [ir, ig, ib] = shape.ink;
@@ -465,8 +473,20 @@ function groundOf(ground, canvas) {
 }
 
 const CANVAS = 1024;
-/** Android guarantees only the central 66/108 of an adaptive icon is visible. */
-export const ADAPTIVE_SAFE_FRACTION = 66 / 108;
+
+/**
+ * An adaptive icon's layers (F-231): 108 dp, of which a launcher shows the middle 72 and guarantees
+ * the middle 66 (`AdaptiveIconDrawable`). Drawn at 12 px a dp, so the viewport is a whole 864 px and
+ * 14's share of it lands on a whole unit (528 = 22 × 24, 0.611 of the viewport).
+ */
+export const ADAPTIVE_CANVAS = 108 * 12;
+/** The viewport, in the layer's pixels: its middle two thirds. */
+export const ADAPTIVE_VIEWPORT = [
+  ADAPTIVE_CANVAS / 6,
+  ADAPTIVE_CANVAS / 6,
+  (5 * ADAPTIVE_CANVAS) / 6,
+  (5 * ADAPTIVE_CANVAS) / 6,
+];
 
 /**
  * The grid a lone mark is drawn on to cover `fraction` of `visiblePx`: the nearest whole unit, so
@@ -491,6 +511,7 @@ export function drawings() {
   const f = fourteen();
   const dyAt = (gridPx) => Math.round((inkCentreDy(g) * gridPx) / g.grid);
   const iconGrid = gridFor(f.markFraction, CANVAS, g);
+  const adaptiveGrid = gridFor(f.markFraction, (2 * ADAPTIVE_CANVAS) / 3, g);
   const icon = { eye: p.iconInk, petals: [p.iconInk] };
   const monoLight = { eye: p.lightInk, petals: [p.lightInk] };
   const monoDark = { eye: p.darkInk, petals: [p.darkInk] };
@@ -508,14 +529,32 @@ export function drawings() {
       ink: icon,
       ground: p.tile,
     },
-    // Android's foreground layer. Transparent; `adaptiveIcon.backgroundColor` is the other half.
+    /*
+     * ANDROID'S ADAPTIVE ICON (criterion 2): the same picture as `icon.png`, in two layers a launcher
+     * crops to its own shape. The foreground is the mark, transparent, at 14's share of the 72 dp
+     * the launcher shows (not of the 108 dp layer) and centred by its ink; the background is 14's
+     * tile across that viewport. Composed, they are the iOS icon.
+     */
     adaptive: {
       file: 'adaptive-icon.png',
-      canvas: CANVAS,
-      grid: ADAPTIVE_GRID,
-      dy: 0,
+      canvas: ADAPTIVE_CANVAS,
+      grid: adaptiveGrid,
+      dy: dyAt(adaptiveGrid),
       ink: icon,
       ground: null,
+    },
+    /*
+     * The background layer: the tile's gradient with its ends at the VIEWPORT's corners, so what a
+     * launcher shows is 14's tile corner to corner, and held at its end colours beyond them, so the
+     * margin a launcher's parallax can reveal shows no edge.
+     */
+    background: {
+      file: 'adaptive-background.png',
+      canvas: ADAPTIVE_CANVAS,
+      grid: null,
+      dy: 0,
+      ink: null,
+      ground: { ...p.tile, box: ADAPTIVE_VIEWPORT },
     },
     // The splashes: each theme's `foreground`, over the splash's own ground.
     splashLight: {
@@ -541,15 +580,16 @@ export function drawings() {
      * silhouette from the coloured icon — so an icon this product designed deliberately becomes
      * one the platform guessed at, on exactly the home screen this mark was approved on.
      *
-     * The adaptive foreground's grid: this layer is masked by the launcher like the foreground is.
+     * The adaptive foreground's grid and offset: this layer is masked by the launcher like the
+     * foreground is, and it is the mark ALONE — no tile — which the launcher tints (criterion 2).
      * THE INK IS NOT THE POINT: Android TINTS this drawable and consumes only its alpha. `lightInk`
      * because the splashes already use it and one source beats a new decision.
      */
     monochrome: {
       file: 'monochrome-icon.png',
-      canvas: CANVAS,
-      grid: ADAPTIVE_GRID,
-      dy: 0,
+      canvas: ADAPTIVE_CANVAS,
+      grid: adaptiveGrid,
+      dy: dyAt(adaptiveGrid),
       ink: monoLight,
       ground: null,
     },
@@ -560,18 +600,6 @@ export function drawings() {
 export function signatureOf(drawing) {
   return expectedSignature(drawing.grid, drawing.canvas, drawing.dy);
 }
-
-/**
- * The grid the Android foreground is drawn on: DERIVED, not chosen.
- *
- * The ink reaches `reach` units from the centre, so the unit may be at most the safe radius over
- * the reach (312.9 / 12 = 26.07 px for 14's mark), and it must be a whole number of pixels; the grid
- * is that unit times 24. F-165's six discs gave 648; 14's blossom gives 624.
- */
-export const ADAPTIVE_GRID = (() => {
-  const g = markGeometry();
-  return Math.floor((CANVAS * ADAPTIVE_SAFE_FRACTION) / 2 / g.reach) * g.grid;
-})();
 
 export function assets() {
   const g = markGeometry();
@@ -614,7 +642,9 @@ function drawingsFile(table) {
     drawings: Object.fromEntries(
       Object.entries(table).map(([name, d]) => [
         name,
-        { file: d.file, canvas: d.canvas, grid: d.grid, dy: d.dy },
+        d.grid === null
+          ? { file: d.file, canvas: d.canvas }
+          : { file: d.file, canvas: d.canvas, grid: d.grid, dy: d.dy },
       ]),
     ),
   };
@@ -790,6 +820,30 @@ export function oneInk(image, ink, ground) {
     : { ok: false, why: 'no pixel is mostly ink — a ground with no mark on it' };
 }
 
+/**
+ * Whether a decoded layer is its ground and nothing else: every pixel opaque and exactly the colour
+ * the ground gives it (F-231, the adaptive icon's background — the tile, no mark).
+ */
+export function groundOnly(image, ground) {
+  const groundAt = groundOf(ground, image.width);
+  for (let y = 0; y < image.height; y += 1)
+    for (let x = 0; x < image.width; x += 1) {
+      const i = (y * image.width + x) * 4;
+      const g = groundAt(x, y);
+      if (
+        image.rgba[i + 3] !== 255 ||
+        image.rgba[i] !== g[0] ||
+        image.rgba[i + 1] !== g[1] ||
+        image.rgba[i + 2] !== g[2]
+      )
+        return {
+          ok: false,
+          why: `(${String(x)}, ${String(y)}) is rgba(${[...image.rgba.subarray(i, i + 4)].join(', ')}), its ground rgb(${g.join(', ')})`,
+        };
+    }
+  return { ok: true, why: `all ${String(image.width * image.height)} pixels are the tile's` };
+}
+
 /*
  * RUN ONLY WHEN RUN, and this guard is not boilerplate.
  *
@@ -858,8 +912,12 @@ function prove() {
    * pixel or less. The signature is derived at the size it is read at, so a cut too thin to draw is
    * expected absent there rather than demanded — and the blossom's outline still has to be there.
    */
-  for (const d of [table.icon, table.adaptive])
-    for (const size of [48, 72, 96, 144, 192]) {
+  // Expo's own sizes: a legacy icon at 48 dp, an adaptive layer at 108 dp, at each density.
+  for (const [d, sizes] of [
+    [table.icon, [48, 72, 96, 144, 192]],
+    [table.adaptive, [108, 162, 216, 324, 432]],
+  ])
+    for (const size of sizes) {
       const image = downscale(imageOf(d), size);
       const r = carriesMark(image, signatureOf(d));
       say(r.ok, `${d.file} carries the mark at ${String(size)} px`, r.why);
@@ -869,14 +927,16 @@ function prove() {
    * REFUSED by another's signature at a launcher's size — which is why gate 16 (verify-apk.mjs,
    * `signaturesFor`) picks the signature by the resource's layer.
    */
-  for (const [d, other] of [
-    [table.icon, table.splashDark],
-    [table.splashDark, table.icon],
+  for (const [d, other, size] of [
+    [table.icon, table.splashDark, 96],
+    [table.splashDark, table.icon, 96],
+    [table.icon, table.adaptive, 96],
+    [table.adaptive, table.icon, 108],
   ]) {
-    const image = downscale(imageOf(d), 96);
+    const image = downscale(imageOf(d), size);
     say(
       !carriesMark(image, signatureOf(other)).ok,
-      `DECOY — ${d.file} at 96 px is REFUSED by ${other.file}'s signature`,
+      `DECOY — ${d.file} at ${String(size)} px is REFUSED by ${other.file}'s signature`,
       `it is drawn on ${String(d.grid)}/${String(d.canvas)}: one signature for every layer refuses a correct one`,
     );
   }
@@ -906,6 +966,17 @@ function prove() {
       `DECOY — a mark on ${String(grid)}/${String(table.icon.canvas)} is REFUSED as 14's share`,
       why,
     );
+  const viewport = (2 * ADAPTIVE_CANVAS) / 3;
+  say(
+    Math.abs(table.adaptive.grid - f.markFraction * viewport) <= unitOf(table.adaptive) / 2,
+    "the adaptive icon's mark is 14's share of the 72 dp a launcher shows",
+    `${String(table.adaptive.grid)}/${String(viewport)} = ${(table.adaptive.grid / viewport).toFixed(3)}; 14 draws ${f.markFraction.toFixed(3)}`,
+  );
+  say(
+    Math.abs(624 / ((2 * CANVAS) / 3) - f.markFraction) > unitOf(table.adaptive) / viewport,
+    "DECOY — F-230's adaptive layer, 624 of a 1024 layer, is REFUSED as 14's share",
+    `it fills the safe zone: ${(624 / ((2 * CANVAS) / 3)).toFixed(3)} of the visible tile, against 14's ${f.markFraction.toFixed(3)}`,
+  );
   const p = palette();
   for (const size of [1024, 192, 96, 48]) {
     const image = size === 1024 ? iconImage : downscale(iconImage, size);
@@ -1056,9 +1127,15 @@ function prove() {
    * make. Counted from what came out, never trusted from the scheme that was passed in.
    */
   const byFile = new Map(Object.values(table).map((d) => [d.file, d]));
-  for (const a of assets().filter((x) => x.file.endsWith('.png'))) {
+  const produced = assets();
+  for (const a of produced.filter((x) => x.file.endsWith('.png'))) {
     const d = byFile.get(a.file);
     if (d === undefined) throw new Error(`${a.file} is in no drawing`);
+    if (d.ink === null) {
+      const r = groundOnly(decodePng(a.bytes), d.ground);
+      say(r.ok, `${a.file} is the tile and nothing else`, r.why);
+      continue;
+    }
     const r = oneInk(decodePng(a.bytes), d.ink.eye, d.ground);
     say(r.ok, `${a.file} is one ink`, r.why);
   }
@@ -1090,14 +1167,47 @@ function prove() {
     "half in the icon's ink and half in ADR-0093's red, which ADR-0122 supersedes",
   );
 
-  // 4b. The Android safe zone, as arithmetic rather than a screenshot — and DERIVED, because a
-  //     written-down figure would go on passing about a shape it no longer described (E-085).
-  const reach = (g.reach * ADAPTIVE_GRID) / g.grid;
-  const safeRadius = (CANVAS * ADAPTIVE_SAFE_FRACTION) / 2;
+  /*
+   * 4b. EVERY LAUNCHER MASK (F-231, criterion 2), read from the layers rather than argued.
+   *
+   * Each AOSP mask must contain the 66 dp safe zone — a check on the transcription as much as on
+   * the platform — and the foreground's every inked pixel, at the size a device draws it (432 px,
+   * xxxhdpi), must lie inside the zone and inside every mask. The background layer is the tile, so
+   * whatever a mask leaves is 14's tile around the mark.
+   */
+  for (const [name, mask] of Object.entries(LAUNCHER_MASKS)) {
+    const polygon = maskPolygon(mask.path);
+    const outside = Array.from({ length: 720 }, (_, k) => (k / 720) * 2 * Math.PI).filter(
+      (a) =>
+        !insidePolygon(polygon, 50 + SAFE_RADIUS * Math.sin(a), 50 - SAFE_RADIUS * Math.cos(a)),
+    );
+    say(
+      outside.length === 0,
+      `the ${name} mask contains the 66 dp safe zone`,
+      outside.length === 0 ? mask.source : `${String(outside.length)} of 720 points outside`,
+    );
+  }
+  const shrunk = maskPolygon(LAUNCHER_MASKS.squircle.path).map(([u, w]) => [
+    50 + (u - 50) * 0.9,
+    50 + (w - 50) * 0.9,
+  ]);
   say(
-    reach <= safeRadius,
-    'the adaptive icon fits the 66/108 safe circle',
-    `ink reaches ${reach.toFixed(1)} from centre ≤ ${safeRadius.toFixed(1)}`,
+    !insidePolygon(shrunk, 50, 50 - SAFE_RADIUS),
+    'DECOY — a mask shrunk to 90 % does NOT contain the safe zone',
+    'the containment test can fail, so its passes above mean something',
+  );
+  for (const d of [table.adaptive, table.monochrome]) {
+    const r = insideEveryMask(downscale(imageOf(d), 432));
+    say(r.ok, `${d.file} at 432 px is inside the safe zone and every mask`, r.why);
+  }
+  const bleeding = downscale(
+    decodePng(render(ADAPTIVE_CANVAS, 960, table.adaptive.ink, null, g, 0)),
+    432,
+  );
+  say(
+    !insideEveryMask(bleeding).ok,
+    'DECOY — a foreground drawn at the ICON’s share of the whole layer is REFUSED',
+    insideEveryMask(bleeding).why,
   );
 
   /*
@@ -1166,7 +1276,7 @@ function prove() {
    * Its one ink is checked with every other asset's above; what is left is that its ground is
    * transparent, so the launcher supplies the other half.
    */
-  const themed = decodePng(assets().find((a) => a.file === 'monochrome-icon.png').bytes);
+  const themed = decodePng(produced.find((a) => a.file === 'monochrome-icon.png').bytes);
   let transparent = 0;
   for (let i = 3; i < themed.rgba.length; i += 4) if (themed.rgba[i] === 0) transparent += 1;
   say(
@@ -1175,11 +1285,32 @@ function prove() {
     `${String(transparent)} fully transparent pixel(s)`,
   );
 
-  const tooBig = (g.reach * 768) / g.grid;
+  /*
+   * THE MARK ALONE (criterion 2): the themed layer's silhouette IS the foreground's — the same
+   * drawing in another ink, no tile. The decoy bakes the tile in, which a launcher would tint whole.
+   */
+  const foregroundAlpha = imageOf(table.adaptive).rgba.filter((_, i) => i % 4 === 3);
+  const sameSilhouette = (image) =>
+    image.rgba.filter((_, i) => i % 4 === 3).every((a, i) => a === foregroundAlpha[i]);
   say(
-    tooBig > safeRadius,
-    'the grid this mark CANNOT use is refused',
-    `at 768 the ink would reach ${tooBig.toFixed(1)} — the check is not vacuous`,
+    sameSilhouette(themed),
+    "the themed icon is the mark alone: its silhouette is the foreground's, pixel for pixel",
+    `${String(foregroundAlpha.length)} alpha values compared`,
+  );
+  const tiled = decodePng(
+    render(
+      ADAPTIVE_CANVAS,
+      table.monochrome.grid,
+      table.monochrome.ink,
+      { ...p.tile, box: ADAPTIVE_VIEWPORT },
+      g,
+      table.monochrome.dy,
+    ),
+  );
+  say(
+    !sameSilhouette(tiled),
+    'DECOY — a themed layer with the tile baked in is REFUSED',
+    'a launcher would tint the whole square, not the mark',
   );
 
   // 5. --check notices a single changed byte.
