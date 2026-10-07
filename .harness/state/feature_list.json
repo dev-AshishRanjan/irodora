@@ -7208,7 +7208,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "must",
-      "status": "blocked",
+      "status": "in_progress",
       "blockedBy": [
         "F-220"
       ],
@@ -7238,7 +7238,8 @@
         "test",
         "color-golden"
       ],
-      "notes": "OQ-9 must close before this starts: % Match (03), the overall-score verdict label (13), Garment Calibration History and concordance (23), Wardrobe Pairings (22). Most of what the mockups print already exists — FR-5 separation, FR-29 fit, FR-32 components, coverage() and gaps(), findDuplicates, solveCapsule — the table in §8 is the audit."
+      "notes": "OQ-9 must close before this starts: % Match (03), the overall-score verdict label (13), Garment Calibration History and concordance (23), Wardrobe Pairings (22). Most of what the mockups print already exists — FR-5 separation, FR-29 fit, FR-32 components, coverage() and gaps(), findDuplicates, solveCapsule — the table in §8 is the audit.",
+      "plan": "plans/F-222-every-figure-the-mockups-print-is-a-defined-computation.md"
     },
     {
       "id": "F-223",
