@@ -190,8 +190,21 @@ describe('the glyph groups F-232 mints', () => {
   const raw = (): Raw => JSON.parse(source) as Raw;
   const groups = manifest.exceptions.flatMap((e) => ('tokens' in e ? [e] : []));
 
-  it('holds eight minted stops for each drawing, and carries the element that draws them', () => {
+  it('holds the stops minted for each drawing, and carries the elements that draw them', () => {
     expect(groups.map((g) => [g.elements, g.tokens.length, g.mintedBy])).toStrictEqual([
+      // F-236 (ADR-0128 §4): 27's six state tints, for its four pictures and the mark's glow,
+      // in the place of the element exception they retire.
+      [
+        [
+          '27.wardrobe-empty.art',
+          '27.lens-working.mark',
+          '27.lens-working.glow',
+          '27.lens-refused.icon',
+          '27.lens-permission.icon',
+        ],
+        6,
+        'F-236',
+      ],
       [['00.controls.icon-wheel'], 8, 'F-232'],
       [['00.buttons.icon-palette'], 8, 'F-232'],
     ]);
@@ -209,6 +222,12 @@ describe('the glyph groups F-232 mints', () => {
           (el) => el === '00.controls.icon-wheel' || el === '00.buttons.icon-palette',
         ),
       ),
+    ).toStrictEqual([]);
+  });
+
+  it('retired 27’s element exception when F-236 minted its tints (E-188)', () => {
+    expect(
+      elementExceptions(manifest).filter((e) => e.elements.some((el) => el.startsWith('27.'))),
     ).toStrictEqual([]);
   });
 

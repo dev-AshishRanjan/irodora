@@ -44,8 +44,12 @@ const manifest: Manifest = parseManifest(
 
 /** The marks C4 does not use: board 00's coral outline and 25's IRODORA 彩度. */
 const NOT_USED = new Set(['00.mark', '25.mark']);
-/** C10's one tinted mark, declared by element among the chroma exceptions (F-236 mints its token). */
-const TINTED = new Set(['27.lens-working.mark']);
+/**
+ * C10's one tinted mark, and the token F-236 minted for its ink (ADR-0128 §4). The inventories
+ * record README roles, and no role names a minted tint, so the placement names it here; the mark
+ * census holds that it is the only mark among the chroma exceptions.
+ */
+const TINTED: ReadonlyMap<string, string> = new Map([['27.lens-working.mark', 'state.mark']]);
 
 interface Placement {
   readonly id: string;
@@ -61,12 +65,18 @@ function placements(from: readonly Inventory[]): Placement[] {
   for (const inv of from) {
     const byId = new Map(inv.elements.map((e) => [e.id, e]));
     for (const e of inv.elements) {
-      if (e.component !== 'ui:Mark' || NOT_USED.has(e.id) || TINTED.has(e.id)) continue;
+      if (e.component !== 'ui:Mark' || NOT_USED.has(e.id)) continue;
       const role = e.tokens?.['fg'];
       const ground = SURFACE[surfaceOf(e, byId)] ?? null;
+      const tint = TINTED.get(e.id);
       out.push({
         id: e.id,
-        ink: role === undefined || ground === null ? null : textToken(role, ground),
+        ink:
+          tint !== undefined
+            ? tint
+            : role === undefined || ground === null
+              ? null
+              : textToken(role, ground),
         ground,
       });
     }
@@ -87,7 +97,7 @@ function undeclared(from: readonly Placement[]): string[] {
 describe('every ground the mark is drawn on is a declared CVD pair (F-230)', () => {
   const drawn = placements(inventories());
 
-  it('reads every placement — 01, 02, 14, 15, 20 and 22 — so an empty scan cannot agree', () => {
+  it('reads every placement — 01, 02, 14, 15, 20, 22 and 27 — so an empty scan cannot agree', () => {
     expect([...new Set(drawn.map((p) => p.id.split('.')[0]))].sort()).toStrictEqual([
       '01',
       '02',
@@ -95,7 +105,14 @@ describe('every ground the mark is drawn on is a declared CVD pair (F-230)', () 
       '15',
       '20',
       '22',
+      '27',
     ]);
+    // The tinted mark is read with its minted ink, on the card it is drawn on (F-236).
+    expect(drawn.find((p) => p.id === '27.lens-working.mark')).toStrictEqual({
+      id: '27.lens-working.mark',
+      ink: 'state.mark',
+      ground: 'surface.1',
+    });
   });
 
   it('declares the pair under each placement', () => {

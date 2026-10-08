@@ -81,6 +81,21 @@
       "why": "BOARD 00 DECLARES IT AND NO SCREEN DRAWS IT. Home led with the wordmark at display1 (72 px) from F-146 until F-230 set 01's lockup, which draws the name at 31.6 dp — the measured step wordmark (ADR-0121). Nothing else in the product sets type at 72: the scale is board 00's four steps (ADR-0113), F-226's criterion 3 names display1 among them, and under ADR-0121 a screen's type takes a board step only within 4 dp of it, and no governing mockup draws type within 4 dp of 72. So the step is the board's and no screen's. Deleting it would be departing from board 00 to make a counter agree; keeping it unread is the board as drawn.",
       "closedBy": null,
       "permanentBecause": "Board 00 declares display1 and F-226's criterion 3 names it, while no governing mockup draws type within 4 dp of 72 (ADR-0121). Re-read this the first time a screen does."
+    },
+    {
+      "group": "colour token",
+      "tokens": [
+        "state.hanger",
+        "state.mark",
+        "state.refused.plate",
+        "state.refused.edge",
+        "state.refused.glyph",
+        "state.lock"
+      ],
+      "cites": "ADR-0128, F-236",
+      "why": "MINTED BEFORE THEY ARE DRAWN, ONE INCREMENT APART. F-236 increment 2 mints 27's six state tints as a C10 token group, retiring the element exception that waited for them; increment 5 gives each its reader — the hanger's tint, MARK_INKS and the working glow, the refusal plate, its edge and glyph, and the padlock layer. Minting first keeps every gate green between the two: the chroma ceiling, the C10 census and the CVD pair for the tinted mark are proved before any surface paints them. This entry is deleted by increment 5, and the gate fails if it outlives a reader.",
+      "closedBy": "F-236",
+      "permanentBecause": null
     }
   ]
 }

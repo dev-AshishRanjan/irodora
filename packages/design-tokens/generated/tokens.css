@@ -56,6 +56,12 @@
   --irodora-color-glyph-palette-6: #5A65BE;
   --irodora-color-glyph-palette-7: #945291;
   --irodora-color-glyph-palette-8: #B66380;
+  --irodora-color-state-hanger: #C09D7A;
+  --irodora-color-state-mark: #E0AAE6;
+  --irodora-color-state-refused-plate: #51412C;
+  --irodora-color-state-refused-edge: #EEAF5E;
+  --irodora-color-state-refused-glyph: #A2917A;
+  --irodora-color-state-lock: #BAA07C;
 }
 
 [data-theme="light"] {
@@ -106,6 +112,12 @@
   --irodora-color-glyph-palette-6: #5A65BE;
   --irodora-color-glyph-palette-7: #945291;
   --irodora-color-glyph-palette-8: #B66380;
+  --irodora-color-state-hanger: #C09D7A;
+  --irodora-color-state-mark: #E0AAE6;
+  --irodora-color-state-refused-plate: #51412C;
+  --irodora-color-state-refused-edge: #EEAF5E;
+  --irodora-color-state-refused-glyph: #A2917A;
+  --irodora-color-state-lock: #BAA07C;
 }
 
 [data-theme="slate.dark"] {
@@ -156,6 +168,12 @@
   --irodora-color-glyph-palette-6: #5A65BE;
   --irodora-color-glyph-palette-7: #945291;
   --irodora-color-glyph-palette-8: #B66380;
+  --irodora-color-state-hanger: #C09D7A;
+  --irodora-color-state-mark: #E0AAE6;
+  --irodora-color-state-refused-plate: #51412C;
+  --irodora-color-state-refused-edge: #EEAF5E;
+  --irodora-color-state-refused-glyph: #A2917A;
+  --irodora-color-state-lock: #BAA07C;
 }
 
 [data-theme="obsidian.dark"] {
@@ -206,6 +224,12 @@
   --irodora-color-glyph-palette-6: #5A65BE;
   --irodora-color-glyph-palette-7: #945291;
   --irodora-color-glyph-palette-8: #B66380;
+  --irodora-color-state-hanger: #C09D7A;
+  --irodora-color-state-mark: #E0AAE6;
+  --irodora-color-state-refused-plate: #51412C;
+  --irodora-color-state-refused-edge: #EEAF5E;
+  --irodora-color-state-refused-glyph: #A2917A;
+  --irodora-color-state-lock: #BAA07C;
 }
 
 @supports (color: oklch(0 0 0)) {
@@ -257,6 +281,12 @@
     --irodora-color-glyph-palette-6: oklch(0.5417124401691688 0.13801603949861893 275.4969483649769);
     --irodora-color-glyph-palette-7: oklch(0.5389848028351222 0.12167254147526153 328.75759741822367);
     --irodora-color-glyph-palette-8: oklch(0.6033810862594174 0.11149796204899981 358.6934816409635);
+    --irodora-color-state-hanger: oklch(0.7191566704639364 0.06354353419046485 66.52768583083162);
+    --irodora-color-state-mark: oklch(0.807034839336102 0.10126307606505816 323.0977342695073);
+    --irodora-color-state-refused-plate: oklch(0.3864711351860677 0.03968495080481098 73.75935562721014);
+    --irodora-color-state-refused-edge: oklch(0.7972384568794149 0.12256266008022022 71.35248409508665);
+    --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
+    --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
   }
   [data-theme="light"] {
     --irodora-color-background: oklch(0.9700818876373151 0.004122095072712324 91.44637793652691);
@@ -306,6 +336,12 @@
     --irodora-color-glyph-palette-6: oklch(0.5417124401691688 0.13801603949861893 275.4969483649769);
     --irodora-color-glyph-palette-7: oklch(0.5389848028351222 0.12167254147526153 328.75759741822367);
     --irodora-color-glyph-palette-8: oklch(0.6033810862594174 0.11149796204899981 358.6934816409635);
+    --irodora-color-state-hanger: oklch(0.7191566704639364 0.06354353419046485 66.52768583083162);
+    --irodora-color-state-mark: oklch(0.807034839336102 0.10126307606505816 323.0977342695073);
+    --irodora-color-state-refused-plate: oklch(0.3864711351860677 0.03968495080481098 73.75935562721014);
+    --irodora-color-state-refused-edge: oklch(0.7972384568794149 0.12256266008022022 71.35248409508665);
+    --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
+    --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
   }
   [data-theme="slate.dark"] {
     --irodora-color-background: oklch(0.3146671601438604 0.01659574570409328 255.64193068066527);
@@ -355,6 +391,12 @@
     --irodora-color-glyph-palette-6: oklch(0.5417124401691688 0.13801603949861893 275.4969483649769);
     --irodora-color-glyph-palette-7: oklch(0.5389848028351222 0.12167254147526153 328.75759741822367);
     --irodora-color-glyph-palette-8: oklch(0.6033810862594174 0.11149796204899981 358.6934816409635);
+    --irodora-color-state-hanger: oklch(0.7191566704639364 0.06354353419046485 66.52768583083162);
+    --irodora-color-state-mark: oklch(0.807034839336102 0.10126307606505816 323.0977342695073);
+    --irodora-color-state-refused-plate: oklch(0.3864711351860677 0.03968495080481098 73.75935562721014);
+    --irodora-color-state-refused-edge: oklch(0.7972384568794149 0.12256266008022022 71.35248409508665);
+    --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
+    --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
   }
   [data-theme="obsidian.dark"] {
     --irodora-color-background: oklch(0.17786923358635712 0.006370287913118377 271.04219528891264);
@@ -404,6 +446,12 @@
     --irodora-color-glyph-palette-6: oklch(0.5417124401691688 0.13801603949861893 275.4969483649769);
     --irodora-color-glyph-palette-7: oklch(0.5389848028351222 0.12167254147526153 328.75759741822367);
     --irodora-color-glyph-palette-8: oklch(0.6033810862594174 0.11149796204899981 358.6934816409635);
+    --irodora-color-state-hanger: oklch(0.7191566704639364 0.06354353419046485 66.52768583083162);
+    --irodora-color-state-mark: oklch(0.807034839336102 0.10126307606505816 323.0977342695073);
+    --irodora-color-state-refused-plate: oklch(0.3864711351860677 0.03968495080481098 73.75935562721014);
+    --irodora-color-state-refused-edge: oklch(0.7972384568794149 0.12256266008022022 71.35248409508665);
+    --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
+    --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
   }
 }
 

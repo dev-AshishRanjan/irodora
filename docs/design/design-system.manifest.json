@@ -717,6 +717,78 @@
         "role": "A hue stop of 00's palette button, clockwise from the top.",
         "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the text that carries its meaning (section 3). It is measured off board 00 (F-232) and pairs with nothing: no reading depends on it.",
         "pairsWith": []
+      },
+      "state.hanger": {
+        "oklch": {
+          "l": 0.7191566704639364,
+          "c": 0.06354353419046485,
+          "h": 66.52768583083162
+        },
+        "srgb": "#C09D7A",
+        "usage": "nonText",
+        "role": "The body of 27's empty-wardrobe hanger: its interior, read off the board.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.mark": {
+        "oklch": {
+          "l": 0.807034839336102,
+          "c": 0.10126307606505816,
+          "h": 323.0977342695073
+        },
+        "srgb": "#E0AAE6",
+        "usage": "nonText",
+        "role": "27's working mark and its glow: the one place the mark takes a tint (C10).",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.plate": {
+        "oklch": {
+          "l": 0.3864711351860677,
+          "c": 0.03968495080481098,
+          "h": 73.75935562721014
+        },
+        "srgb": "#51412C",
+        "usage": "nonText",
+        "role": "The plate behind 27's refused glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.edge": {
+        "oklch": {
+          "l": 0.7972384568794149,
+          "c": 0.12256266008022022,
+          "h": 71.35248409508665
+        },
+        "srgb": "#EEAF5E",
+        "usage": "nonText",
+        "role": "The edge of 27's refused plate, and the slash across its glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.glyph": {
+        "oklch": {
+          "l": 0.6654738005687253,
+          "c": 0.038524049172811915,
+          "h": 75.34089599388199
+        },
+        "srgb": "#A2917A",
+        "usage": "nonText",
+        "role": "The sun and rays of 27's refused glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.lock": {
+        "oklch": {
+          "l": 0.7197601801939266,
+          "c": 0.058067541595378275,
+          "h": 75.62115861275976
+        },
+        "srgb": "#BAA07C",
+        "usage": "nonText",
+        "role": "The padlock over 27's denied camera.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
       }
     },
     "light": {
@@ -1342,6 +1414,78 @@
         "role": "A hue stop of 00's palette button, clockwise from the top.",
         "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the text that carries its meaning (section 3). It is measured off board 00 (F-232) and pairs with nothing: no reading depends on it.",
         "pairsWith": []
+      },
+      "state.hanger": {
+        "oklch": {
+          "l": 0.7191566704639364,
+          "c": 0.06354353419046485,
+          "h": 66.52768583083162
+        },
+        "srgb": "#C09D7A",
+        "usage": "nonText",
+        "role": "The body of 27's empty-wardrobe hanger: its interior, read off the board.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.mark": {
+        "oklch": {
+          "l": 0.807034839336102,
+          "c": 0.10126307606505816,
+          "h": 323.0977342695073
+        },
+        "srgb": "#E0AAE6",
+        "usage": "nonText",
+        "role": "27's working mark and its glow: the one place the mark takes a tint (C10).",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.plate": {
+        "oklch": {
+          "l": 0.3864711351860677,
+          "c": 0.03968495080481098,
+          "h": 73.75935562721014
+        },
+        "srgb": "#51412C",
+        "usage": "nonText",
+        "role": "The plate behind 27's refused glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.edge": {
+        "oklch": {
+          "l": 0.7972384568794149,
+          "c": 0.12256266008022022,
+          "h": 71.35248409508665
+        },
+        "srgb": "#EEAF5E",
+        "usage": "nonText",
+        "role": "The edge of 27's refused plate, and the slash across its glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.refused.glyph": {
+        "oklch": {
+          "l": 0.6654738005687253,
+          "c": 0.038524049172811915,
+          "h": 75.34089599388199
+        },
+        "srgb": "#A2917A",
+        "usage": "nonText",
+        "role": "The sun and rays of 27's refused glyph.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
+      },
+      "state.lock": {
+        "oklch": {
+          "l": 0.7197601801939266,
+          "c": 0.058067541595378275,
+          "h": 75.62115861275976
+        },
+        "srgb": "#BAA07C",
+        "usage": "nonText",
+        "role": "The padlock over 27's denied camera.",
+        "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
+        "pairsWith": []
       }
     }
   },
@@ -1364,7 +1508,7 @@
     }
   },
   "cvdPairs": {
-    "_note": "Semantic pairs that must remain distinguishable under simulated CVD at severity 1.0. Asserted by the `cvd` gate. The product's own interface is held to the standard it applies to outfits. THE MARK'S PAIRS (F-230, ADR-0122): every (ink, ground) a governing mockup draws a `ui:Mark` on — `foreground` on `background` (01, 14, 15), `foreground.2` on `background` (14's icon), `foreground.3` on `background` (22), `foreground.3.card` on `surface.1` (20) and `accent.foreground` on `accent` (02's capture button). BRAND §7 disqualifies a mark that depends on colour to be recognisable, so the ground it is drawn on must separate from its ink under every deficiency. `cvd/mark.test.ts` derives the placements from the inventories and requires each here, so a new placement cannot escape this gate.",
+    "_note": "Semantic pairs that must remain distinguishable under simulated CVD at severity 1.0. Asserted by the `cvd` gate. The product's own interface is held to the standard it applies to outfits. THE MARK'S PAIRS (F-230, ADR-0122): every (ink, ground) a governing mockup draws a `ui:Mark` on — `foreground` on `background` (01, 14, 15), `foreground.2` on `background` (14's icon), `foreground.3` on `background` (22), `foreground.3.card` on `surface.1` (20) and `accent.foreground` on `accent` (02's capture button), and C10's one tinted mark, `state.mark` on `surface.1` (27's working state, F-236). BRAND §7 disqualifies a mark that depends on colour to be recognisable, so the ground it is drawn on must separate from its ink under every deficiency. `cvd/mark.test.ts` derives the placements from the inventories and requires each here, so a new placement cannot escape this gate.",
     "minSeparation": 60,
     "pairs": [
       [
@@ -1402,6 +1546,10 @@
       [
         "accent.foreground",
         "accent"
+      ],
+      [
+        "state.mark",
+        "surface.1"
       ]
     ]
   },
@@ -1737,6 +1885,14 @@
     },
     {
       "rule": "chromaCeiling",
+      "tokens": [
+        "state.hanger",
+        "state.mark",
+        "state.refused.plate",
+        "state.refused.edge",
+        "state.refused.glyph",
+        "state.lock"
+      ],
       "elements": [
         "27.wardrobe-empty.art",
         "27.lens-working.mark",
@@ -1744,17 +1900,9 @@
         "27.lens-refused.icon",
         "27.lens-permission.icon"
       ],
-      "kind": "tints",
-      "measured": [
-        "#BFA184",
-        "#926C9A",
-        "#3F3449",
-        "#634E32",
-        "#B7A07F"
-      ],
-      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 27's state art is tan, amber-brown and purple; the purple mark is the one place the mark takes a tint, and the radial glow behind it (F-236, D11) takes the same tint.",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
       "owner": "design",
-      "recordedAt": "2026-09-25",
+      "recordedAt": "2026-10-08",
       "mintedBy": "F-236"
     },
     {

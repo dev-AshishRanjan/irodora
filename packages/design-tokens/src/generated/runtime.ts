@@ -641,6 +641,78 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "state.hanger": {
+        "oklch": {
+          "l": 0.7191566704639364,
+          "c": 0.06354353419046485,
+          "h": 66.52768583083162
+        },
+        "srgb": "#C09D7A",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.mark": {
+        "oklch": {
+          "l": 0.807034839336102,
+          "c": 0.10126307606505816,
+          "h": 323.0977342695073
+        },
+        "srgb": "#E0AAE6",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.plate": {
+        "oklch": {
+          "l": 0.3864711351860677,
+          "c": 0.03968495080481098,
+          "h": 73.75935562721014
+        },
+        "srgb": "#51412C",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.edge": {
+        "oklch": {
+          "l": 0.7972384568794149,
+          "c": 0.12256266008022022,
+          "h": 71.35248409508665
+        },
+        "srgb": "#EEAF5E",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.glyph": {
+        "oklch": {
+          "l": 0.6654738005687253,
+          "c": 0.038524049172811915,
+          "h": 75.34089599388199
+        },
+        "srgb": "#A2917A",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.lock": {
+        "oklch": {
+          "l": 0.7197601801939266,
+          "c": 0.058067541595378275,
+          "h": 75.62115861275976
+        },
+        "srgb": "#BAA07C",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     },
     "light": {
@@ -1266,6 +1338,78 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "state.hanger": {
+        "oklch": {
+          "l": 0.7191566704639364,
+          "c": 0.06354353419046485,
+          "h": 66.52768583083162
+        },
+        "srgb": "#C09D7A",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.mark": {
+        "oklch": {
+          "l": 0.807034839336102,
+          "c": 0.10126307606505816,
+          "h": 323.0977342695073
+        },
+        "srgb": "#E0AAE6",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.plate": {
+        "oklch": {
+          "l": 0.3864711351860677,
+          "c": 0.03968495080481098,
+          "h": 73.75935562721014
+        },
+        "srgb": "#51412C",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.edge": {
+        "oklch": {
+          "l": 0.7972384568794149,
+          "c": 0.12256266008022022,
+          "h": 71.35248409508665
+        },
+        "srgb": "#EEAF5E",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.refused.glyph": {
+        "oklch": {
+          "l": 0.6654738005687253,
+          "c": 0.038524049172811915,
+          "h": 75.34089599388199
+        },
+        "srgb": "#A2917A",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
+      },
+      "state.lock": {
+        "oklch": {
+          "l": 0.7197601801939266,
+          "c": 0.058067541595378275,
+          "h": 75.62115861275976
+        },
+        "srgb": "#BAA07C",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     }
   },
@@ -1322,6 +1466,10 @@ export const runtimeManifest: CheckableManifest = {
       [
         "accent.foreground",
         "accent"
+      ],
+      [
+        "state.mark",
+        "surface.1"
       ]
     ]
   },
@@ -1371,6 +1519,48 @@ export const runtimeManifest: CheckableManifest = {
       "owner": "design",
       "recordedAt": "2026-08-15",
       "token": "status.bad"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.hanger",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.mark",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.refused.plate",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.refused.edge",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.refused.glyph",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "state.lock",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
+      "owner": "design",
+      "recordedAt": "2026-10-08"
     },
     {
       "rule": "chromaCeiling",

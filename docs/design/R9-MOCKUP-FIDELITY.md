@@ -564,7 +564,7 @@ each stays covered once (`F-232`, ADR-0110's amendment).
 | `23.profile.temperature.range`: cool-to-warm track | gradient | — | `F-260` |
 | `23.profile.label`: the brown pill (C12) | tint | `#69523A` | `F-260` |
 | `24.rows.row-1…4.distance`: ΔE00 badges tinted by their row | sample | — (row 1 `#87795D`, row 2 `#4495A3`) | `F-259` |
-| `27.wardrobe-empty.art`, `27.lens-working.mark`, `27.lens-working.glow`, `27.lens-refused.icon`, `27.lens-permission.icon` | tints | `#BFA184` `#926C9A` `#3F3449` `#634E32` `#B7A07F` | `F-236` |
+| `27.wardrobe-empty.art`, `27.lens-working.mark`, `27.lens-working.glow`, `27.lens-refused.icon`, `27.lens-permission.icon` | tints | **minted** as `state.hanger` `#C09D7A`, `state.mark` `#E0AAE6` (the mark and its glow), `state.refused.plate` `#51412C`, `state.refused.edge` `#EEAF5E`, `state.refused.glyph` `#A2917A` and `state.lock` `#BAA07C` — the core of each drawing, the same in every palette — declared as a token group that carries these elements ([ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md)) | `F-236` ✓ |
 | `00.controls.icon-wheel` (ADR-0110) | spectrum | **minted** as `glyph.wheel.1–8` (eight sector means, `#D68164` … `#C25E62`), declared as a token group that carries this element | `F-232` ✓ |
 | `00.buttons.icon-palette` (ADR-0110) | multi | **minted** as `glyph.palette.1–8` (a hue sweep over the palette, `#BC8073` … `#B66380`), declared as a token group that carries this element | `F-232` ✓ |
 | `03.chips.gamut` (ADR-0110) | spectrum | — | `F-244` |
