@@ -7921,14 +7921,15 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-232",
         "F-229",
         "F-222"
       ],
       "mockups": [
-        "27"
+        "27",
+        "00"
       ],
       "acceptance": [
         "Four state components as 27 draws them: empty (hanger and blossom art, heading, body, primary action), working (ring progress with the mark, two monospace step chips, heading, body), refused (amber glare tile, heading, reason with its threshold, retry), denied (camera and lock, heading, body, open settings)",
@@ -7944,9 +7945,11 @@
         "build",
         "a11y",
         "contrast",
-        "cvd"
+        "cvd",
+        "color-golden"
       ],
-      "notes": "CRITERION 3 REWORDED 2026-09-14 BY F-219, recorded here where the change lives: it quoted mockup 27’s loading line verbatim, which the claims lint now refuses, and now describes the same drawn claim (\"the spectrum 27’s render claims to extract\") with the same binding. The meaning is unchanged. ALSO DEPARTS (F-219): the refused state’s heading names a reading, not a measurement — 27 draws \"Measurement Refused\", and an estimate is never called a measurement (golden rule 11, E2). FROM F-229's REVIEW (2026-09-21): 27 draws its hanger in TAN (C10 declares the tint) and Illustration cannot take one — its `color` prop admits only foreground.2 and foreground.3, the two quiet neutrals R7 constrained it to. This feature builds 27's states, so widening the ink to the tokens C10 declares — or recording why it stays neutral — belongs here. FROM F-230 (2026-10-06): when this feature mints 27's loading tint, it adds the token to MARK_INKS in packages/ui/src/brand.tsx (ADR-0122 decision 5). The C10 element exception for 27.lens-working.mark then moves to a token group, and mark-census.test.ts still requires exactly one tinted mark (E-172). FROM F-222 (2026-10-07): any confidence 27's refused state prints goes through confidenceText; this feature's sweep asserts it, which discharges the 27 half of F-222's attested criterion."
+      "notes": "CRITERION 3 REWORDED 2026-09-14 BY F-219, recorded here where the change lives: it quoted mockup 27’s loading line verbatim, which the claims lint now refuses, and now describes the same drawn claim (\"the spectrum 27’s render claims to extract\") with the same binding. The meaning is unchanged. ALSO DEPARTS (F-219): the refused state’s heading names a reading, not a measurement — 27 draws \"Measurement Refused\", and an estimate is never called a measurement (golden rule 11, E2). FROM F-229's REVIEW (2026-09-21): 27 draws its hanger in TAN (C10 declares the tint) and Illustration cannot take one — its `color` prop admits only foreground.2 and foreground.3, the two quiet neutrals R7 constrained it to. This feature builds 27's states, so widening the ink to the tokens C10 declares — or recording why it stays neutral — belongs here. FROM F-230 (2026-10-06): when this feature mints 27's loading tint, it adds the token to MARK_INKS in packages/ui/src/brand.tsx (ADR-0122 decision 5). The C10 element exception for 27.lens-working.mark then moves to a token group, and mark-census.test.ts still requires exactly one tinted mark (E-172). FROM F-222 (2026-10-07): any confidence 27's refused state prints goes through confidenceText; this feature's sweep asserts it, which discharges the 27 half of F-222's attested criterion. FROM F-236's PLAN (2026-10-08): `color-golden` joins the verification because increment 8 adds a field to @irodora/color-sampling (no value moves), and `00` joins the mockups because EmptyState's resolvedHere form is board 00's `00.empty` (P3). The readings D1–D10 are the plan's: a poor capture is refused (FR-18), one picture per component, the ring bound to pipeline steps completed, the chips to the real steps and D65 (6504 K), the undetermined permission asks in 27's card (E4), 27's tints the same in every palette, catalogue spelling, and no confidence printed on the refused state.",
+      "plan": "plans/F-236-empty-working-refused-and-denied-are-mockup-27.md"
     },
     {
       "id": "F-237",
