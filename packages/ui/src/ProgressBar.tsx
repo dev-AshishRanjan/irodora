@@ -11,14 +11,13 @@
  *   system may animate (`motion.animatable`), so F-266 can move the value without a layout pass and
  *   without ever touching a colour. (Its rounded end scales with it: at 4 dp thick the end of a
  *   0.8 fill is an ellipse 1.6 dp by 2, which no one sees.)
- * - **Decorative unless named.** Without `label` it says nothing — the splash's line sits on an
- *   overlay the screen reader never stops on. With `label` it is a `progressbar` whose value is the
- *   whole percentage done, floored like every percentage the product prints (`floorPercent`).
+ * - **Decorative.** It says nothing: its one caller, the splash's line, sits on an overlay the screen
+ *   reader never stops on. A line a person must be told about is a `progressbar` with a label and a
+ *   value, and it arrives with its first caller rather than ahead of it (F-231's review, M7).
  */
 
 import { StyleSheet, View } from 'react-native';
 import { nativeRadius } from '@irodora/design-tokens';
-import { floorPercent } from './percent.js';
 import { useTheme } from './theme.js';
 
 /** The line's thickness, in dp: `14.splash.progress`'s 3.1 px at 1.3521 dp/px, to the half dp. */
@@ -27,34 +26,18 @@ export const PROGRESS_TRACK = 4;
 export interface ProgressBarProps {
   /** How far, from 0 to 1. */
   readonly value: number;
-  /**
-   * What the line is the progress of, for a screen reader. Without it the line is decorative and
-   * hidden from the accessibility tree.
-   */
-  readonly label?: string;
   readonly testID?: string;
 }
 
-export function ProgressBar({ value, label, testID }: ProgressBarProps): React.JSX.Element {
+export function ProgressBar({ value, testID }: ProgressBarProps): React.JSX.Element {
   const { colors } = useTheme();
   if (!Number.isFinite(value) || value < 0 || value > 1)
     throw new RangeError(`ProgressBar: value ${String(value)} is not a fraction in [0, 1]`);
-  const announced =
-    label === undefined
-      ? {
-          accessibilityElementsHidden: true,
-          importantForAccessibility: 'no-hide-descendants' as const,
-        }
-      : {
-          accessible: true,
-          accessibilityRole: 'progressbar' as const,
-          accessibilityLabel: label,
-          accessibilityValue: { min: 0, max: 100, now: floorPercent(value) },
-        };
   return (
     <View
       {...(testID === undefined ? {} : { testID })}
-      {...announced}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
       style={{
         height: PROGRESS_TRACK,
         borderRadius: nativeRadius.pill,

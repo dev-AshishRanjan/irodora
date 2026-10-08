@@ -2075,12 +2075,6 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) => draw(<ProgressBar value={0.5} />, theme),
   },
   {
-    // Named, it is a progressbar that says the whole percentage done.
-    name: 'ProgressBar (named)',
-    kind: 'static',
-    render: (_state, theme) => draw(<ProgressBar value={0.8} label="Opening" />, theme),
-  },
-  {
     // The page dots (F-235, ADR-0120): the current page a capsule, a small dot past the window.
     name: 'PageDots (25)',
     kind: 'static',

@@ -10712,7 +10712,7 @@
         "14"
       ],
       "acceptance": [
-        "iOS 18's dark and tinted icon appearances and iOS 26's layered .icon (Icon Composer) are decided against 14's tile — drawn by a mockup or decided by research with an ADR — and generated and checked like the light icon"
+        "iOS 18's dark and tinted icon appearances and iOS 26's layered .icon (Icon Composer) are drawn by a mockup or decided by a person against 14's tile — golden rule 14: a surface no mockup draws is not designed by an agent — and then generated and checked like the light icon"
       ],
       "verification": [
         "state",

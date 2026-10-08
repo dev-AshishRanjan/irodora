@@ -29,6 +29,8 @@ jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 import { nativeArtStroke, nativeColors, nativeType } from '@irodora/design-tokens';
 import {
   illustrationBox,
@@ -53,7 +55,6 @@ import {
 } from '../src/launch';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
 import brandAssets from '../assets/brand/brand-assets.json' with { type: 'json' };
-import launchGlow from '../assets/brand/launch-glow.png';
 import { t } from '../src/i18n';
 
 /*
@@ -164,10 +165,23 @@ describe("the first frame is the native splash's last", () => {
     // DECOY: the image's width drawn as the grid — F-230's defect — is not what is drawn.
     expect(marks.some((m) => m.props['width'] === SPLASH_IMAGE_WIDTH)).toBe(false);
     const style = flattenStyle(handover.props['style']);
-    // Its box centred in the window, its grid's centre SPLASH_MARK_DY below — the image's offset.
-    expect(style['position']).toBe('absolute');
-    expect(style['transform']).toContainEqual({ translateY: SPLASH_MARK_DY });
-    expect(style['transform']).toContainEqual({ scale: 1 });
+    // Centred by layout in the overlay's own box, as the native splash centres its image in the
+    // screen — not placed by the window's reported size (F-231's review, M2) — its grid's centre
+    // SPLASH_MARK_DY below the middle, and not moved across or scaled.
+    expect(style).toMatchObject({
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+    expect(style['transform']).toStrictEqual([
+      { translateX: 0 },
+      { translateY: SPLASH_MARK_DY },
+      { scale: 1 },
+    ]);
   });
 
   it("starts with 14's composition withheld, so the first frame is the mark alone", () => {
@@ -190,10 +204,20 @@ describe("the first frame is the native splash's last", () => {
         (s) => s.props['viewBox'] === `0 0 ${String(MARK.grid)} ${String(MARK.grid)}`,
       ),
     ).toBe(true);
-    const images = UNSAFE_root.findAll((n) => /^(Image|RNSVGImage)$/u.test(named(n)));
-    expect(images.length).toBeGreaterThan(0);
-    // DECOY: a bitmap that is not the glow mask — a picture of the mark — is refused.
-    for (const image of images) expect(image.props['source']).toBe(launchGlow);
+    /*
+     * ONE bitmap, and it is the glow. Counted, not compared: jest-expo compiles every image import
+     * to the same stub, so a source cannot tell the mask from a picture of the mark here. WHICH
+     * image it is, is `verify-app-glyphs`'s to hold (in lint): `src/launch.tsx` may import exactly
+     * `launch-glow.png`, by its default binding, and nothing else (F-231's review, S2).
+     */
+    const images = UNSAFE_root.findAll(
+      (n) => typeof n.type === 'string' && /^(Image|RNSVGImage)$/u.test(n.type),
+    );
+    const named_ = UNSAFE_root.findAll((n) => /^(Image|RNSVGImage)$/u.test(named(n)));
+    expect(named_.length).toBeGreaterThan(0);
+    expect(named_.filter((n) => typeof n.type !== 'string')).toHaveLength(1);
+    expect(named_.find((n) => typeof n.type !== 'string')?.props['testID']).toBe('launch.glow');
+    expect(images.every((n) => n.props['testID'] === 'launch.glow')).toBe(true);
   });
 
   it('is hidden from the accessibility tree — the app underneath is the real one', () => {
@@ -402,6 +426,58 @@ describe('in the phone’s appearance, as the native splash is', () => {
   });
 });
 
+describe('under reduced motion nothing moves, and 14 is still seen', () => {
+  /*
+   * F-231's review (S1): the composition flashed for a frame or two and the app arrived. Now the
+   * composition is drawn at rest at once — a cut, which is what reduced motion asks for in place of
+   * the rise — held for the same beat, then the app, cut again. Nothing fades.
+   */
+  const reducedMotion = async (): Promise<ReturnType<typeof render>> => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const order: string[] = [];
+    const tree = draw(
+      () => order.push('shown'),
+      () => order.push('done'),
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    return Object.assign(tree, { order });
+  };
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  /** Reanimated's own accessor: `props.style` is an animated element's style as it was at mount. */
+  const live = (node: unknown): Record<string, unknown> =>
+    getAnimatedStyle(node as never) as unknown as Record<string, unknown>;
+
+  it('draws the composition at rest at once: no rise, the mark in the lockup', async () => {
+    const tree = await reducedMotion();
+    // One frame, well inside the hold: reanimated applies a shared value's new value on the next.
+    act(() => {
+      jest.advanceTimersByTime(16);
+    });
+    expect(tree.queryByTestId('launch.handover', hidden)).toBeNull();
+    expect(live(tree.getByTestId('launch.composition', hidden))['opacity']).toBe(1);
+    expect(tree.UNSAFE_getAllByType(Mark)).toHaveLength(1);
+  });
+
+  it('holds it for the beat, then the app — and never fades the overlay', async () => {
+    const tree = await reducedMotion();
+    const { order } = tree as unknown as { order: string[] };
+    act(() => {
+      jest.advanceTimersByTime(260 - 1);
+    });
+    // DECOY: a flash is a composition gone before its hold.
+    expect(order).toEqual(['shown']);
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(order).toEqual(['shown', 'done']);
+    expect(live(tree.getByTestId('launch', hidden))['opacity']).toBe(1);
+  });
+});
+
 describe('the order is the feature', () => {
   /**
    * THE ASSERTION THIS FILE EXISTS FOR. `onShown` is what the root layout calls
@@ -417,7 +493,38 @@ describe('the order is the feature', () => {
     expect(order).toEqual(['shown']);
   });
 
-  it('finishes, so the overlay does not sit on the app forever', () => {
+  it('finishes, once, so the overlay does not sit on the app forever', () => {
+    /*
+     * STEP BY STEP, each in its own act(), as a device runs it (F-231's review, B1). One act()
+     * holding every state update until all the timers had fired is what let a sequence pass that
+     * cancelled its own next step on every phase change and looped between its last two forever.
+     */
+    const order: string[] = [];
+    const tree = draw(
+      () => order.push('shown'),
+      () => order.push('done'),
+    );
+    const progress: number[] = [];
+    const fill = () =>
+      (
+        flattenStyle(tree.getByTestId('launch.progress.fill', hidden).props['style'])[
+          'transform'
+        ] as { scaleX: number }[]
+      )[0]?.scaleX ?? NaN;
+    for (let ms = 0; ms < 5000; ms += 20) {
+      act(() => {
+        jest.advanceTimersByTime(20);
+      });
+      progress.push(fill());
+    }
+    expect(order).toEqual(['shown', 'done']);
+    // The line only ever moves forward, and reaches its end: 0, 0.5, 1.
+    expect(progress.every((v, i) => i === 0 || v >= (progress[i - 1] ?? 0))).toBe(true);
+    expect([...new Set(progress)]).toStrictEqual([0, 0.5, 1].filter((v) => progress.includes(v)));
+    expect(progress.at(-1)).toBe(1);
+  });
+
+  it('and finishes when every timer fires at once too', () => {
     const order: string[] = [];
     draw(
       () => order.push('shown'),

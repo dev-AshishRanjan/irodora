@@ -33,18 +33,19 @@
  * chosen in the app — Slate, Obsidian, the device colour, or Washi on a dark phone — appears as the
  * overlay leaves (R9 §4 E4). Following the app's choice instead would flip polarity at the hand-over.
  *
- * ## It never blocks the app, and reduced motion resolves at once
+ * ## It never blocks the app, and under reduced motion nothing moves
  *
- * The app mounts underneath immediately; this is a sibling that leaves. Under reduced motion the
- * composition is drawn at rest at once and the overlay goes on the next tick — not faster, at once
- * (F-144). The launch is where a person who asked for no motion most likely asked because motion
- * makes them unwell.
+ * The app mounts underneath immediately; this is a sibling that leaves. Under reduced motion there
+ * is no rise and no fade (F-144): the native mark, then 14's composition at rest, held for the same
+ * beat, then the app — two cuts, which is what reduced motion asks for in place of movement. The
+ * launch is where a person who asked for no motion most likely asked because motion makes them
+ * unwell; a held picture is not motion, and a flash of one is worse than either (F-231's review).
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { nativeArtStroke, nativeSpacing, nativeType } from '@irodora/design-tokens';
+import { nativeArtStroke, nativeMotion, nativeSpacing, nativeType } from '@irodora/design-tokens';
 import {
   Illustration,
   illustrationBox,
@@ -201,9 +202,9 @@ export function launchLayout(
       height: glowSize,
     },
     subline: {
-      x: 0,
+      x: LAUNCH_SPACING.inset,
       y: top + lockup.height + LAUNCH_SPACING.subline,
-      width: window.width,
+      width: window.width - 2 * LAUNCH_SPACING.inset,
       height: sublineHeight,
     },
     wave: {
@@ -262,15 +263,31 @@ const placed = (box: LaunchBox) =>
 export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
-  const { reduced, timing, duration } = useMotion();
+  const { reduced, timing } = useMotion();
   const window = useWindowDimensions();
+  // The overlay's own box once laid out — the window until then. Android can report a window that
+  // differs from the root view by the system bars, and the composition is placed in what it fills.
+  const [frame, setFrame] = useState<{ readonly width: number; readonly height: number } | null>(
+    null,
+  );
+  const box = frame ?? window;
   const [geometry, setGeometry] = useState<LockupGeometry>(() => lockupGeometry('splash'));
   const [sublineHeight, setSublineHeight] = useState<number>(nativeType[script].caption.lineHeight);
   const [phase, setPhase] = useState<LaunchPhase>('native');
   const [shown, setShown] = useState(false);
   const arrive = useSharedValue(0);
   const leaving = useSharedValue(0);
-  const layout = launchLayout(window, geometry, sublineHeight);
+  const layout = launchLayout(box, geometry, sublineHeight);
+  /*
+   * WHAT THE SEQUENCE READS, KEPT CURRENT WITHOUT RESTARTING IT (F-231's review, B1). `timing` is
+   * rebuilt on every render and `onDone` may be; an effect keyed on them re-ran on each of the
+   * sequence's own phase changes, and its cleanup cancelled the step that was due next — the overlay
+   * looped between its last two steps and never finished. The sequence now reads them here.
+   */
+  const live = useRef({ onDone, timing });
+  useEffect(() => {
+    live.current = { onDone, timing };
+  });
 
   useEffect(() => {
     if (shown) return;
@@ -281,44 +298,58 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
 
   useEffect(() => {
     if (!shown) return undefined;
+    const step = nativeMotion.durations.view;
+    const hold = nativeMotion.durations[LAUNCH_HOLD];
     const timers: ReturnType<typeof setTimeout>[] = [];
-    /*
-     * REDUCED MOTION IS NOT A SHORTER SEQUENCE, it is no sequence: the composition is at rest at
-     * once and the overlay goes on the next tick. `duration` returns 0 under the setting, so every
-     * step collapses without a second code path.
-     */
-    const step = duration('view');
-    arrive.value = reduced ? 1 : withTiming(1, timing('view'));
-    // The arrival is a React state change — the travelling mark gives way to the lockup's — so it
-    // is scheduled here rather than on the UI thread, as the leaving is.
-    timers.push(
-      setTimeout(() => {
-        setPhase('arrived');
-        timers.push(
-          setTimeout(() => {
-            setPhase('leaving');
-            if (reduced) {
-              onDone();
-              return;
-            }
-            leaving.value = withTiming(1, timing('view'));
-            timers.push(setTimeout(onDone, step));
-          }, duration(LAUNCH_HOLD)),
-        );
-      }, step),
-    );
+    if (reduced) {
+      /*
+       * REDUCED MOTION: NOTHING MOVES AND NOTHING FADES. 14's composition is drawn at rest at once —
+       * the cut from the native mark is what reduced motion asks for in place of the rise — held for
+       * the beat, so it is seen rather than flashed, and then the app is there, cut again.
+       */
+      arrive.value = 1;
+      setPhase('arrived');
+      timers.push(
+        setTimeout(() => {
+          setPhase('leaving');
+          live.current.onDone();
+        }, hold),
+      );
+    } else {
+      /*
+       * EVERY STEP SCHEDULED IN ONE RUN, so a phase change cannot cancel the next: the rise, the
+       * arrival (a React state change — the travelling mark gives way to the lockup's — so it is
+       * here rather than on the UI thread), the hold, the leaving, and the unmount a frame after it.
+       */
+      arrive.value = withTiming(1, live.current.timing('view'));
+      timers.push(
+        setTimeout(() => {
+          setPhase('arrived');
+        }, step),
+        setTimeout(() => {
+          setPhase('leaving');
+          leaving.value = withTiming(1, live.current.timing('view'));
+        }, step + hold),
+        setTimeout(
+          () => {
+            live.current.onDone();
+          },
+          step + hold + step,
+        ),
+      );
+    }
     return () => {
       for (const timer of timers) clearTimeout(timer);
     };
-    // `timing` and `duration` are rebuilt every render; `reduced` and `shown` are what change the
-    // answer. The same honest list `Appear` keeps in motion.tsx.
-  }, [shown, reduced, onDone, arrive, leaving, duration, timing]);
+    // `shown` and `reduced` are the only inputs that change the sequence; the shared values are
+    // stable, and everything else is read through `live`.
+  }, [shown, reduced, arrive, leaving]);
 
-  // Where the travelling mark starts (the native frame) and where it arrives (the lockup's mark),
-  // as an offset of its centre from the window's and a scale of its grid.
+  // Where the travelling mark starts (the native frame: centred, SPLASH_MARK_DY below) and where it
+  // arrives (the lockup's mark), as an offset of its centre from the overlay's and a scale of its grid.
   const fromY = SPLASH_MARK_DY;
-  const toY = layout.mark.y + layout.mark.height / 2 - window.height / 2;
-  const toX = layout.mark.x + layout.mark.width / 2 - window.width / 2;
+  const toY = layout.mark.y + layout.mark.height / 2 - box.height / 2;
+  const toX = layout.mark.x + layout.mark.width / 2 - box.width / 2;
   const toScale = layout.mark.width / SPLASH_MARK;
   const travelling = useAnimatedStyle(() => ({
     transform: [
@@ -342,6 +373,10 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
+      onLayout={(event) => {
+        const { width, height } = event.nativeEvent.layout;
+        setFrame({ width, height });
+      }}
       style={[StyleSheet.absoluteFill, leave, { backgroundColor: colors.background }]}
     >
       <Animated.View testID="launch.composition" style={[StyleSheet.absoluteFill, composition]}>
@@ -362,8 +397,8 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
         <View
           style={{
             position: 'absolute',
-            left: LAUNCH_SPACING.inset,
-            right: LAUNCH_SPACING.inset,
+            left: layout.subline.x,
+            width: layout.subline.width,
             top: layout.subline.y,
           }}
           onLayout={(event) => {
@@ -383,17 +418,15 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
       </Animated.View>
       {/*
         THE SAME MARK, AT THE SAME SIZE, IN THE SAME PLACE, ON THE SAME GROUND the native splash was
-        drawing — from the same table — until it arrives in the lockup. See the header.
+        drawing — from the same table — until it arrives in the lockup. Centred by layout in the
+        overlay's own box, as the native splash centres its image in the screen. See the header.
       */}
       {arrived ? null : (
         <Animated.View
           testID="launch.handover"
           style={[
-            {
-              position: 'absolute',
-              left: window.width / 2 - SPLASH_MARK / 2,
-              top: window.height / 2 - SPLASH_MARK / 2,
-            },
+            StyleSheet.absoluteFill,
+            { alignItems: 'center', justifyContent: 'center' },
             travelling,
           ]}
         >

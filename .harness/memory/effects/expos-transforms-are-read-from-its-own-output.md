@@ -22,3 +22,7 @@ turns such a change into a failure rather than a silent mismatch at gate 16 on r
 Gate 16 had never decoded a launcher layer (PNG bytes in `.webp` names, filtered by extension), read the
 splash logo with the icon's signature (refusing every correct build), and a width of 206 would have put the
 hdpi composite half a pixel off — sharp refuses that outright.
+
+## F-231's review (2026-10-08)
+
+The transforms come from two packages: `expo-splash-screen` (the splash composite, the iOS splash image set, colour set and storyboard) and `@expo/prebuild-config` (the Android icon resizes, the round icon's circle, PNG bytes in `.webp` names, and iOS's `App-Icon-1024x1024@1x.png` with its white no-icon square). An upgrade of either is what this link watches for.

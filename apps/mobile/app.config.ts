@@ -304,8 +304,10 @@ const config: ExpoConfig = {
      * BOTH THEMES, from the manifest. The image is the mark in each theme's `foreground` on a
      * transparent ground, composited over that theme's `background` — so the launch screen is
      * the same two colours the first painted frame will be, and there is no flash of the wrong
-     * polarity between them. `imageWidth` is 40 % of the narrow edge of a typical phone, which
-     * keeps the mark well inside the safe area on every aspect ratio.
+     * polarity between them. `imageWidth` is the width that draws the image's grid at 14's
+     * splash lockup's size (F-231, `SPLASH_IMAGE_WIDTH` above); the image is a transparent canvas
+     * around the mark, so its width is not the mark's, and the mark stays well inside Android 12's
+     * 192 dp circle and the screen.
      */
     [
       'expo-splash-screen',

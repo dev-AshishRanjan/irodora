@@ -20,3 +20,7 @@ there once, and both checks follow.
 
 The aapt2 half of gate 16's proof cannot run on a workstation without the Android SDK; until CI runs it,
 the parser is proven against aapt2's printed form taken from its source, and the fixtures are not.
+
+## F-231's review (2026-10-08)
+
+In a shortened release table, `mipmap/ic_launcher` and `mipmap/ic_launcher_round` also carry the anydpi-v26 adaptive-icon XML. Routed by resource name alone, it was read as an image and failed every real release APK. `brandResources` routes rasters only, and the SDK-free half of the proof now routes such a table, with routing by name alone as the decoy.

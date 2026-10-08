@@ -469,6 +469,31 @@ function prove() {
       ),
     true,
   );
+  // F-231's review, M6: the right mark on the right tile in the wrong ink.
+  const red = { eye: '#AC473E', petals: ['#AC473E'] };
+  check(
+    'a foreground drawn in another ink',
+    (tr) =>
+      writeFileSync(
+        join(tr.res, 'mipmap-xxhdpi/ic_launcher_foreground.webp'),
+        png(
+          downscale(
+            decodePng(render(t.adaptive.canvas, t.adaptive.grid, red, null, g, t.adaptive.dy)),
+            324,
+          ),
+        ),
+      ),
+    true,
+  );
+  check(
+    "the legacy icon's mark in another ink, on 14's tile",
+    (tr) =>
+      writeFileSync(
+        join(tr.res, 'mipmap-xxhdpi/ic_launcher.webp'),
+        png(downscale(decodePng(render(1024, t.icon.grid, red, t.icon.ground, g, t.icon.dy)), 144)),
+      ),
+    true,
+  );
   check(
     'the themed layer missing',
     (tr) => rmSync(join(tr.res, 'mipmap-hdpi/ic_launcher_monochrome.webp')),

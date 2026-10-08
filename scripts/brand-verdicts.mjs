@@ -127,6 +127,19 @@ function inkOf(image) {
   return [...counts.entries()].sort((p, q) => q[1] - p[1])[0]?.[0] ?? null;
 }
 
+/**
+ * Whether the mark is drawn in its ink (F-231's review, M6): the colour most fully opaque pixels
+ * share. A resize keeps a mark's interior exact, and on the icon the mark's one ink outnumbers any
+ * single colour of the tile's gradient — so a recoloured mark on the right tile is refused here, in
+ * the artefact, not only by `--check` in the source.
+ */
+const inkIs = (image, want) => {
+  const ink = inkOf(image);
+  return ink === want
+    ? { ok: true, why: `drawn in ${want}` }
+    : { ok: false, why: `the mark is drawn in ${String(ink)}, not ${want}` };
+};
+
 const all = (...results) =>
   results.find((r) => !r.ok) ?? { ok: true, why: results.map((r) => r.why).join('; ') };
 
@@ -146,14 +159,23 @@ export function verdictFor(kind, image, { night = false } = {}) {
   const { table, tile, inks } = context();
   switch (kind) {
     case 'legacy':
-      return all(carriesMark(image, signatureOf(table.icon)), carriesTile(image, tile));
+      return all(
+        carriesMark(image, signatureOf(table.icon)),
+        carriesTile(image, tile),
+        inkIs(image, table.icon.ink.eye),
+      );
     case 'legacyRound':
       return all(
         carriesMark(onTile(image, tile), signatureOf(table.icon)),
         carriesTile(image, tile),
+        inkIs(image, table.icon.ink.eye),
       );
     case 'foreground':
-      return all(carriesMark(image, signatureOf(table.adaptive)), insideEveryMask(image));
+      return all(
+        carriesMark(image, signatureOf(table.adaptive)),
+        insideEveryMask(image),
+        inkIs(image, table.adaptive.ink.eye),
+      );
     case 'monochrome':
       return all(carriesMark(image, signatureOf(table.monochrome)), insideEveryMask(image));
     case 'background':

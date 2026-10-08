@@ -5,7 +5,7 @@
  *   been as a decoy.
  * - **The value is a length drawn by a transform**, never a width keyed to the value and never a
  *   colour: the fill's ink is the same at every value.
- * - **Decorative unless named**, and when named it says the whole percentage done.
+ * - **Decorative**: its one caller sits on an overlay a screen reader never stops on.
  */
 
 import { readFileSync } from 'node:fs';
@@ -95,20 +95,16 @@ describe('the value is a length, never a width or a colour', () => {
   });
 });
 
-describe('decorative unless named', () => {
-  it('says nothing without a label', () => {
+describe('decorative', () => {
+  it('says nothing — its one caller is an overlay a screen reader never stops on', () => {
     const { getByTestId } = draw(<ProgressBar value={0.5} testID="line" />);
     const line = getByTestId('line', { includeHiddenElements: true });
     expect(line.props['accessibilityElementsHidden']).toBe(true);
     expect(line.props['importantForAccessibility']).toBe('no-hide-descendants');
   });
 
-  it('with one, is a progressbar saying the whole percentage done, floored', () => {
-    const { getByTestId } = draw(<ProgressBar value={0.999} label="Opening" testID="line" />);
-    const line = getByTestId('line');
-    expect(line.props['accessibilityRole']).toBe('progressbar');
-    expect(line.props['accessibilityLabel']).toBe('Opening');
-    // 0.999 is 99, never a 100 the line has not reached.
-    expect(line.props['accessibilityValue']).toStrictEqual({ min: 0, max: 100, now: 99 });
+  it('DECOY — and takes no label, so a named line cannot be added without its own design', () => {
+    // @ts-expect-error — the labelled form was removed until a caller needs it (F-231's review).
+    expect(() => draw(<ProgressBar value={0.5} label="Opening" />)).toBeDefined();
   });
 });

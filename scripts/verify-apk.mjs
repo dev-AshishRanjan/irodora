@@ -470,9 +470,9 @@ export function parseResourceDump(text) {
       continue;
     }
     if (current === null) continue;
-    const file = /^\s*\(([^)]*)\)\s*\(file\)\s*(\S+)/u.exec(line);
+    const file = /^\s*\(([^)]*)\)\s*\(file\)\s*(\S+)(?:\s+type=(\S+))?/u.exec(line);
     if (file !== null) {
-      files.set(file[2], { resource: current, config: file[1] });
+      files.set(file[2], { resource: current, config: file[1], type: file[3] ?? null });
       continue;
     }
     const colour = /^\s*\(([^)]*)\)\s*#([0-9a-fA-F]{6,8})\b/u.exec(line);
@@ -483,6 +483,32 @@ export function parseResourceDump(text) {
     }
   }
   return { files, colors };
+}
+
+/**
+ * The brand's raster resources in an artefact, each with the verdict it takes (F-231): by NAME on a
+ * debug build, through the RESOURCE TABLE once a release build has shortened the names.
+ *
+ * Only rasters. In the table, `mipmap/ic_launcher` and `mipmap/ic_launcher_round` also carry the
+ * `(anydpi-v26)` adaptive-icon XML — read as an image, every real release APK would fail (F-231's
+ * review, B2) — so a file whose table type is not a raster, or whose name ends `.xml`, is no layer.
+ */
+const RASTER_TYPE = /^(PNG|WEBP|JPG|JPEG|PNG9|NINE_PATCH)$/iu;
+export function brandResources(entryNames, dump) {
+  const byName = [...entryNames]
+    .filter((n) => ICON_ENTRY.test(n))
+    .map((path) => ({ path, kind: kindOf(path), night: /-night/u.test(path) }))
+    .filter((r) => r.kind !== null);
+  if (byName.length > 0 || dump === null) return { resources: byName, shortened: false };
+  const names = new Set(entryNames);
+  const resources = [];
+  for (const [path, { resource, config, type }] of dump.files) {
+    if (/\.xml$/iu.test(path) || (type !== null && !RASTER_TYPE.test(type))) continue;
+    const kind = kindOf(`${resource}.png`);
+    if (kind !== null && names.has(path))
+      resources.push({ path, kind, night: /\bnight\b/u.test(config) });
+  }
+  return { resources, shortened: resources.length > 0 };
 }
 
 /** The resource table of an APK, or null when aapt2 cannot be run. */
@@ -653,23 +679,13 @@ export function checkApk(apkPath, expected) {
      * success for a file it never looked at.
      */
     const dump = aapt2 ? resourcesWithAapt2(aapt2, apkPath) : null;
-    const resources = [...entries.keys()]
-      .filter((n) => ICON_ENTRY.test(n))
-      .map((path) => ({ path, kind: kindOf(path), night: /-night/u.test(path) }))
-      .filter((r) => r.kind !== null);
-    if (resources.length === 0 && dump !== null) {
-      for (const [path, { resource, config }] of dump.files) {
-        const kind = kindOf(`${resource}.png`);
-        if (kind !== null && entries.has(path))
-          resources.push({ path, kind, night: /\bnight\b/u.test(config) });
-      }
-      if (resources.length > 0)
-        notes.push(
-          `the resource paths in this artefact are SHORTENED — ${String(resources.length)} ` +
-            'launcher and splash file(s) resolved through the resource table instead. That is ' +
-            'AGP optimizeReleaseResources, on by default for a release variant.',
-        );
-    }
+    const { resources, shortened } = brandResources(entries.keys(), dump);
+    if (shortened)
+      notes.push(
+        `the resource paths in this artefact are SHORTENED — ${String(resources.length)} ` +
+          'launcher and splash file(s) resolved through the resource table instead. That is ' +
+          'AGP optimizeReleaseResources, on by default for a release variant.',
+      );
 
     check(
       resources.length > 0,
@@ -913,10 +929,61 @@ function prove() {
       ].join('\n'),
     );
     const refused = old.files.size === 0 && old.colors.size === 0;
+    /*
+     * ROUTING, over a shortened table as a release build writes it: the launcher layers, a night
+     * splash logo, AND the (anydpi-v26) adaptive-icon XML that `mipmap/ic_launcher` and
+     * `mipmap/ic_launcher_round` also carry. The rasters are routed; the XML must not be — read as
+     * an image it failed every real release APK (F-231's review, B2).
+     */
+    const shortTable = parseResourceDump(
+      [
+        'Package name=com.irodora.app id=7f',
+        '  type mipmap id=0d entryCount=2',
+        '    resource 0x7f0d0000 mipmap/ic_launcher',
+        '      (xxhdpi-v4) (file) res/Ab.webp type=PNG',
+        '      (anydpi-v26) (file) res/Ac.xml type=XML',
+        '    resource 0x7f0d0001 mipmap/ic_launcher_round',
+        '      (xxhdpi-v4) (file) res/Ad.webp type=PNG',
+        '      (anydpi-v26) (file) res/Ae.xml type=XML',
+        '  type drawable id=08 entryCount=1',
+        '    resource 0x7f080000 drawable/splashscreen_logo',
+        '      (xxhdpi-v4) (file) res/Af.png type=PNG',
+        '      (night-xxhdpi-v8) (file) res/Ag.png type=PNG',
+      ].join('\n'),
+    );
+    const routed = brandResources(
+      [
+        'res/Ab.webp',
+        'res/Ac.xml',
+        'res/Ad.webp',
+        'res/Ae.xml',
+        'res/Af.png',
+        'res/Ag.png',
+        'AndroidManifest.xml',
+      ],
+      shortTable,
+    );
+    const routedOk =
+      routed.shortened &&
+      routed.resources.length === 4 &&
+      routed.resources.every((r) => !r.path.endsWith('.xml')) &&
+      routed.resources.some((r) => r.kind === 'legacyRound') &&
+      routed.resources.some((r) => r.kind === 'splash' && r.night);
+    console.log(
+      `  ${routedOk ? GREEN + '✓' : RED + '✗'}${OFF} a shortened table routes the rasters and NOT the adaptive-icon XML ${DIM}${String(routed.resources.length)} routed: ${routed.resources.map((r) => r.kind + (r.night ? ':night' : '')).join(', ')}${OFF}`,
+    );
+    // DECOY: routed by resource name alone, as F-231 first wrote it, the XML would be read as an image.
+    const naive = [...shortTable.files].filter(
+      ([, f]) => kindOf(`${f.resource}.png`) !== null,
+    ).length;
+    const naiveDiffers = naive === 6;
+    console.log(
+      `  ${naiveDiffers ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — routing by resource name alone takes ${String(naive)} files, the two XML among them`,
+    );
     console.log(
       `  ${refused ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — the old aapt's form reads as nothing, never as a pass`,
     );
-    if (!parsed || !refused) {
+    if (!parsed || !refused || !routedOk || !naiveDiffers) {
       console.log(`\n${RED}${BOLD}The resource table's reader does not read aapt2's form.${OFF}\n`);
       process.exit(1);
     }
@@ -998,12 +1065,29 @@ ${extra}
     const res = join(work, `${name}-res`);
     rmSync(res, { recursive: true, force: true });
     const layers = { ...expoLayers(3), ...replace };
+    // As Expo writes them: the launcher layers as PNG bytes under `.webp` names, the splash logos
+    // as `.png`, and both adaptive-icon XMLs under mipmap-anydpi-v26 — the files a shortened
+    // table also lists under ic_launcher and ic_launcher_round (F-231's review, B2).
     for (const [resource, bytes] of Object.entries(layers)) {
       if (bytes === null) continue;
       const [type, file] = resource.split('/');
       mkdirSync(join(res, `${type}-xxhdpi`), { recursive: true });
-      writeFileSync(join(res, `${type}-xxhdpi`, `${file}.png`), bytes);
+      writeFileSync(
+        join(res, `${type}-xxhdpi`, `${file}.${type === 'mipmap' ? 'webp' : 'png'}`),
+        bytes,
+      );
     }
+    const adaptive =
+      '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n' +
+      '    <background android:drawable="@mipmap/ic_launcher_background"/>\n' +
+      '    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n' +
+      (layers['mipmap/ic_launcher_monochrome'] === null
+        ? ''
+        : '    <monochrome android:drawable="@mipmap/ic_launcher_monochrome"/>\n') +
+      '</adaptive-icon>\n';
+    mkdirSync(join(res, 'mipmap-anydpi-v26'), { recursive: true });
+    writeFileSync(join(res, 'mipmap-anydpi-v26', 'ic_launcher.xml'), adaptive);
+    writeFileSync(join(res, 'mipmap-anydpi-v26', 'ic_launcher_round.xml'), adaptive);
     const p = palette();
     mkdirSync(join(res, 'values'), { recursive: true });
     mkdirSync(join(res, 'values-night'), { recursive: true });
