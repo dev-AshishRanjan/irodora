@@ -244,14 +244,15 @@ export function iosFindings(ios, expect = expectations()) {
  * 108·k resizes, the round icon's circle, the 288·k splash composite), PNG bytes in `.webp` names,
  * and the resource and catalog files in its formats. Under the OS temp directory, never the tree.
  */
-function synthesise(work, expect) {
+/**
+ * Expo's raster resources at one density, as PNG bytes, from the generated assets: the legacy icon
+ * at 48·k, the round one cut to its circle, the adaptive layers at 108·k, and both splash logos
+ * composited on 288·k. Keyed by resource — `mipmap/ic_launcher`, `drawable-night/splashscreen_logo`
+ * — so this proof and gate 16's build their fixtures from one place.
+ */
+export function expoLayers(k) {
   const t = drawings();
   const asset = (file) => decodePng(readFileSync(join(BRAND, file)));
-  const res = join(work, 'android', 'res');
-  const put = (rel, bytes) => {
-    mkdirSync(dirname(join(res, rel)), { recursive: true });
-    writeFileSync(join(res, rel), bytes);
-  };
   const png = (image) => encodePng(image.width, image.height, image.rgba);
   const round = (image) => {
     const out = { ...image, rgba: Buffer.from(image.rgba) };
@@ -261,25 +262,34 @@ function synthesise(work, expect) {
           out.rgba[(y * image.width + x) * 4 + 3] = 0;
     return out;
   };
-  for (const [density, k] of Object.entries(DENSITIES)) {
-    const icon = downscale(asset(t.icon.file), 48 * k);
-    put(`mipmap-${density}/ic_launcher.webp`, png(icon));
-    put(`mipmap-${density}/ic_launcher_round.webp`, png(round(icon)));
-    for (const [layer, d] of [
-      ['foreground', t.adaptive],
-      ['background', t.background],
-      ['monochrome', t.monochrome],
-    ])
-      put(`mipmap-${density}/ic_launcher_${layer}.webp`, png(downscale(asset(d.file), 108 * k)));
-    put(
-      `drawable-${density}/splashscreen_logo.png`,
-      png(expoSplashComposite(asset(t.splashLight.file), k)),
-    );
-    put(
-      `drawable-night-${density}/splashscreen_logo.png`,
-      png(expoSplashComposite(asset(t.splashDark.file), k)),
-    );
-  }
+  const icon = downscale(asset(t.icon.file), 48 * k);
+  return {
+    'mipmap/ic_launcher': png(icon),
+    'mipmap/ic_launcher_round': png(round(icon)),
+    'mipmap/ic_launcher_foreground': png(downscale(asset(t.adaptive.file), 108 * k)),
+    'mipmap/ic_launcher_background': png(downscale(asset(t.background.file), 108 * k)),
+    'mipmap/ic_launcher_monochrome': png(downscale(asset(t.monochrome.file), 108 * k)),
+    'drawable/splashscreen_logo': png(expoSplashComposite(asset(t.splashLight.file), k)),
+    'drawable-night/splashscreen_logo': png(expoSplashComposite(asset(t.splashDark.file), k)),
+  };
+}
+
+function synthesise(work, expect) {
+  const t = drawings();
+  const asset = (file) => decodePng(readFileSync(join(BRAND, file)));
+  const res = join(work, 'android', 'res');
+  const put = (rel, bytes) => {
+    mkdirSync(dirname(join(res, rel)), { recursive: true });
+    writeFileSync(join(res, rel), bytes);
+  };
+  const png = (image) => encodePng(image.width, image.height, image.rgba);
+  for (const [density, k] of Object.entries(DENSITIES))
+    for (const [resource, bytes] of Object.entries(expoLayers(k))) {
+      // `mipmap` → mipmap-xxhdpi, `drawable-night` → drawable-night-xxhdpi; Expo writes the launcher
+      // layers under `.webp` names and the splash logos under `.png`.
+      const [type, name] = resource.split('/');
+      put(`${type}-${density}/${name}.${type === 'mipmap' ? 'webp' : 'png'}`, bytes);
+    }
   const adaptive =
     '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n' +
     '    <background android:drawable="@mipmap/ic_launcher_background"/>\n' +

@@ -49,8 +49,16 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
-import { decodePng, carriesMark } from './png.mjs';
-import { drawings, signatureOf, splashLogoSignature } from './generate-brand-assets.mjs';
+import { decodeResource, kindOf, verdictFor } from './brand-verdicts.mjs';
+import {
+  drawings,
+  expoSplashComposite,
+  markGeometry,
+  palette,
+  render,
+} from './generate-brand-assets.mjs';
+import { decodePng, encodePng } from './png.mjs';
+import { expoLayers } from './verify-native-assets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -71,27 +79,18 @@ const GREEN = '\x1b[32m',
   OFF = '\x1b[0m';
 
 /**
- * Which drawing of the mark a launcher resource is, and so which signature it must carry (F-230's
- * review).
+ * Which drawing a launcher or splash resource is, and so which verdict it takes (F-231).
  *
- * Expo's prebuild (`withAndroidIcons`) makes the legacy `ic_launcher` and `ic_launcher_round` from
- * `icon.png`, and the adaptive `ic_launcher_foreground` and `ic_launcher_monochrome` from the
- * adaptive and monochrome layers; `splashscreen_logo` is the splash image. Each draws the mark at
- * its own canvas, grid and offset, all in the generator's drawings table (F-231: the icon 624/1024
- * centred by its ink, the adaptive layers 528/1296). One signature for all of them refused a
- * correct adaptive layer (F-230's review), so each is picked by its layer and read from the table.
+ * Expo's prebuild makes the legacy `ic_launcher` and `ic_launcher_round` from `icon.png`, the
+ * adaptive layers from theirs, and `splashscreen_logo` from the splash image composited on a 288 dp
+ * canvas. Each draws the mark at its own canvas, grid and offset — one signature for all of them
+ * refused a correct adaptive layer (F-230's review), and the splash logo was read with the icon's
+ * until F-231 — so every resource is routed by its name to its verdict in `brand-verdicts.mjs`,
+ * the table the prebuild check (`verify-native-assets.mjs`) reads too.
  *
- * A release build shortens every resource path (`res/xa.webp`), and the name no longer says which
- * drawing it is. Such an entry may carry either: both are this mark, at a proportion the generator
- * produced, and a disc, a ring without its cuts or four petals still fail both.
+ * A release build shortens every resource path (`res/xa.webp`), and then the name says nothing:
+ * the resource table does, read through `aapt2 dump resources` (`resourcesWithAapt2`).
  */
-function signaturesFor(name, signatures) {
-  if (/\/ic_launcher_(foreground|monochrome)\.[a-z]+$/u.test(name)) return [signatures.adaptive];
-  // F-231: the splash logo is the splash image as Expo composites it, never the icon (finding 1).
-  if (/\/splashscreen_logo\.[a-z]+$/u.test(name)) return [signatures.splash];
-  if (/\/ic_launcher(_round)?\.[a-z]+$/u.test(name)) return [signatures.icon];
-  return [signatures.icon, signatures.adaptive, signatures.splash];
-}
 
 /* ================================================================== ZIP reading */
 
@@ -444,6 +443,71 @@ function readWithAapt2(aapt2, apkPath) {
   };
 }
 
+/**
+ * The resource table, through `aapt2 dump resources` (F-231): which resource each packaged file is
+ * — the one thing a release build's shortened paths throw away — and every colour's value per
+ * configuration. Parsed from lines of the form
+ *
+ * ```
+ *     resource 0x7f0d0003 mipmap/ic_launcher_foreground
+ *       (xxhdpi-v4) (file) res/xa.webp type=PNG
+ *     resource 0x7f050002 color/splashscreen_background
+ *       () #fff6f5f2
+ *       (night-v8) #ff15171b
+ * ```
+ *
+ * A line it does not recognise is skipped, never guessed at: the verdicts below fail on a missing
+ * resource or colour, so a format this cannot read reports as absence, not as a pass.
+ */
+export function parseResourceDump(text) {
+  const files = new Map();
+  const colors = new Map();
+  let current = null;
+  for (const line of text.split(/\r?\n/u)) {
+    const header = /^\s*resource 0x[0-9a-fA-F]+ ([\w.-]+\/[\w.-]+)/u.exec(line);
+    if (header !== null) {
+      current = header[1];
+      continue;
+    }
+    if (current === null) continue;
+    const file = /^\s*\(([^)]*)\)\s*\(file\)\s*(\S+)/u.exec(line);
+    if (file !== null) {
+      files.set(file[2], { resource: current, config: file[1] });
+      continue;
+    }
+    const colour = /^\s*\(([^)]*)\)\s*#([0-9a-fA-F]{6,8})\b/u.exec(line);
+    if (colour !== null) {
+      const values = colors.get(current) ?? new Map();
+      values.set(colour[1], `#${colour[2].slice(-6).toUpperCase()}`);
+      colors.set(current, values);
+    }
+  }
+  return { files, colors };
+}
+
+/** The resource table of an APK, or null when aapt2 cannot be run. */
+function resourcesWithAapt2(aapt2, apkPath) {
+  try {
+    return parseResourceDump(
+      execFileSync(aapt2, ['dump', 'resources', apkPath], {
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+      }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** A colour's value in a configuration: `''` the default, `'night'` any night qualifier. */
+function colourFrom(dump, name, night) {
+  const values = dump.colors.get(`color/${name}`);
+  if (values === undefined) return null;
+  for (const [config, value] of values)
+    if (night ? /\bnight\b/u.test(config) : !/\bnight\b/u.test(config)) return value;
+  return null;
+}
+
 /* ================================================================== the checks */
 
 const INTERNET = 'android.permission.INTERNET';
@@ -574,83 +638,101 @@ export function checkApk(apkPath, expected) {
   // Refusing a known placeholder's hash refuses exactly one bad file and waves through the next
   // one. Proportions survive resizing, so `carriesMark` is a POSITIVE assertion that our mark is
   // present rather than a list of things it must not be.
-  if (expected.markSignature !== undefined) {
-    let icons = [...entries.keys()].filter((n) => ICON_ENTRY.test(n));
-
+  if (expected.brand === true) {
     /*
-     * WHEN THE NAMES ARE GONE, ASK WHAT ANDROID WOULD LOAD.
+     * EVERY LAUNCHER LAYER AND BOTH SPLASH LOGOS, EACH HELD TO ITS DRAWING (F-231).
      *
-     * ICON_ENTRY matches res/mipmap-hdpi-v4/ic_launcher.webp and its relatives, which is what
-     * an APK contains — until it is a RELEASE build. AGP runs optimizeReleaseResources by
-     * default, and one of the things it does is SHORTEN RESOURCE PATHS: every file under res/
-     * is renamed to something like res/xa.webp. Nothing matched, and the check concluded the
-     * artefact had no icon at all.
+     * By NAME on a debug build; by the RESOURCE TABLE once a release build has shortened the names
+     * (AGP's optimizeReleaseResources renames every file to something like res/xa.webp). The name
+     * scan found nothing on the first release build this lane made, and the message it printed then
+     * blamed the config and prebuild, both of which were fine.
      *
-     * That is what happened the first time this lane built a release variant rather than a
-     * debug one. The message it printed named two causes — the config lost its icon key, or
-     * prebuild did not run — and the real one was neither: the config was correct, prebuild
-     * had run, and the resources were all present under names it could not recognise. A
-     * confident wrong diagnosis is worse than none, because it sends the reader to the two
-     * places that are fine.
-     *
-     * So the name scan stays as the fast path and aapt2 answers when it finds nothing.
-     * badging reports the icon paths AS PACKAGED, which is what Android itself resolves
-     * through resources.arsc — not a second opinion, but the only source of truth once a
-     * name has been discarded.
-     *
-     * WHAT THIS DOES NOT DO is quietly pass when aapt2 is missing. A check that cannot see
-     * its subject says so [[a-gate-that-errors-is-failing-open]].
+     * DECODED BY THEIR BYTES: Expo writes PNG bytes in `.webp` names, and this gate used to filter
+     * by the extension and so read none of them (F-231's finding 2). A layer it cannot read — a real
+     * WebP, a format it does not know — FAILS: a gate that skips what it cannot parse reports
+     * success for a file it never looked at.
      */
-    if (icons.length === 0 && oracle !== null) {
-      const packaged = oracle.icons.filter((n) => entries.has(n));
-      if (packaged.length > 0) {
-        icons = packaged;
-        notes.push(
-          `the resource paths in this artefact are SHORTENED — ${String(packaged.length)} ` +
-            `icon(s) resolved through aapt2 instead (${packaged.slice(0, 3).join()}). ` +
-            'That is AGP optimizeReleaseResources, on by default for a release variant: the ' +
-            'name scan is correct for a debug build and structurally blind to this one.',
-        );
+    const dump = aapt2 ? resourcesWithAapt2(aapt2, apkPath) : null;
+    const resources = [...entries.keys()]
+      .filter((n) => ICON_ENTRY.test(n))
+      .map((path) => ({ path, kind: kindOf(path), night: /-night/u.test(path) }))
+      .filter((r) => r.kind !== null);
+    if (resources.length === 0 && dump !== null) {
+      for (const [path, { resource, config }] of dump.files) {
+        const kind = kindOf(`${resource}.png`);
+        if (kind !== null && entries.has(path))
+          resources.push({ path, kind, night: /\bnight\b/u.test(config) });
       }
+      if (resources.length > 0)
+        notes.push(
+          `the resource paths in this artefact are SHORTENED — ${String(resources.length)} ` +
+            'launcher and splash file(s) resolved through the resource table instead. That is ' +
+            'AGP optimizeReleaseResources, on by default for a release variant.',
+        );
     }
 
     check(
-      icons.length > 0,
-      'no launcher icon in the artefact',
-      oracle === null
-        ? 'nothing under res/ matches an icon or splash resource, AND aapt2 was not available ' +
-            'to say what the launcher would load. A release build renames every resource path, ' +
-            'so the name scan alone cannot tell an artefact with no icon from one whose paths ' +
-            'were shortened. Install the Android SDK build-tools and run it again rather than ' +
-            'reading this as a verdict.'
-        : 'neither the resource names nor aapt2 report a launcher icon. Either the config ' +
-            'lost its icon key, or prebuild did not run — and an APK with no icon of ours is ' +
-            'one wearing Expo’s.',
+      resources.length > 0,
+      'no launcher icon or splash logo in the artefact',
+      dump === null
+        ? 'nothing under res/ is named as one, AND aapt2 was not available to read the resource ' +
+            'table. A release build renames every resource path, so the name scan alone cannot ' +
+            'tell an artefact with no icon from one whose paths were shortened. Install the Android ' +
+            'SDK build-tools and run it again rather than reading this as a verdict.'
+        : 'neither the resource names nor the resource table name a launcher layer or a splash ' +
+            'logo. Either the config lost its icon, or prebuild did not run — and an APK with no ' +
+            'icon of ours is one wearing Expo’s.',
     );
+    if (resources.length > 0)
+      for (const want of ['legacy', 'legacyRound', 'foreground', 'background', 'monochrome'])
+        check(
+          resources.some((r) => r.kind === want),
+          `no ${want} launcher layer`,
+          'every layer Expo writes must reach the artefact; a missing one is drawn by the launcher instead',
+        );
+    if (resources.length > 0)
+      for (const night of [false, true])
+        check(
+          resources.some((r) => r.kind === 'splash' && r.night === night),
+          `no ${night ? 'night' : 'day'} splash logo`,
+          'both appearances carry their own logo, each in its own ink',
+        );
 
-    // PNG only. Android may emit WebP for some densities and this decoder does not read it —
-    // said out loud rather than silently passing, because a check that skips everything it
-    // cannot parse reports success for a file it never looked at.
-    const readable = icons.filter((n) => n.endsWith('.png'));
-    if (icons.length > 0 && readable.length === 0)
-      notes.push(
-        `${String(icons.length)} icon resource(s) found, none of them PNG (Android re-encoded ` +
-          'them, most likely to WebP). The mark could not be read from this artefact.',
-      );
-
-    for (const name of readable) {
+    for (const r of resources) {
       let verdict;
       try {
-        const image = decodePng(readEntry(buf, entries.get(name)));
-        verdict = { ok: false, why: 'no signature applies' };
-        for (const signature of signaturesFor(name, expected.markSignature)) {
-          verdict = carriesMark(image, signature);
-          if (verdict.ok) break;
-        }
+        const decoded = decodeResource(readEntry(buf, entries.get(r.path)));
+        verdict = decoded.ok ? verdictFor(r.kind, decoded.image, { night: r.night }) : decoded;
       } catch (error) {
         verdict = { ok: false, why: `could not be decoded: ${error.message}` };
       }
-      check(verdict.ok, `${name} does not carry the mark`, verdict.why);
+      check(
+        verdict.ok,
+        `${r.path} (${r.kind}${r.night ? ', night' : ''}) is not ours`,
+        verdict.why,
+      );
+    }
+
+    // THE COLOURS: the splash's ground in each appearance, and the icon's background colour.
+    if (dump === null)
+      notes.push(
+        'aapt2 is not available, so the splash and icon colours in resources.arsc were not read — ' +
+          'the prebuild check (verify-native-assets) reads them from colors.xml on every pull request.',
+      );
+    else {
+      const p = palette();
+      for (const [name, night, want] of [
+        ['splashscreen_background', false, p.lightGround],
+        ['splashscreen_background', true, p.darkGround],
+        ['iconBackground', false, p.darkGround],
+      ]) {
+        const got = colourFrom(dump, name, night);
+        check(
+          got === want,
+          `color/${name}${night ? ' (night)' : ''}`,
+          `the artefact says ${String(got)}, the manifest's token is ${want}`,
+        );
+      }
     }
   }
 
@@ -790,6 +872,56 @@ export function checkApk(apkPath, expected) {
 function prove() {
   console.log(`\n${BOLD}Irodora — gate 16 artefact proof${OFF}\n`);
 
+  /*
+   * THE RESOURCE TABLE'S READER (F-231), which needs no SDK, so it is proven here before anything
+   * that does. The text is aapt2's own form — `Debug::PrintTable`, `FileReference::Print` and
+   * `BinaryPrimitive::PrettyPrint` in tools/aapt2 at android-14.0.0_r1 — and the decoy is the old
+   * aapt's form, which must read as NOTHING, so a format this cannot parse reports as absence.
+   */
+  {
+    const sample = [
+      'Package name=com.irodora.app id=7f',
+      '  type color id=05 entryCount=2',
+      '    resource 0x7f050000 color/iconBackground',
+      '      () #ff15171b',
+      '    resource 0x7f050001 color/splashscreen_background',
+      '      () #fff6f5f2',
+      '      (night-v8) #ff15171b',
+      '  type mipmap id=0d entryCount=1',
+      '    resource 0x7f0d0003 mipmap/ic_launcher_foreground',
+      '      (xxhdpi-v4) (file) res/xa.webp type=PNG',
+      '      (anydpi-v26) (file) res/Yb.xml type=XML',
+    ].join('\n');
+    const read = parseResourceDump(sample);
+    const parsed =
+      read.files.get('res/xa.webp')?.resource === 'mipmap/ic_launcher_foreground' &&
+      read.files.get('res/xa.webp')?.config === 'xxhdpi-v4' &&
+      colourFrom(read, 'splashscreen_background', false) === '#F6F5F2' &&
+      colourFrom(read, 'splashscreen_background', true) === '#15171B' &&
+      colourFrom(read, 'iconBackground', false) === '#15171B';
+    console.log(
+      `  ${parsed ? GREEN + '✓' : RED + '✗'}${OFF} the resource table reads as aapt2 prints it ${DIM}files by resource and configuration; colours by appearance${OFF}`,
+    );
+    const old = parseResourceDump(
+      [
+        'Package Groups (1)',
+        '  Package Group 0 id=0x7f packageCount=1 name=com.irodora.app',
+        '        config (default):',
+        '          resource 0x7f020000 com.irodora.app:drawable/droid:',
+        '            t=0x03',
+        '            (string8) "res/drawable/droid.png"',
+      ].join('\n'),
+    );
+    const refused = old.files.size === 0 && old.colors.size === 0;
+    console.log(
+      `  ${refused ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — the old aapt's form reads as nothing, never as a pass`,
+    );
+    if (!parsed || !refused) {
+      console.log(`\n${RED}${BOLD}The resource table's reader does not read aapt2's form.${OFF}\n`);
+      process.exit(1);
+    }
+  }
+
   const aapt2 = findAapt2();
   const home = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT;
   const platforms = home ? join(home, 'platforms') : null;
@@ -857,6 +989,69 @@ ${extra}
   const EXPECTED_FIXTURE_PERMISSIONS = ['android.permission.CAMERA'];
 
   const cleanApk = build('clean', manifestXml());
+
+  /**
+   * An APK carrying the brand's resources at xxhdpi: Expo's layers (`expoLayers`), each replaceable
+   * or removable (`null`), and the splash and icon colours, compiled and linked by aapt2.
+   */
+  const branded = (name, replace = {}, colours = {}) => {
+    const res = join(work, `${name}-res`);
+    rmSync(res, { recursive: true, force: true });
+    const layers = { ...expoLayers(3), ...replace };
+    for (const [resource, bytes] of Object.entries(layers)) {
+      if (bytes === null) continue;
+      const [type, file] = resource.split('/');
+      mkdirSync(join(res, `${type}-xxhdpi`), { recursive: true });
+      writeFileSync(join(res, `${type}-xxhdpi`, `${file}.png`), bytes);
+    }
+    const p = palette();
+    mkdirSync(join(res, 'values'), { recursive: true });
+    mkdirSync(join(res, 'values-night'), { recursive: true });
+    writeFileSync(
+      join(res, 'values', 'colors.xml'),
+      `<resources>\n  <color name="splashscreen_background">${colours.day ?? p.lightGround}</color>\n  <color name="iconBackground">${p.darkGround}</color>\n</resources>\n`,
+    );
+    writeFileSync(
+      join(res, 'values-night', 'colors.xml'),
+      `<resources>\n  <color name="splashscreen_background">${colours.night ?? p.darkGround}</color>\n</resources>\n`,
+    );
+    const compiled = join(work, `${name}-res.zip`);
+    execFileSync(aapt2, ['compile', '--dir', res, '-o', compiled], { stdio: 'pipe' });
+    const manifestPath = join(work, `${name}.xml`);
+    const apkPath = join(work, `${name}.apk`);
+    writeFileSync(manifestPath, manifestXml(), 'utf8');
+    execFileSync(
+      aapt2,
+      ['link', '--manifest', manifestPath, '-I', androidJar, '-o', apkPath, compiled],
+      {
+        stdio: 'pipe',
+      },
+    );
+    return apkPath;
+  };
+  const BRANDED = { ...EXPECTED, brand: true };
+  const brandedApk = branded('branded');
+  const shortApk = join(work, 'branded-short.apk');
+  execFileSync(aapt2, ['optimize', '--shorten-resource-paths', '-o', shortApk, brandedApk], {
+    stdio: 'pipe',
+  });
+  const discPng = (size) => {
+    const rgba = Buffer.alloc(size * size * 4);
+    for (let y = 0; y < size; y += 1)
+      for (let x = 0; x < size; x += 1)
+        if (Math.hypot(x + 0.5 - size / 2, y + 0.5 - size / 2) < size / 5)
+          rgba.fill(255, (y * size + x) * 4, (y * size + x) * 4 + 4);
+    return encodePng(size, size, rgba);
+  };
+  const f230Splash = (() => {
+    const t = drawings();
+    const image = expoSplashComposite(
+      decodePng(render(1024, 768, t.splashDark.ink, null, markGeometry(), 0)),
+      3,
+      160,
+    );
+    return encodePng(image.width, image.height, image.rgba);
+  })();
 
   /**
    * Append a synthetic APK Signing Block carrying one DER blob as the "certificate", and
@@ -1089,6 +1284,48 @@ ${extra}
       expected: { ...EXPECTED, permissions: EXPECTED_FIXTURE_PERMISSIONS },
       mustFail: 'network permission present',
     },
+    /*
+     * THE ICON AND THE SPLASH (F-231): real resources, compiled and linked by aapt2 — which crunches
+     * PNGs and may hand back palette PNGs, the format the decoder learned for this — from the layers
+     * Expo writes (`expoLayers`), at xxhdpi, with the colours Expo writes. Then the same APK with its
+     * paths shortened as a release build's are, which only the resource table can resolve.
+     */
+    {
+      name: 'a branded APK: every layer, both logos, the colours (must stay GREEN)',
+      apk: brandedApk,
+      expected: BRANDED,
+      mustFail: false,
+    },
+    {
+      name: 'the same, its resource paths SHORTENED (must stay GREEN)',
+      apk: shortApk,
+      expected: BRANDED,
+      mustFail: false,
+    },
+    {
+      name: 'a foreground replaced by a disc',
+      apk: branded('disc', { 'mipmap/ic_launcher_foreground': discPng(324) }),
+      expected: BRANDED,
+      mustFail: /ic_launcher_foreground.*is not ours/u,
+    },
+    {
+      name: "F-230's splash logo: a 768 grid at 160 pt",
+      apk: branded('f230-splash', { 'drawable-night/splashscreen_logo': f230Splash }),
+      expected: BRANDED,
+      mustFail: /splashscreen_logo.*is not ours/u,
+    },
+    {
+      name: 'a night splash background that is the light one',
+      apk: branded('light-night', {}, { night: palette().lightGround }),
+      expected: BRANDED,
+      mustFail: 'color/splashscreen_background (night)',
+    },
+    {
+      name: 'the themed layer gone',
+      apk: branded('no-monochrome', { 'mipmap/ic_launcher_monochrome': null }),
+      expected: BRANDED,
+      mustFail: 'no monochrome launcher layer',
+    },
     {
       name: 'the clean fixture again (the baseline either side)',
       apk: cleanApk,
@@ -1127,7 +1364,8 @@ ${extra}
       else console.log(`  ${GREEN}✓${OFF} ${c.name}`);
       continue;
     }
-    if (!names.includes(c.mustFail)) {
+    const matches = (n) => (c.mustFail instanceof RegExp ? c.mustFail.test(n) : n === c.mustFail);
+    if (!names.some(matches)) {
       wrong.push({
         c,
         why: names.length
@@ -1211,21 +1449,14 @@ if (!isEntryPoint) {
    * Deliberately not a `--expect-mark` flag, for the reason the permission list above stopped
    * being one: a security- or identity-relevant expectation duplicated into a workflow file is
    * two copies to keep in agreement, and keeping two copies in agreement is not a thing to rely
-   * on a person for. `signatureOf()` derives them from the same `MARK` the assets were generated
-   * from, and from the generator's drawings table (F-231) — each layer's canvas, grid and offset —
-   * so the gate and the icon cannot disagree about what the mark is or where it sits.
+   * on a person for. The verdicts (`brand-verdicts.mjs`) derive them from the same `MARK` the
+   * assets were generated from and the generator's drawings table (F-231) — each layer's canvas,
+   * grid and offset, 14's tile, the splash's composite — so the gate and the icon cannot disagree.
    *
    * `--skip-mark` exists for an artefact that legitimately has no icon of ours — nothing builds
    * one today, and the flag is here so that case is stated rather than silently tolerated.
    */
-  if (args['skip-mark'] !== true) {
-    const table = drawings();
-    expected.markSignature = {
-      icon: signatureOf(table.icon),
-      adaptive: signatureOf(table.adaptive),
-      splash: splashLogoSignature(table.splashDark),
-    };
-  }
+  if (args['skip-mark'] !== true) expected.brand = true;
 
   if (args['expect-package']) expected.package = String(args['expect-package']);
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);

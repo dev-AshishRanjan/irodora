@@ -160,6 +160,15 @@ jobs:
           echo "using $APKSIGNER"
           "$APKSIGNER" verify --verbose --print-certs '${{ steps.apk.outputs.path }}'
 
+      # NOT A GATE: gate 16's own proof (F-231). Nothing ran it before, so its icon and splash
+      # verdicts — routed by resource, decoded by bytes, read through the resource table once a
+      # release build has shortened the names — had never been watched refusing. It builds its
+      # fixtures with this job's aapt2, so it can run only where the SDK is. Run through a package
+      # script and named apart from the gate, so the gate mirror never mistakes it for gate 16's
+      # step: with the gate removed, this must not keep the mirror green.
+      - name: 'Artifact proof'
+        run: pnpm verify:apk:prove
+
       - name: 'Gate 16 — artifact'
         run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code "${{ github.run_number }}" --expect-version-name "0.0.0-internal.${{ github.run_number }}" --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
 

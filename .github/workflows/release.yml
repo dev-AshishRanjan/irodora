@@ -200,6 +200,15 @@ jobs:
           echo "using $APKSIGNER"
           "$APKSIGNER" verify --verbose --print-certs "${{ steps.artefacts.outputs.apk }}"
 
+      # NOT A GATE: gate 16's own proof (F-231). Nothing ran it before, so its icon and splash
+      # verdicts — routed by resource, decoded by bytes, read through the resource table once a
+      # release build has shortened the names — had never been watched refusing. It builds its
+      # fixtures with this job's aapt2, so it can run only where the SDK is. Run through a package
+      # script and named apart from the gate, so the gate mirror never mistakes it for gate 16's
+      # step: with the gate removed, this must not keep the mirror green.
+      - name: 'Artifact proof'
+        run: pnpm verify:apk:prove
+
       - name: 'Gate 16 — artifact'
         run: node scripts/verify-apk.mjs --apk "${{ steps.artefacts.outputs.apk }}" --expect-package com.irodora.app --expect-version-code "${{ needs.version.outputs.code }}" --expect-version-name "${{ needs.version.outputs.name }}" --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
 
@@ -268,6 +277,8 @@ jobs:
             echo "- \`apksigner verify\` — the signature is cryptographically valid."
             echo "- Gate 16 — the APK declares **no network permission**, carries this version,"
             echo "  and is signed by the certificate above and not by a debug key."
+            echo "- Gate 16 also reads every launcher layer and both splash logos out of the APK and"
+            echo "  holds each to the brand's drawing, with the splash and icon colours (FR-69)."
             echo "- Build provenance is attested: \`gh attestation verify <file> --repo ${GITHUB_REPOSITORY}\`"
             echo
             echo "### Installing"
