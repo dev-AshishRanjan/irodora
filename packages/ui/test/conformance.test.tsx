@@ -30,6 +30,7 @@ import {
   FigureValue,
   MetricTile,
   PageDots,
+  ProgressBar,
   ProximityHeadline,
   Radar,
   RankedRow,
@@ -2066,6 +2067,18 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: 'PageDots (25, ja)',
     kind: 'static',
     render: (_state, theme) => draw(<PageDots current={2} total={6} label="カラー 3/6" />, theme),
+  },
+  {
+    // The progress line (F-231, 14): decorative on the splash, so hidden and unnamed.
+    name: 'ProgressBar (14, decorative)',
+    kind: 'static',
+    render: (_state, theme) => draw(<ProgressBar value={0.5} />, theme),
+  },
+  {
+    // Named, it is a progressbar that says the whole percentage done.
+    name: 'ProgressBar (named)',
+    kind: 'static',
+    render: (_state, theme) => draw(<ProgressBar value={0.8} label="Opening" />, theme),
   },
   {
     // The page dots (F-235, ADR-0120): the current page a capsule, a small dot past the window.
