@@ -802,6 +802,8 @@ export const ja: Record<MessageKey, string> = {
   'delta.hue.veryClose': '色相は非常に近い',
   'delta.hue.slight': 'わずかな色相のずれ',
   'delta.hue.perceptible': '知覚できる色相のずれ',
+  'brand.taglineJa': '彩り・色の知性',
+  'brand.splashSubline': '決定論的カラーエンジン • 100%端末内・オフライン',
 };
 
 /**
@@ -812,7 +814,11 @@ export const ja: Record<MessageKey, string> = {
  * The list is explicit and short **by design**: every entry is a place the check is switched
  * off, so it must be short enough to read.
  */
-export const IDENTICAL_BY_DESIGN: readonly MessageKey[] = [];
+export const IDENTICAL_BY_DESIGN: readonly MessageKey[] = [
+  // 14's splash tagline (`14.splash.tagline`, copy.script japanese): the lockup sets it in Japanese
+  // under the name in both locales, so the English catalogue holds the same Japanese (F-231).
+  'brand.taglineJa',
+];
 
 /**
  * Notation, which is the same symbol in both languages.

@@ -1,49 +1,120 @@
 /**
- * The hand-over from the native splash, and the order that makes it one.
+ * The launch: the native splash, continued into mockup 14's splash, and handed over (F-190, F-231).
  *
  * ## What this is really asserting
  *
- * Not that an animation exists. That **the blank frame is gone**.
+ * Not that an animation exists. That **there is no gap** — no blank frame, and no jump:
  *
- * Nothing called `SplashScreen.preventAutoHideAsync()`, and `expo-splash-screen` hides the
- * native splash the moment the React root renders its first frame — which was `<></>` while the
- * Japanese font subset loaded. Every cold start went splash → **blank screen** → app.
- *
- * The two properties that remove it are both order and both checkable here: the overlay draws
- * the same mark at the same width the native splash used, and it says so **before** anything
- * hides the splash underneath it.
+ * - the native splash draws 14's mark at 14's size, and the overlay's first frame draws that mark,
+ *   there, on that ground, and says so before anything hides the splash underneath it;
+ * - the overlay becomes 14's composition — every `14.splash` element, in its token, in Sumi and
+ *   Washi, in English and Japanese — laid out where 14 draws it;
+ * - the travelling mark gives way to the lockup's own only when it has arrived, so the blossom is
+ *   never shown twice;
+ * - and the overlay follows the PHONE's appearance, which is all the native splash can follow.
  */
+
+const DEFAULT_LANGUAGE_TAG = 'en-GB';
+let mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+let mockScheme: 'light' | 'dark' = 'dark';
+
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageTag: mockLanguageTag }],
+}));
+jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
+  __esModule: true,
+  default: () => mockScheme,
+}));
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
-import { lockupGeometry, MARK, markInkBox, ThemeProvider } from '@irodora/ui';
-import { Launch, SPLASH_MARK, SPLASH_MARK_DY } from '../src/launch';
+import { nativeArtStroke, nativeColors, nativeType } from '@irodora/design-tokens';
+import {
+  illustrationBox,
+  lockupGeometry,
+  MARK,
+  Mark,
+  markInkBox,
+  PROGRESS_TRACK,
+  ThemeProvider,
+} from '@irodora/ui';
+import { flattenStyle } from '@irodora/ui/testing';
+import {
+  Launch,
+  LAUNCH_GLOW,
+  LAUNCH_SPACING,
+  LaunchHost,
+  launchLayout,
+  launchProgress,
+  SILK_WAVE_LINES_END,
+  SPLASH_MARK,
+  SPLASH_MARK_DY,
+} from '../src/launch';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
 import brandAssets from '../assets/brand/brand-assets.json' with { type: 'json' };
+import launchGlow from '../assets/brand/launch-glow.png';
+import { t } from '../src/i18n';
 
 /*
- * FAKE TIMERS, for the reason `sheet.test.tsx` records: reanimated installs a mapper whose
- * input walk reaches React Native's module namespace and throws on the first native module the
- * harness lacks, on a timer, after the render. Here they are load-bearing twice over — the
- * sequence itself is built on `setTimeout`, and driving it is the point.
+ * FAKE TIMERS, for the reason `sheet.test.tsx` records: reanimated installs a mapper whose input
+ * walk reaches React Native's module namespace and throws on the first native module the harness
+ * lacks, on a timer, after the render. Here they are load-bearing twice over — the sequence itself
+ * is built on `setTimeout`, and driving it is the point.
  */
 beforeEach(() => {
   jest.useFakeTimers();
+  mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+  mockScheme = 'dark';
 });
 afterEach(() => {
   jest.useRealTimers();
 });
 
+const hidden = { includeHiddenElements: true } as const;
 const draw = (
   onShown: () => void = () => undefined,
   onDone: () => void = () => undefined,
+  theme: 'dark' | 'light' = 'dark',
 ): ReturnType<typeof render> =>
   render(
-    <ThemeProvider theme="dark">
+    <ThemeProvider theme={theme}>
       <Launch onShown={onShown} onDone={onDone} />
     </ThemeProvider>,
   );
+const named = (n: { type: unknown }): string => {
+  const type = n.type as string | { displayName?: string; name?: string };
+  return typeof type === 'string' ? type : (type.displayName ?? type.name ?? '');
+};
+const svgs = (root: ReturnType<typeof render>['UNSAFE_root']) =>
+  root.findAll((n) => named(n) === 'Svg' || named(n) === 'RNSVGSvgView');
+
+/** 14, read as the inventory records it: the splash's boxes in dp from the screen's corner. */
+interface Element {
+  readonly id: string;
+  readonly dp: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
+  readonly raw?: Readonly<Record<string, number>>;
+}
+const fourteen = JSON.parse(
+  readFileSync(join(__dirname, '..', '..', '..', 'mockups', 'inventory', '14.json'), 'utf8'),
+) as {
+  readonly elements: readonly Element[];
+  readonly frame: {
+    readonly screens: readonly {
+      readonly id: string;
+      readonly box: { readonly h: number };
+      readonly dpPerPx: number;
+    }[];
+  };
+};
+const at = (id: string): Element => {
+  const found = fourteen.elements.find((e) => e.id === id);
+  if (found === undefined) throw new Error(id);
+  return found;
+};
+const splashScreen = fourteen.frame.screens.find((s) => s.id === '14.splash');
+if (splashScreen === undefined) throw new Error('14.splash');
+const FRAME = { width: 384, height: splashScreen.box.h * splashScreen.dpPerPx };
 
 describe("the native splash is 14's mark, at 14's size (F-231)", () => {
   /** The grid a native image draws: the image's grid at the image's width. */
@@ -51,13 +122,9 @@ describe("the native splash is 14's mark, at 14's size (F-231)", () => {
     (imageWidth * grid) / canvas;
 
   it("draws its grid at the splash lockup's, within a tenth of a dp", () => {
-    /*
-     * THE HAND-OVER DEFECT F-230 FOUND. The image is a canvas with the mark on a grid inside it, so
-     * the grid on screen is the image's width times the grid's share — not the width. The lockup
-     * the overlay settles into is 14's (`lockupGeometry`, ADR-0123); the native image is held to it.
-     */
-    const lockup = lockupGeometry('splash').mark;
-    expect(Math.abs(SPLASH_MARK - lockup)).toBeLessThanOrEqual(0.1);
+    // The hand-over defect F-230 found: the grid on screen is the image's width times the grid's
+    // share, not the width. The lockup the overlay settles into is 14's (ADR-0123).
+    expect(Math.abs(SPLASH_MARK - lockupGeometry('splash').mark)).toBeLessThanOrEqual(0.1);
   });
 
   it("DECOY — F-230's splash, a 768 grid at 160 pt, is 120 dp and is refused", () => {
@@ -74,108 +141,279 @@ describe("the native splash is 14's mark, at 14's size (F-231)", () => {
   });
 
   it("puts the grid's centre where centring the INK puts it (ADR-0126)", () => {
-    // The ink box's centre sits above the grid's; the grid moves down by the difference.
     const box = markInkBox();
     const inkCentring = ((MARK.grid / 2 - (box.top + box.bottom) / 2) / MARK.grid) * SPLASH_MARK;
     // The table rounds the offset to a whole pixel of its 1024 canvas: under 0.15 pt at 244 pt.
     expect(Math.abs(SPLASH_MARK_DY - inkCentring)).toBeLessThanOrEqual(0.15);
     expect(SPLASH_MARK_DY).toBeGreaterThan(0);
   });
-});
 
-describe('the overlay continues the native splash rather than replacing it', () => {
-  it('draws the mark at the grid the native splash drew, where it drew it', () => {
-    /*
-     * READ FROM THE SAME EXPORT the config passes to `expo-splash-screen`. A second copy of the
-     * number is a hand-over that drifts by a few points and reads as a jump at exactly the
-     * moment somebody is looking at it.
-     *
-     * `includeHiddenElements` because the overlay hides itself from the accessibility tree and
-     * RNTL 13 skips such subtrees by default — the query failing without it is not a bug, it is
-     * the evidence for the case below.
-     */
-    const { UNSAFE_root } = draw();
-    const marks = UNSAFE_root.findAll((n) => {
-      const t = n.type as string | { displayName?: string; name?: string };
-      const name = typeof t === 'string' ? t : (t.displayName ?? t.name ?? '');
-      return name === 'Svg' || name === 'RNSVGSvgView';
-    });
-    expect(marks.length).toBeGreaterThan(0);
-    expect(marks.some((m) => m.props['width'] === SPLASH_MARK)).toBe(true);
-    // DECOY: the image's width drawn as the grid — the defect — is not what is drawn.
-    expect(marks.some((m) => m.props['width'] === SPLASH_IMAGE_WIDTH)).toBe(false);
-    const placed = UNSAFE_root.findAll(
-      (n) =>
-        (n.type as unknown) === 'View' &&
-        (n.props['style'] as { top?: number } | undefined)?.top === SPLASH_MARK_DY,
-    );
-    expect(placed.length).toBeGreaterThan(0);
-  });
-
-  it('and the config passes that same number to the native splash', () => {
+  it('and the config passes that same width to the native splash', () => {
     // The other end of the seam. A literal in `app.config.ts` would make the export decorative.
     const config = readFileSync(join(__dirname, '..', 'app.config.ts'), 'utf8');
     expect(config).toContain('imageWidth: SPLASH_IMAGE_WIDTH');
   });
+});
 
-  it('draws the COMPONENT, not an exported picture of it (F-193)', () => {
+describe("the first frame is the native splash's last", () => {
+  it('draws the travelling mark at the native grid, centred where the image centres it', () => {
+    const { getByTestId } = draw();
+    const handover = getByTestId('launch.handover', hidden);
+    const marks = handover.findAll((n) => named(n) === 'Svg' || named(n) === 'RNSVGSvgView');
+    expect(marks.some((m) => m.props['width'] === SPLASH_MARK)).toBe(true);
+    // DECOY: the image's width drawn as the grid — F-230's defect — is not what is drawn.
+    expect(marks.some((m) => m.props['width'] === SPLASH_IMAGE_WIDTH)).toBe(false);
+    const style = flattenStyle(handover.props['style']);
+    // Its box centred in the window, its grid's centre SPLASH_MARK_DY below — the image's offset.
+    expect(style['position']).toBe('absolute');
+    expect(style['transform']).toContainEqual({ translateY: SPLASH_MARK_DY });
+    expect(style['transform']).toContainEqual({ scale: 1 });
+  });
+
+  it("starts with 14's composition withheld, so the first frame is the mark alone", () => {
+    const { getByTestId } = draw();
+    expect(flattenStyle(getByTestId('launch.composition', hidden).props['style'])['opacity']).toBe(
+      0,
+    );
+  });
+
+  it('draws the COMPONENT, not an exported picture of it (F-193) — the glow is the one mask', () => {
     /*
-     * THE THIRD ARTEFACT IN THE COUPLING. The icon and the wordmark reach `MARK` through the
-     * generator, which parses it and refuses to guess. The launch reaches it by RENDERING
-     * `Mark` — a fact about source, not about numbers, and the one that is easiest to lose:
-     * swapping `<Mark />` for `<Image source={require(...)} />` is a normal-looking change that
-     * would keep this screen pixel-identical today and freeze it at that pixel forever, which
-     * is how an icon and an in-app mark drift apart in most products.
-     *
-     * The viewBox is read from `MARK.grid` rather than written as 24, so a grid change moves
-     * this assertion with it instead of turning it red.
+     * THE THIRD ARTEFACT IN THE COUPLING. The icon reaches `MARK` through the generator; the launch
+     * reaches it by RENDERING `Mark`. Swapping it for an image would keep this screen identical
+     * today and freeze it there. The one bitmap is the glow: a MASK the generator blurs from the
+     * same geometry (`--check` holds it), tinted with the mark's token — ADR-0127.
      */
     const { UNSAFE_root } = draw();
-    const named = (n: { type: unknown }): string => {
-      const t = n.type as string | { displayName?: string; name?: string };
-      return typeof t === 'string' ? t : (t.displayName ?? t.name ?? '');
-    };
-
-    const svgs = UNSAFE_root.findAll((n) => named(n) === 'Svg' || named(n) === 'RNSVGSvgView');
     expect(
-      svgs.some((s) => s.props['viewBox'] === `0 0 ${String(MARK.grid)} ${String(MARK.grid)}`),
+      svgs(UNSAFE_root).some(
+        (s) => s.props['viewBox'] === `0 0 ${String(MARK.grid)} ${String(MARK.grid)}`,
+      ),
     ).toBe(true);
-
-    // The decoy the case exists for: an SVG being present would still be true of a screen that
-    // ALSO shipped a bitmap, and a bitmap is the thing that stops following the mark.
-    expect(UNSAFE_root.findAll((n) => /^(Image|RNSVGImage)$/u.test(named(n)))).toStrictEqual([]);
+    const images = UNSAFE_root.findAll((n) => /^(Image|RNSVGImage)$/u.test(named(n)));
+    expect(images.length).toBeGreaterThan(0);
+    // DECOY: a bitmap that is not the glow mask — a picture of the mark — is refused.
+    for (const image of images) expect(image.props['source']).toBe(launchGlow);
   });
+
   it('is hidden from the accessibility tree — the app underneath is the real one', () => {
-    /*
-     * The overlay is decoration over a real tree. A screen reader stopping on it at launch is a
-     * stop that says nothing, and the app beneath is already the accessible product.
-     *
-     * `includeHiddenElements` is what makes this findable AT ALL, which is the assertion
-     * arriving twice: the query needs the flag precisely because the hiding works.
-     */
-    const { getByTestId } = draw();
-    const overlay = getByTestId('launch', { includeHiddenElements: true });
+    const overlay = draw().getByTestId('launch', hidden);
     expect(overlay.props['accessibilityElementsHidden']).toBe(true);
     expect(overlay.props['pointerEvents']).toBe('none');
   });
 });
 
+describe("then it is 14's composition, every element in its token", () => {
+  for (const [theme, palette] of [
+    ['dark', nativeColors.dark],
+    ['light', nativeColors.light],
+  ] as const)
+    it(`draws every 14.splash element in ${theme === 'dark' ? 'Sumi' : 'Washi'} (C17)`, () => {
+      const tree = draw(undefined, undefined, theme);
+      const style = (testID: string) =>
+        flattenStyle(tree.getByTestId(testID, hidden).props['style']);
+      expect(style('launch')['backgroundColor']).toBe(palette.background);
+      // The glow: the mark's own ink, as a tint over the mask.
+      expect(style('launch.glow')['tintColor']).toBe(palette.foreground);
+      // The lockup: the name and the tagline.
+      expect(tree.getByText('Irodora', hidden)).toBeTruthy();
+      expect(tree.getByText('彩り・色の知性', hidden)).toBeTruthy();
+      // The subline, in text.secondary.
+      const subline = tree.getByText(t('en', 'brand.splashSubline'), hidden);
+      expect(flattenStyle(subline.props['style'])['color']).toBe(palette['foreground.2']);
+      // The wave, in text.tertiary.
+      const wave = svgs(tree.UNSAFE_root).find(
+        (s) => s.props['viewBox'] === `0 0 ${illustrationBox('silk-wave').join(' ')}`,
+      );
+      expect(wave).toBeDefined();
+      const strokes = (wave?.findAll((n) => typeof n.props['stroke'] === 'string') ?? []).map(
+        (n) => n.props['stroke'] as string,
+      );
+      expect(new Set(strokes)).toStrictEqual(new Set([palette['foreground.3']]));
+      // The progress line: its track and fill.
+      expect(style('launch.progress')['backgroundColor']).toBe(palette.border);
+      expect(style('launch.progress.fill')['backgroundColor']).toBe(palette.foreground);
+    });
+
+  it('speaks Japanese around a tagline that is Japanese in both', () => {
+    mockLanguageTag = 'ja-JP';
+    const tree = draw();
+    expect(tree.getByText(t('ja', 'brand.splashSubline'), hidden)).toBeTruthy();
+    expect(tree.getByText('彩り・色の知性', hidden)).toBeTruthy();
+    expect(t('ja', 'brand.splashSubline')).not.toBe(t('en', 'brand.splashSubline'));
+  });
+});
+
+describe("laid out where 14 draws it (14's frame, 384 × 804.5 dp)", () => {
+  const layout = launchLayout(FRAME, lockupGeometry('splash'), nativeType.latin.caption.lineHeight);
+  /**
+   * The tolerance: three of 14's pixels (4.1 dp). What the comparison carries: the frame's own reading
+   * (its top edge is at 344.2 px, recorded 345), each box rounded to half a dp, and §2's snaps — the
+   * subline's gap, 18.9 → 16, moves the centred group by 1.45 dp. The decoys sit 15 dp out.
+   */
+  const TOLERANCE = 3 * splashScreen.dpPerPx;
+
+  it("puts the lockup where 14 does — its ink's top within three of 14's pixels", () => {
+    expect(Math.abs(layout.lockup.y - at('14.splash.lockup').dp.y)).toBeLessThanOrEqual(TOLERANCE);
+    expect(Math.abs(layout.lockup.height - at('14.splash.lockup').dp.h)).toBeLessThanOrEqual(
+      TOLERANCE,
+    );
+    // Centred on the screen: 14's line is centred to 0.2 px, its lockup drawn 3.3 px right.
+    expect(layout.lockup.x + layout.lockup.width / 2).toBeCloseTo(FRAME.width / 2, 9);
+  });
+
+  it('DECOY — the lockup centred ALONE rides 15 dp high, outside the tolerance', () => {
+    const alone = (FRAME.height - lockupGeometry('splash').height) / 2;
+    expect(Math.abs(alone - at('14.splash.lockup').dp.y)).toBeGreaterThan(TOLERANCE);
+  });
+
+  it("puts the subline's caption under it at 14's gap, its cap top where 14's ink is", () => {
+    // ~4 dp from a caption line's top to its cap top (see LAUNCH_SPACING).
+    expect(Math.abs(layout.subline.y + 4 - at('14.splash.subline').dp.y)).toBeLessThanOrEqual(
+      TOLERANCE,
+    );
+    expect(layout.subline.y - (layout.lockup.y + layout.lockup.height)).toBe(
+      LAUNCH_SPACING.subline,
+    );
+  });
+
+  it("puts the line at 14's foot and the wave's lines above it", () => {
+    const line = at('14.splash.progress').dp;
+    expect(Math.abs(layout.line.y - line.y)).toBeLessThanOrEqual(TOLERANCE);
+    expect(layout.line.height).toBe(PROGRESS_TRACK);
+    const wave = at('14.splash.wave').dp;
+    const [, boxHeight] = illustrationBox('silk-wave');
+    const linesStart = layout.wave.y + (layout.wave.height * 1.6) / boxHeight - nativeArtStroke / 2;
+    const linesEnd =
+      layout.wave.y + (layout.wave.height * SILK_WAVE_LINES_END) / boxHeight + nativeArtStroke / 2;
+    expect(Math.abs(linesStart - wave.y)).toBeLessThanOrEqual(TOLERANCE);
+    expect(Math.abs(linesEnd - (wave.y + wave.h))).toBeLessThanOrEqual(TOLERANCE);
+    expect(layout.wave.width).toBe(FRAME.width);
+  });
+
+  it("reads where silk-wave's lines end out of the drawing, not a copy of it", () => {
+    const tree = draw();
+    const wave = svgs(tree.UNSAFE_root).find(
+      (s) => s.props['viewBox'] === `0 0 ${illustrationBox('silk-wave').join(' ')}`,
+    );
+    const ys = (wave?.findAll((n) => typeof n.props['d'] === 'string') ?? []).flatMap((n) =>
+      [...(n.props['d'] as string).matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/gu)].map((m) =>
+        Number(m[2]),
+      ),
+    );
+    expect(ys.length).toBeGreaterThan(100);
+    expect(Math.abs(Math.max(...ys) - SILK_WAVE_LINES_END)).toBeLessThanOrEqual(0.05);
+  });
+
+  it("puts the lockup's mark — where the travelling one arrives — on 14's", () => {
+    const mark = at('14.splash.mark');
+    const reach = (mark.raw?.['reachPx'] ?? NaN) * splashScreen.dpPerPx;
+    // 14's grid centre: its ink's top plus the reach (petal 1 straight up touches the grid's top).
+    const centreY = mark.dp.y + reach;
+    expect(Math.abs(layout.mark.y + layout.mark.height / 2 - centreY)).toBeLessThanOrEqual(
+      TOLERANCE,
+    );
+    expect(layout.mark.width).toBeCloseTo(lockupGeometry('splash').mark, 9);
+  });
+
+  it("draws the glow around that mark at 14's spread, read from 14's reading", () => {
+    const sigmaOfGrid =
+      (at('14.splash.glow').raw?.['sigmaPx'] ?? NaN) /
+      (2 * (at('14.splash.mark').raw?.['reachPx'] ?? NaN));
+    expect(LAUNCH_GLOW.sigmaOfGrid).toBeCloseTo(sigmaOfGrid, 4);
+    expect(LAUNCH_GLOW.alpha).toBe(at('14.splash.glow').raw?.['alpha']);
+    // Four deviations of margin on every side of the grid, inside the mask's canvas.
+    expect((LAUNCH_GLOW.canvas - LAUNCH_GLOW.grid) / 2).toBeGreaterThanOrEqual(
+      4 * LAUNCH_GLOW.sigmaOfGrid * LAUNCH_GLOW.grid,
+    );
+    expect(layout.glow.width).toBeCloseTo(
+      (LAUNCH_GLOW.canvas / LAUNCH_GLOW.grid) * layout.mark.width,
+      9,
+    );
+    expect(layout.glow.x + layout.glow.width / 2).toBeCloseTo(
+      layout.mark.x + layout.mark.width / 2,
+      9,
+    );
+  });
+});
+
+describe('the hand-over', () => {
+  const lockupMark = (tree: ReturnType<typeof render>) => {
+    const mark = tree
+      .UNSAFE_getAllByType(Mark)
+      .find((m) => !tree.getByTestId('launch.handover', hidden).findAll((n) => n === m).length);
+    return mark?.parent === null || mark === undefined
+      ? undefined
+      : flattenStyle(mark.parent.props['style']);
+  };
+
+  it('shows the blossom once: the lockup withholds its mark until the travelling one arrives', () => {
+    const tree = draw();
+    expect(lockupMark(tree)?.['opacity']).toBe(0);
+    act(() => {
+      jest.advanceTimersByTime(260);
+    });
+    expect(tree.queryByTestId('launch.handover', hidden)).toBeNull();
+    expect(tree.UNSAFE_getAllByType(Mark)).toHaveLength(1);
+    const shown = tree.UNSAFE_getByType(Mark).parent;
+    expect(shown === null ? undefined : flattenStyle(shown.props['style'])['opacity']).not.toBe(0);
+  });
+
+  it('fills the line as the launch gets there: 0, then half, then all', () => {
+    expect([
+      launchProgress('native'),
+      launchProgress('arrived'),
+      launchProgress('leaving'),
+    ]).toEqual([0, 0.5, 1]);
+    const tree = draw();
+    const fill = () =>
+      flattenStyle(tree.getByTestId('launch.progress.fill', hidden).props['style'])['transform'];
+    expect(fill()).toStrictEqual([{ scaleX: 0 }]);
+    act(() => {
+      jest.advanceTimersByTime(260);
+    });
+    expect(fill()).toStrictEqual([{ scaleX: 0.5 }]);
+  });
+});
+
+describe('in the phone’s appearance, as the native splash is', () => {
+  it('follows the phone, not a theme chosen in the app', () => {
+    mockScheme = 'light';
+    const tree = render(
+      <ThemeProvider appearance="slate">
+        <LaunchHost onShown={() => undefined} onDone={() => undefined} />
+      </ThemeProvider>,
+    );
+    expect(flattenStyle(tree.getByTestId('launch', hidden).props['style'])['backgroundColor']).toBe(
+      nativeColors.light.background,
+    );
+  });
+
+  it('DECOY — without the host, an in-app Slate reaches the overlay and flips it', () => {
+    mockScheme = 'light';
+    const tree = render(
+      <ThemeProvider appearance="slate">
+        <Launch onShown={() => undefined} onDone={() => undefined} />
+      </ThemeProvider>,
+    );
+    expect(flattenStyle(tree.getByTestId('launch', hidden).props['style'])['backgroundColor']).toBe(
+      nativeColors['slate.dark'].background,
+    );
+  });
+});
+
 describe('the order is the feature', () => {
   /**
-   * THE ASSERTION THIS FILE EXISTS FOR.
-   *
-   * `onShown` is what the root layout calls `SplashScreen.hideAsync()` from. Firing it before
-   * the overlay is on screen is the blank frame again, one layer up — and it is the easy
-   * mistake, because "hide the splash then show ours" reads as the natural order.
+   * THE ASSERTION THIS FILE EXISTS FOR. `onShown` is what the root layout calls
+   * `SplashScreen.hideAsync()` from. Firing it before the overlay is on screen is the blank frame
+   * again, one layer up.
    */
   it('says it is shown only once it has rendered', () => {
     const order: string[] = [];
-    render(
-      <ThemeProvider theme="dark">
-        <Launch onShown={() => order.push('shown')} onDone={() => order.push('done')} />
-      </ThemeProvider>,
+    draw(
+      () => order.push('shown'),
+      () => order.push('done'),
     );
-    // The effect runs after the first commit, so by the time this fires there IS a frame.
     expect(order).toEqual(['shown']);
   });
 
@@ -191,18 +429,15 @@ describe('the order is the feature', () => {
     expect(order).toEqual(['shown', 'done']);
   });
 
-  /**
-   * A DECOY. Without it, a `Launch` that called `onDone` immediately would pass the case above
-   * and remove the sequence entirely — which is exactly what "make the test green" looks like.
-   */
-  it('DECOY — and does NOT finish before its hold has elapsed', () => {
+  /** A DECOY: a `Launch` that finished at once would pass the case above. */
+  it('DECOY — and does NOT finish before its rise and its hold have elapsed', () => {
     const order: string[] = [];
     draw(
       () => order.push('shown'),
       () => order.push('done'),
     );
     act(() => {
-      jest.advanceTimersByTime(1);
+      jest.advanceTimersByTime(260 + 260 - 1);
     });
     expect(order).toEqual(['shown']);
   });

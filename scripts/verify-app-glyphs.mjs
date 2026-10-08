@@ -85,6 +85,14 @@ export const EXEMPT = [
     rule: 'markup',
     reason: 'builds the share card as an SVG document (ADR-0070)',
   },
+  {
+    file: 'src/launch.tsx',
+    rule: 'import',
+    module: '../assets/brand/launch-glow.png',
+    names: ['default'],
+    reason:
+      'the launch glow: a MASK the brand generator blurs from the mark’s geometry and --check holds, tinted with the mark’s token — not an icon and not a picture (F-231, ADR-0127)',
+  },
 ];
 
 /**
@@ -216,6 +224,8 @@ function namedBindings(text, match) {
   if (!match[0].startsWith('from')) return null;
   const head = text.slice(0, match.index);
   const clause = head.slice(head.lastIndexOf('import') + 'import'.length).trim();
+  // A default import alone is the binding `default`, which an exemption may name (F-231).
+  if (/^[A-Za-z_$][\w$]*$/.test(clause)) return ['default'];
   const named = /^(?:type\s+)?\{([^}]*)\}$/.exec(clause);
   if (named === null) return null;
   return named[1]
@@ -288,6 +298,7 @@ function prove() {
   const screen = join(work, 'src', 'screens', 'Probe.tsx');
   const renderer = join(work, 'src', 'screens', 'Card.tsx');
   const builder = join(work, 'src', 'card.ts');
+  const launcher = join(work, 'src', 'launch.tsx');
   const exempt = [
     {
       file: 'src/screens/Card.tsx',
@@ -297,7 +308,15 @@ function prove() {
       reason: 'proof',
     },
     { file: 'src/card.ts', rule: 'markup', reason: 'proof' },
+    {
+      file: 'src/launch.tsx',
+      rule: 'import',
+      module: '../assets/brand/launch-glow.png',
+      names: ['default'],
+      reason: 'proof',
+    },
   ];
+  const LAUNCHER = "import glow from '../assets/brand/launch-glow.png';\nexport const G = glow;\n";
   const RENDERER = "import { SvgXml } from 'react-native-svg';\nexport const R = SvgXml;\n";
   const BUILDER = 'export const doc = `<svg width="1"></svg>`;\n';
 
@@ -435,6 +454,25 @@ function prove() {
       renderer: 'export const R = 1;\n',
       fail: true,
     },
+    // F-231: one default import of one named mask, in one file.
+    { name: 'the launch importing its glow mask', probe: '', fail: false },
+    {
+      name: 'the launch importing another image beside it',
+      probe: '',
+      launcher: LAUNCHER + "import star from '../assets/star.png';\n",
+      fail: true,
+    },
+    {
+      name: 'the launch taking the mask by a named binding',
+      probe: '',
+      launcher: "import { glow } from '../assets/brand/launch-glow.png';\n",
+      fail: true,
+    },
+    {
+      name: 'a screen importing the glow mask, which only the launch may',
+      probe: "import glow from '../../assets/brand/launch-glow.png';\n",
+      fail: true,
+    },
     { name: 'the baseline again', probe: "import { Glyph } from '@irodora/ui';\n", fail: false },
   ];
 
@@ -445,6 +483,7 @@ function prove() {
     writeFileSync(screen, c.probe);
     writeFileSync(renderer, c.renderer ?? RENDERER);
     writeFileSync(builder, c.builder ?? BUILDER);
+    writeFileSync(launcher, c.launcher ?? LAUNCHER);
     const { violations, dead } = appGlyphFindings(work, exempt);
     const failed = violations.length + dead.length > 0;
     if (failed !== c.fail)

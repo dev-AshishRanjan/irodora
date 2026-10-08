@@ -169,8 +169,10 @@ export default {
       screen: splash,
       component: 'ui:Text',
       // F-231 (2026-10-07), the ink box (mark-fit --box): x 432.7–681.2, y 743.8–753.6. Its ink starts
-      // 16.93 px (22.9 dp) under the tagline's ink, which ends at 726.8 — 24 by §2, not the 20 the
-      // two boxes gave. It is not a lockup member, so it snaps (ADR-0123 keeps the snap outside).
+      // 16.93 px (22.9 dp) under the tagline's ink, which ends at 726.8. It is not a lockup member, so
+      // it snaps (ADR-0123 keeps the snap outside): the gap a layout sets runs from the lockup's box,
+      // which is its ink, to the subline's caption LINE, whose cap top sits about 4 dp into it — so
+      // 18.9 dp, and §2 takes 16 (`LAUNCH_SPACING` in apps/mobile/src/launch.tsx).
       box: { x: 433, y: 744, w: 248, h: 10 },
       tokens: { fg: 'text.secondary' },
       type: { face: 'sans', size: 'caption', weight: 400 },

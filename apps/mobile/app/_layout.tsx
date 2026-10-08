@@ -9,7 +9,7 @@ import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { DisplayProvider } from '../src/displaySettings';
 import { deviceRepository } from '../src/store/repository';
-import { Launch } from '../src/launch';
+import { LaunchHost } from '../src/launch';
 import { TargetProvider, useTarget } from '../src/target';
 import { TargetBar } from '../src/TargetBar';
 
@@ -154,7 +154,10 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
         THE LAUNCH OVERLAY LIVES INSIDE THE THEME (F-190), because it paints `background` and
         draws the mark in `foreground` — the same two tokens the native splash was composited
         from. Outside the provider it would have no theme to read and would have to invent one,
-        which is the "a colour nobody chose" hazard every overlay in this product refuses.
+        which is the "a colour nobody chose" hazard every overlay in this product refuses. It
+        nests the PHONE's appearance inside this one (`LaunchHost`, F-231): the native splash can
+        only follow the system, so the overlay that continues it does too, and the person's own
+        theme appears as it leaves.
 
         AFTER `Chrome`, so it is above it: the app mounts underneath immediately and a cold
         start never waits on decoration.
@@ -223,7 +226,7 @@ export default function RootLayout(): React.JSX.Element {
           sat under the theme would leave the first frame of every screen reading the default.
         */}
           <DisplayProvider store={deviceRepository()}>
-            <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
+            <Themed launch={launching ? <LaunchHost onShown={onShown} onDone={onDone} /> : null} />
           </DisplayProvider>
         </AppearanceProvider>
       </SafeAreaProvider>

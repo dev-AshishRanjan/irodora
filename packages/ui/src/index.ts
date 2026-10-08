@@ -17,6 +17,7 @@ export {
   formatAppearance,
   parseAppearance,
   resolveThemeName,
+  SYSTEM_APPEARANCE,
   type Appearance,
   ThemeProvider,
   useTheme,

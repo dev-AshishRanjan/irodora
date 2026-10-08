@@ -9,3 +9,9 @@ declare module '*.ttf' {
   const asset: number;
   export default asset;
 }
+
+/** The launch glow's mask (F-231), and any image the app bundles, the same way. */
+declare module '*.png' {
+  const asset: number;
+  export default asset;
+}

@@ -276,8 +276,9 @@ describe('Japanese is written, not copied', () => {
     // Each entry is a place the check above is switched off for no reason but our say-so. A
     // list of favours that grows without anyone noticing is how a check stops checking.
     //
-    // It is EMPTY now (F-018), and the loop is deliberately kept rather than deleted: the day
-    // someone adds a favour, it has to survive these two assertions.
+    // F-018 emptied it, and the loop was kept for the day someone added a favour. F-231 did: 14's
+    // splash tagline, Japanese in both locales because the lockup sets it so — and it survives
+    // these two assertions.
     expect(IDENTICAL_BY_DESIGN.length).toBeLessThanOrEqual(3);
     for (const k of IDENTICAL_BY_DESIGN) {
       expect(MESSAGE_KEYS).toContain(k);

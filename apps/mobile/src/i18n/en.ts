@@ -979,6 +979,11 @@ export const en = {
   'delta.hue.veryClose': 'Very Close in Hue',
   'delta.hue.slight': 'Slight Hue Shift',
   'delta.hue.perceptible': 'Perceptible Hue Shift',
+  // F-231: the splash (14). Its tagline is Japanese in both locales — 14 sets 彩り・色の知性 under
+  // the name whatever the language around it, as part of the lockup (ADR-0123), so it is one of the
+  // values identical by design. The subline is true as drawn: nothing leaves the phone (ADR-0051).
+  'brand.taglineJa': '彩り・色の知性',
+  'brand.splashSubline': 'Deterministic Colour Engine • 100% On-Device & Offline',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

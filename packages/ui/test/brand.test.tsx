@@ -913,6 +913,37 @@ describe('the lockup, rendered', () => {
     expect((nameBoxFor('app', 200) / drawn.nameBox) * drawn.width).toBeCloseTo(200, 9);
   });
 
+  it('withholds the mark’s ink, not its place, when the splash brings its own (F-231)', () => {
+    const shown = draw(<Wordmark form="splash" tagline="彩り・色の知性" />);
+    const hidden = draw(<Wordmark form="splash" tagline="彩り・色の知性" markHidden />);
+    const boxOf = (tree: ReturnType<typeof draw>) => {
+      const parent = tree.UNSAFE_getByType(Mark).parent;
+      if (parent === null) throw new Error('the mark sits in its box');
+      return styleOf(parent);
+    };
+    expect(boxOf(hidden)['opacity']).toBe(0);
+    // DECOY: the shown mark is drawn, and the hidden one keeps every margin it had.
+    expect(boxOf(shown)['opacity']).toBeUndefined();
+    const layout = (style: Record<string, unknown>) =>
+      Object.fromEntries(Object.entries(style).filter(([key]) => key !== 'opacity'));
+    expect(layout(boxOf(hidden))).toStrictEqual(boxOf(shown));
+    expect(hidden.UNSAFE_getByType(Mark).props['size']).toBe(
+      shown.UNSAFE_getByType(Mark).props['size'],
+    );
+  });
+
+  it('reports its geometry, and again when the name’s laid-out size moves it (A7)', () => {
+    const seen: number[] = [];
+    const tree = draw(
+      <Wordmark form="splash" tagline="彩り・色の知性" onGeometry={(g) => seen.push(g.mark)} />,
+    );
+    expect(seen.at(-1)).toBeCloseTo(lockupGeometry('splash').mark, 9);
+    const advance =
+      (GELASIO.name.advance / GELASIO.unitsPerEm) * nativeType.latin.wordmarkSplash.fontSize;
+    fireEvent(tree.getByText('Irodora'), 'textLayout', textLayout(advance * 1.5, 0));
+    expect(seen.at(-1)).toBeCloseTo(lockupGeometry('splash', 1.5).mark, 9);
+  });
+
   it('refuses by type what no drawing draws', () => {
     // @ts-expect-error — a lockup is one of the two drawn forms; there is no default.
     expect(() => draw(<Wordmark />)).toBeDefined();

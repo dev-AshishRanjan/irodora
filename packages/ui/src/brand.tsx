@@ -47,7 +47,7 @@
  * requires {@link markShapes} to equal that file, so the two derivations cannot drift.
  */
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import {
   Platform,
   View,
@@ -701,6 +701,17 @@ interface SplashLockupProps {
   readonly tagline: string;
   /** A splash is not a heading. */
   readonly heading?: never;
+  /**
+   * Draw the mark's place but not the mark (F-231): the launch overlay brings the native splash's
+   * mark into the lockup itself, and a second mark fading in under the travelling one would show
+   * the blossom twice. The figure's layout is unchanged — only the mark's ink is withheld.
+   */
+  readonly markHidden?: boolean;
+  /**
+   * The geometry the figure is laid out at, each time it changes — the scale moves it when a person
+   * has enlarged text (A7). The launch overlay reads it to know where the mark will be.
+   */
+  readonly onGeometry?: (geometry: LockupGeometry) => void;
 }
 
 /** Which lockup, and what it carries. `size` is gone: each form's size is its drawing's. */
@@ -753,9 +764,18 @@ export function Wordmark(props: WordmarkProps): React.JSX.Element {
   const [taglineScale, setTaglineScale] = useScale();
   const [given, setGiven] = useState<number | undefined>(undefined);
   const g = lockupGeometry(form, scale, taglineScale);
+  const onGeometry = props.form === 'splash' ? props.onGeometry : undefined;
+  useEffect(() => {
+    onGeometry?.(lockupGeometry(form, scale, taglineScale));
+  }, [onGeometry, form, scale, taglineScale]);
 
   const mark = (
-    <View style={g.markMargins}>
+    <View
+      style={[
+        g.markMargins,
+        props.form === 'splash' && props.markHidden === true ? { opacity: 0 } : null,
+      ]}
+    >
       <Mark size={g.mark} />
     </View>
   );

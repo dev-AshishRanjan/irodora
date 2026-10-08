@@ -3,6 +3,13 @@
   "splash": {
     "imageWidth": 244
   },
+  "glow": {
+    "file": "launch-glow.png",
+    "canvas": 544,
+    "grid": 240,
+    "alpha": 0.602,
+    "sigmaOfGrid": 0.1575
+  },
   "drawings": {
     "icon": {
       "file": "icon.png",
