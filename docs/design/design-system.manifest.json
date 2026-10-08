@@ -1740,6 +1740,7 @@
       "elements": [
         "27.wardrobe-empty.art",
         "27.lens-working.mark",
+        "27.lens-working.glow",
         "27.lens-refused.icon",
         "27.lens-permission.icon"
       ],
@@ -1747,10 +1748,11 @@
       "measured": [
         "#BFA184",
         "#926C9A",
+        "#3F3449",
         "#634E32",
         "#B7A07F"
       ],
-      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 27's state art is tan, amber-brown and purple; the purple mark is the one place the mark takes a tint.",
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 27's state art is tan, amber-brown and purple; the purple mark is the one place the mark takes a tint, and the radial glow behind it (F-236, D11) takes the same tint.",
       "owner": "design",
       "recordedAt": "2026-09-25",
       "mintedBy": "F-236"

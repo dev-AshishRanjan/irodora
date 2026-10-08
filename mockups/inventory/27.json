@@ -26,10 +26,10 @@
       "parent": null,
       "component": "ui:EmptyState",
       "box": {
-        "x": 55,
+        "x": 57,
         "y": 184,
-        "w": 297,
-        "h": 544
+        "w": 293,
+        "h": 534
       },
       "dp": null,
       "tokens": {
@@ -42,8 +42,14 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#1B2027",
+        "border": "#2F343E"
+      },
       "raw": {
-        "cornerPx": 10.5
+        "cornerPx": 10.5,
+        "padPx": 18.7,
+        "topPx": 69
       },
       "copy": null
     },
@@ -59,12 +65,21 @@
         "h": 127
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "fg": "text.primary"
+      },
       "type": null,
       "icon": null,
       "illustration": "hanger",
       "binding": null,
       "action": null,
+      "measured": {
+        "fg": "#F8FAFD",
+        "body": "#C09D7A"
+      },
+      "raw": {
+        "linePx": 2.03
+      },
       "copy": null
     },
     {
@@ -91,6 +106,10 @@
       "illustration": null,
       "binding": "static:wardrobe.empty.title",
       "action": null,
+      "raw": {
+        "emDp": 25.3,
+        "gapAbovePx": 37
+      },
       "copy": {
         "shape": "heading",
         "script": "latin",
@@ -110,7 +129,7 @@
       },
       "dp": null,
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -121,6 +140,9 @@
       "illustration": null,
       "binding": "static:wardrobe.empty.body",
       "action": null,
+      "raw": {
+        "gapAbovePx": 22
+      },
       "copy": {
         "shape": "body",
         "script": "latin",
@@ -162,10 +184,10 @@
       "parent": null,
       "component": "ui:Card",
       "box": {
-        "x": 378,
+        "x": 380,
         "y": 184,
-        "w": 298,
-        "h": 543
+        "w": 293,
+        "h": 534
       },
       "dp": null,
       "tokens": {
@@ -178,8 +200,13 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#1B2027",
+        "border": "#2F343E"
+      },
       "raw": {
-        "cornerPx": 9.5
+        "cornerPx": 9.5,
+        "topPx": 69
       },
       "copy": null
     },
@@ -191,31 +218,41 @@
       "box": {
         "x": 458,
         "y": 253,
-        "w": 138,
-        "h": 138
+        "w": 136,
+        "h": 136
       },
       "dp": null,
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "level3"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:lens.progress",
       "action": null,
+      "measured": {
+        "fg": "#ECEEF3",
+        "track": "#373B44"
+      },
+      "raw": {
+        "radiusPx": 64.61,
+        "strokePx": 7.1,
+        "sweepDeg": 360,
+        "fillDeg": 218.2
+      },
       "copy": null
     },
     {
-      "id": "27.lens-working.mark",
+      "id": "27.lens-working.glow",
       "order": 8,
       "parent": "27.lens-working.progress",
-      "component": "ui:Mark",
+      "component": "new:WorkingState",
       "box": {
-        "x": 487,
-        "y": 283,
-        "w": 78,
-        "h": 78
+        "x": 481,
+        "y": 276,
+        "w": 91,
+        "h": 91
       },
       "dp": null,
       "tokens": {},
@@ -225,31 +262,77 @@
       "binding": null,
       "action": null,
       "measured": {
-        "fg": "#E2B5EC"
+        "fg": "#3F3449"
+      },
+      "raw": {
+        "alpha": 0.296,
+        "discPx": 30.5,
+        "sigmaPx": 8.08
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-working.mark",
+      "order": 9,
+      "parent": "27.lens-working.progress",
+      "component": "ui:Mark",
+      "box": {
+        "x": 500,
+        "y": 296,
+        "w": 52,
+        "h": 50
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "fg": "#E0AAE6"
+      },
+      "raw": {
+        "petals": 5,
+        "reachPx": 26.3
       },
       "copy": null
     },
     {
       "id": "27.lens-working.step-1",
-      "order": 9,
+      "order": 10,
       "parent": "27.lens-working",
       "component": "ui:Chip",
       "box": {
         "x": 406,
-        "y": 427,
+        "y": 428,
         "w": 241,
-        "h": 30
+        "h": 29
       },
       "dp": null,
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
+        "fg": "text.primary",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "mono",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:lens.pipeline.0",
       "action": null,
+      "measured": {
+        "bg": "#30343D",
+        "fg": "#E5E9ED"
+      },
+      "raw": {
+        "cornerPx": 5.75,
+        "advancePx": 6.68,
+        "capPx": 10
+      },
       "copy": {
         "shape": "badge",
         "script": "latin"
@@ -257,7 +340,7 @@
     },
     {
       "id": "27.lens-working.step-2",
-      "order": 10,
+      "order": 11,
       "parent": "27.lens-working",
       "component": "ui:Chip",
       "box": {
@@ -268,14 +351,28 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
+        "fg": "text.primary",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "mono",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:lens.pipeline.1",
       "action": null,
+      "measured": {
+        "bg": "#30343D",
+        "fg": "#E5E9ED"
+      },
+      "raw": {
+        "cornerPx": 5.75,
+        "advancePx": 6.68,
+        "capPx": 10
+      },
       "copy": {
         "shape": "badge",
         "script": "latin"
@@ -283,7 +380,7 @@
     },
     {
       "id": "27.lens-working.title",
-      "order": 11,
+      "order": 12,
       "parent": "27.lens-working",
       "component": "ui:Text",
       "box": {
@@ -305,6 +402,10 @@
       "illustration": null,
       "binding": "static:lens.working.title",
       "action": null,
+      "raw": {
+        "emDp": 24,
+        "gapAbovePx": 43
+      },
       "copy": {
         "shape": "heading",
         "script": "latin",
@@ -313,7 +414,7 @@
     },
     {
       "id": "27.lens-working.body",
-      "order": 12,
+      "order": 13,
       "parent": "27.lens-working",
       "component": "ui:Text",
       "box": {
@@ -324,7 +425,7 @@
       },
       "dp": null,
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -335,6 +436,9 @@
       "illustration": null,
       "binding": "static:lens.working.body",
       "action": null,
+      "raw": {
+        "gapAbovePx": 26
+      },
       "copy": {
         "shape": "body",
         "script": "latin",
@@ -343,14 +447,14 @@
     },
     {
       "id": "27.lens-refused",
-      "order": 13,
+      "order": 14,
       "parent": null,
       "component": "ui:Card",
       "box": {
-        "x": 700,
-        "y": 209,
-        "w": 298,
-        "h": 518
+        "x": 703,
+        "y": 210,
+        "w": 293,
+        "h": 508
       },
       "dp": null,
       "tokens": {
@@ -363,25 +467,31 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#1B2027",
+        "border": "#2F343E"
+      },
       "raw": {
-        "cornerPx": 10.5
+        "cornerPx": 10.5,
+        "padPx": 18.3,
+        "topPx": 69
       },
       "copy": null
     },
     {
       "id": "27.lens-refused.icon",
-      "order": 14,
+      "order": 15,
       "parent": "27.lens-refused",
       "component": null,
       "box": {
-        "x": 800,
-        "y": 278,
-        "w": 99,
-        "h": 99
+        "x": 801,
+        "y": 279,
+        "w": 98,
+        "h": 97
       },
       "dp": null,
       "tokens": {
-        "radius": "md"
+        "radius": "lg"
       },
       "type": null,
       "icon": "glare",
@@ -389,13 +499,22 @@
       "binding": null,
       "action": null,
       "measured": {
-        "bg": "#574835"
+        "bg": "#51412C",
+        "border": "#EEAF5E",
+        "fg": "#A2917A",
+        "slash": "#E7B16C"
+      },
+      "raw": {
+        "cornerPx": 14.25,
+        "edgePx": 3,
+        "glyphPx": 53,
+        "linePx": 2.8
       },
       "copy": null
     },
     {
       "id": "27.lens-refused.title",
-      "order": 15,
+      "order": 16,
       "parent": "27.lens-refused",
       "component": "ui:Text",
       "box": {
@@ -417,6 +536,10 @@
       "illustration": null,
       "binding": "static:lens.refused.title",
       "action": null,
+      "raw": {
+        "emDp": 24,
+        "gapAbovePx": 37
+      },
       "copy": {
         "shape": "heading",
         "script": "latin",
@@ -425,7 +548,7 @@
     },
     {
       "id": "27.lens-refused.body",
-      "order": 16,
+      "order": 17,
       "parent": "27.lens-refused",
       "component": "ui:Text",
       "box": {
@@ -436,7 +559,7 @@
       },
       "dp": null,
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -447,6 +570,9 @@
       "illustration": null,
       "binding": "engine:lens.refusal.reason",
       "action": null,
+      "raw": {
+        "gapAbovePx": 25
+      },
       "copy": {
         "shape": "body",
         "script": "latin",
@@ -455,7 +581,7 @@
     },
     {
       "id": "27.lens-refused.retry",
-      "order": 17,
+      "order": 18,
       "parent": "27.lens-refused",
       "component": "ui:Button",
       "box": {
@@ -484,14 +610,14 @@
     },
     {
       "id": "27.lens-permission",
-      "order": 18,
+      "order": 19,
       "parent": null,
       "component": "ui:Card",
       "box": {
-        "x": 1024,
-        "y": 209,
-        "w": 297,
-        "h": 518
+        "x": 1026,
+        "y": 210,
+        "w": 293,
+        "h": 508
       },
       "dp": null,
       "tokens": {
@@ -504,34 +630,55 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#1B2027",
+        "border": "#2F343E"
+      },
       "raw": {
-        "cornerPx": 9.5
+        "cornerPx": 9.5,
+        "padPx": 18.7,
+        "topPx": 69
       },
       "copy": null
     },
     {
       "id": "27.lens-permission.icon",
-      "order": 19,
+      "order": 20,
       "parent": "27.lens-permission",
       "component": null,
       "box": {
-        "x": 1122,
-        "y": 286,
-        "w": 105,
-        "h": 89
+        "x": 1124,
+        "y": 288,
+        "w": 102,
+        "h": 86
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "fg": "text.primary"
+      },
       "type": null,
       "icon": "camera-locked",
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "fg": "#FBFEFF",
+        "lock": "#BAA07C"
+      },
+      "raw": {
+        "linePx": 3.6,
+        "bodyWidthPx": 93.8,
+        "bodyHeightPx": 61.3,
+        "humpPx": 12,
+        "lensPx": 23.6,
+        "lockWidthPx": 32,
+        "lockHeightPx": 41
+      },
       "copy": null
     },
     {
       "id": "27.lens-permission.title",
-      "order": 20,
+      "order": 21,
       "parent": "27.lens-permission",
       "component": "ui:Text",
       "box": {
@@ -553,6 +700,10 @@
       "illustration": null,
       "binding": "static:lens.permission.title",
       "action": null,
+      "raw": {
+        "emDp": 24.6,
+        "gapAbovePx": 38
+      },
       "copy": {
         "shape": "heading",
         "script": "latin",
@@ -561,7 +712,7 @@
     },
     {
       "id": "27.lens-permission.body",
-      "order": 21,
+      "order": 22,
       "parent": "27.lens-permission",
       "component": "ui:Text",
       "box": {
@@ -572,7 +723,7 @@
       },
       "dp": null,
       "tokens": {
-        "fg": "text.secondary"
+        "fg": "text.primary"
       },
       "type": {
         "face": "sans",
@@ -583,6 +734,9 @@
       "illustration": null,
       "binding": "static:lens.permission.body",
       "action": null,
+      "raw": {
+        "gapAbovePx": 26
+      },
       "copy": {
         "shape": "body",
         "script": "latin",
@@ -591,7 +745,7 @@
     },
     {
       "id": "27.lens-permission.settings",
-      "order": 22,
+      "order": 23,
       "parent": "27.lens-permission",
       "component": "ui:Button",
       "box": {
@@ -690,14 +844,21 @@
   ],
   "conflicts": [
     {
+      "id": "C4",
+      "elements": ["27.lens-working.mark"],
+      "resolution": "mark geometry from 14: 27 draws the mark as an outline (petal rings and rays), and the build draws 14’s filled blossom at 27’s reach, in 27’s tint (C10)",
+      "flippedByUser": false
+    },
+    {
       "id": "C10",
       "elements": [
         "27.wardrobe-empty.art",
         "27.lens-working.mark",
+        "27.lens-working.glow",
         "27.lens-refused.icon",
         "27.lens-permission.icon"
       ],
-      "resolution": "followed: the tan, amber and purple state art carries text (golden rule 13) and is declared a chroma-ceiling exception by F-225; the purple mark here is the one place the mark takes a tint",
+      "resolution": "followed: the tan, amber and purple state art carries text (golden rule 13) and is declared a chroma-ceiling exception by F-225; the purple mark here is the one place the mark takes a tint, and its glow takes the same tint",
       "flippedByUser": false
     }
   ]

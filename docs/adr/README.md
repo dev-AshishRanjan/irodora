@@ -143,6 +143,8 @@ Two rules that matter more than the format:
 | [0125](0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md) | A ΔE00 is described by one table of three bands, anchored on published thresholds | Accepted |
 | [0126](0126-the-icon-is-14s-tile-full-bleed-its-corner-and-its-rim-the-platforms.md) | The icon is 14's tile, full-bleed; its corner and its rim are the platform's | Accepted; amends 0122 |
 | [0127](0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md) | The launch is 14's splash, continued from the native frame, in the phone's appearance | Accepted |
+| [0128](0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md) | Empty, working, refused and denied are 27's four cards, read at the board's own scale | Accepted |
+| [0129](0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md) | A screen declares its data conditions and the state each shows | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
