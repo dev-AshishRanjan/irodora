@@ -1,5 +1,6 @@
 import type { ExpoConfig } from 'expo/config';
 import { nativeColors } from '@irodora/design-tokens';
+import brandAssets from './assets/brand/brand-assets.json' with { type: 'json' };
 
 /**
  * Irodora — the app. The only surface ([ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)).
@@ -76,17 +77,17 @@ if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2_100
 export const ANDROID_MIN_SDK = 26;
 
 /**
- * How wide the mark is on the native splash, in points.
+ * How wide the native splash's IMAGE is, in points — read from the generator's drawings table
+ * (`brand-assets.json`, F-231), never typed here.
  *
- * **Exported so the launch sequence can continue it rather than guess at it** (F-190). The
- * overlay that takes over from the native splash draws the same mark at the same size on the
- * same ground; a second copy of this number is a hand-over that drifts by a few points and
- * reads as a jump.
- *
- * 40 % of the narrow edge of a typical phone, which keeps the mark well inside the safe area on
- * every aspect ratio.
+ * **Exported so the launch sequence can continue it rather than guess at it** (F-190). The image
+ * is a 1024 px canvas whose mark sits on a 648 px grid, so at 244 pt the grid is 154.41 dp — the
+ * splash lockup's mark, 14's — and the overlay draws that grid at that size (`SPLASH_MARK` in
+ * `src/launch.tsx`). F-230 found the old 160 pt drawing a 120 dp grid under an overlay that drew
+ * 160: the mark grew by a third at the hand-over. Why 244 and 648 rather than any other pair is
+ * `SPLASH` in `scripts/generate-brand-assets.mjs`.
  */
-export const SPLASH_IMAGE_WIDTH = 160;
+export const SPLASH_IMAGE_WIDTH: number = brandAssets.splash.imageWidth;
 
 const config: ExpoConfig = {
   name: 'Irodora',

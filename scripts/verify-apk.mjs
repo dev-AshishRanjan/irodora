@@ -50,7 +50,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
 import { decodePng, carriesMark } from './png.mjs';
-import { drawings, signatureOf } from './generate-brand-assets.mjs';
+import { drawings, signatureOf, splashLogoSignature } from './generate-brand-assets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -87,8 +87,10 @@ const GREEN = '\x1b[32m',
  */
 function signaturesFor(name, signatures) {
   if (/\/ic_launcher_(foreground|monochrome)\.[a-z]+$/u.test(name)) return [signatures.adaptive];
-  if (/\/(ic_launcher(_round)?|splashscreen_logo)\.[a-z]+$/u.test(name)) return [signatures.icon];
-  return [signatures.icon, signatures.adaptive];
+  // F-231: the splash logo is the splash image as Expo composites it, never the icon (finding 1).
+  if (/\/splashscreen_logo\.[a-z]+$/u.test(name)) return [signatures.splash];
+  if (/\/ic_launcher(_round)?\.[a-z]+$/u.test(name)) return [signatures.icon];
+  return [signatures.icon, signatures.adaptive, signatures.splash];
 }
 
 /* ================================================================== ZIP reading */
@@ -1221,6 +1223,7 @@ if (!isEntryPoint) {
     expected.markSignature = {
       icon: signatureOf(table.icon),
       adaptive: signatureOf(table.adaptive),
+      splash: splashLogoSignature(table.splashDark),
     };
   }
 

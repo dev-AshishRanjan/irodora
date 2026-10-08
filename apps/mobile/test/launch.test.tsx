@@ -17,9 +17,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
-import { MARK, ThemeProvider } from '@irodora/ui';
-import { Launch } from '../src/launch';
+import { lockupGeometry, MARK, markInkBox, ThemeProvider } from '@irodora/ui';
+import { Launch, SPLASH_MARK, SPLASH_MARK_DY } from '../src/launch';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
+import brandAssets from '../assets/brand/brand-assets.json' with { type: 'json' };
 
 /*
  * FAKE TIMERS, for the reason `sheet.test.tsx` records: reanimated installs a mapper whose
@@ -44,8 +45,46 @@ const draw = (
     </ThemeProvider>,
   );
 
+describe("the native splash is 14's mark, at 14's size (F-231)", () => {
+  /** The grid a native image draws: the image's grid at the image's width. */
+  const nativeGrid = (imageWidth: number, grid: number, canvas: number): number =>
+    (imageWidth * grid) / canvas;
+
+  it("draws its grid at the splash lockup's, within a tenth of a dp", () => {
+    /*
+     * THE HAND-OVER DEFECT F-230 FOUND. The image is a canvas with the mark on a grid inside it, so
+     * the grid on screen is the image's width times the grid's share — not the width. The lockup
+     * the overlay settles into is 14's (`lockupGeometry`, ADR-0123); the native image is held to it.
+     */
+    const lockup = lockupGeometry('splash').mark;
+    expect(Math.abs(SPLASH_MARK - lockup)).toBeLessThanOrEqual(0.1);
+  });
+
+  it("DECOY — F-230's splash, a 768 grid at 160 pt, is 120 dp and is refused", () => {
+    const lockup = lockupGeometry('splash').mark;
+    expect(Math.abs(nativeGrid(160, 768, 1024) - lockup)).toBeGreaterThan(0.1);
+    // And the overlay's old size, the image's width drawn as the grid: a third larger again.
+    expect(Math.abs(160 - nativeGrid(160, 768, 1024))).toBeGreaterThan(0.1);
+  });
+
+  it('reads the grid from the drawings table, the light image and the dark one alike', () => {
+    const { splashLight, splashDark } = brandAssets.drawings;
+    expect(splashLight).toStrictEqual({ ...splashDark, file: splashLight.file });
+    expect(SPLASH_MARK).toBe(nativeGrid(SPLASH_IMAGE_WIDTH, splashDark.grid, splashDark.canvas));
+  });
+
+  it("puts the grid's centre where centring the INK puts it (ADR-0126)", () => {
+    // The ink box's centre sits above the grid's; the grid moves down by the difference.
+    const box = markInkBox();
+    const inkCentring = ((MARK.grid / 2 - (box.top + box.bottom) / 2) / MARK.grid) * SPLASH_MARK;
+    // The table rounds the offset to a whole pixel of its 1024 canvas: under 0.15 pt at 244 pt.
+    expect(Math.abs(SPLASH_MARK_DY - inkCentring)).toBeLessThanOrEqual(0.15);
+    expect(SPLASH_MARK_DY).toBeGreaterThan(0);
+  });
+});
+
 describe('the overlay continues the native splash rather than replacing it', () => {
-  it('draws the mark at the width the native splash used', () => {
+  it('draws the mark at the grid the native splash drew, where it drew it', () => {
     /*
      * READ FROM THE SAME EXPORT the config passes to `expo-splash-screen`. A second copy of the
      * number is a hand-over that drifts by a few points and reads as a jump at exactly the
@@ -62,7 +101,15 @@ describe('the overlay continues the native splash rather than replacing it', () 
       return name === 'Svg' || name === 'RNSVGSvgView';
     });
     expect(marks.length).toBeGreaterThan(0);
-    expect(marks.some((m) => m.props['width'] === SPLASH_IMAGE_WIDTH)).toBe(true);
+    expect(marks.some((m) => m.props['width'] === SPLASH_MARK)).toBe(true);
+    // DECOY: the image's width drawn as the grid — the defect — is not what is drawn.
+    expect(marks.some((m) => m.props['width'] === SPLASH_IMAGE_WIDTH)).toBe(false);
+    const placed = UNSAFE_root.findAll(
+      (n) =>
+        (n.type as unknown) === 'View' &&
+        (n.props['style'] as { top?: number } | undefined)?.top === SPLASH_MARK_DY,
+    );
+    expect(placed.length).toBeGreaterThan(0);
   });
 
   it('and the config passes that same number to the native splash', () => {

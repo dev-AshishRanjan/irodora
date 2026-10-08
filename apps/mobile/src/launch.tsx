@@ -19,9 +19,12 @@
  *
  * ## The first JavaScript frame continues the last native one
  *
- * The native splash draws the mark at {@link SPLASH_IMAGE_WIDTH}, centred, on the theme's
- * `background`. So does this, from the **same exported number** — a second copy would drift by a
- * few points and read as a jump at exactly the moment the eye is on it.
+ * The native splash draws its image at {@link SPLASH_IMAGE_WIDTH}, centred, on the theme's
+ * `background`, and the mark inside it on a grid of {@link SPLASH_MARK} — the image's grid at that
+ * width, read from the generator's drawings table rather than restated. This draws that grid, at
+ * that size, where the image puts it ({@link SPLASH_MARK_DY} below the centre: a lone mark is
+ * centred by its ink, ADR-0126). F-230 found it drawing the IMAGE's width as the grid's — 160
+ * against 120 — so the mark grew by a third at the moment the eye is on it (F-231).
  *
  * And the native splash is hidden **after** this has rendered, never before. Hiding first and
  * drawing after is the blank frame again, one layer up.
@@ -43,6 +46,20 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Mark, useMotion, useTheme } from '@irodora/ui';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
+import brandAssets from '../assets/brand/brand-assets.json' with { type: 'json' };
+
+/** The splash image's drawing — the light and the dark one are drawn on one grid (the test holds it). */
+const SPLASH_DRAWING = brandAssets.drawings.splashDark;
+
+/**
+ * The native splash's mark, as an edge length of its grid in points: the image's grid at the image's
+ * width. 14's splash lockup draws its mark at the same grid (`lockupGeometry('splash').mark`), and
+ * `launch.test` holds the two within 0.1 dp, so the overlay continues the native frame AND is 14's.
+ */
+export const SPLASH_MARK = (SPLASH_IMAGE_WIDTH * SPLASH_DRAWING.grid) / SPLASH_DRAWING.canvas;
+
+/** How far below the window's centre the native splash puts the mark's grid centre, in points. */
+export const SPLASH_MARK_DY = (SPLASH_IMAGE_WIDTH * SPLASH_DRAWING.dy) / SPLASH_DRAWING.canvas;
 
 /**
  * How long the mark is held before it leaves, in milliseconds.
@@ -138,11 +155,11 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
       ]}
     >
       {/*
-        THE SAME MARK, AT THE SAME SIZE, ON THE SAME GROUND the native splash was drawing —
-        from the same exported number. See the header.
+        THE SAME MARK, AT THE SAME SIZE, IN THE SAME PLACE, ON THE SAME GROUND the native splash
+        was drawing — from the same table. See the header.
       */}
-      <View>
-        <Mark size={SPLASH_IMAGE_WIDTH} color="foreground" />
+      <View style={{ top: SPLASH_MARK_DY }}>
+        <Mark size={SPLASH_MARK} color="foreground" />
       </View>
     </Animated.View>
   );
