@@ -88,6 +88,34 @@ export function encodePng(width, height, rgba) {
   ]);
 }
 
+/**
+ * A palette PNG, assembled by hand: `indices` one per pixel, packed at `depth` bits, unfiltered.
+ * For the proofs only — the product's assets are written as RGBA by `encodePng` — so the decoder
+ * can be watched reading the format aapt2 may hand gate 16 (F-231).
+ */
+export function encodePalettePng(width, height, depth, palette, alphas, indices) {
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = depth;
+  ihdr[9] = 3;
+  const stride = Math.ceil((width * depth) / 8);
+  const raw = Buffer.alloc(height * (stride + 1));
+  for (let y = 0; y < height; y += 1)
+    for (let x = 0; x < width; x += 1) {
+      const at = y * (stride + 1) + 1 + ((x * depth) >> 3);
+      raw[at] |= indices[y * width + x] << (8 - depth - ((x * depth) & 7));
+    }
+  return Buffer.concat([
+    SIGNATURE,
+    chunk('IHDR', ihdr),
+    chunk('PLTE', Buffer.from(palette.flat())),
+    chunk('tRNS', Buffer.from(alphas)),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
 /** Every chunk in a PNG, in order. Throws on anything that is not one. */
 function chunks(buf) {
   if (!buf.subarray(0, 8).equals(SIGNATURE)) throw new Error('not a PNG');
@@ -123,17 +151,28 @@ export function decodePng(buf) {
 
   // Refused rather than approximated. See the header: a decoder that guesses returns plausible
   // wrong pixels, and the check downstream would agree with them.
-  if (depth !== 8) throw new Error(`unsupported bit depth ${String(depth)} — only 8 is handled`);
   if (interlace !== 0) throw new Error('interlaced PNG is not handled');
-  const channels = { 0: 1, 2: 3, 4: 2, 6: 4 }[colourType];
-  if (channels === undefined)
-    throw new Error(`unsupported colour type ${String(colourType)} (palette is not handled)`);
+  /*
+   * INDEXED COLOUR (F-231). aapt2 may re-encode a release build's PNG resources as a palette PNG
+   * when the colours allow it, and gate 16 reads those. Each pixel is an index of 1, 2, 4 or 8 bits
+   * into PLTE, its alpha from tRNS (opaque where tRNS is shorter); an index past the palette is a
+   * broken file, refused.
+   */
+  const indexed = colourType === 3;
+  if (indexed ? ![1, 2, 4, 8].includes(depth) : depth !== 8)
+    throw new Error(`unsupported bit depth ${String(depth)} for colour type ${String(colourType)}`);
+  const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[colourType];
+  if (channels === undefined) throw new Error(`unsupported colour type ${String(colourType)}`);
+  const plte = indexed ? parts.find((c) => c.type === 'PLTE')?.data : undefined;
+  if (indexed && plte === undefined) throw new Error('a palette PNG has no PLTE');
+  const trns = indexed ? (parts.find((c) => c.type === 'tRNS')?.data ?? Buffer.alloc(0)) : null;
 
   const idat = Buffer.concat(parts.filter((c) => c.type === 'IDAT').map((c) => c.data));
   const raw = inflateSync(idat);
 
+  // Filters work on whole bytes: a pixel narrower than one is filtered a byte at a time.
   const bpp = channels;
-  const stride = width * bpp;
+  const stride = indexed ? Math.ceil((width * depth) / 8) : width * bpp;
   const out = Buffer.alloc(width * height * 4);
   let prior = Buffer.alloc(stride);
 
@@ -180,7 +219,18 @@ export function decodePng(buf) {
       // comma expressions to fit on one line; prettier then wrapped them in the parentheses a
       // sequence expression needs, and `no-unused-expressions` refused them — correctly, since
       // a comma expression evaluated for its side effects is exactly what that rule is for.
-      if (channels === 1) {
+      if (indexed) {
+        const index =
+          depth === 8
+            ? line[x]
+            : (line[(x * depth) >> 3] >> (8 - depth - ((x * depth) & 7))) & ((1 << depth) - 1);
+        if (plte === undefined || trns === null || index * 3 + 2 >= plte.length)
+          throw new Error(`palette index ${String(index)} is past the palette`);
+        out[d] = plte[index * 3];
+        out[d + 1] = plte[index * 3 + 1];
+        out[d + 2] = plte[index * 3 + 2];
+        out[d + 3] = index < trns.length ? trns[index] : 255;
+      } else if (channels === 1) {
         out[d] = line[s];
         out[d + 1] = line[s];
         out[d + 2] = line[s];

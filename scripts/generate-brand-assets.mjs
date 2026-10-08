@@ -52,7 +52,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { encodePng, decodePng, carriesMark, downscale } from './png.mjs';
+import { encodePng, encodePalettePng, decodePng, carriesMark, downscale } from './png.mjs';
 import {
   carriesTile,
   insideEveryMask,
@@ -275,7 +275,7 @@ export function fourteen() {
 }
 
 /** Colours, from the manifest. The mark has none of its own, and the icon invents none. */
-function palette() {
+export function palette() {
   const m = JSON.parse(readFileSync(join(ROOT, 'docs/design/design-system.manifest.json'), 'utf8'));
   const hex = (theme, token) => m.color[theme][token].srgb;
   const tile = fourteen().gradient;
@@ -386,7 +386,7 @@ function shapesInPixels(g, gridPx, canvas, ink, dyPx = 0) {
  * `ink` is `{ eye, petals }`, one colour twice: the mark is one ink (ADR-0122). Each pixel's
  * coverage is the share of its samples the mark's point test accepts.
  */
-function render(canvas, gridPx, ink, ground, g, dyPx = 0) {
+export function render(canvas, gridPx, ink, ground, g, dyPx = 0) {
   const px = paintGround(canvas, ground);
   // A ground with no mark — the adaptive icon's background layer (F-231).
   if (ink === null) return encodePng(canvas, canvas, px);
@@ -1033,6 +1033,51 @@ function prove() {
     round.width === 4 && round.height === 4 && round.rgba.equals(px),
     'a PNG round-trips to the pixels it was given',
     '4×4 RGBA — without this the pair could be wrong together',
+  );
+  /*
+   * A PALETTE PNG (F-231): what aapt2 may hand gate 16 from a release build. Hand-assembled — three
+   * colours at two bits a pixel, the second half-transparent and the first fully so — and read back
+   * pixel for pixel; the decoy is an index past the palette, which must be refused, not drawn black.
+   */
+  const indices = [0, 1, 2, 1, 2, 0, 1, 2, 2, 1, 0, 0];
+  const palettePng = encodePalettePng(
+    4,
+    3,
+    2,
+    [
+      [17, 34, 51],
+      [204, 0, 0],
+      [255, 255, 255],
+    ],
+    [0, 128],
+    indices,
+  );
+  const decodedPalette = decodePng(palettePng);
+  const wantPalette = indices.flatMap(
+    (i) =>
+      [
+        [17, 34, 51, 0],
+        [204, 0, 0, 128],
+        [255, 255, 255, 255],
+      ][i],
+  );
+  say(
+    decodedPalette.width === 4 && decodedPalette.rgba.equals(Buffer.from(wantPalette)),
+    'a palette PNG reads back pixel for pixel, its tRNS honoured',
+    '4×3 at 2 bits a pixel, three colours, two of them translucent',
+  );
+  const pastPalette = (() => {
+    try {
+      decodePng(encodePalettePng(2, 1, 2, [[0, 0, 0]], [], [0, 3]));
+      return false;
+    } catch {
+      return true;
+    }
+  })();
+  say(
+    pastPalette,
+    'DECOY — an index past the palette is REFUSED, not drawn',
+    'index 3 of a one-colour palette',
   );
 
   // 2. Every generated asset carries the mark, at its full size and at every launcher density.

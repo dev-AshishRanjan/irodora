@@ -168,6 +168,17 @@ jobs:
       - name: 'Gate 2 — permission-set proof'
         run: pnpm verify:permissions:prove
 
+      # NOT A GATE, and the config half of gate 16 for the icon and the splash (F-231, criterion 5).
+      # `pnpm build` above runs `expo prebuild`, which writes the launcher layers, the splash logos,
+      # their colours and — on Linux, where prebuild does not skip it as it does on Windows — the iOS
+      # asset catalog and storyboard. So both native projects are read here, on the pull request,
+      # with no JDK and no Xcode; `--require-ios` makes a missing ios/ a failure, never a note.
+      - name: 'Gate 2 — icon and splash in the native projects (config half)'
+        run: pnpm verify:native-assets --require-ios
+
+      - name: 'Gate 2 — icon and splash proof'
+        run: pnpm verify:native-assets:prove
+
       # NOT A GATE. A worklet may only call other worklets: the Worklets babel plugin captures
       # an unmarked function as an ordinary JS-thread one, and invoking it from the frame thread
       # throws the moment a frame arrives. F-115's crash was exactly that, and NOTHING ELSE HERE

@@ -258,19 +258,44 @@ export function insidePolygon(polygon, x, y) {
  */
 export const toMaskUnits = (layerPx, p) => ((p + 0.5 - layerPx / 6) / ((2 * layerPx) / 3)) * 100;
 
+/** The masks that do not contain the 66 dp safe zone, by name — checked once, at 720 points each. */
+let zoneBreakers = null;
+export function masksBreakingTheZone() {
+  zoneBreakers ??= Object.entries(LAUNCHER_MASKS)
+    .filter(([, mask]) => {
+      const polygon = maskPolygon(mask.path);
+      return Array.from({ length: 720 }, (_, k) => (k / 720) * 2 * Math.PI).some(
+        (a) =>
+          !insidePolygon(polygon, 50 + SAFE_RADIUS * Math.sin(a), 50 - SAFE_RADIUS * Math.cos(a)),
+      );
+    })
+    .map(([name]) => name);
+  return zoneBreakers;
+}
+
 /**
- * Whether an adaptive foreground keeps every inked pixel inside the safe zone and inside every mask
- * (F-231, criterion 2). Read from the layer's alpha, at whatever size it is given.
+ * Whether an adaptive foreground keeps every inked pixel inside the safe zone and so inside every
+ * mask (F-231, criterion 2). Read from the layer's alpha, at whatever size it is given.
+ *
+ * TWO FACTS, EACH CHECKED. Every mask contains the 66 dp zone (`masksBreakingTheZone`: each mask's
+ * outline holds the zone's circle at 720 points, and an outline that holds a circle holds its disc);
+ * and every corner of every inked pixel lies inside the zone. Together they put the ink inside every
+ * mask — without testing each pixel against six outlines, which cost seconds a layer.
  */
 export function insideEveryMask(layer) {
-  const polygons = Object.entries(LAUNCHER_MASKS).map(([name, m]) => [name, maskPolygon(m.path)]);
+  const breakers = masksBreakingTheZone();
+  if (breakers.length > 0)
+    return {
+      ok: false,
+      why: `the ${breakers.join(', ')} mask does not contain the 66 dp safe zone`,
+    };
   let inked = 0;
   let farthest = 0;
   for (let y = 0; y < layer.height; y += 1)
     for (let x = 0; x < layer.width; x += 1) {
       if (layer.rgba[(y * layer.width + x) * 4 + 3] === 0) continue;
       inked += 1;
-      // Every corner of the pixel, so a pixel half under a mask is not passed by its centre.
+      // Every corner of the pixel, so a pixel half outside the zone is not passed by its centre.
       for (const [dx, dy] of [
         [-0.5, -0.5],
         [0.5, -0.5],
@@ -280,23 +305,17 @@ export function insideEveryMask(layer) {
         const u = toMaskUnits(layer.width, x + dx);
         const w = toMaskUnits(layer.height, y + dy);
         farthest = Math.max(farthest, Math.hypot(u - 50, w - 50));
-        if (farthest > SAFE_RADIUS)
-          return {
-            ok: false,
-            why: `ink at (${String(x)}, ${String(y)}) is ${farthest.toFixed(2)} units from the centre, outside the 66 dp safe zone (${SAFE_RADIUS.toFixed(2)})`,
-          };
-        for (const [name, polygon] of polygons)
-          if (!insidePolygon(polygon, u, w))
-            return {
-              ok: false,
-              why: `ink at (${String(x)}, ${String(y)}) is cut by the ${name} mask`,
-            };
       }
+      if (farthest > SAFE_RADIUS)
+        return {
+          ok: false,
+          why: `ink at (${String(x)}, ${String(y)}) is ${farthest.toFixed(2)} units from the centre, outside the 66 dp safe zone (${SAFE_RADIUS.toFixed(2)})`,
+        };
     }
   return inked > 0
     ? {
         ok: true,
-        why: `${String(inked)} inked pixel(s), the farthest ${farthest.toFixed(2)} units from the centre (safe zone ${SAFE_RADIUS.toFixed(2)}), inside all ${String(polygons.length)} masks`,
+        why: `${String(inked)} inked pixel(s), the farthest ${farthest.toFixed(2)} units from the centre — inside the safe zone (${SAFE_RADIUS.toFixed(2)}), which all ${String(Object.keys(LAUNCHER_MASKS).length)} masks contain`,
       }
     : { ok: false, why: 'nothing is inked — a layer with no mark' };
 }
