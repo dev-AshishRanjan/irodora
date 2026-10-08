@@ -19,3 +19,7 @@ rest of Home around it; F-231's splash calls the stack with the catalogue's tagl
 - **The row measures the width its column gives it** and holds the name to its share, so the figure
   fits at 200 %. Both drawn placements are columns; in a row parent it would measure only itself.
 - **It scales with the name.** Dynamic Type moves the name, and the mark and the intervals follow it.
+
+## F-231 (2026-10-08)
+
+F-231 is the splash stack's caller: the launch places it by its ink, reads its geometry back (`onGeometry`) to know where the travelling mark arrives, and withholds the mark's ink — not its place — until it does (`markHidden`).

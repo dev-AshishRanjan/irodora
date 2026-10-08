@@ -179,8 +179,11 @@ petals are tangent, so their radius and orbit follow from the reach alone.
 **One ink, everywhere — the icon included** (ADR-0122, superseding
 [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md)). The
 mark takes one of four neutral foregrounds, by type. The icon takes `14`'s ink: the mark in
-`text.secondary` on the dark ground, the same image on iOS and Android (`14`'s tile, its gradient
-and corner, is F-231's). Shape, not colour, is what
+`text.secondary` on `14`'s tile — a gradient from `surface.2` at the top-left to the ground at the
+bottom-right, the mark at `14`'s share of it and centred by its ink — the same picture on iOS and on
+every Android launcher, whose shape and edge light are the platform's
+([ADR-0126](../adr/0126-the-icon-is-14s-tile-full-bleed-its-corner-and-its-rim-the-platforms.md)).
+Shape, not colour, is what
 makes it recognisable, and every ground it is drawn on is a scored colour-vision pair. **The one
 exception is `27`'s loading state**, which tints the mark (C10), with words beside it.
 
@@ -193,7 +196,10 @@ The name is set in Gelasio, the mockups' serif, and is Latin in both locales
 There are two lockups:
 
 - **`01`'s row**: the mark beside the name, as Home's header draws it.
-- **`14`'s stack**: the mark over the name over 彩り・色の知性, as the splash draws it.
+- **`14`'s stack**: the mark over the name over 彩り・色の知性, as the splash draws it. The launch
+  continues the native splash into it: the mark at its native size and place, rising into the stack
+  while `14`'s glow, subline, silk wave and progress line arrive around it, in the phone's
+  appearance ([ADR-0127](../adr/0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md)).
 
 `00`'s coral outline and `25`'s IRODORA 彩度 are not used. A lockup is **one figure**
 ([ADR-0123](../adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)):
@@ -210,7 +216,8 @@ it with the blossom `14` draws, in the ink `14` draws it in. The audits are in
 [`brand.tsx`](../../packages/ui/src/brand.tsx) rather than repeated here.
 
 The machinery survived all four: the geometry lives in source, every asset is generated from it,
-and gate 16 reads the mark back out of the built APK by proportion rather than by hash.
+and the prebuild check and gate 16 read every launcher layer and splash logo back out of the native
+projects and the built APK by proportion rather than by hash — one table of verdicts for both (F-231).
 
 ---
 

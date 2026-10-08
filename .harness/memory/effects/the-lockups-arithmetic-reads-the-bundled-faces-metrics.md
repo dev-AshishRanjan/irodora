@@ -29,3 +29,7 @@ Platforms kern by default, so the name's advance is read with GPOS's `kern` pair
 adjusts "Irodora"; Gelasio's one kerned class (L before two unencoded glyphs, −300) is the decoy.
 The manifest's `ownLine` for every bundled face is held to its hhea line here too: it decides
 whether iOS centres a line or bottom-aligns it.
+
+## F-231 (2026-10-08)
+
+The splash copy shipped. Its Japanese subline brought 論 and 的; the subset was re-cut and the font test re-read GOTHIC from it (E-183).

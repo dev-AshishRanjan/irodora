@@ -98,3 +98,7 @@ Gate 16 checked every launcher resource against `icon.png`'s grid. The adaptive 
 shape and the size, and still assumed one drawing. It now picks the signature by the resource's
 layer, and `--prove` refuses each drawing by the other's signature, so the assumption cannot come
 back unseen.
+
+## F-231 (2026-10-08)
+
+`signaturesFor` is gone. Gate 16 and the new prebuild check route every launcher layer and both splash logos through one table (`brand-verdicts.mjs`, E-184) and decode them by their bytes — the old `.png` filter had never read a launcher layer, because Expo writes PNG bytes in `.webp` names, and it read the splash logo with the icon's signature, which refused every correct build. A layer it cannot read now fails.

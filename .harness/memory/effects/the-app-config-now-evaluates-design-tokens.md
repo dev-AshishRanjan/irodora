@@ -55,3 +55,7 @@ than here.
 over the same ground. So iOS and Android finally show one image, which was this link's stated intent
 and was false until ADR-0122 (the icon had the light ground). `--prove`, now in `lint`, decodes
 every asset and requires one ink.
+
+## F-231 (2026-10-08)
+
+The adaptive icon now has a background LAYER — 14's tile across the 72 dp viewport — as well as its colour, which Expo writes as `iconBackground` whatever the layer. The tile's two tokens reach the generator through 14's inventory (E-179), still from the manifest.

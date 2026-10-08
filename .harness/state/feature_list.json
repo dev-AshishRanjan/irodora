@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-07",
+  "updated": "2026-10-08",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7192,7 +7192,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "BLOCKED 2026-09-15 ON THE DEVICE RUN F-091 OWES. Criterion 2 requires captures from the running app on an Android emulator through the Maestro flows, and F-091 still owes the first on-device run of those flows (attested, outstanding). On this workstation: the Android SDK has emulator.exe and system images android-29/30/31 but no AVD; there is no Maestro CLI and no JDK. Installing Maestro and a JDK are downloads the user must approve — F-221 resumes when they are installed and F-091's run is recorded. The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator. CRITERION ADDED 2026-09-14 BY F-219, recorded here where the change lives: the claims lint reads source lines, and the catalogues compose a figure and its label at render time, so a composed claim is invisible to it (evaluation 4 of F-219). This feature already captures every route; running the same patterns over the captured text is the guard that can see one.",
+      "notes": "BLOCKED 2026-09-15 ON THE DEVICE RUN F-091 OWES. Criterion 2 requires captures from the running app on an Android emulator through the Maestro flows, and F-091 still owes the first on-device run of those flows (attested, outstanding). On this workstation: the Android SDK has emulator.exe and system images android-29/30/31 but no AVD; there is no Maestro CLI and no JDK. Installing Maestro and a JDK are downloads the user must approve — F-221 resumes when they are installed and F-091's run is recorded. The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator. CRITERION ADDED 2026-09-14 BY F-219, recorded here where the change lives: the claims lint reads source lines, and the catalogues compose a figure and its label at render time, so a composed claim is invisible to it (evaluation 4 of F-219). This feature already captures every route; running the same patterns over the captured text is the guard that can see one. FROM F-231 (2026-10-08): when the generic inventory sweep lands, include the launch overlay (14.splash.*) and drop launch.test's local assertions of its elements and tokens.",
       "blockedByAttestation": [
         "F-091"
       ]
@@ -7626,7 +7626,39 @@
         "artifact"
       ],
       "notes": "MOCKUP 14. Tagline \"Deterministic Colour Engine • 100% On-Device & Offline\" is true (ADR-0051: no server) and stays. The motion — waves, glow, progress — never animates a colour (motion rules), and is built in F-266. FROM F-226 (2026-09-28): the splash lockup's name is set in Gelasio Regular (ADR-0112; 14's drawn wordmark reads 437 on the stem instrument). `Launch` does not render the wordmark yet, and every bundled font is loaded behind the native splash before the first frame, so the lockup can use the serif without a fallback flash. FROM F-230 (2026-10-06): the splash lockup is `<Wordmark form=\"splash\" tagline={…} />`, 14's stack as one figure whose box is its ink (ADR-0123); place it by 14.splash.lockup's ink box. The tagline 彩り・色の知性 is catalogue copy this feature adds (static:brand.taglineJa). 知 is NOT in the Noto Sans JP subset yet, so adding the copy re-subsets the face, and apps/mobile/test/fonts.test.tsx then re-reads GOTHIC's metrics from it (E-174). The icon's tile (gradient, squircle) is this feature's (ADR-0122 decision 6); until then the icon is the mark on the flat dark ground. A HAND-OVER DEFECT FOUND BY F-230, AND THIS FEATURE'S TO FIX: the native splash shows splash-icon-*.png (a 1024 px canvas whose grid is 768 px) at imageWidth SPLASH_IMAGE_WIDTH = 160 pt, so its mark's grid is 120 pt, while launch.tsx's overlay draws `<Mark size={SPLASH_IMAGE_WIDTH} />`, a 160 pt grid. The mark grows by a third at the hand-over. launch.test only compares the two numbers. 14 draws the splash mark's grid at 154.5 dp (ink 149.7), which is LOCKUP_SPLASH's at the default text size. Fix it with the splash rebuild: the native image and the overlay's lockup must draw the grid at one size, 14's. FROM F-230'S REVIEW (2026-10-07): the plan said the splash tagline 'declares its language'; nothing in the product sets accessibilityLanguage, and Wordmark does not — when this feature adds the catalogue copy, decide whether Japanese text announces its language (iOS VoiceOver picks the voice by it), product-wide rather than for the tagline alone. FROM F-222 (2026-10-07): 知 is now in the Noto Sans JP subset — F-222’s band word 知覚できる差 required it — so the note above that the tagline needs a re-subset no longer holds; the font test reads 14’s full tagline.",
-      "plan": "plans/F-231-the-app-icon-the-adaptive-and-themed-icons-and-the-splash-are-mockup-14.md"
+      "plan": "plans/F-231-the-app-icon-the-adaptive-and-themed-icons-and-the-splash-are-mockup-14.md",
+      "attested": [
+        {
+          "criterion": "The icon is 14’s dark squircle tile with the silver mark, generated by scripts/generate-brand-assets.mjs, and --check byte-compares it in CI",
+          "verifiedBy": "On an iPhone (iOS 18, and iOS 26 or 27 where the system lays its glass and rim over the icon), the home-screen icon beside mockup 14's left frame: lighter at the top-left and reaching the ground at the bottom-right, the silver blossom at 14's share and centred by its ink, the corner and the rim the system's (ADR-0126); the same tile on a Pixel and a Samsung launcher. `--check` runs in CI's lint gate on every pull request.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The Android adaptive icon keeps the mark inside the 66 dp safe zone on every launcher mask; the Android 13 themed icon is the mark alone",
+          "verifiedBy": "On Android 13 or later — at least a Pixel (circle) and a One UI launcher (squircle): the blossom inside each launcher's shape with 14's tile around it, nothing of it cut; with themed icons switched on, the tinted blossom alone. `--prove` checks every AOSP mask by computation; a launcher's own shapes are seen only on a device.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The native splash is the mark on 14’s ground; the launch overlay continues it without a gap into 14’s full composition — mark with its glow, “Irodora”, 彩り・色の知性, the tagline, the wave line-art and the progress line — and hands over to the app",
+          "verifiedBy": "A cold start on an iPhone and an Android phone, in both appearances, recorded at 60 fps: the native splash's mark and the overlay's first frame coincide — no change of size or place, no blank frame; the mark rises into 14's lockup while the glow, the subline, the wave and the line fade in; the blossom is never seen twice; the app takes over. With reduced motion on: the composition at once, then the app. The subline's cap top sits where ADR-0127 §4 estimates (about 4 dp into its line) on both platforms' sans.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Light appearance takes 14’s composition in 25’s palette (C17, ⇄)",
+          "verifiedBy": "A light-mode phone on both platforms: the native splash and the overlay in Washi (25's palette), the glow a soft ink halo, with no dark frame between them; and a dark phone with Washi chosen in the app, whose launch stays Sumi until the overlay leaves (R9 §4 E4). F-267 compares the light glow against 14 by eye (C17 is ⇄).",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The built APK and the iOS build are asserted to carry the new icon and splash (FR-69), so a placeholder cannot ship",
+          "verifiedBy": "`pnpm verify:apk:prove` green in android-build.yml or release.yml — its aapt2-built branded fixtures, plain and with shortened paths, could not run on the implementing workstation (no SDK) — then gate 16 green on an APK built from this commit, every launcher layer and both splash logos read and matched and the splash and icon colours read from the resource table; `pnpm verify:native-assets --require-ios` green in CI on the generated iOS asset catalog, colour set and storyboard; and the icon and splash seen on an iPhone from an Xcode build.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-232",
@@ -9259,7 +9291,8 @@
         "a11y",
         "contrast",
         "cvd"
-      ]
+      ],
+      "notes": "FROM F-231 (2026-10-08, ADR-0127): the launch's hand-over — the native-size mark rising into 14's lockup while the composition fades in, the hold, the leave — is built; do not duplicate it. F-266 animates only the ambience: `LaunchGlow`'s opacity and scale (the glow is an Image of a mask, tinted `foreground` — never animate its tint), the silk wave's transform, and `ProgressBar`'s value between `launchProgress`'s steps (0, 0.5, 1 — a `scaleX`, never a width). Everything stops under reduced motion."
     },
     {
       "id": "F-267",
@@ -9299,7 +9332,7 @@
         "e2e",
         "perf"
       ],
-      "notes": "The manifest already carries outstanding re-approvals whose reviewedBy field says nobody has looked at the values. R9 is the release where looking is the acceptance criterion rather than a note. FROM F-225 (2026-09-25): the manifest's `valuesChangedSinceApproval` now records the whole R9 palette (ADR-0111) as NOT YET APPROVED BY A PERSON. It supersedes only ADR-0099's entry. ADR-0098's and ADR-0053's entries stay outstanding, because the Sumi and Washi status triples did not move.\nThree re-approvals are therefore owed here, and each belongs in the per-route comparison.\nADR-0111 also lists what to look at hardest: Slate's paler error colour (status.bad #FECACA, C 0.060), the corrected ring #788090, Washi's ring #3A3B3E, and the APCA shortfalls gate 9 reports on drawn values (for example #768290 on Sumi's ground, Lc 34). FROM F-225'S REVIEW (2026-09-25), for the person, in addition to the above:\n(1) The shipped `ring` and `border.indicator` on Sumi are #788090. The value §4 PUBLISHED (2026-09-14, in the agent-written R9 re-cut — not a value the person approved, as this note first said) was #5C6472, measured on the ground alone. The rule applied to every surface gives #788090.\n(2) Slate's `status.bad` moved by a hue-held, chroma-free rule. F-225's plan said the loop should STOP for a person there. It was read as within the 2026-09-24 delegation instead. Confirm it or reverse it. mockups/tools/slate-status-search.mjs shows there is no lightness-only answer.\n(3) Slate's `border` is Sumi's #2E333D, 1.02:1 on its ground and darker than its cards. Slate's and Obsidian's pill text is the re-anchored ground (#2F3136, #0F1115).\n(4) On Washi an outlined control's focus edge (#3A3B3E, 2px) is lighter than its resting edge (#1A1B1E, 1px).\n(5) Gate 9's APCA report asks for a decision on Sumi's status.ok and status.warn on level 2, and on Obsidian's status.ok there. ADR-0111 §8 keeps them and says why.\n(6) The four theme names are Latin in Japanese too, as 15 prints them (DRAWN_LATIN_NAMES). FROM F-226 (2026-09-28), for the person:\n(1) OQ-13 IS OPEN, for the person: does a screen set an element drawn off the scale at its drawn size (P3) or at the nearest step? ADR-0113 lists the seven drawn more than 4 dp from a step (22's figures ~46, 06's kanji 53, 26's kanji 40.4, 01's wordmark 34, 20's kanji 32.2; 25's two are palette-only).\n(2) The serif ships at Regular. 00's own wordmark and Display 1's stem bands measure nearer Medium (about 480-490), and the tagline lighter than Regular.\n(3) Pre-R9 screens changed size with the scale: body 15 to 16, labels 13 to 14, the old 10 px uppercase labels to 10.3 sentence case, screen titles 34 to 22. (4) FROM F-226'S REVIEW: 00's Display 1 and Title samples read nearer Medium (~490) once the band through the baseline serifs is set aside; the serif ships at Regular because every serif element a SCREEN draws at those steps is a wordmark, which reads Regular (ADR-0112). And the old 10 px bold uppercase labels became 10.3 px, weight 400 captions: section headers on Home, the Atlas and in layout.tsx now look like the notes under them, and Home's lead sample no longer leads (ADR-0113). FROM F-233 (2026-09-29), for a person to confirm (ADR-0116): text on a sample moves off C8's inks on 7 · 9 · 19 · 6 corpus colours (Sumi · Washi · Slate · Obsidian), by at most ΔE00 4.15 · 5.22 · 12.07 · 2.50; the line around a sample moves on about half the corpus and becomes a visible grey where the README draws a faint keyline (at most ΔE00 52.42 on Washi) — the smallest single line that keeps a 3:1 edge, where F-068 drew a two-tone ring (board 00 draws one in its swatch-wells panel; the screens, which govern their own surfaces, draw one line); on a device palette whose tinted inks cannot reach, the ink gives up chroma (hue held). Also F-233's: a Swatch's selection is drawn as a frame just outside the sample now that no well carries it, and a level-1 card's resting edge is one dp of border. FROM F-233's REVIEW (2026-09-29), also to confirm: where an element binds no keyline a line appears on 44 · 57 · 58 · 42 of 120 corpus colours (OQ-46); on the heroes' own colour (#5B6B78) the line moves dark (#1D1E24) where 01 and 06 draw it light (OQ-46); the heroes' line is drawn at their measured width (2.5 dp on 01, 6.9 on 06) in the README keyline's value, where the screens draw it light grey (C20, P4); FabricSwatch draws 12 teeth on every side at one pitch, where 12 draws 12 across and 13 down; the anchor ring is foreground.2, as 19 measures. FROM F-234 (2026-09-30): OQ-47 (a person's) — what an active Atlas, Lens, Wardrobe or Profile tab draws; 01 draws only Home active. The outline glyph with 01's indicator and ink ships meanwhile, and the answer changes TABS[].activeGlyph (data), not code. ALSO FROM F-234, for a person: the tab bar stays under an action bar (R9 §4 E4, FR-71) where no mockup draws both together. FROM F-234 (2026-10-05): compare against the mockups: (1) OQ-47 — the four non-Home tabs keep their outline glyph when active; (2) R9 §4 E4 — the tab bar stays under an action bar where 16, 22 and 24 draw the home indicator; (3) the sheets dim nothing, so nothing shows that a tap outside closes them, as 03 and 04 draw. A person confirms or overrules each. FROM F-234'S REVIEW (2026-10-05): also compare (4) OQ-49: where each tab label truncates, in both locales, 360 and 384 dp, 1× to 200 %; (5) E4 on a tab root (17, 23); (6) around the floating sheet, the tab bar's rule shows in its 28.5 dp side margins and below its gap, which 03 does not draw, and the transparent dismiss layer takes taps meant for whatever shows behind it. FROM F-230 (2026-10-06): F-230's device attestations are this feature's side-by-sides. Home's header against 01 and the splash lockup against 14, on both platforms: the vertical alignment (line-box placement, Android's font padding), and both lockups at 200 % text. The mark at 16, 23, 25.5 and 39 dp beside 14's drawing and under the platforms' colour filters, with its cuts rendering as holes. FROM F-222 (2026-10-07): 23's title \"Garment Profile History\" joins the departures a person compares against (ADR-0124). FROM F-222'S REVIEW (2026-10-07): 23's title in the departure list is \"Garment Concordance\".",
+      "notes": "The manifest already carries outstanding re-approvals whose reviewedBy field says nobody has looked at the values. R9 is the release where looking is the acceptance criterion rather than a note. FROM F-225 (2026-09-25): the manifest's `valuesChangedSinceApproval` now records the whole R9 palette (ADR-0111) as NOT YET APPROVED BY A PERSON. It supersedes only ADR-0099's entry. ADR-0098's and ADR-0053's entries stay outstanding, because the Sumi and Washi status triples did not move.\nThree re-approvals are therefore owed here, and each belongs in the per-route comparison.\nADR-0111 also lists what to look at hardest: Slate's paler error colour (status.bad #FECACA, C 0.060), the corrected ring #788090, Washi's ring #3A3B3E, and the APCA shortfalls gate 9 reports on drawn values (for example #768290 on Sumi's ground, Lc 34). FROM F-225'S REVIEW (2026-09-25), for the person, in addition to the above:\n(1) The shipped `ring` and `border.indicator` on Sumi are #788090. The value §4 PUBLISHED (2026-09-14, in the agent-written R9 re-cut — not a value the person approved, as this note first said) was #5C6472, measured on the ground alone. The rule applied to every surface gives #788090.\n(2) Slate's `status.bad` moved by a hue-held, chroma-free rule. F-225's plan said the loop should STOP for a person there. It was read as within the 2026-09-24 delegation instead. Confirm it or reverse it. mockups/tools/slate-status-search.mjs shows there is no lightness-only answer.\n(3) Slate's `border` is Sumi's #2E333D, 1.02:1 on its ground and darker than its cards. Slate's and Obsidian's pill text is the re-anchored ground (#2F3136, #0F1115).\n(4) On Washi an outlined control's focus edge (#3A3B3E, 2px) is lighter than its resting edge (#1A1B1E, 1px).\n(5) Gate 9's APCA report asks for a decision on Sumi's status.ok and status.warn on level 2, and on Obsidian's status.ok there. ADR-0111 §8 keeps them and says why.\n(6) The four theme names are Latin in Japanese too, as 15 prints them (DRAWN_LATIN_NAMES). FROM F-226 (2026-09-28), for the person:\n(1) OQ-13 IS OPEN, for the person: does a screen set an element drawn off the scale at its drawn size (P3) or at the nearest step? ADR-0113 lists the seven drawn more than 4 dp from a step (22's figures ~46, 06's kanji 53, 26's kanji 40.4, 01's wordmark 34, 20's kanji 32.2; 25's two are palette-only).\n(2) The serif ships at Regular. 00's own wordmark and Display 1's stem bands measure nearer Medium (about 480-490), and the tagline lighter than Regular.\n(3) Pre-R9 screens changed size with the scale: body 15 to 16, labels 13 to 14, the old 10 px uppercase labels to 10.3 sentence case, screen titles 34 to 22. (4) FROM F-226'S REVIEW: 00's Display 1 and Title samples read nearer Medium (~490) once the band through the baseline serifs is set aside; the serif ships at Regular because every serif element a SCREEN draws at those steps is a wordmark, which reads Regular (ADR-0112). And the old 10 px bold uppercase labels became 10.3 px, weight 400 captions: section headers on Home, the Atlas and in layout.tsx now look like the notes under them, and Home's lead sample no longer leads (ADR-0113). FROM F-233 (2026-09-29), for a person to confirm (ADR-0116): text on a sample moves off C8's inks on 7 · 9 · 19 · 6 corpus colours (Sumi · Washi · Slate · Obsidian), by at most ΔE00 4.15 · 5.22 · 12.07 · 2.50; the line around a sample moves on about half the corpus and becomes a visible grey where the README draws a faint keyline (at most ΔE00 52.42 on Washi) — the smallest single line that keeps a 3:1 edge, where F-068 drew a two-tone ring (board 00 draws one in its swatch-wells panel; the screens, which govern their own surfaces, draw one line); on a device palette whose tinted inks cannot reach, the ink gives up chroma (hue held). Also F-233's: a Swatch's selection is drawn as a frame just outside the sample now that no well carries it, and a level-1 card's resting edge is one dp of border. FROM F-233's REVIEW (2026-09-29), also to confirm: where an element binds no keyline a line appears on 44 · 57 · 58 · 42 of 120 corpus colours (OQ-46); on the heroes' own colour (#5B6B78) the line moves dark (#1D1E24) where 01 and 06 draw it light (OQ-46); the heroes' line is drawn at their measured width (2.5 dp on 01, 6.9 on 06) in the README keyline's value, where the screens draw it light grey (C20, P4); FabricSwatch draws 12 teeth on every side at one pitch, where 12 draws 12 across and 13 down; the anchor ring is foreground.2, as 19 measures. FROM F-234 (2026-09-30): OQ-47 (a person's) — what an active Atlas, Lens, Wardrobe or Profile tab draws; 01 draws only Home active. The outline glyph with 01's indicator and ink ships meanwhile, and the answer changes TABS[].activeGlyph (data), not code. ALSO FROM F-234, for a person: the tab bar stays under an action bar (R9 §4 E4, FR-71) where no mockup draws both together. FROM F-234 (2026-10-05): compare against the mockups: (1) OQ-47 — the four non-Home tabs keep their outline glyph when active; (2) R9 §4 E4 — the tab bar stays under an action bar where 16, 22 and 24 draw the home indicator; (3) the sheets dim nothing, so nothing shows that a tap outside closes them, as 03 and 04 draw. A person confirms or overrules each. FROM F-234'S REVIEW (2026-10-05): also compare (4) OQ-49: where each tab label truncates, in both locales, 360 and 384 dp, 1× to 200 %; (5) E4 on a tab root (17, 23); (6) around the floating sheet, the tab bar's rule shows in its 28.5 dp side margins and below its gap, which 03 does not draw, and the transparent dismiss layer takes taps meant for whatever shows behind it. FROM F-230 (2026-10-06): F-230's device attestations are this feature's side-by-sides. Home's header against 01 and the splash lockup against 14, on both platforms: the vertical alignment (line-box placement, Android's font padding), and both lockups at 200 % text. The mark at 16, 23, 25.5 and 39 dp beside 14's drawing and under the platforms' colour filters, with its cuts rendering as holes. FROM F-222 (2026-10-07): 23's title \"Garment Profile History\" joins the departures a person compares against (ADR-0124). FROM F-222'S REVIEW (2026-10-07): 23's title in the departure list is \"Garment Concordance\". FROM F-231 (2026-10-08): compare the icon beside 14's left frame on iOS 26/27 (the system's rim and glass over it) and on Android launchers (no rim), and look for banding in the tile at launcher sizes; the launch on both platforms in both appearances — the hand-over, the light glow (C17 ⇄), an in-app theme that differs from the phone (R9 §4 E4); the snapped insets (24, 48, 16, 16) against 14's 27.7 / 47.7 / 18.9 / 16.6; and the subline's cap top, which ADR-0127 §4 estimates from the platforms' sans metrics.",
       "openQuestions": [
         "OQ-46",
         "OQ-47"
@@ -9334,7 +9367,8 @@
         "test",
         "build",
         "perf"
-      ]
+      ],
+      "notes": "FROM F-231 (2026-10-08): the launch overlay is three `view` steps (about 780 ms) over an app already mounted beneath it, and it draws a 544 px glow mask; measure cold start with it."
     },
     {
       "id": "F-269",
@@ -9368,7 +9402,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "FROM F-225 (2026-09-25): the fuka, yama and aota recipes are ALREADY REMOVED: THEME_FAMILIES, the recipe palettes and the picker entries. What remains is deliberate.\n(1) `ThemeRecipe` and `deriveTheme` are read by the device-colour seed (FR-70, E4).\n(2) `parseAppearance`'s legacy `family:mode` branches are the migration for values already stored on phones (E-150). They are not old UI, and must not be removed.\n(3) `swatch.hairline` and `swatch.hairline.inverse` keep the sample's edge until F-233 decides whether the keyline alone can. They are this feature's only if F-233 leaves them unread."
+      "notes": "FROM F-225 (2026-09-25): the fuka, yama and aota recipes are ALREADY REMOVED: THEME_FAMILIES, the recipe palettes and the picker entries. What remains is deliberate.\n(1) `ThemeRecipe` and `deriveTheme` are read by the device-colour seed (FR-70, E4).\n(2) `parseAppearance`'s legacy `family:mode` branches are the migration for values already stored on phones (E-150). They are not old UI, and must not be removed.\n(3) `swatch.hairline` and `swatch.hairline.inverse` keep the sample's edge until F-233 decides whether the keyline alone can. They are this feature's only if F-233 leaves them unread. FROM F-231 (2026-10-08): the icon is no longer the mark on the flat ground, the adaptive layers are 528/1296 (not F-230's 624/1024), and the splash is 648/1024 at 244 pt (not 768 at 160); nothing should still assume the old numbers. `apps/mobile/android/app/src/main/res/drawable/ic_launcher_background.xml` is the prebuild template's vector, unreferenced since the adaptive XML names `@mipmap/ic_launcher_background`."
     },
     {
       "id": "F-270",
@@ -10611,7 +10645,7 @@
         "state",
         "test"
       ],
-      "notes": "FOUND IN F-230 AND F-222 (2026-10-07). The first full test run failed this way three times running — F-230’s review fixes, and F-222 increment 1 — each time on the cleanup hook, never an assertion, and each passed when the gate was re-run whole and alone. The conformance suite grew by F-230’s three Brand subjects; the derived-theme test renders every subject in two more palettes. A flake that recurs is a gate that sometimes lies."
+      "notes": "FOUND IN F-230 AND F-222 (2026-10-07). The first full test run failed this way three times running — F-230’s review fixes, and F-222 increment 1 — each time on the cleanup hook, never an assertion, and each passed when the gate was re-run whole and alone. The conformance suite grew by F-230’s three Brand subjects; the derived-theme test renders every subject in two more palettes. A flake that recurs is a gate that sometimes lies. F-231 (2026-10-08) met it twice more, in increments 5 and 7 — the same 5 s cleanup hook in the conformance suite, after F-231 registered two more ProgressBar subjects; each time the gate passed whole when re-run alone."
     },
     {
       "id": "F-318",
@@ -10637,6 +10671,80 @@
         "test"
       ],
       "notes": "FROM F-222'S REVIEW (2026-10-07). gaps() names near-neutral regions only (coverage.ts: a region with chroma needs a hue, and the file refuses to invent one), so 22's Gaps Addressed is 0 or 1 and its drawn case reads 0. The hue-bearing half needs the lexicon's hue terms as a third axis — content and engine work, with its own rationale per term."
+    },
+    {
+      "id": "F-319",
+      "title": "Japanese text declares its language to a screen reader",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "26"
+      ],
+      "acceptance": [
+        "Every text node set in the Japanese script declares its language where the platform lets it — accessibilityLanguage ja on iOS, so VoiceOver chooses a Japanese voice — in both locales (WCAG 2.2 SC 3.1.2, Language of Parts)",
+        "The Android gap is stated rather than papered over: React Native exposes no LocaleSpan, so TalkBack reads Japanese text in the system language unless the device is set to Japanese, and the conformance suite records it"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y"
+      ],
+      "notes": "FROM F-230'S REVIEW AND F-231 (ADR-0127 §7). The seam is Text when script is japanese (packages/ui/src/Text.tsx), which touches every Japanese node in both locales — the 彩り・色の知性 tagline included, in English. F-231 had nothing to declare: its overlay is hidden from the accessibility tree."
+    },
+    {
+      "id": "F-320",
+      "title": "The icon's iOS 18 dark and tinted appearances, and iOS 26's layered icon",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "14"
+      ],
+      "acceptance": [
+        "iOS 18's dark and tinted icon appearances and iOS 26's layered .icon (Icon Composer) are decided against 14's tile — drawn by a mockup or decided by research with an ADR — and generated and checked like the light icon"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "artifact"
+      ],
+      "notes": "FROM F-231 (ADR-0126 §3). 14 draws one dark icon, so F-231 ships that one. iOS 18 renders a person's dark and tinted home screens from the light icon when no variants exist, and iOS 26 lays its own glass over an icon like this one; whether to supply variants is a question no mockup answers, and golden rule 14 keeps an agent from drawing them unasked."
+    },
+    {
+      "id": "F-321",
+      "title": "Android 13's splash follows a theme chosen in the app",
+      "requirements": [
+        "FR-70"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "14",
+        "25"
+      ],
+      "acceptance": [
+        "On Android 13 and later, the native splash follows the person's chosen theme (SplashScreen.setSplashScreenTheme on each change), so a Washi choice on a dark phone launches in Washi from the first frame, and the overlay then follows the same choice"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "artifact"
+      ],
+      "notes": "FROM F-231 (ADR-0127 §2, R9 §4 E4). Today the native splash and the overlay follow the phone's appearance, because a launch screen can follow nothing else; an in-app theme appears as the overlay leaves. iOS has no equivalent, so the two platforms would differ — a decision to record when this is built."
     }
   ]
 }

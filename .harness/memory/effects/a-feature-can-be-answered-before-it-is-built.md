@@ -42,3 +42,7 @@ over-specified against an audit rather than the code. This is the first time one
 ADR-0122 makes the mark one ink everywhere, the icon included, so the property this link proved for
 the themed layer is now proved for every asset from its bytes. The decoy changed with it: `icon.png`
 is one ink too now, so ADR-0093's five-colour icon is rendered in memory for `--prove` to refuse.
+
+## F-231 (2026-10-08)
+
+The themed layer moved with the foreground to 14's share of the 72 dp viewport (528 of 1296 px), centred by its ink, and `--prove` holds its silhouette to the foreground's pixel for pixel — the tile baked in is the decoy.

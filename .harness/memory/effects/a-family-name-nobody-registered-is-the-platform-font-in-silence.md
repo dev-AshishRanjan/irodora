@@ -36,3 +36,7 @@ bug. Three places state one fact:
 `FontGate` (the root layout's outermost element) draws nothing until every face has loaded, and the native splash covers the gap. That
 is the no-gap launch F-226's criterion 4 asks for. Every face added is one more thing the first frame
 waits for. A face that fails to load currently waits for ever: F-302 and OQ-42 record that.
+
+## F-231 (2026-10-08)
+
+The launch overlay sets text now — the lockup in Gelasio and the gothic, and the subline — still inside `FontGate`, so every face it uses has loaded behind the native splash.

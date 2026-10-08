@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-07",
+  "updated": "2026-10-08",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2371,7 +2371,7 @@
         "scripts"
       ],
       "severity": "medium",
-      "guard": "gate:build — `expo prebuild` cannot produce a config until @irodora/design-tokens resolves, so a broken build order fails there rather than shipping the wrong colour. gate:lint — `generate-brand-assets.mjs --check` byte-compares the four PNGs against what MARK and the manifest currently produce, proven by mutating one byte and watching it go red. F-230: `--prove` (in lint) also decodes every asset and requires ONE ink — a transparent asset one colour, an opaque one on the line from its ground to its ink — refusing ADR-0093's five-colour icon rendered in memory.",
+      "guard": "gate:build — `expo prebuild` cannot produce a config until @irodora/design-tokens resolves, so a broken build order fails there rather than shipping the wrong colour. gate:lint — `generate-brand-assets.mjs --check` byte-compares the four PNGs against what MARK and the manifest currently produce, proven by mutating one byte and watching it go red. F-230: `--prove` (in lint) also decodes every asset and requires ONE ink — a transparent asset one colour, an opaque one on the line from its ground to its ink — refusing ADR-0093's five-colour icon rendered in memory. F-231: the adaptive icon gains `backgroundImage` (14's tile across the viewport, adaptive-background.png); `backgroundColor` stays the dark background, which Expo writes as iconBackground whatever the layer, and the icon's tile reads surface.2 and background through 14's inventory (E-179).",
       "memory": "memory/effects/the-app-config-now-evaluates-design-tokens.md",
       "rationale": "app.config.ts NOW IMPORTS `nativeColors` and uses it for the adaptive icon background and both splash backgrounds, so the config is evaluated code with a build-order dependency where it previously imported only types. THE ALTERNATIVE WAS THREE HEX LITERALS, which would have been correct on the day they were typed and would then have been the only colours in the product the contrast gate never sees. THE SPECIFIC DEFECT THIS PREVENTS: the splash is composited from the theme background and the app’s first frame paints the same token; if the two disagree the user sees a change of polarity at launch, which lasts 400ms and is therefore never filed. THE NARROWER THING IT DOES NOT DO: icon.png’s ground is baked into the PNG because a PNG has pixels. It follows a manifest change only when the generator is RUN — `--check` in lint is what turns \"somebody remembered\" into \"the build failed\", so the icon does not track the manifest continuously, it is checked against it continuously. F-230 (ADR-0122): icon.png's ground is dark `background` and its ink dark `foreground.2`, the adaptive foreground the same ink on transparent over the same ground, so iOS and Android show one image — this link's stated intent, false until then (icon.png had the light ground).",
       "confidence": 0.9,
@@ -3210,7 +3210,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:lint — since F-230 `generate-brand-assets.mjs --prove` runs in lint: 37 cases, 14 refusals. The signature is DERIVED FROM THE GEOMETRY AT THE IMAGE'S SIZE, in two tiers: where every cut spans 3 px the middle row and column must show the predicted runs; at launcher densities (48 to 192 px) the outline must. Decoys: a solid disc, a blossom with no ring, four petals, F-165's six discs, a two-ink image, and at 48 px still a solid disc and four petals. The safe zone is derived (ADAPTIVE_GRID 624 from the reach). `--check` byte-compares every asset. gate:artifact — gate 16 reads the mark out of a built APK and cannot run on this workstation (no JDK): F-230's third attestation. F-230's review: gate 16 checked every launcher resource against icon.png's 768 grid, which refuses a correct adaptive foreground or monochrome layer (drawn on ADAPTIVE_GRID, its row about 56 % of the image against 68.5 %). verify-apk.mjs now picks the signature by layer (`signaturesFor`: ic_launcher and ic_launcher_round and splashscreen_logo on 768, the adaptive layers on ADAPTIVE_GRID, a shortened release path either), and `--prove` refuses each drawing by the other's signature at 96 px, so one signature for every layer cannot return unseen.",
+      "guard": "gate:lint — since F-230 `generate-brand-assets.mjs --prove` runs in lint: 37 cases, 14 refusals. The signature is DERIVED FROM THE GEOMETRY AT THE IMAGE'S SIZE, in two tiers: where every cut spans 3 px the middle row and column must show the predicted runs; at launcher densities (48 to 192 px) the outline must. Decoys: a solid disc, a blossom with no ring, four petals, F-165's six discs, a two-ink image, and at 48 px still a solid disc and four petals. The safe zone is derived (ADAPTIVE_GRID 624 from the reach). `--check` byte-compares every asset. gate:artifact — gate 16 reads the mark out of a built APK and cannot run on this workstation (no JDK): F-230's third attestation. F-230's review: gate 16 checked every launcher resource against icon.png's 768 grid, which refuses a correct adaptive foreground or monochrome layer (drawn on ADAPTIVE_GRID, its row about 56 % of the image against 68.5 %). verify-apk.mjs now picks the signature by layer (`signaturesFor`: ic_launcher and ic_launcher_round and splashscreen_logo on 768, the adaptive layers on ADAPTIVE_GRID, a shortened release path either), and `--prove` refuses each drawing by the other's signature at 96 px, so one signature for every layer cannot return unseen. F-231: `signaturesFor` is gone. Gate 16 routes every launcher layer and both splash logos through brand-verdicts.mjs (E-184), decodes them by their BYTES (Expo writes PNG bytes in .webp names, and the old .png filter read none of them), reads the splash logo as Expo composites it (it was read with the icon's signature, which refused every correct build), resolves shortened release paths through `aapt2 dump resources`, and FAILS on a layer it cannot read. The icon is 624/1024 centred by its ink, the adaptive layers 528/1296, the splash 648/1024 at 244 pt.",
       "memory": "memory/effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md",
       "rationale": "THE SAFE-ZONE ASSERTION CARRIED THE OLD MARK'S NUMBERS AND WOULD HAVE PASSED WHILE ANDROID CLIPPED THE NEW ONE. `generate-brand-assets.mjs --prove` checked that the adaptive icon fits Android's guaranteed 66/108 circle with `const inkDiagonal = 432 * Math.SQRT2` — 432 being the F-141 mark's ink box at the 576 grid, written down. F-165's ink box is 20 grid units rather than 18, and its CORNERS ARE INK because a stroke's end is exactly the far point, so at the same grid the ink would have reached 339 against a guaranteed 313 and Android would have cut the corners off the icon. THE CHECK WOULD HAVE GONE ON PASSING, because it was asserting a fact about a shape it no longer described. Deriving it — `inkRadius(gridPx, geometry)` — made the failure visible immediately and forced the adaptive grid from 576 down to 504, which is a consequence rather than a preference: the unit must stay a whole number or the generator refuses to build, and 21 is the largest that fits. A SECOND DECOY WENT IN WITH IT: `inkRadius(576)` must EXCEED the safe radius, so the check cannot become vacuous again by drifting to a mark small enough to pass anything. THE SAME SHAPE AS THE SIGNATURE, one step along: `carriesMark` read the middle ROW for two ink runs, which is a fact about two side-by-side fields and says nothing about three stacked strokes — a horizontal scan of the new mark crosses one stroke and reports a single run, exactly as a solid block would. It reads the centre COLUMN now, where the signature is five alternations every one of which is the same quantity, and the two-stroke decoy proves the shape F-141 shipped would not pass as this one. GENERAL FORM: a check written as a constant is a check about the code that existed when it was typed. When the thing being checked can change shape, the check has to be derived from the shape — and it needs a decoy that fails, or deriving it only moves where the vacuum is. ---- SECOND PASS, AND THE SAME LESSON FROM THE OTHER SIDE (2026-09-06). The 彡 mark was rejected too, and the reason both attempts failed was one thing: ABSTRACT GEOMETRIC MINIMALISM IS WHAT \"NOT RELEVANT\" MEANT. A person has a second to work out what an app is, and an abstraction gives them no route however good the sentence explaining it. THERE WAS A SECOND, QUIETER CAUSE, and it is the effect-shaped one: the brand test asserted EXACTLY ONE FILL and called that the CVD guarantee. That made monochrome a property of the build rather than a decision, and it went unexamined through two redraws — a colour product whose icon had no colour in it, held there by a test nobody re-read. The brief says a mark must not DEPEND on colour to be recognisable; counting fills is a different claim, and a weaker one, true of a blank page. The check now renders the mark in five colours and in one and compares the SILHOUETTE, with a decoy that fails when the geometry moves. A TEST CAN ENFORCE A DECISION NOBODY MADE: the fill count was written to express a real requirement, drifted into standing for a different one, and then constrained three features. When a check is the reason something cannot change, read what it actually asserts before believing it is the requirement. ---- F-230: the signature had been written for one geometry at one size, and 14's blossom has cuts of 1 to 2 px at a launcher's densities, where whether a cut reads depends on a rasteriser's threshold rather than on the mark. So the expectation is computed per size and the claim shrinks to what the size can carry — the same lesson as the safe zone, one step further: derive the check from the shape AND from the size it is viewed at.",
       "confidence": 0.93,
@@ -4570,7 +4570,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "ONE INK FOR EVERY ASSET, PROVEN FROM THE BYTES (F-230, ADR-0122). `--prove` decodes each produced asset and requires one ink: a transparent asset paints one colour, an opaque one lies on the line from its ground to its ink. Its decoy is ADR-0093's five-colour icon rendered in memory, which must be refused — so \"one\" is a measurement, not a constant that a blank or flat asset would also satisfy. The themed layer is still a silhouette Android tints, on `ADAPTIVE_GRID`, inside the same safe circle. WHAT IS NOT GUARDED: how it looks tinted, on a device, with themed icons on — F-230's third attestation.",
+      "guard": "ONE INK FOR EVERY ASSET, PROVEN FROM THE BYTES (F-230, ADR-0122). `--prove` decodes each produced asset and requires one ink: a transparent asset paints one colour, an opaque one lies on the line from its ground to its ink. Its decoy is ADR-0093's five-colour icon rendered in memory, which must be refused — so \"one\" is a measurement, not a constant that a blank or flat asset would also satisfy. The themed layer is still a silhouette Android tints, on `ADAPTIVE_GRID`, inside the same safe circle. WHAT IS NOT GUARDED: how it looks tinted, on a device, with themed icons on — F-230's third attestation. F-231: the themed layer moves with the foreground to 1296/528, centred by its ink; --prove holds its silhouette to the foreground's pixel for pixel (decoy: the tile baked in) and both inside the 66 dp zone every AOSP mask contains.",
       "memory": "memory/effects/a-feature-can-be-answered-before-it-is-built.md",
       "rationale": "THE FEATURE'S PREMISE WAS REMOVED BY EVIDENCE BEFORE ANY WORK STARTED. F-192 was written when two marks had been rejected at the one step no gate can discharge, and asked for a mark saying something *\"a ring of discs does not\"* — a request to REPLACE the disc mark. The user then looked at F-165's third mark on a home screen and approved it. Drawing a fourth would have been the opposite of what the feature is for, so criterion 1 became keeping it, and its other halves were VERIFIED rather than rebuilt: `brand.test.tsx` already covers 16px and all three CVD simulations. WHAT WAS GENUINELY UNDONE was one asset. `adaptiveIcon` had `foregroundImage` and `backgroundColor` and no `monochromeImage`, so on Android 13+ with themed icons on, the launcher DERIVES its own silhouette from the coloured icon — an icon this product designed deliberately becomes one the platform guessed at, on exactly the home screen the mark was just approved on. Same class as the icon that predated F-141: *\"an app icon is the one asset you stop seeing after a week, so nobody notices.\"* F-230: the themed layer stopped being the exception. ADR-0122 makes the mark one ink everywhere, the icon included, so the property this link proved for one asset is now proved for all of them.",
       "confidence": 0.9,
@@ -4620,7 +4620,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS: exactly one `export const MARK`, numbers read only between its braces, decimals and the F-230 fields (eye, ringOuter, stamenOuter, stamenWidth, seamWidth) included, and a missing field refused. `--prove` hands it mutated sources and watches it refuse, with a source that has no MARK as the decoy. SINCE F-230 THE TWO DERIVATIONS ARE COMPARED THROUGH A FILE: the generator writes `apps/mobile/assets/brand/mark-geometry.json`, `--check` byte-compares it, and brand.test requires `markShapes()` to equal it — turbo keys on the file. launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap. WHAT IS NOT GUARDED: gate 16, which reads the mark out of a built APK, has not run (no JDK). F-226: the name is set in the serif (Gelasio Regular, ADR-0112) as Latin text in both locales. F-230: `Wordmark` takes a form (E-173). `Launch` does not render the lockup yet (F-231). F-230's review: the file compared only the derived SCALARS, while the two point tests (`markCovers`, `coversGrid`) carry the cuts' angles and extents themselves. It now also carries `coversGrid` sampled at 9,216 points (96 × 96 cell centres), and brand.test requires `markCovers` at the same points to match, with the mark turned a tenth of a turn as the decoy.",
+      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS: exactly one `export const MARK`, numbers read only between its braces, decimals and the F-230 fields (eye, ringOuter, stamenOuter, stamenWidth, seamWidth) included, and a missing field refused. `--prove` hands it mutated sources and watches it refuse, with a source that has no MARK as the decoy. SINCE F-230 THE TWO DERIVATIONS ARE COMPARED THROUGH A FILE: the generator writes `apps/mobile/assets/brand/mark-geometry.json`, `--check` byte-compares it, and brand.test requires `markShapes()` to equal it — turbo keys on the file. launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap. WHAT IS NOT GUARDED: gate 16, which reads the mark out of a built APK, has not run (no JDK). F-226: the name is set in the serif (Gelasio Regular, ADR-0112) as Latin text in both locales. F-230: `Wordmark` takes a form (E-173). `Launch` does not render the lockup yet (F-231). F-230's review: the file compared only the derived SCALARS, while the two point tests (`markCovers`, `coversGrid`) carry the cuts' angles and extents themselves. It now also carries `coversGrid` sampled at 9,216 points (96 × 96 cell centres), and brand.test requires `markCovers` at the same points to match, with the mark turned a tenth of a turn as the decoy. F-231: `Launch` renders the splash lockup (`Wordmark form=\"splash\"`), its mark withheld until the travelling native-size mark arrives; launch.test asserts the mark drawn by the component at MARK.grid and that the overlay's ONE bitmap is the glow mask the generator blurs from the same geometry (any other image is the decoy).",
       "memory": "memory/effects/a-parse-that-can-find-the-wrong-numbers-is-worse-than-one-that-finds-none.md",
       "rationale": "CRITERION 1 WAS ALREADY TRUE AND THE FINDING WAS SAYING SO PRECISELY. All three artefacts already derive from MARK — the assets by parsing it, the wordmark by being it, the launch by rendering it — so the work was not building a coupling but closing the one place it could break silently. TWO ATTEMPTS FAILED FOR THE SAME REASON, and the reason is the interesting part: comparing the parse against the component cannot be written in the generator (Node cannot load brand.tsx — it imports React Native, which is WHY the parse exists) and cannot be written in jest (which cannot parse the .mjs). Both were trying to DETECT a wrong reading across a boundary that exists to keep the two sides apart. The boundary was the guard: narrow the parse until the failure has nowhere to live. ---- F-230 CLOSED THE GAP THE FIRST GUARD LEFT. Comparing the parse with the component could be written on neither side of the boundary, so it is written ACROSS it: a file the generator writes and jest reads. Neither side loads the other; both read the same bytes.",
       "confidence": 0.9,
@@ -6255,7 +6255,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "`fonts.ts`'s map `satisfies Record<Family, number>`, so a face the manifest adds without an asset is a compile error. `fonts.test.tsx` holds the emitted families to the loaded map in both directions (with a decoy), checks each import against the face's file and that the file exists, and RENDERS `FontGate` (src/fontGate.tsx) with the font loader held (nothing drawn, no child mounted, so no frame can hide the splash) and released (it draws) — mutation-checked: removing the hold fails it. That the root layout wraps its whole tree in `FontGate` and holds the splash at module scope is read off the route as text, because a test may not import a route (E-099). `text-face.test.tsx` asserts every face resolves to the family the manifest names, at the weight it is cut at.",
+      "guard": "`fonts.ts`'s map `satisfies Record<Family, number>`, so a face the manifest adds without an asset is a compile error. `fonts.test.tsx` holds the emitted families to the loaded map in both directions (with a decoy), checks each import against the face's file and that the file exists, and RENDERS `FontGate` (src/fontGate.tsx) with the font loader held (nothing drawn, no child mounted, so no frame can hide the splash) and released (it draws) — mutation-checked: removing the hold fails it. That the root layout wraps its whole tree in `FontGate` and holds the splash at module scope is read off the route as text, because a test may not import a route (E-099). `text-face.test.tsx` asserts every face resolves to the family the manifest names, at the weight it is cut at. F-231: the launch overlay now sets text — the lockup in Gelasio and the gothic, the subline — inside FontGate, so every face it uses has loaded behind the native splash before its first frame.",
       "memory": "memory/effects/a-family-name-nobody-registered-is-the-platform-font-in-silence.md",
       "rationale": "React Native takes ONE family name and has no cascade: a `fontFamily` nothing registered falls back to the platform face with no error and no log. The name a component sets (nativeFaces, from the manifest), the name the app registers (fonts.ts, for useFonts) and the file on disk are three statements of one fact. And the root layout draws nothing until every face has loaded, which is what keeps the launch hand-over gapless — one more face is one more thing the first frame waits for (F-302 records what happens when one fails).",
       "confidence": 0.9,
@@ -7167,7 +7167,7 @@
           "ref": "typecheck"
         }
       ],
-      "guard": "gate:typecheck — `form` is required, and `size`, a tagline on `app`, a splash without one and a heading on the splash are refused (brand.test's @ts-expect-error cases). The conformance registry renders both lockups and the mark at 16 in four palettes. brand.test lays the margins out and recovers the drawn inks, follows a scaled line, and holds the row's name to its share of the width.",
+      "guard": "gate:typecheck — `form` is required, and `size`, a tagline on `app`, a splash without one and a heading on the splash are refused (brand.test's @ts-expect-error cases). The conformance registry renders both lockups and the mark at 16 in four palettes. brand.test lays the margins out and recovers the drawn inks, follows a scaled line, and holds the row's name to its share of the width. F-231 calls the splash stack: the launch places it by its ink box and reads its geometry back (`onGeometry`) to know where the travelling mark arrives; `markHidden` withholds the mark's ink, not its place.",
       "memory": "memory/effects/a-lockup-is-called-by-its-drawing-not-sized-by-its-caller.md",
       "rationale": "ADR-0123: a lockup is one figure, so a caller names the DRAWING (01's row or 14's stack) and never a size. Home's header became 01's lockup at 31.6 dp (it led at 72), F-242 rebuilds the rest of Home around it, and F-231's splash calls the stack with the catalogue's tagline. The figure's box is its ink, so a caller places it by the inventory's ink box; the row measures the width its column gives it, which both drawn placements are."
     },
@@ -7209,7 +7209,7 @@
           "ref": "docs/design/design-system.manifest.json"
         }
       ],
-      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up. F-222 re-subset Noto Sans JP twice (知 for 知覚できる差; 頼 and 率 for 信頼度 and 確率), and the guard held: GOTHIC's metrics matched the new subset's tables, and the test now reads 14's full tagline.",
+      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up. F-222 re-subset Noto Sans JP twice (知 for 知覚できる差; 頼 and 率 for 信頼度 and 確率), and the guard held: GOTHIC's metrics matched the new subset's tables, and the test now reads 14's full tagline. F-231: the splash copy ships (brand.taglineJa, brand.splashSubline), and the Japanese subline brought 論 and 的 — the subset was re-cut and fonts.test re-read GOTHIC from it (E-183).",
       "memory": "memory/effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md",
       "rationale": "The lockups align ink, not boxes (ADR-0123), and the arithmetic is the faces' metrics written down as constants, since a component cannot read a TTF. Re-subsetting Noto Sans JP (F-231 adds 知 with the splash copy) or updating Gelasio could move an ascender, the character face or the name's advance; the lockup would then sit off by a dp or two with every component test green. The font test fails instead."
     },
@@ -7362,6 +7362,300 @@
       "guard": "gate:test — percent.test (the float64 guard and never-round-up decoys) and the shared secondConfidenceFormats rule, scanned by @irodora/ui over its src and by the app over its own (comments stripped), with planted decoys; Shopping.tsx's CompatibilityScore.confidence is the one named exception, owned by F-258. The Lens screen test asserts the format and the meaning line, and that the bare figure is gone.",
       "memory": "memory/effects/a-confidence-has-one-format-and-says-what-it-is.md",
       "rationale": "A reading's confidence is a ceiling, not a probability, and a percentage beside a colour reads as the chance it is right. One format, floored, with the meaning beside it on the Lens, is the mitigation; a second format anywhere would undo it. F-244 (03's chip) and F-236 (27's refused state) discharge the drawn half of F-222's attested criterion."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "root",
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "id": "E-178",
+      "from": {
+        "kind": "artifact",
+        "ref": "apps/mobile/assets/brand/brand-assets.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app.config.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/launch.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/launch.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-native-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "gate:lint — generate-brand-assets.mjs --check byte-compares the JSON with the images it describes. gate:test — launch.test holds SPLASH_MARK (the image's grid at imageWidth) within 0.1 dp of lockupGeometry('splash').mark, with F-230's 120 dp and the overlay's old 160 as decoys, and the light and dark drawings to one grid. verify-native-assets reads the prebuild output's splash logos and storyboard at the same width.",
+      "memory": "memory/effects/the-native-splash-and-the-overlay-read-one-table.md",
+      "rationale": "The native splash and the overlay that continues it are drawn from one table, so they cannot disagree; F-230 found them a third apart. The width is constrained by Expo's hdpi composite (a multiple of 4) and the grid by whole units: 648 at 244 pt, 154.41 dp against the lockup's 154.49."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "root",
+        "scripts",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-179",
+      "from": {
+        "kind": "artifact",
+        "ref": "mockups/inventory/14.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/generate-brand-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/brand/icon.png"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/brand/adaptive-background.png"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/brand/launch-glow.png"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "gate:lint — --check regenerates every asset from the record, so a re-read that moves the tile's tokens or axis, the mark's share or the glow fails until the assets are regenerated; --prove reads the tile back as a plane (decoys flat, reversed, vertical, other tokens, light), the share (decoys 768 and one unit larger), the ink centring (decoy the grid-centred mark) and the glow's shape (decoy a radial glow).",
+      "memory": "memory/effects/a-re-read-of-14-moves-the-icon.md",
+      "rationale": "The icon's tile, its mark's share and the splash glow are 14's readings, read by the generator rather than restated, so the drawing and the record cannot part silently."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "root",
+        "scripts",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "id": "E-180",
+      "from": {
+        "kind": "package",
+        "ref": "expo-splash-screen"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/brand-verdicts.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-native-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-brand-assets.mjs"
+        }
+      ],
+      "guard": "verify-native-assets (ci.yml, after gate 6) reads expo prebuild's ACTUAL Android output — 35 images at Expo's sizes, the adaptive XML, the splash colours and theme — and in CI with --require-ios the iOS asset catalog, colour set and storyboard; its --prove plants 12 defects into projects synthesised as Expo writes them. An Expo upgrade that moves a transform fails it on the pull request.",
+      "memory": "memory/effects/expos-transforms-are-read-from-its-own-output.md",
+      "rationale": "The checks encode what Expo does to the assets (the 288·k splash composite, the 48·k and 108·k resizes, the round mask, PNG bytes in .webp names, the iOS file names); reading its real output is what keeps that encoding honest across upgrades. @expo/prebuild-config's withAndroidIcons and withIosIcons are part of the same surface."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "id": "E-181",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/launch.tsx#LaunchHost"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-app-glyphs.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/launch.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/brand.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "gate:test — launch.test (26): the first frame is the travelling mark alone at the native grid and place; every 14.splash element in its token in Sumi and Washi and in Japanese; the layout against 14's boxes (decoy: the lockup centred alone); the blossom shown once across the swap; the phone's appearance over an in-app Slate, with the host-less overlay as the decoy; the order. brand.test holds markHidden (ink withheld, every margin kept) and onGeometry. gate:lint — verify-app-glyphs --prove: the glow mask is the one image app source may import, by default binding, in src/launch.tsx alone.",
+      "memory": "memory/effects/the-overlay-continues-the-native-frame-in-the-phones-appearance.md",
+      "rationale": "The native splash follows the phone, so the overlay does; the blossom is drawn once across the hand-over. A change to Wordmark's splash form, the layout's providers or the sequence can break either without any colour or size moving."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "low",
+      "id": "E-182",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/ProgressBar.tsx#ProgressBar"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/launch.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-266"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "gate:test — progress-bar.test: nothing but the scaleX moves with the value (a width or an ink keyed to it is the decoy), one ink each in Sumi and Washi, PROGRESS_TRACK recomputed from 14.splash.progress.raw.trackPx; the conformance registry renders it decorative and named. gate:lint — verify-motion.",
+      "memory": "memory/effects/a-progress-line-is-a-transform-never-a-width.md",
+      "rationale": "F-266 animates the launch's progress; the motion system animates transforms and opacities only, and never a colour. The value is a length."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "apps/mobile",
+        "content"
+      ],
+      "severity": "medium",
+      "id": "E-183",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/i18n/en.ts#brand.splashSubline"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/fonts/NotoSansJP-Subset.ttf"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "gate:content — every codepoint the catalogues need is in the subset (論 and 的 were not, and the face was re-cut). gate:test — i18n.test: IDENTICAL_BY_DESIGN's entries are identical and the list at most three; fonts.test re-reads GOTHIC from the subset (E-174). gate:lint — verify-claims reads the copy.",
+      "memory": "memory/effects/the-splash-copy-reaches-the-japanese-subset.md",
+      "rationale": "The splash's copy is catalogue copy: its Japanese reaches the bundled face, and its tagline is Japanese in both locales by 14's design."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-231",
+      "scope": [
+        "root",
+        "scripts"
+      ],
+      "severity": "high",
+      "id": "E-184",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/brand-verdicts.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-native-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        }
+      ],
+      "guard": "verify-native-assets --prove (14 cases, ci.yml) and verify-apk --prove: the resource-table reader runs everywhere (aapt2's printed form read, the old aapt's form read as nothing); the aapt2-built branded fixtures — a branded APK, the same with shortened paths, and a disc foreground, F-230's splash, a light night background and a missing themed layer — run where the SDK is (android-build.yml, release.yml). NOT RUN on a workstation without the SDK.",
+      "memory": "memory/effects/one-table-routes-every-brand-resource-to-its-verdict.md",
+      "rationale": "Two checks read the same drawings out of different files; one table decides what each resource is and what it must look like, so they cannot choose differently again."
     }
   ]
 }

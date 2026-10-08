@@ -84,3 +84,7 @@ The file compared the scalars both sides derive. The cuts' angles and extents li
 tests themselves, so a disagreement there would have passed. The file now carries the generator's
 point test sampled at 9,216 points, and `brand.test` requires the component's to match, with the
 mark turned a tenth of a turn as the decoy.
+
+## F-231 (2026-10-08)
+
+The launch overlay now draws the splash lockup, and its one bitmap is the glow: a mask the generator blurs from this same geometry, tinted with the mark's token — not a picture of the mark, which `launch.test` still refuses.
