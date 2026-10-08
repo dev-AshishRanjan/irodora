@@ -217,28 +217,28 @@ const FONTS = join(ROOT, 'apps', 'mobile', 'assets', 'fonts');
 const EN_CATALOGUE = join(ROOT, 'apps', 'mobile', 'src', 'i18n', 'en.ts');
 const INVENTORY = join(ROOT, 'mockups', 'inventory');
 
-/** The Latin the serif is cut to. IN STEP WITH the generator's SERIF_RANGES. */
-const SERIF_RANGES = [
+/** The Latin the serif and the mono are cut to. IN STEP WITH the generator's LATIN_RANGES. */
+const LATIN_RANGES = [
   [0x0020, 0x007e],
   [0x00a0, 0x00ff],
   [0x2010, 0x2027],
   [0x2030, 0x203a],
 ];
-const inSerifRanges = (cp) => SERIF_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi);
+const inLatinRanges = (cp) => LATIN_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi);
 
 /**
- * What the serif must carry: all of printable ASCII, and every character of the English
+ * What the serif and the mono must carry: all of printable ASCII, and every character of the English
  * catalogue that falls inside the ranges it is cut to. NOT every character of the catalogue: Δ
  * (in "ΔE00") is outside them, and it never reaches the serif, because figures and units are refused
  * in it at the type (ADR-0112 d.5). Gelasio also lacks a few codepoints in those ranges (U+00AD,
  * U+2016…); the generator asks for them and HarfBuzz keeps what exists, and none is in the catalogue.
  */
-function serifRequired() {
+function latinRequired() {
   const required = new Map();
   for (let c = 0x20; c <= 0x7e; c += 1) required.set(c, 'printable ASCII');
   if (existsSync(EN_CATALOGUE))
     for (const cp of codepointsOf(readFileSync(EN_CATALOGUE, 'utf8')))
-      if (inSerifRanges(cp) && !required.has(cp)) required.set(cp, 'en catalogue');
+      if (inLatinRanges(cp) && !required.has(cp)) required.set(cp, 'en catalogue');
   return required;
 }
 
@@ -511,7 +511,9 @@ const checkFace = (label, file, requirement, weight) => {
       `  ${GREEN}✓${OFF} ${label}  ${DIM}${String(requirement.size)} required, ${String(has.size)} in the face.${OFF}`,
     );
 };
-checkFace('Gelasio (the serif)', 'Gelasio-Regular.ttf', serifRequired(), 400);
+checkFace('Gelasio (the serif)', 'Gelasio-Regular.ttf', latinRequired(), 400);
+// F-236 (ADR-0130): the mono 27's steps are set in, at the weight it is cut at.
+checkFace('Inconsolata (the mono)', 'Inconsolata-SemiBold.ttf', latinRequired(), 600);
 const minchoBound = minchoElements();
 const mincho = minchoRequirement(minchoBound);
 problems.push(...mincho.problems);

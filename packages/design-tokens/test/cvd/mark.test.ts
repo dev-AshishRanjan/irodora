@@ -68,17 +68,8 @@ function placements(from: readonly Inventory[]): Placement[] {
       if (e.component !== 'ui:Mark' || NOT_USED.has(e.id)) continue;
       const role = e.tokens?.['fg'];
       const ground = SURFACE[surfaceOf(e, byId)] ?? null;
-      const tint = TINTED.get(e.id);
-      out.push({
-        id: e.id,
-        ink:
-          tint !== undefined
-            ? tint
-            : role === undefined || ground === null
-              ? null
-              : textToken(role, ground),
-        ground,
-      });
+      const roleInk = role === undefined || ground === null ? null : textToken(role, ground);
+      out.push({ id: e.id, ink: TINTED.get(e.id) ?? roleInk, ground });
     }
   }
   return out;

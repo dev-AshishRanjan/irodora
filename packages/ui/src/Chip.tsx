@@ -54,7 +54,7 @@
  */
 
 import { Pressable, View, type PressableProps } from 'react-native';
-import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { nativeFaces, nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
 import { hitArea } from './hitArea.js';
 import { inkOnSample, type Sample } from './inkOnSample.js';
@@ -129,7 +129,9 @@ type ChipControlProps = Omit<
   };
 
 /** A chip nobody presses: a badge beside a reading (F-232). */
-interface ChipBadgeProps {
+type ChipBadgeProps = ChipBadgeBase & BadgeFace;
+
+interface ChipBadgeBase {
   readonly form: 'badge';
   /** The visible text. Also the accessible name, unless {@link name} says it in full. */
   readonly label: string;
@@ -140,10 +142,11 @@ interface ChipBadgeProps {
   readonly name?: string;
   /** A glyph before the text: `03`'s conditions, `24`'s capture source. */
   readonly icon?: GlyphName;
-  /** The text carries figures (a count, a ΔE00), so it is set in the numeric setting. */
-  readonly numeric?: boolean;
-  /** Filled in `surface.2` (`05`, `12`, `21`, `24`). Without it the badge is an outline in `border`. */
-  readonly fill?: 'surface.2';
+  /**
+   * Filled in `surface.2` (`05`, `12`, `21`, `24`), or `surface.3` (`27`'s steps, F-236). Without
+   * it the badge is an outline in `border`.
+   */
+  readonly fill?: 'surface.2' | 'surface.3';
   /** `21` draws its badge filled AND outlined. */
   readonly edge?: boolean;
   /** `24`: tinted by its row's sample. The text takes the ink `inkOnSample` chooses. */
@@ -151,11 +154,27 @@ interface ChipBadgeProps {
   readonly radius?: 'sm' | 'pill';
   /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BADGE_HEIGHT}. */
   readonly height?: number;
-  /** The text's step: `label`, or `17`'s step pill's `caption` (F-235). */
-  readonly size?: 'label' | 'caption';
   readonly script?: Script;
   readonly testID?: string;
 }
+
+/**
+ * The badge's face: the platform sans at its step, or the mono `27` sets its pipeline's steps in
+ * (ADR-0130), which exists at one step and sets its figures equal-width already — so a mono badge
+ * takes no `size` and no `numeric`.
+ */
+type BadgeFace =
+  | {
+      readonly mono?: false;
+      /** The text's step: `label`, or `17`'s step pill's `caption` (F-235). */
+      readonly size?: 'label' | 'caption';
+      /** The text carries figures (a count, a ΔE00), so it is set in the numeric setting. */
+      readonly numeric?: boolean;
+    }
+  | { readonly mono: true; readonly size?: never; readonly numeric?: never };
+
+/** The step the mono is drawn at (ADR-0130): the manifest's one. */
+const MONO_STEP = nativeFaces.mono.steps[0];
 
 export type ChipProps = ChipControlProps | ChipBadgeProps;
 
@@ -172,20 +191,19 @@ export function Chip(props: ChipProps): React.JSX.Element {
   return props.form === 'badge' ? <Badge {...props} /> : <ChipControl {...props} />;
 }
 
-function Badge({
-  label,
-  name,
-  icon,
-  numeric = false,
-  fill,
-  edge = false,
-  tint,
-  radius = 'pill',
-  height = BADGE_HEIGHT,
-  size = 'label',
-  script = 'latin',
-  testID,
-}: ChipBadgeProps): React.JSX.Element {
+function Badge(props: ChipBadgeProps): React.JSX.Element {
+  const {
+    label,
+    name,
+    icon,
+    fill,
+    edge = false,
+    tint,
+    radius = 'pill',
+    height = BADGE_HEIGHT,
+    script = 'latin',
+    testID,
+  } = props;
   const { colors } = useTheme();
   // On a sample the ink is chosen against the sample (C8); otherwise it is the surface's own.
   const ink = tint === undefined ? 'foreground' : inkOnSample(tint.hex, colors).ink;
@@ -219,9 +237,21 @@ function Badge({
           spectrum={glyphSpectrum(icon, colors)}
         />
       )}
-      <Text size={size} color={ink} script={script} numeric={numeric} numberOfLines={1}>
-        {label}
-      </Text>
+      {props.mono === true ? (
+        <Text face="mono" size={MONO_STEP} color={ink} script={script} numberOfLines={1}>
+          {label}
+        </Text>
+      ) : (
+        <Text
+          size={props.size ?? 'label'}
+          color={ink}
+          script={script}
+          numeric={props.numeric ?? false}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      )}
     </View>
   );
 }

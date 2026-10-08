@@ -86,14 +86,17 @@ type Either<A, B> = A | B;
 
 /**
  * The faces the inventories draw a text element in (`type.face`, F-220): the platform sans, the
- * serif, and their Japanese counterparts, gothic and mincho (C6).
+ * serif, and their Japanese counterparts, gothic and mincho (C6) — and since F-236 the mono `27`
+ * sets its pipeline's steps in (ADR-0130).
  */
-export type Face = 'sans' | 'serif' | 'gothic' | 'mincho';
+export type Face = 'sans' | 'serif' | 'gothic' | 'mincho' | 'mono';
 
 /** The steps a mockup draws the serif at (ADR-0112) — read from the manifest, never listed here. */
 export type SerifStep = (typeof nativeFaces.serif.steps)[number];
 /** The steps a mockup draws the mincho at. */
 export type MinchoStep = (typeof nativeFaces.mincho.steps)[number];
+/** The steps a mockup draws the mono at (ADR-0130). */
+export type MonoStep = (typeof nativeFaces.mono.steps)[number];
 
 /**
  * Which face, and what it may be combined with — the constraints are the mockups', made TYPES:
@@ -102,7 +105,9 @@ export type MinchoStep = (typeof nativeFaces.mincho.steps)[number];
  *   does not compile;
  * - neither sets figures (ADR-0112 d.5): no mockup draws a serif figure, and Gelasio's default
  *   figures are oldstyle and proportional, so `numeric` is refused with them;
- * - the mincho carries only the corpus kanji it is subset to, so it is Japanese only.
+ * - the mincho carries only the corpus kanji it is subset to, so it is Japanese only;
+ * - the mono is one static cut (ADR-0130), so it takes no other weight; its figures are already
+ *   equal-width, so `numeric` adds nothing and is refused. Japanese in it is set in the gothic.
  */
 type FaceProps<S extends TypeSize> =
   | {
@@ -127,6 +132,9 @@ type FaceProps<S extends TypeSize> =
           readonly script: 'japanese';
           readonly weight?: never;
         }
+      : never)
+  | (S extends MonoStep
+      ? { readonly face: 'mono'; readonly numeric?: false; readonly weight?: never }
       : never);
 
 /** The weights the inventories record on sans text. */
@@ -219,8 +227,9 @@ const trackingAt = (tracking: string, fontSize: number): number =>
  * Japanese text in a sans or serif element is set in the bundled gothic — C6: kanji are sans on
  * `01 05 06 26`, and a Latin serif has no kanji to set. The mincho is its own face. Latin in the
  * serif is Gelasio at the weight it is cut at: asking a single-weight face for 600 makes a platform
- * fake a bold, so the step's weight is overridden. The Latin sans is the platform's and carries no
- * family at all (ADR-0057 §6).
+ * fake a bold, so the step's weight is overridden — and the mono is Inconsolata at the width and
+ * weight it is cut at (ADR-0130). The Latin sans is the platform's and carries no family at all
+ * (ADR-0057 §6).
  */
 function faceStyle(
   face: Face,
@@ -239,6 +248,12 @@ function faceStyle(
       fontFamily: nativeFamilies.serif,
       fontWeight: nativeFaces.serif.fontWeight,
       letterSpacing: trackingAt(nativeFaces.serif.tracking, fontSize),
+    };
+  if (face === 'mono')
+    return {
+      fontFamily: nativeFamilies.mono,
+      fontWeight: nativeFaces.mono.fontWeight,
+      letterSpacing: trackingAt(nativeFaces.mono.tracking, fontSize),
     };
   return {};
 }

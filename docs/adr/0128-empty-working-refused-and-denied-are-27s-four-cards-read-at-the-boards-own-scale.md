@@ -155,11 +155,14 @@ glow takes `state.mark`.
 - **Bodies:** `body` in `foreground`. 27 draws them white (luma 245–247 at the 95th percentile, out
   of `foreground.2`'s reach), so F-220's `text.secondary` was the helper's default.
 - **Steps:** `Chip` badges, 28 dp tall, `sm`, on `surface.3`, in `foreground`, set in a narrow
-  monospace at `label`.
-  - 27's advance is 0.49 em. The platform monos' is 0.60, at which the second step would overflow
-    its card.
-  - **Which face ships is read off the drawing in increment 3 and recorded there**, as the serif
-    was ([ADR-0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)).
+  monospace.
+  - 27's advance is 0.69 of its cap. The platform monos' is 0.84–0.86, at which the second step
+    would overflow its card.
+  - **Which face ships was read off the drawing in increment 3**, as the serif was
+    ([ADR-0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)).
+    It is Inconsolata, cut at width 83 and weight 600, at `body`: the step its em snaps to, where
+    this record first assumed `label`
+    ([ADR-0130](0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)).
 - **Spelling (D9):** the catalogue's: *Analysing Fabric Colour…*. 27 contradicts itself in one card
   (*Colour Lens*, *Fabric Color*).
 

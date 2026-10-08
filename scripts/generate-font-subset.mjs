@@ -172,7 +172,8 @@ async function ensureSource() {
 // ---------------------------------------------------------------------------------------
 // F-226 (ADR-0112): the serif and the mincho. Each is CUT from a pinned variable source —
 // `wght` pinned, so the committed file is static — and its name table is rebuilt so the file
-// says what it is.
+// says what it is. F-236 (ADR-0130) adds the mono, which pins `wdth` as well: 27 draws its
+// steps narrower than the face's default width, so the cut is the width the drawing measures.
 // ---------------------------------------------------------------------------------------
 
 /** The pinned sources (google/fonts commit + sha256). A source that differs is refused. */
@@ -204,20 +205,21 @@ async function pinnedSource(id) {
 }
 
 /**
- * The Latin the serif is set in: printable ASCII, Latin-1 and the general punctuation English
- * copy uses (’ “ ” – — …). The serif never sets a figure (ADR-0112 d.5), but ASCII carries them
- * anyway: a subset that silently lacks a digit is a tofu box the day someone breaks that rule.
+ * The Latin the serif and the mono are set in: printable ASCII, Latin-1 and the general
+ * punctuation English copy uses (’ “ ” – — …). The serif never sets a figure (ADR-0112 d.5), but
+ * ASCII carries them anyway: a subset that silently lacks a digit is a tofu box the day someone
+ * breaks that rule. The mono sets them: 27's second step prints D65 and its temperature.
  * IN STEP WITH verify-font-coverage.mjs, which requires the same ranges.
  */
-const SERIF_RANGES = [
+const LATIN_RANGES = [
   [0x0020, 0x007e],
   [0x00a0, 0x00ff],
   [0x2010, 0x2027],
   [0x2030, 0x203a],
 ];
-function serifText() {
+function latinText() {
   const out = [];
-  for (const [lo, hi] of SERIF_RANGES) for (let c = lo; c <= hi; c += 1) out.push(c);
+  for (const [lo, hi] of LATIN_RANGES) for (let c = lo; c <= hi; c += 1) out.push(c);
   return out;
 }
 
@@ -312,7 +314,7 @@ function nameTable(source, cut, names) {
   const fresh = [
     [1, names.family],
     [2, names.subfamily],
-    [3, `${names.postscript};Irodora static cut, wght ${String(names.weight)} (ADR-0112)`],
+    [3, `${names.postscript};Irodora static cut, ${pinsText(names)}`],
     [4, names.full],
     [6, names.postscript],
   ].map(([id, s]) => ({ platform: 3, encoding: 1, language: 0x409, id, bytes: utf16be(s) }));
@@ -398,7 +400,7 @@ const FACES = [
     label: 'Gelasio Regular (the serif)',
     out: join(FONTS, 'Gelasio-Regular.ttf'),
     build: async () =>
-      cut('gelasio', serifText(), {
+      cut('gelasio', latinText(), {
         family: 'Gelasio',
         subfamily: 'Regular',
         full: 'Gelasio Regular',
@@ -418,17 +420,47 @@ const FACES = [
         weight: 400,
       }),
   },
+  {
+    // F-236 (ADR-0130): 27's steps — width 83 for the drawn advance (0.69 of the cap), weight
+    // 600 for the drawn stems (stem.ps1 against rendered instances), Latin only (C6: a Japanese
+    // step is set in the gothic).
+    label: 'Inconsolata SemiBold (the steps’ mono)',
+    out: join(FONTS, 'Inconsolata-SemiBold.ttf'),
+    build: async () =>
+      cut('inconsolata', latinText(), {
+        family: 'Inconsolata',
+        subfamily: 'SemiBold',
+        full: 'Inconsolata SemiBold',
+        postscript: 'Inconsolata-SemiBold',
+        weight: 600,
+        axes: { wght: 600, wdth: 83 },
+      }),
+  },
 ];
+
+/** The axes a cut pins: its weight, and any other axis the face names (the mono's width). */
+const pinsOf = (names) => names.axes ?? { wght: names.weight };
+
+/**
+ * Name record 3 says what was pinned. The serif's and the mincho's read as they did before F-236,
+ * so their committed bytes stand; a cut that pins more than its weight names every axis.
+ */
+const pinsText = (names) =>
+  names.axes === undefined
+    ? `wght ${String(names.weight)} (ADR-0112)`
+    : `${Object.entries(names.axes)
+        .map(([axis, value]) => `${axis} ${String(value)}`)
+        .join(', ')} (ADR-0130)`;
 
 async function cut(id, codepoints, names) {
   const source = await pinnedSource(id);
   const text = codepoints.map((cp) => String.fromCodePoint(cp)).join('');
   console.log(
-    `${DIM}  ${names.full}: ${String(codepoints.length)} codepoint(s), wght pinned at ${String(names.weight)}.${OFF}`,
+    `${DIM}  ${names.full}: ${String(codepoints.length)} codepoint(s), ${pinsText(names)}.${OFF}`,
   );
   const pinned = await subsetFont(source, text, {
     targetFormat: 'truetype',
-    variationAxes: { wght: names.weight },
+    variationAxes: pinsOf(names),
   });
   return withTables(pinned, new Map([['name', nameTable(source, pinned, names)]]));
 }

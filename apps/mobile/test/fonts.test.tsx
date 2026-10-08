@@ -43,8 +43,9 @@ function unmatched(families: readonly string[], loaded: readonly string[]) {
 const FAMILIES = Object.values(nativeFaces).map((f) => f.family);
 
 describe('the faces the manifest names are the faces the app loads', () => {
-  it('reads three faces — an empty list would agree with anything', () => {
-    expect(FAMILIES).toHaveLength(3);
+  it('reads four faces — an empty list would agree with anything', () => {
+    // The gothic, the serif, the mincho, and since F-236 the mono (ADR-0130).
+    expect(FAMILIES).toHaveLength(4);
   });
 
   it('loads every named face, and nothing else', () => {

@@ -323,6 +323,7 @@ export const nativeFamilies = {
   jp: 'NotoSansJP',
   serif: 'Gelasio-Regular',
   mincho: 'NotoSerifJP-Regular',
+  mono: 'Inconsolata-SemiBold',
 } as const;
 
 /** What each bundled face is cut at, and the steps a mockup draws it at (ADR-0112). */
@@ -330,6 +331,7 @@ export const nativeFaces = {
   jp: { family: 'NotoSansJP', file: 'NotoSansJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', ownLine: 1.45, tracking: null, steps: 'all' },
   serif: { family: 'Gelasio-Regular', file: 'Gelasio-Regular.ttf', script: 'latin', weight: 400, fontWeight: '400', ownLine: 1.27, tracking: '0', steps: ['display1', 'title', 'body', 'wordmark', 'wordmarkSplash'] },
   mincho: { family: 'NotoSerifJP-Regular', file: 'NotoSerifJP-Subset.ttf', script: 'japanese', weight: 400, fontWeight: '400', ownLine: 1.44, tracking: null, steps: ['title'] },
+  mono: { family: 'Inconsolata-SemiBold', file: 'Inconsolata-SemiBold.ttf', script: 'latin', weight: 600, fontWeight: '600', ownLine: 1.05, tracking: '0', steps: ['body'] },
 } as const;
 
 export const nativeNumericFeature = 'tabular-nums' as const;

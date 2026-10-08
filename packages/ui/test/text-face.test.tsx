@@ -1,5 +1,6 @@
 /**
- * Text sets the face a mockup draws, and only where it draws it (F-226, ADR-0112).
+ * Text sets the face a mockup draws, and only where it draws it (F-226, ADR-0112; the mono F-236,
+ * ADR-0130).
  *
  * Asserted on the RENDERED node, as the rest of this suite does: a face prop that was passed and a
  * family that reached the text are different claims, and only the second is what a device paints.
@@ -52,6 +53,30 @@ describe('each face resolves to the family the manifest names', () => {
     expect(s['fontWeight']).toBe(nativeFaces.mincho.fontWeight);
   });
 
+  it('sets the mono as Inconsolata, at the weight it is cut at, with no tracking (ADR-0130)', () => {
+    const s = styleOf(
+      <Text size="body" color="foreground" face="mono">
+        Irodora
+      </Text>,
+    );
+    expect(s['fontFamily']).toBe(nativeFamilies.mono);
+    expect(nativeFamilies.mono).toBe('Inconsolata-SemiBold');
+    // The body step asks for 400; the mono is one cut, at 27's measured 600.
+    expect(s['fontWeight']).toBe('600');
+    expect(s['letterSpacing']).toBe(0);
+  });
+
+  it('sets Japanese in a mono element in the gothic — C6, and the cut is Latin only', () => {
+    const s = styleOf(
+      <Text size="body" color="foreground" face="mono" script="japanese">
+        Irodora
+      </Text>,
+    );
+    expect(s['fontFamily']).toBe(nativeFamilies.jp);
+    // DECOY: the family the mono resolves to in Latin is not the gothic's.
+    expect(nativeFamilies.mono).not.toBe(nativeFamilies.jp);
+  });
+
   it('leaves the Latin sans to the platform — no family at all (ADR-0057 §6)', () => {
     for (const face of ['sans', 'gothic'] as const)
       expect(
@@ -85,10 +110,21 @@ describe('the faces exist only where a mockup draws them — as TYPES', () => {
   type P<S extends Step> = TextProps<S>;
   const fg = 'foreground' as const;
 
-  it('accepts the serif and the mincho at the steps they are drawn at', () => {
+  it('accepts the serif, the mincho and the mono at the steps they are drawn at', () => {
     const display: P<'display1'> = { size: 'display1', color: fg, face: 'serif' };
     const card: P<'title'> = { size: 'title', color: fg, face: 'mincho', script: 'japanese' };
-    expect([display.face, card.face]).toStrictEqual(['serif', 'mincho']);
+    const step: P<'body'> = { size: 'body', color: fg, face: 'mono' };
+    expect([display.face, card.face, step.face]).toStrictEqual(['serif', 'mincho', 'mono']);
+  });
+
+  it('refuses a mono label, a mono asked for another weight, and a mono marked as figures', () => {
+    // @ts-expect-error — 27 draws the mono at body, and the face exists at that step only.
+    const a: P<'label'> = { size: 'label', color: fg, face: 'mono' };
+    // @ts-expect-error — one static cut (ADR-0130): another weight is one a platform fakes.
+    const b: P<'body'> = { size: 'body', color: fg, face: 'mono', weight: 400 };
+    // @ts-expect-error — the mono's figures are equal-width already.
+    const c: P<'body'> = { size: 'body', color: fg, face: 'mono', numeric: true };
+    expect([a, b, c]).toHaveLength(3);
   });
 
   it('refuses a serif caption, a serif figure, a Latin mincho and a mincho body', () => {

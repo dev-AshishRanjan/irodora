@@ -159,6 +159,23 @@ The mincho the shareable card draws (`20`, C6). It is a static cut at `wght` 400
 the kanji of every published corpus entry's name — the one field a mincho element binds — and
 checked by the same `content` gate as Noto Sans JP. Its name table is rebuilt the same way.
 
+### Inconsolata
+
+| | |
+|---|---|
+| **Licence** | SIL Open Font License, Version 1.1 — no Reserved Font Name |
+| **Copyright** | © 2006 The Inconsolata Project Authors (https://github.com/cyrealtype/Inconsolata) |
+| **Version** | `Version 3.001` |
+| **Source** | `google/fonts` at `1ac2012c…`, `ofl/inconsolata/Inconsolata[wdth,wght].ttf`, pinned by sha256 in [`scripts/font-sources.json`](scripts/font-sources.json) |
+| **Shipped as** | `apps/mobile/assets/fonts/Inconsolata-SemiBold.ttf` — about 35 KB |
+
+The mono `27`'s working state sets its pipeline's steps in. It is a static cut that pins the
+variable source at `wdth` 83 and `wght` 600, the width and weight the drawing measures, and keeps
+the same Latin as the serif. Its name table is rebuilt the same way: it calls itself
+`Inconsolata-SemiBold`, and its record 3 says what was pinned. The licence travels in name
+records 13 and 14. Why this face, this width and this weight is recorded in
+[ADR-0130](docs/adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md).
+
 ---
 
 ## 5. Harness methodology

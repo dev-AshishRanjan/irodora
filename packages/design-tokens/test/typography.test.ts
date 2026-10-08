@@ -260,10 +260,11 @@ describe('the font family is ONE name per script, never a CSS stack', () => {
   it('emits the bundled faces and NO Latin sans, which is a decision rather than an omission', () => {
     // ADR-0057 §6: Latin has no tofu failure mode, so the script that can fail silently gets
     // the bundled font and the script that cannot, does not. ADR-0112 amends it for the SERIF,
-    // which a mockup draws and the platform does not have; the sans stays the platform's.
-    expect(Object.keys(nativeFamilies)).toEqual(['jp', 'serif', 'mincho']);
+    // which a mockup draws and the platform does not have, and ADR-0130 for 27's MONO, which the
+    // platform has only at a width the drawing is not; the sans stays the platform's.
+    expect(Object.keys(nativeFamilies)).toEqual(['jp', 'serif', 'mincho', 'mono']);
     const latin = Object.entries(nativeFaces).filter(([, f]) => f.script === 'latin');
-    expect(latin.map(([name]) => name)).toEqual(['serif']);
+    expect(latin.map(([name]) => name)).toEqual(['serif', 'mono']);
     for (const f of Object.values(nativeFaces)) expect(f.family).not.toContain(',');
   });
 
@@ -279,6 +280,13 @@ describe('the font family is ONE name per script, never a CSS stack', () => {
       family: 'NotoSerifJP-Regular',
       weight: 400,
       steps: ['title'],
+    });
+    // ADR-0130: the mono at the weight 27's stems measure, at the one step its em snaps to.
+    expect(nativeFaces.mono).toMatchObject({
+      family: 'Inconsolata-SemiBold',
+      weight: 600,
+      tracking: '0',
+      steps: ['body'],
     });
     for (const f of Object.values(nativeFaces))
       if (f.steps !== 'all') for (const step of f.steps) expect(STEP_NAMES).toContain(step);

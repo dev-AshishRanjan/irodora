@@ -47,9 +47,14 @@
 //   the card.
 // - THE STEPS are chips of 29 px, corner 5.5–6.0 px (sm), filled #30343D → level3 (ΔE00 1.40; F-220's
 //   level2 is 2.56), their text #E5E9ED → text.primary (3.58), 8 px apart, 9–11 px of padding. The
-//   text is MONOSPACED and NARROW: 6.68 px per character over 33 and 35 characters, with a 10 px cap
-//   — an advance of 0.49 em at the 13.7 px em the cap gives. The platform monos advance 0.60 em, so
-//   at label 14 the second step would not fit its card; which face ships is F-236's increment 3.
+//   text is MONOSPACED and NARROW (F-236 increment 3, ADR-0130): an advance of 6.77 px (the comb
+//   that best fits each line's character cells, 6.810 and 6.735) against a cap of 9.79 px (the
+//   median of ten capitals and figures, 9.30–9.97) — 0.69 of the cap, where the platform monos
+//   advance 0.84–0.86 of theirs. Shape cannot name the face at a 10 px cap (34 open-licence monos
+//   scored by serif-match.ps1 spread 0.50–0.54 at the top); proportion can: Inconsolata, cut at
+//   width 83 (advance 0.432 em, cap 0.623), matches it, and its stems (stem.ps1 against rendered
+//   instances) put the drawing at weight 554–650 across the two lines and both spaces — 600. Its
+//   em is then 15.71 px, 15.3 dp: body, not label.
 // - THE PICTURES: the hanger's body #C09D7A (its interior, OKLCh C 0.064, h 67°), its hook and sprigs
 //   text.primary (#F8FAFD, 0.71) at 1.84–2.22 px; the refusal's plate #51412C (C 0.040), its edge
 //   #EEAF5E (C 0.123) 2.2–3.6 px wide by half-maximum on its four sides (3.0 by area over peak), the
@@ -111,8 +116,8 @@ const step = (id, box, binding) =>
     parent: '27.lens-working',
     tokens: { bg: 'level3', fg: 'text.primary', radius: 'sm' },
     measured: { bg: '#30343D', fg: '#E5E9ED' },
-    type: text('mono', 'label'),
-    raw: { cornerPx: 5.75, advancePx: 6.68, capPx: 10 },
+    type: text('mono', 'body', 600),
+    raw: { cornerPx: 5.75, emDp: 15.3, advancePx: 6.77, capPx: 9.79 },
     binding,
     copy: { shape: 'badge', script: 'latin' },
   });

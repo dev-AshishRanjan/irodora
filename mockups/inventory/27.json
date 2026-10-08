@@ -317,8 +317,8 @@
       },
       "type": {
         "face": "mono",
-        "size": "label",
-        "weight": 400
+        "size": "body",
+        "weight": 600
       },
       "icon": null,
       "illustration": null,
@@ -330,8 +330,9 @@
       },
       "raw": {
         "cornerPx": 5.75,
-        "advancePx": 6.68,
-        "capPx": 10
+        "emDp": 15.3,
+        "advancePx": 6.77,
+        "capPx": 9.79
       },
       "copy": {
         "shape": "badge",
@@ -357,8 +358,8 @@
       },
       "type": {
         "face": "mono",
-        "size": "label",
-        "weight": 400
+        "size": "body",
+        "weight": 600
       },
       "icon": null,
       "illustration": null,
@@ -370,8 +371,9 @@
       },
       "raw": {
         "cornerPx": 5.75,
-        "advancePx": 6.68,
-        "capPx": 10
+        "emDp": 15.3,
+        "advancePx": 6.77,
+        "capPx": 9.79
       },
       "copy": {
         "shape": "badge",

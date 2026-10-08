@@ -156,6 +156,32 @@ describe('the badges', () => {
     expect(host.props['onClick']).toBeUndefined();
   });
 
+  it('sets 27’s steps in the mono on surface.3 (F-236, ADR-0130)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Chip form="badge" label="Decoding the photo…" mono fill="surface.3" testID="m" />
+        <Chip form="badge" label="1,240" fill="surface.2" testID="s" />
+      </ThemeProvider>,
+    );
+    expect(styleOf('m')['backgroundColor']).toBe(dark['surface.3']);
+    const text = (label: string) =>
+      flattenStyle((screen.getByText(label).props as { style?: unknown }).style);
+    expect(text('Decoding the photo…')['fontFamily']).toBe(nativeFamilies.mono);
+    // At the mono's one step, not the badge's default label.
+    expect(text('Decoding the photo…')['fontSize']).toBe(16);
+    // DECOY — a badge that does not ask for the mono keeps the platform sans at label.
+    expect(text('1,240')).not.toHaveProperty('fontFamily');
+    expect(text('1,240')['fontSize']).toBe(14);
+  });
+
+  it('refuses a mono badge at another step, or marked as figures', () => {
+    // @ts-expect-error — the mono exists at one step (ADR-0130).
+    const sized = <Chip form="badge" label="D65" mono size="label" />;
+    // @ts-expect-error — the mono's figures are equal-width already.
+    const numeric = <Chip form="badge" label="6504K" mono numeric />;
+    expect([sized, numeric]).toHaveLength(2);
+  });
+
   it('refuses a press handler on a badge', () => {
     // @ts-expect-error — a badge is read, not pressed; a chip that presses is a control.
     const pressed = <Chip form="badge" label="1,240" onPress={() => undefined} />;

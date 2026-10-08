@@ -12,6 +12,7 @@
 
 import type { nativeFaces } from '@irodora/design-tokens';
 import GelasioRegular from '../assets/fonts/Gelasio-Regular.ttf';
+import InconsolataSemiBold from '../assets/fonts/Inconsolata-SemiBold.ttf';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
 import NotoSerifJPRegular from '../assets/fonts/NotoSerifJP-Subset.ttf';
 
@@ -21,4 +22,5 @@ export const FONT_ASSETS = {
   NotoSansJP,
   'Gelasio-Regular': GelasioRegular,
   'NotoSerifJP-Regular': NotoSerifJPRegular,
+  'Inconsolata-SemiBold': InconsolataSemiBold,
 } as const satisfies Record<Family, number>;

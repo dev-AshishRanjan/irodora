@@ -27,6 +27,19 @@
         "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/OFL.txt"
       },
       "cache": ".cache/fonts/mincho/notoserifjp/"
+    },
+    {
+      "id": "inconsolata",
+      "role": "mono — the pipeline's steps 27 draws in the working state, cut at 27's width and weight (ADR-0130)",
+      "file": "Inconsolata[wdth,wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/inconsolata/Inconsolata%5Bwdth,wght%5D.ttf",
+      "bytes": 347180,
+      "sha256": "23ded25b447074d00659392bf9b1123d89df55cb07b0ad9bfef3366d199b5fcb",
+      "licence": {
+        "file": "OFL.txt",
+        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/inconsolata/OFL.txt"
+      },
+      "cache": ".cache/fonts/inconsolata/"
     }
   ],
   "$licenceComment": "Each face's OFL.txt is recorded by URL only. The licence travels INSIDE each cut (name records 0, 13 and 14, which the generator carries over and verify-font-coverage requires) and in NOTICE.md; no OFL.txt is committed, so a pinned sha256 of one would be a number nothing checks."
