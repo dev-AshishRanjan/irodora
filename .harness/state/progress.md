@@ -8,6 +8,75 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-08 — F-231 The app icon, the adaptive and themed icons, and the splash are mockup 14
+
+**Done.** The icon is 14's tile on iOS and Android, and a cold start runs the native splash into 14's
+splash without a jump. The built artefact and the native projects are checked for both. It shipped
+in thirteen commits, `a172996` through this one
+([ADR-0126](../../docs/adr/0126-the-icon-is-14s-tile-full-bleed-its-corner-and-its-rim-the-platforms.md),
+[ADR-0127](../../docs/adr/0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md)).
+
+- **14 re-read** (a new calibrated instrument, `glow-fit.mjs`):
+  - The tile is a 184.7 px square. Its 1.6 px rim is the platform's light, not the asset's.
+  - Its fill is a linear gradient, 15.2° off vertical, from `surface.2` to `background`.
+  - The mark is 0.611 of the tile, centred by its ink.
+  - The splash glow is the mark blurred.
+- **The icon (criterion 1, ADR-0126).** `icon.png` is full-bleed and opaque, the mark on 624 of its
+  1024 px, and generated from one drawings table that `--check` holds. The tile's tokens, axis and
+  share are read from 14's inventory.
+- **The adaptive and themed icons (criterion 2).**
+  - Both are 14's share of the 72 dp a launcher shows: 528 of 1296 px. F-230's foreground was 0.914 of it.
+  - A new background layer carries the tile.
+  - Both are proven inside the 66 dp zone and inside every AOSP mask, verbatim from `android-10.0.0_r1`.
+- **The splash (criteria 3 and 4, ADR-0127).**
+  - The native image is a 648 grid at 244 pt: 154.41 dp against the lockup's 154.49. This fixes F-230's 120-vs-160 jump. The width is a multiple of 4 because Expo's hdpi composite needs whole pixels.
+  - The overlay's first frame is the native frame. The mark then rises into 14's lockup while the glow, *Irodora*, 彩り・色の知性, the subline, the silk wave and the progress line arrive.
+  - The overlay follows the phone's appearance, so a light phone launches in Washi.
+  - Under reduced motion the composition is held still, then the app appears.
+  - The glow is a mask the generator blurs from the geometry, tinted with `foreground`. Android's SVG blur cannot draw it.
+- **The artefact (criterion 5).**
+  - One table of verdicts, `brand-verdicts.mjs`, decodes by bytes and holds each resource to its drawing.
+  - `verify-native-assets` reads expo prebuild's projects on every pull request: Android here, iOS in CI with `--require-ios`.
+  - Gate 16 now reads every launcher layer and both splash logos, by name or through `aapt2 dump resources`. Before, it decoded none: Expo writes PNG bytes in `.webp` names.
+  - `png.mjs` reads palette PNGs.
+- **New:** `ProgressBar` in `@irodora/ui`; `Wordmark`'s splash form gains `markHidden` and `onGeometry`; the copy `brand.taglineJa` and `brand.splashSubline`; a re-cut Japanese subset.
+- **Record:**
+  - Effect links E-178 to E-184, plus seven updates.
+  - All five criteria attested.
+  - Backlog F-319, F-320 and F-321.
+  - Notes on F-266 to F-269, F-221 and F-317.
+  - BRAND.md, and a lesson.
+
+**Review (once, on `6748ed4`): FAIL**, with every runnable gate green: 2 blocking, 2 significant, 11 minor.
+
+- **B1, fixed:** the overlay never finished on a device. Its sequence re-ran on its own phase changes and cancelled its next step. A single `act()` in the test hid it.
+- **B2, fixed:** in a shortened release table the adaptive-icon XML sits under `ic_launcher`, and gate 16 read it as an image.
+- **S1, fixed:** reduced motion flashed the composition.
+- **S2, fixed:** a decoy that could not fail.
+- **Minors:** M1–M3, M5–M10 fixed, M4 recorded, M11 is this entry.
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm typecheck` · `pnpm format:check` · `pnpm build` (expo prebuild) · `pnpm lint`
+- `pnpm test` (35/35: ui 860, mobile 1129) · `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- `generate-brand-assets.mjs --check` and `--prove` (89 cases)
+- `verify-native-assets.mjs` (35 Android images) and `--prove` (16 cases)
+- `verify-gate-mirror --prove`
+- `verify-apk --prove`, its SDK-free cases only (4)
+- `pnpm verify:claims:prove`, 41 cases, run before the review. The review changed no copy and no claims fixture.
+
+Along the way several runs failed on the environment rather than a finding: Windows `UNKNOWN` file errors, a gate-mirror proof timeout, and F-317's hook timeout (three times). Each gate passed when re-run alone. The plan's Status rows say which run and why.
+
+**Not run:**
+
+- Gate `artifact` itself, and the aapt2-built half of `verify-apk --prove`. There is no JDK, SDK or android.jar here, so CI's `android-build.yml` and `release.yml` are their first run.
+- The iOS half of `verify-native-assets`, because prebuild skips iOS on win32.
+- `e2e`, and anything on a device: the five attestations.
+- `pnpm bench`: no engine code changed.
+
+---
+
 ## 2026-10-07 — F-222 Every figure the mockups print is a defined computation
 
 **Done.** OQ-9 is closed, and every figure R9 §8 marked OQ-9 or F-222 is a defined computation. It
