@@ -31,6 +31,7 @@ import {
   MetricTile,
   PageDots,
   ProgressBar,
+  ProgressRing,
   ProximityHeadline,
   Radar,
   RankedRow,
@@ -2073,6 +2074,22 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: 'ProgressBar (14, decorative)',
     kind: 'static',
     render: (_state, theme) => draw(<ProgressBar value={0.5} />, theme),
+  },
+  {
+    // The progress ring (F-236, 27): a progressbar, its value an arc, the mark at its centre hidden.
+    name: 'ProgressRing (27)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <ProgressRing value={0.5} label="Analysing Fabric Colour" valueText="Step 2 of 2" />,
+        theme,
+      ),
+  },
+  {
+    name: 'ProgressRing (27, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<ProgressRing value={0.5} label="生地の色を解析中" valueText="2 / 2 段階" />, theme),
   },
   {
     // The page dots (F-235, ADR-0120): the current page a capsule, a small dot past the window.

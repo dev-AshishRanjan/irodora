@@ -86,6 +86,8 @@ export {
   type PageDotsProps,
 } from './PageDots.js';
 export { PROGRESS_TRACK, ProgressBar, type ProgressBarProps } from './ProgressBar.js';
+export { ProgressRing, type ProgressRingProps } from './ProgressRing.js';
+export { STATE_BOARD_K, STATE_RING } from './stateBoard.js';
 export {
   FIELDS_ROW,
   HARMONY_ROW,
