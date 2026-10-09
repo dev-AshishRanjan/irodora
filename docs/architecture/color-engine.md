@@ -227,6 +227,17 @@ outfit fails when it does not is its own accessibility failure.
 consumer is the recommendation engine, which scores separation for every candidate outfit
 (FR-35). A CVD "mode" that only recolours the screen helps nobody choose trousers.
 
+**What is implemented.** Viénot's single plane covers protan and deutan dichromacy, and
+`simulateDichromacy` refuses tritan (F-008). Machado covers all three at every severity.
+
+**The app-wide preview (F-240, [ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)).** The preview recolours the screen
+only so a person can check what they are looking at; the scoring above does not use it.
+- It runs `simulateAnomalous` at severity 1.0 for all three deficiencies, on the token layer and
+  the sample family.
+- Machado's matrices act on encoded sRGB, so they commute with alpha compositing. Simulating each
+  translucent token therefore equals simulating the composited pixel.
+- Viénot is a projection in linear light, and would not commute.
+
 ---
 
 ## 8. Naming (FR-7)

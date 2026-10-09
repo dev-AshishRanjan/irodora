@@ -122,6 +122,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — the band is ADR-0125's table |
 | `02` | *"Excellent Exposure"* | the capture-conditions assessment the engine produces (FR-17), in its own words |
 | `07` `16` | *"6.2:1 (APCA Passed)"*, *"11.4:1 (APCA Passed - AAA)"* | the same element shows the WCAG ratio **and** the APCA Lc as two figures — APCA has no ratio (FR-3) |
+| `15` | *"Tritanopia"* as a CVD preview mode | the pill keeps its word; the preview runs Machado's tritan at severity 1.0, which its authors did not validate with tritanopes, so the strip that labels the preview says the simulation is approximate. Protanopia and Deuteranopia run the model at its dichromacy case (`F-240`, [ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)) |
 | `00` `10` `15` `16` | *"100% CVD Safe"*, *"CVD 100% Distinction"*, *"100% CVD-Safe"*, *"100% Distinguishable"* | the computed separation score (FR-5) for the palettes actually shown; it prints 100 only when it is 100 (claims-ok: quotes the drawn construction this row resolves) |
 | `07` `08` `13` | *"98% Separation (Protan/Deutan Safe)"*, *"(Safe)"* after each separation figure, *"98% (Safe for Protan/Deutan)"* | the computed separation (FR-5) with the model it was computed under; "Safe" is a claim about people and does not ship (claims-ok: quotes the drawn construction this row resolves) |
 | `13` | *"Master Harmony"* | whether the outfit counts toward the valid outfits, with the threshold: *Valid Outfit (≥ 60)* or *Not Counted (under 60)* — the verdict word does not ship (FR-32, ADR-0124) (claims-ok: quotes the drawn construction this row resolves) |
@@ -277,6 +278,11 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   screens that names a colour is pushed in the Atlas stack, so its way out, the header's back, is
   already on the screen. It is `00`'s empty caption, as an absence fixed on the screen is (`F-236`,
   [ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md) §6).
+- **The CVD preview's label** — `15` draws the mode pills and no indication of the mode anywhere
+  else. F-240's second criterion asks that the mode be labelled on screen while it is on, so a
+  strip above the tab bar, in `15`'s badge vocabulary, names the mode, the model and severity, and
+  what is not simulated (photographs, the camera), on every route (`F-240`,
+  [ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md) §5).
 - **The camera permission not yet asked for** — `27` draws the Lens without the camera only once it
   is denied, with *Open Device Settings*. Before the first request there is nothing to open: both
   platforms require the app to ask in context, before any camera use, and a denied-looking card

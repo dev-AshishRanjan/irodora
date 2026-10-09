@@ -61,8 +61,8 @@ know whether it *works*, and if not, what to wear instead.
 
 | | |
 |---|---|
-| Dichromacy | Protanopia, deuteranopia, tritanopia (Brettel–Viénot) |
-| Anomalous trichromacy | Protanomaly, deuteranomaly, tritanomaly at severity 0…1 (Machado) |
+| Dichromacy | Protanopia and deuteranopia (Viénot 1999). **Not tritanopia:** the engine refuses it, because Viénot's single plane is not accurate for tritan and Brettel's anchors could not be verified (F-008) |
+| Anomalous trichromacy | Protanomaly, deuteranomaly, tritanomaly at severity 0…1 (Machado). Severity 1.0 is the model's dichromacy case; its tritan is an approximation its authors did not validate |
 | Also | Achromatopsia, greyscale preview, high-contrast mode |
 
 ### In the product
@@ -70,7 +70,12 @@ know whether it *works*, and if not, what to wear instead.
 - **Separation score** on every recommendation (FR-5), from the same definition the UI uses.
 - **CVD outfit mode** flags reduced separation and proposes alternatives with the measured
   improvement (FR-35).
-- **Simulation preview** — original beside each deficiency, labelled with text.
+- **Simulation preview** — original beside each deficiency, labelled with text, on the colour
+  detail.
+- **The whole app, previewed** (F-240, [ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)) — Preferences' *Protanopia*,
+  *Deuteranopia* and *Tritanopia* repaint every token and sample through Machado at severity 1.0.
+  A strip above the tab bar says so in words while it is on, and names what is not simulated.
+  Nothing is stored, and nothing exported changes.
 - **Audio colour naming** — a colour can be spoken.
 - **Haptic confirmation** on selection, mobile.
 
