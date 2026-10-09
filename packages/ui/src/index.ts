@@ -43,6 +43,7 @@ export {
   SPECTRUM_STOPS,
   glyphStroke,
   type GlyphName,
+  type GlyphTints,
   type GlyphProps,
 } from './Glyph.js';
 export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
@@ -363,6 +364,7 @@ export {
   markReach,
   markSvg,
   MARK_INKS,
+  MARK_TINT,
   type MarkInk,
   narrowestFeature,
   svgNumber,

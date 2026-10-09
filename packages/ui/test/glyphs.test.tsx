@@ -256,3 +256,153 @@ describe('decorative to a screen reader', () => {
     expect(root.props['importantForAccessibility']).toBe('no-hide-descendants');
   });
 });
+
+/**
+ * `27`'s two state pictures (F-236, ADR-0128 §3): drawn from 27's readings, at their own line, with
+ * the tinted parts as layers a surface fills.
+ */
+describe('27’s state glyphs', () => {
+  const TINT = '#BAA07C';
+  const draw = (
+    name: GlyphName,
+    extra: { stroke?: number; tints?: { lock?: string; slash?: string } } = {},
+    size = 24,
+  ): ReactElement<Props>[] => {
+    const out: ReactElement<Props>[] = [];
+    const visit = (node: ReactNode): void => {
+      if (!isValidElement(node)) return;
+      const el = node as ReactElement<Props>;
+      if (el.type === Path || el.type === Circle) out.push(el);
+      else Children.forEach(el.props.children, visit);
+    };
+    const root = Glyph({ name, color: INK, size, ...extra }) as ReactElement<Props>;
+    Children.forEach(root.props.children, visit);
+    return out;
+  };
+  const byKey = (els: ReactElement<Props>[], key: string): ReactElement<Props> | undefined =>
+    els.find((e) => e.key === key);
+  const paintOf = (el: ReactElement<Props> | undefined): unknown =>
+    el?.props['fill'] === 'none' ? el.props['stroke'] : el?.props['fill'];
+
+  const board = JSON.parse(readFileSync(join(INVENTORY, '27.json'), 'utf8')) as {
+    elements: readonly { id: string; raw?: Record<string, number> }[];
+  };
+  const raw = (id: string): Record<string, number> => {
+    const e = board.elements.find((x) => x.id === id);
+    if (e?.raw === undefined) throw new Error(id);
+    return e.raw;
+  };
+
+  /** The extent of a path's vertices, absolute: M L H V A and their relative forms, as drawn here. */
+  function extent(d: string): { minX: number; maxX: number; minY: number; maxY: number } {
+    const tokens = d.match(/[a-zA-Z]|-?\d*\.?\d+/gu) ?? [];
+    let [x, y, i] = [0, 0, 0];
+    const xs: number[] = [];
+    const ys: number[] = [];
+    let cmd = '';
+    const num = (): number => Number(tokens[i++]);
+    while (i < tokens.length) {
+      if (/[a-zA-Z]/u.test(tokens[i] ?? '')) cmd = tokens[i++] ?? '';
+      const rel = cmd === cmd.toLowerCase();
+      switch (cmd.toLowerCase()) {
+        case 'm':
+        case 'l': {
+          const [dx, dy] = [num(), num()];
+          [x, y] = rel ? [x + dx, y + dy] : [dx, dy];
+          break;
+        }
+        case 'h':
+          x = rel ? x + num() : num();
+          break;
+        case 'v':
+          y = rel ? y + num() : num();
+          break;
+        case 'a': {
+          for (let k = 0; k < 5; k += 1) num();
+          const [dx, dy] = [num(), num()];
+          [x, y] = rel ? [x + dx, y + dy] : [dx, dy];
+          break;
+        }
+        case 'z':
+          // A close moves nothing a box would see: the start is already counted.
+          break;
+        default:
+          throw new Error(`extent: ${cmd}`);
+      }
+      xs.push(x);
+      ys.push(y);
+    }
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    };
+  }
+
+  it('draws the line its surface binds, converted into the grid at its size', () => {
+    const lines = draw('camera-locked', { stroke: 3.5 }, 121.5).filter(
+      (e) => e.props['fill'] === 'none',
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const el of lines) expect(el.props['strokeWidth']).toBeCloseTo((3.5 * 24) / 121.5, 10);
+    // DECOY — without one, the same glyph keeps the icon line, which is far thinner here.
+    for (const el of draw('camera-locked', {}, 121.5).filter((e) => e.props['fill'] === 'none'))
+      expect(el.props['strokeWidth']).toBeCloseTo(glyphStroke(121.5), 10);
+  });
+
+  it('fills the padlock from its tint and the camera from its ink', () => {
+    const tinted = draw('camera-locked', { tints: { lock: TINT } });
+    expect(paintOf(byKey(tinted, 'lock-body'))).toBe(TINT);
+    expect(paintOf(byKey(tinted, 'shackle'))).toBe(TINT);
+    for (const key of ['body', 'lens', 'flash']) expect(paintOf(byKey(tinted, key))).toBe(INK);
+    // DECOY — untinted, the padlock is the glyph's one ink.
+    expect(paintOf(byKey(draw('camera-locked'), 'lock-body'))).toBe(INK);
+  });
+
+  it('draws the slash across the glare from its tint and the sun and rays from its ink', () => {
+    const tinted = draw('glare', { tints: { slash: TINT } });
+    expect(paintOf(byKey(tinted, 'slash'))).toBe(TINT);
+    expect(paintOf(byKey(tinted, 'sun'))).toBe(INK);
+    expect(paintOf(byKey(tinted, 'rays'))).toBe(INK);
+    // DECOY — a tint for a layer the glyph does not have changes nothing.
+    expect(paintOf(byKey(draw('glare', { tints: { lock: TINT } }), 'slash'))).toBe(INK);
+  });
+
+  it('draws the camera in 27’s proportions — its lens, its height, its hump, its padlock', () => {
+    const r = raw('27.lens-permission.icon');
+    const shapesOf = draw('camera-locked');
+    const body = extent(String(byKey(shapesOf, 'body')?.props['d']));
+    const width = body.maxX - body.minX;
+    const lens = Number(byKey(shapesOf, 'lens')?.props['r']);
+    const lock = extent(String(byKey(shapesOf, 'lock-body')?.props['d']).split(' M')[0] ?? '');
+    const near = (a: number, b: number): void => {
+      expect(Math.abs(a / b - 1)).toBeLessThan(0.02);
+    };
+    near(lens / width, (r['lensPx'] ?? NaN) / (r['bodyWidthPx'] ?? NaN));
+    // The shoulders are the line at the hump's foot; the foot is the body's lowest vertex.
+    near((body.maxY - 6.42) / width, (r['bodyHeightPx'] ?? NaN) / (r['bodyWidthPx'] ?? NaN));
+    near((6.42 - body.minY) / width, (r['humpPx'] ?? NaN) / (r['bodyWidthPx'] ?? NaN));
+    near((lock.maxX - lock.minX) / width, (r['lockWidthPx'] ?? NaN) / (r['bodyWidthPx'] ?? NaN));
+    expect(byKey(shapesOf, 'flash')).toBeDefined();
+    // The keyhole is cut through the padlock: three subpaths, one solid.
+    expect(String(byKey(shapesOf, 'lock-body')?.props['d']).match(/M/gu)).toHaveLength(3);
+  });
+
+  it('draws the glare in 27’s proportions — its sun and its slash against its rays', () => {
+    const r = raw('27.lens-refused.icon');
+    const half = (r['linePx'] ?? NaN) / 2;
+    const unit = ((r['rayOuterPx'] ?? NaN) - half) / 8.5;
+    const shapesOf = draw('glare');
+    const near = (a: number, b: number): void => {
+      expect(Math.abs(a / b - 1)).toBeLessThan(0.02);
+    };
+    near(Number(byKey(shapesOf, 'sun')?.props['r']), (r['sunPx'] ?? NaN) / unit);
+    const slash = extent(String(byKey(shapesOf, 'slash')?.props['d']));
+    near(((slash.maxX - slash.minX) * Math.SQRT2) / 2, ((r['slashPx'] ?? NaN) - half) / unit);
+    // DECOY — F-228's slash ran corner to corner, 15 units each way; 27's stops at the rays.
+    expect(
+      Math.abs((15 * Math.SQRT2) / 2 / (((r['slashPx'] ?? NaN) - half) / unit) - 1),
+    ).toBeGreaterThan(0.1);
+  });
+});

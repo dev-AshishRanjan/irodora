@@ -117,8 +117,10 @@ lines are 27's own. Each line is wider than `size.iconStroke` (1.65 dp) or `size
   - corner `lg` (14.0–14.5 px; F-220's `md` was a guess);
   - fill `state.refused.plate`;
   - a 3 dp edge in `state.refused.edge`;
-  - `Glyph glare` at 69 dp, its sun and rays in `state.refused.glyph`, its slash in the edge's
-    amber, at 2.5 dp.
+  - `Glyph glare`, redrawn from 27's readings, at 67.5 dp: its rays' tips kept at 8.5 units, so 24
+    units are 69.5 px. Its sun and rays are in `state.refused.glyph`, its slash in the edge's
+    amber, at 2.5 dp. 27's sun is larger than F-228's (4.15 units against 3.5), and its slash stops
+    at the rays' tips.
 - **The camera:** `Glyph camera-locked`, redrawn from 27's geometry:
   - a 93.8 × 61.3 px body with a 12 px hump;
   - a lens of radius 23.6 px;

@@ -169,10 +169,14 @@ function roundedRect(x: number, y: number, size: number, r: number): string {
   ].join(' ');
 }
 
-/** What a drawing is given: one ink, and the line in its own grid's units. */
+/**
+ * What a drawing is given: one ink, and the line in its own grid's units — and, for the one drawing
+ * a surface tints (`27`'s hanger, F-236), the colour of the part the tint fills.
+ */
 interface Pen {
   readonly ink: string;
   readonly sw: number;
+  readonly body?: string;
 }
 type Draw = (pen: Pen) => React.JSX.Element;
 
@@ -407,9 +411,9 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
   /**
    * `27`'s empty wardrobe: a hanger with a sprig of blossom growing across it.
    *
-   * Solid, because `27` draws it solid. **Its tan is NOT available here**: `C10` declares the
-   * tint, and `color` below takes only the two quiet foregrounds, so no surface can pass one yet —
-   * the gap is recorded against F-236, which builds `27`'s states (F-229's review, finding 7).
+   * Solid, because `27` draws it solid. Its body takes the tint a surface passes — `27`'s tan,
+   * `state.hanger`, minted by F-236 for C10 — and its hook and sprigs the ink (F-229's review,
+   * finding 7, closed by F-236).
    */
   hanger: {
     box: [48, 34],
@@ -424,7 +428,7 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
             // The bar across the bottom, rounded at its ends.
             'M5 28.2h38a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2z',
           ].join(' '),
-          p,
+          { ...p, ink: p.body ?? p.ink },
           'body',
         )}
         {/* Two sprigs, as 27 draws them: one over the shoulder, one crossing the bar. */}
@@ -724,18 +728,9 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
 export const illustrationBox = (name: IllustrationName): readonly [number, number] =>
   DRAWINGS[name].box;
 
-export interface IllustrationProps {
-  readonly name: IllustrationName;
+interface IllustrationBase {
   /** Rendered WIDTH in dp. The height follows the drawing's own aspect — see {@link illustrationBox}. */
   readonly width?: number;
-  /**
-   * The token the drawing takes.
-   *
-   * Constrained to the quiet foregrounds. An illustration in `foreground` at full strength would
-   * be as loud as the sentence beside it, and the sentence is the content — rule 3. `foreground`
-   * is allowed only as a `backdrop`, which is how the mockups draw it: the same ink at 0.15.
-   */
-  readonly color?: Extract<keyof ThemeColors, 'foreground.2' | 'foreground.3'>;
   /**
    * How strongly it is inked (F-229's measurement).
    *
@@ -743,16 +738,46 @@ export interface IllustrationProps {
    * content at the declared `opacity.art`, which is what 21 of the 33 drawn elements do.
    */
   readonly tone?: 'figure' | 'backdrop';
+  /**
+   * The line's width on screen, in dp, where a surface binds its drawing's own: `27`'s hanger
+   * draws 2 dp (F-236). Everything else leaves it out and keeps `size.artStroke`.
+   */
+  readonly stroke?: number;
   readonly testID?: string;
 }
 
-export function Illustration({
-  name,
-  width = 64,
-  color = 'foreground.3',
-  tone = 'figure',
-  testID,
-}: IllustrationProps): React.JSX.Element {
+/**
+ * The drawing in a quiet foreground — every drawing but one.
+ *
+ * Constrained to the quiet foregrounds. An illustration in `foreground` at full strength would
+ * be as loud as the sentence beside it, and the sentence is the content — rule 3. `foreground`
+ * is allowed only as a `backdrop`, which is how the mockups draw it: the same ink at 0.15.
+ */
+interface QuietIllustration extends IllustrationBase {
+  readonly name: IllustrationName;
+  /** The token the drawing takes. */
+  readonly color?: Extract<keyof ThemeColors, 'foreground.2' | 'foreground.3'>;
+  readonly tint?: never;
+}
+
+/**
+ * `27`'s empty-wardrobe hanger, as `27` draws it (F-236, ADR-0128 §3): the picture of its state,
+ * a figure — its body in the C10 tan, its hook and sprigs white. The one place an illustration
+ * takes `foreground` at full strength, because `27` draws it so and the drawing is the state's
+ * whole picture; its title and body still carry everything it means (rule 3).
+ */
+interface StateHanger extends IllustrationBase {
+  readonly name: 'hanger';
+  readonly color: 'foreground';
+  readonly tint: 'state.hanger';
+  readonly tone?: 'figure';
+}
+
+export type IllustrationProps = QuietIllustration | StateHanger;
+
+export function Illustration(props: IllustrationProps): React.JSX.Element {
+  const { name, width = 64, tone = 'figure', stroke, testID } = props;
+  const color = props.color ?? 'foreground.3';
   const { colors } = useTheme();
   const { box, fixedStroke, draw } = DRAWINGS[name];
   const [boxWidth, boxHeight] = box;
@@ -762,7 +787,11 @@ export function Illustration({
    * rendered — the same arithmetic `Glyph` does for an icon. Without it a strip drawn on a 96-unit
    * grid and a tile drawn on a 24-unit one would carry lines four times apart.
    */
-  const pen: Pen = { ink: colors[color], sw: fixedStroke ?? (nativeArtStroke * boxWidth) / width };
+  const pen: Pen = {
+    ink: colors[color],
+    sw: fixedStroke ?? ((stroke ?? nativeArtStroke) * boxWidth) / width,
+    ...(props.tint === undefined ? {} : { body: colors[props.tint] }),
+  };
 
   return (
     <View

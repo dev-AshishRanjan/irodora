@@ -39,6 +39,15 @@
  * the question is answered. What a glyph guarantees is SILHOUETTE (NFR-9): each differs in shape
  * from its neighbours, so it reads with no colour, at 16 dp, under any deficiency.
  *
+ * ## A picture binds its own line, and 27's two state glyphs take tints (F-236)
+ *
+ * `27` draws `camera-locked` and `glare` as the pictures of its denied and refused states, at about
+ * 120 and 68 dp, with lines of 3.5 and 2.5 dp: pictures, not icons. A surface that binds a drawn
+ * line passes it as `stroke`, and the same width-on-screen arithmetic converts it into the grid;
+ * every icon keeps `size.iconStroke`. Their tinted parts are named LAYERS a surface fills from its
+ * C10 tokens — the padlock (`lock`), the slash (`slash`) — rather than ADR-0110's hue sweep, which
+ * a control applies to an icon wherever it is drawn: a tint here is the state's, never the glyph's.
+ *
  * ## Filled, where a mockup draws the active state filled
  *
  * `01` draws its active tab filled (home), `02` its active lens, `02`, `15` and `18` their active
@@ -156,11 +165,24 @@ export function glyphStroke(size: number): number {
 /** Two decimals, so every path is byte-stable across engines (NFR-3's spirit, applied to art). */
 const n = (v: number): string => String(Math.round(v * 100) / 100);
 
+/**
+ * The layers a surface may tint (F-236): `27`'s padlock over its camera, and the slash across its
+ * glare. A layer left out is drawn in the glyph's one ink.
+ */
+export interface GlyphTints {
+  readonly lock?: string;
+  readonly slash?: string;
+}
+
 interface Pen {
   readonly ink: string;
   readonly sw: number;
   readonly filled: boolean;
+  readonly tints: GlyphTints;
 }
+
+/** The pen for a tintable layer: its tint where the surface gives one, the glyph's ink otherwise. */
+const tinted = (p: Pen, layer: keyof GlyphTints): Pen => ({ ...p, ink: p.tints[layer] ?? p.ink });
 
 type Draw = (pen: Pen) => React.JSX.Element;
 
@@ -416,13 +438,30 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
   /** `00` draws the camera solid, wherever it appears. */
   camera: (p) => <>{solid(CAMERA_SOLID, p)}</>,
 
-  /** `27`: the camera, and a solid padlock over its corner. */
+  /**
+   * `27`: the camera, and a solid padlock over its corner (F-236, re-drawn from 27's readings).
+   *
+   * Mapped from `27.lens-permission.icon`'s raw readings at 0.1919 units per px, its ink box centred
+   * on the grid: a body 18 units wide and 11.76 tall from its shoulders, a viewfinder hump 2.31 high,
+   * a lens of radius 4.53 a little left of centre, a flash dot, and the padlock with its keyhole cut
+   * through. The body's line stops short of the lock on both sides it meets, as 27 draws it. F-228's
+   * first drawing was squarer, its lens smaller, with no dot and no keyhole.
+   */
   'camera-locked': (p) => (
     <>
-      {line(CAMERA_BODY, p, 'body')}
-      {ring(12, 13.2, 3.6, p, 'lens')}
-      {solid(rrect(15, 16, 6.2, 5.2, 1.1), p, 'lock-body')}
-      {line('M16.4 16v-1.3a1.7 1.7 0 0 1 3.4 0V16', p, 'shackle')}
+      {line(
+        'M14.46 18.18H4.1a1.5 1.5 0 0 1-1.5-1.5V7.92a1.5 1.5 0 0 1 1.5-1.5h3.26l1.34-2.31h6.14l1.54 2.31h2.72a1.5 1.5 0 0 1 1.5 1.5v3.1',
+        p,
+        'body',
+      )}
+      {ring(11.12, 12.36, 4.53, p, 'lens')}
+      {dot(17.81, 8.81, 0.62, p, 'flash')}
+      {solid(
+        `${rrect(15.7, 15.34, 6.14, 4.99, 1)} ${circlePath(18.77, 17.45, 0.77)} ${rrect(18.48, 18.22, 0.58, 0.76, 0.2)}`,
+        tinted(p, 'lock'),
+        'lock-body',
+      )}
+      {line('M17 15.34V14.02a1.675 1.675 0 0 1 3.35 0v1.32', tinted(p, 'lock'), 'shackle')}
     </>
   ),
 
@@ -544,12 +583,16 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
   /** `21`: three centred bars, each shorter than the one above. */
   'filter-lines': (p) => <>{line('M3.5 7h17M7 12h10M10 17h4', p)}</>,
 
-  /** `27`: a sun with a slash through it — too much light to read. */
+  /**
+   * `27`: a sun with a slash through it — too much light to read (F-236, re-drawn from 27's
+   * readings at 2.894 px per unit, the rays' tips kept at 8.5): the sun a ring of 4.15, eight rays
+   * from 6.81, and the slash stopping at the rays' tips rather than crossing the grid.
+   */
   glare: (p) => (
     <>
-      {ring(12, 12, 3.5, p, 'sun')}
-      {line(rays(8, 6, 8.5), p, 'rays')}
-      {line('M4.5 4.5l15 15', p, 'slash')}
+      {ring(12, 12, 4.15, p, 'sun')}
+      {line(rays(8, 6.81, 8.5), p, 'rays')}
+      {line('M5.6 5.6l12.8 12.8', tinted(p, 'slash'), 'slash')}
     </>
   ),
 
@@ -978,6 +1021,13 @@ export interface GlyphProps {
   readonly spectrum?: readonly string[] | undefined;
   /** The rendered size in dp. The line keeps its declared width at every size. */
   readonly size?: number;
+  /**
+   * The line's width on screen, in dp, where a surface binds its drawing's own: `27`'s state
+   * pictures (F-236). Every icon leaves it out and keeps `size.iconStroke`.
+   */
+  readonly stroke?: number;
+  /** The layers a surface tints from its tokens ({@link GlyphTints}): `27`'s padlock and slash. */
+  readonly tints?: GlyphTints;
   /** The active state, where a mockup draws one filled ({@link FILLABLE_GLYPHS}). */
   readonly filled?: boolean;
   readonly testID?: string;
@@ -993,12 +1043,19 @@ export function Glyph({
   name,
   color,
   size = 24,
+  stroke,
+  tints = {},
   filled = false,
   spectrum,
   testID,
 }: GlyphProps): React.JSX.Element {
   const fillable = (FILLABLE_GLYPHS as readonly GlyphName[]).includes(name);
-  const pen = { ink: color, sw: glyphStroke(size), filled: filled && fillable };
+  const pen: Pen = {
+    ink: color,
+    sw: stroke === undefined ? glyphStroke(size) : (stroke * GRID) / size,
+    filled: filled && fillable,
+    tints,
+  };
   const coloured =
     spectrum !== undefined && name in SPECTRUM
       ? SPECTRUM[name as keyof typeof SPECTRUM](pen, spectrum)

@@ -294,8 +294,7 @@ export function narrowestFeature(size: number): number {
 
 /**
  * The tokens the mark may be drawn in: the neutral foregrounds and their inverse. One ink each, and
- * none of them a hue (ADR-0122). 27's tinted loading mark is the one declared exception, and F-236
- * adds its token here when it mints it.
+ * none of them a hue (ADR-0122).
  */
 export const MARK_INKS = [
   'foreground',
@@ -303,14 +302,24 @@ export const MARK_INKS = [
   'foreground.3',
   'inverse.foreground',
 ] as const satisfies readonly (keyof ThemeColors)[];
-export type MarkInk = (typeof MARK_INKS)[number];
+
+/**
+ * C10's one tinted mark (F-236, ADR-0128 §3): `27`'s working state draws the mark in a lilac, and
+ * this is the token minted for it. It is not one of {@link MARK_INKS}, which every other mark takes;
+ * the mark census holds that `27.lens-working.mark` is the only mark among the chroma exceptions,
+ * and `states.test` that one component draws it.
+ */
+export const MARK_TINT = 'state.mark' as const satisfies keyof ThemeColors;
+
+export type MarkInk = (typeof MARK_INKS)[number] | typeof MARK_TINT;
 
 export interface MarkProps extends Omit<ViewProps, 'style' | 'accessibilityRole'> {
   /** Rendered edge length of the grid. Defaults to the brief's floor. */
   readonly size?: number;
   /**
    * Which foreground token the mark takes. The mark introduces no colour of its own. `22` draws it
-   * in the header in `text.tertiary`, which is `foreground.3` (F-234).
+   * in the header in `text.tertiary`, which is `foreground.3` (F-234); `27`'s working state in
+   * {@link MARK_TINT}, its one tint (C10).
    */
   readonly color?: MarkInk;
   /**

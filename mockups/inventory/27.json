@@ -510,7 +510,11 @@
         "cornerPx": 14.25,
         "edgePx": 3,
         "glyphPx": 53,
-        "linePx": 2.8
+        "linePx": 2.8,
+        "sunPx": 12,
+        "rayInnerPx": 18.5,
+        "rayOuterPx": 25.8,
+        "slashPx": 27.6
       },
       "copy": null
     },

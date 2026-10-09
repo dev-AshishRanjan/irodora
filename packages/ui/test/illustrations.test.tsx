@@ -193,6 +193,64 @@ describe('drawn at the measured line and tone (R9-MOCKUP-FIDELITY §5)', () => {
   });
 });
 
+/**
+ * `27`'s hanger, as 27 draws it (F-236, ADR-0128 §3): its body in the C10 tan, its hook and sprigs
+ * white, at 27's own line — the one illustration a surface tints.
+ */
+describe('27’s hanger, the one tinted drawing', () => {
+  const draw = (node: React.JSX.Element) =>
+    render(<ThemeProvider theme="dark">{node}</ThemeProvider>);
+  const all = (tree: ReturnType<typeof draw>): ReactElement<Props>[] =>
+    [
+      ...tree.UNSAFE_queryAllByType(Path),
+      ...tree.UNSAFE_queryAllByType(Circle),
+    ] as unknown as ReactElement<Props>[];
+  const dark = nativeColors.dark;
+
+  it('fills the body from its tint and strokes the rest in foreground, at the bound line', () => {
+    const width = 168.5;
+    const shapesOf = all(
+      draw(
+        <Illustration
+          name="hanger"
+          width={width}
+          color="foreground"
+          tint="state.hanger"
+          stroke={2}
+        />,
+      ),
+    );
+    const fills = shapesOf.map((e) => e.props['fill']).filter((f) => f !== 'none');
+    const strokes = shapesOf.map((e) => e.props['stroke']).filter((v) => v !== undefined);
+    expect(new Set(fills)).toStrictEqual(new Set([dark['state.hanger'], dark.foreground]));
+    expect(fills).toContain(dark['state.hanger']);
+    expect(new Set(strokes)).toStrictEqual(new Set([dark.foreground]));
+    const [boxWidth] = illustrationBox('hanger');
+    for (const el of shapesOf.filter((e) => e.props['stroke'] !== undefined))
+      expect((Number(el.props['strokeWidth']) * width) / boxWidth).toBeCloseTo(2, 9);
+  });
+
+  it('DECOY — untinted, the same drawing is one quiet ink at the art line', () => {
+    const shapesOf = all(draw(<Illustration name="hanger" width={168.5} />));
+    const inks = new Set(
+      shapesOf
+        .flatMap((e) => [e.props['fill'], e.props['stroke']])
+        .filter((v) => v !== undefined && v !== 'none'),
+    );
+    expect(inks).toStrictEqual(new Set([dark['foreground.3']]));
+  });
+
+  it('refuses a tint on any other drawing, foreground without the tint, and another tint', () => {
+    // @ts-expect-error — only 27's hanger takes a tint.
+    const a = <Illustration name="kimono" color="foreground" tint="state.hanger" />;
+    // @ts-expect-error — foreground at full strength is 27's hanger's alone, and only with its tint.
+    const b = <Illustration name="hanger" color="foreground" />;
+    // @ts-expect-error — the hanger's tint is its own token.
+    const c = <Illustration name="hanger" color="foreground" tint="state.mark" />;
+    expect([a, b, c]).toHaveLength(3);
+  });
+});
+
 describe('one versioned set', () => {
   /**
    * The digest of every drawing's path data, per version — every version the set has had.

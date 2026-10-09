@@ -211,7 +211,21 @@ export default {
       tokens: { radius: 'lg' },
       icon: 'glare',
       measured: { bg: '#51412C', border: '#EEAF5E', fg: '#A2917A', slash: '#E7B16C' },
-      raw: { cornerPx: 14.25, edgePx: 3, glyphPx: 53, linePx: 2.8 },
+      // F-236 increment 5, the glyph read from its own centre (848.98, 328.03), the centroid of its
+      // sun and rays: the sun a ring of radius 12 px on its centre line; eight rays whose ink runs
+      // from 18.5 to 25.8 px; the slash, in the edge's amber, 27.6 px each way along the diagonal
+      // through the centre, cap to cap — it stops at the rays' tips. F-228's drawing had a smaller
+      // sun (3.5 of 8.5 units, against 27's 4.15) and a slash corner to corner.
+      raw: {
+        cornerPx: 14.25,
+        edgePx: 3,
+        glyphPx: 53,
+        linePx: 2.8,
+        sunPx: 12,
+        rayInnerPx: 18.5,
+        rayOuterPx: 25.8,
+        slashPx: 27.6,
+      },
     }),
     title(
       '27.lens-refused.title',

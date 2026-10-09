@@ -42,6 +42,7 @@ import {
   MARK,
   MARK_HUB,
   MARK_INKS,
+  MARK_TINT,
   MARK_MIN_SIZE,
   MARK_ORBIT,
   MARK_PETAL,
@@ -326,15 +327,22 @@ describe('it does not depend on colour to be recognisable', () => {
     expect(() => markSvg(' ')).toThrow(/needs a colour/u);
   });
 
-  it('takes only the neutral inks, by type', () => {
+  it('takes only the neutral inks, and C10’s one tint, by type', () => {
     expect([...MARK_INKS]).toStrictEqual([
       'foreground',
       'foreground.2',
       'foreground.3',
       'inverse.foreground',
     ]);
-    // @ts-expect-error — a hue is not an ink the mark takes; 27's tint is F-236's declared exception.
+    // F-236: 27's working mark, the one declared exception, minted as its own token.
+    expect(MARK_TINT).toBe('state.mark');
+    expect(draw(<Mark color={MARK_TINT} />)).toBeDefined();
+    // @ts-expect-error — a hue is not an ink the mark takes: C10's tint is the only one.
     expect(draw(<Mark color="status.ok" />)).toBeDefined();
+  });
+
+  it('DECOY — the tint is chromatic, so it is a tint and not a fifth neutral', () => {
+    expect(MANIFEST.color.dark[MARK_TINT]?.oklch.c ?? 0).toBeGreaterThan(CEILING);
   });
 
   it('takes inks achromatic in all four palettes — within the manifest’s chroma ceiling', () => {
