@@ -676,8 +676,15 @@ export const ja: Record<MessageKey, string> = {
   'lens.unavailableDetail': 'この問題を報告する場合は、原因を特定できるのは次の行です。',
   // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
   'browse.title': 'あなたのワードローブ',
-  'browse.empty': 'まだ何もありません',
+  'browse.empty': 'まだ何もありません。',
   'browse.emptyHint': '服を追加すると、色の近いものごとにまとめてここに表示されます。',
+  // F-236 — see en.ts.
+  'wardrobe.empty.title': 'ワードローブは空です',
+  'wardrobe.empty.body':
+    'レンズで最初の服を撮影すると、決定論的なコーディネートの組み合わせと配色の不足分析が使えるようになります。',
+  'wardrobe.empty.scan': '最初の服をスキャン',
+  'export.emptyTitle': 'まだ書き出すものはありません',
+  'preferences.emptyTitle': 'まだ学習したものはありません',
   // F-182 — see en.ts.
   'browse.openOutfit': 'コーディネートを組む',
   'browse.openShopping': '買う前に',

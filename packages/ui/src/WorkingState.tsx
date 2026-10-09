@@ -36,6 +36,8 @@ export interface WorkingStateProps {
   /** How far the pipeline has got: its share of steps done (D4), and that share in words. */
   readonly progress: { readonly value: number; readonly text: string };
   readonly script?: Script;
+  /** Take the host's height, the action at the foot (27): only where the host bounds it. */
+  readonly fill?: boolean;
 }
 
 /** The glow's discs, solved once: they depend on 27's numbers alone. */
@@ -74,6 +76,7 @@ export function WorkingState({
   steps,
   progress,
   script = 'latin',
+  fill = false,
 }: WorkingStateProps): React.JSX.Element {
   const id = STATE_TEST_IDS.working;
   return (
@@ -121,6 +124,7 @@ export function WorkingState({
       body={body}
       announce={title}
       script={script}
+      fill={fill}
     />
   );
 }

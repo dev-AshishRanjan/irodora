@@ -2169,8 +2169,9 @@ describe('every screen conforms in Japanese too (F-152)', () => {
     if (subject === undefined) throw new Error('the wardrobe empty subject is gone');
 
     const drawn = JSON.stringify(subject.render('default', 'light'));
-    expect(drawn).toContain(t('ja', 'browse.empty'));
-    expect(drawn).not.toContain(t('en', 'browse.empty'));
+    // F-236: an empty wardrobe with a way out is 27's card, so its heading is the catalogue's own.
+    expect(drawn).toContain(t('ja', 'wardrobe.empty.title'));
+    expect(drawn).not.toContain(t('en', 'wardrobe.empty.title'));
   });
 
   it('produces no findings, in either theme', () => {

@@ -325,7 +325,7 @@ export function Wear({
           {t(`outfit.${rec.slot}` as MessageKey)}
         </Text>
         {shown.length === 0 ? (
-          <EmptyState art="pairing" message={t('wear.none')} resolvedHere script={script} />
+          <EmptyState message={t('wear.none')} resolvedHere script={script} />
         ) : (
           shown.map((c) => <One key={c.id} candidate={c} />)
         )}

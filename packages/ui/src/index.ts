@@ -235,7 +235,6 @@ export {
   Illustration,
   ILLUSTRATIONS,
   DRAWN_ILLUSTRATIONS,
-  EMPTY_STATE_ILLUSTRATIONS,
   ILLUSTRATION_SET_VERSION,
   UNBUILT_ILLUSTRATIONS,
   illustrationBox,
@@ -309,7 +308,13 @@ export {
   type SelectionState,
   type SelectionTone,
 } from './selection.js';
-export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState.js';
+export {
+  EMPTY_CAPTION,
+  EmptyState,
+  emptyArtWidth,
+  type EmptyAction,
+  type EmptyStateProps,
+} from './EmptyState.js';
 export {
   Skeleton,
   useConfirm,

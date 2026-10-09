@@ -255,6 +255,11 @@ export interface WardrobeProps {
    */
   readonly onAddGarment?: (() => void) | undefined;
   /**
+   * Opens the Lens: `27`'s empty wardrobe offers *Scan First Garment* (F-236). The ROUTE supplies
+   * it, as it supplies {@link onAddGarment}.
+   */
+  readonly onScan?: (() => void) | undefined;
+  /**
    * What to DO with a wardrobe, once there is one (F-182).
    *
    * Both were finished screens on routes nothing navigated to: FR-33's outfit builder and
@@ -466,6 +471,7 @@ export function Wardrobe({
   initialSelected = null,
   initialFilter = NO_FILTER,
   onAddGarment,
+  onScan,
   onOpenCombinations,
   onOpenOutfit,
   onOpenShopping,
@@ -830,21 +836,28 @@ export function Wardrobe({
           Lens. `EmptyState`'s props are a union, so this could not have been written without
           declaring whether the action is here or elsewhere.
         */
-        onAddGarment === undefined ? (
+        // 27's empty wardrobe (F-236): its heading, its body, and Scan First Garment, which opens
+        // the Lens. Where no route is wired, the screen still says what fills it, offering nothing.
+        onScan !== undefined ? (
           <EmptyState
-            art="swatches"
+            title={t('wardrobe.empty.title')}
+            body={t('wardrobe.empty.body')}
+            script={script}
+            action={{ label: t('wardrobe.empty.scan'), onPress: onScan }}
+          />
+        ) : onAddGarment !== undefined ? (
+          <EmptyState
+            title={t('wardrobe.empty.title')}
+            body={t('browse.emptyHint')}
+            script={script}
+            action={{ label: t('browse.add'), onPress: onAddGarment }}
+          />
+        ) : (
+          <EmptyState
             message={t('browse.empty')}
             hint={t('browse.emptyHint')}
             script={script}
             resolvedHere
-          />
-        ) : (
-          <EmptyState
-            art="swatches"
-            message={t('browse.empty')}
-            hint={t('browse.emptyHint')}
-            script={script}
-            action={{ label: t('browse.add'), onPress: onAddGarment }}
           />
         )
       ) : groups.length === 0 ? (
@@ -860,7 +873,6 @@ export function Wardrobe({
           somebody to buy a coat they already own.
         */
         <EmptyState
-          art="swatches"
           message={t('browse.filterNone')}
           hint={t('browse.filterNoneHint')}
           script={script}

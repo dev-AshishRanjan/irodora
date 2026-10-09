@@ -321,14 +321,34 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <>
-          {/* Two DIFFERENT drawings, so the subject does not check one name twice (F-191). */}
+          {/* The two forms are two drawings (F-236): 27's card and 00's caption. */}
           <EmptyState
-            art="swatches"
-            message="Nothing here yet"
-            hint="Add a garment and it appears here."
-            action={{ label: 'Add a garment', onPress: () => undefined }}
+            title="Your Wardrobe is Empty"
+            body="Capture your first garment with Colour Lens to unlock outfit combinations."
+            action={{ label: 'Scan First Garment', onPress: () => undefined }}
           />
-          <EmptyState art="pairing" message="No colour matches these filters." resolvedHere />
+          <EmptyState
+            message="No colour matches these filters."
+            hint="Clear them to see the whole wardrobe."
+            resolvedHere
+          />
+        </>,
+        theme,
+      ),
+  },
+  {
+    name: 'EmptyState (ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <>
+          <EmptyState
+            title="ワードローブは空です"
+            body="カラーレンズで最初の衣服を撮影してください。"
+            action={{ label: '最初の衣服をスキャン', onPress: () => undefined }}
+            script="japanese"
+          />
+          <EmptyState message="条件に合う色はありません。" resolvedHere script="japanese" />
         </>,
         theme,
       ),
@@ -642,26 +662,27 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   })),
   {
-    /*
-     * ALL THREE DRAWINGS, IN BOTH THEMES (F-191).
-     *
-     * One subject per name rather than one for the component: the three are separate SVGs and a
-     * subject that rendered only `swatches` would leave two of them outside every contrast run.
-     * They are `static` because an illustration has one state — it is a picture.
-     */
-    name: 'Illustration (nothing collected)',
+    // 27's hanger, the one tinted drawing (F-236): its body in state.hanger, its lines foreground.
+    name: 'Illustration (27’s hanger)',
     kind: 'static',
-    render: (_state, theme) => draw(<Illustration name="swatches" />, theme),
+    render: (_state, theme) =>
+      draw(
+        <Illustration
+          name="hanger"
+          width={168.5}
+          color="foreground"
+          tint="state.hanger"
+          stroke={2}
+        />,
+        theme,
+      ),
   },
   {
-    name: 'Illustration (nothing measured)',
+    // 00's empty caption's drawing (F-236), at its size against the caption.
+    name: 'Illustration (00’s no-results)',
     kind: 'static',
-    render: (_state, theme) => draw(<Illustration name="reading" />, theme),
-  },
-  {
-    name: 'Illustration (nothing paired)',
-    kind: 'static',
-    render: (_state, theme) => draw(<Illustration name="pairing" />, theme),
+    render: (_state, theme) =>
+      draw(<Illustration name="no-results" width={46.5} color="foreground.2" />, theme),
   },
   {
     /*

@@ -4,9 +4,9 @@
  * One composition, so the four cannot drift apart: a level-1 card with its edge, padded alike on
  * every side; the picture `xxl` below the padding, centred; the title `xl` under it (or under the
  * working state's steps), centred, a heading; the body `md` under the title, centred; and, where the
- * state offers one, its action at the card's foot over a spacer of at least `xxl` — so a card given
- * its host's height puts the action where `27` draws it, and a card sized by its content still
- * separates the two.
+ * state offers one, its action under a spacer of `xxl`. A card whose host bounds its height and asks
+ * it to `fill` takes that height, and the spacer grows, putting the action at the foot where `27`
+ * draws it; inside a scrolling screen there is no height to share, so it does not ask (F-213).
  *
  * Copy is the caller's (ADR-0056): this composes, it never words. Every part has a fixed `testID`
  * (`state.<kind>.<part>`), so a screen's declaration can be held to what it renders (ADR-0129).
@@ -61,6 +61,8 @@ export interface StateCardProps {
    * to: the working and refused states. Never again on a re-render (ADR-0128 §7).
    */
   readonly announce?: string;
+  /** Take the host's height, the action at the foot. Only where the host bounds its height. */
+  readonly fill?: boolean;
   readonly script: Script;
 }
 
@@ -74,6 +76,7 @@ export function StateCard({
   body,
   action,
   announce,
+  fill = false,
   script,
 }: StateCardProps): React.JSX.Element {
   const id = STATE_TEST_IDS[kind];
@@ -82,8 +85,8 @@ export function StateCard({
     if (announce !== undefined) AccessibilityInfo.announceForAccessibility(announce);
   }, [announce]);
   return (
-    <Card level="1" edge padding={STATE_LAYOUT.padding} fill testID={id}>
-      <View style={{ flexGrow: 1 }}>
+    <Card level="1" edge padding={STATE_LAYOUT.padding} fill={fill} testID={id}>
+      <View style={fill ? { flexGrow: 1 } : {}}>
         <View
           testID={`${id}.picture`}
           {...(pictureIsRead
@@ -115,7 +118,13 @@ export function StateCard({
         </View>
         {action === undefined ? null : (
           <>
-            <View style={{ flexGrow: 1, minHeight: nativeSpacing[STATE_LAYOUT.actionMin] }} />
+            <View
+              style={
+                fill
+                  ? { flexGrow: 1, minHeight: nativeSpacing[STATE_LAYOUT.actionMin] }
+                  : { height: nativeSpacing[STATE_LAYOUT.actionMin] }
+              }
+            />
             <Button
               testID={`${id}.action`}
               label={action.label}

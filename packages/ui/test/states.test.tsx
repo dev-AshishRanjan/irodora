@@ -20,6 +20,9 @@ import { nativeColors, nativeRadius, nativeSpacing } from '@irodora/design-token
 import {
   blurredDisc,
   DeniedState,
+  EMPTY_CAPTION,
+  EmptyState,
+  emptyArtWidth,
   glowAt,
   glowDiscs,
   RefusedState,
@@ -494,5 +497,72 @@ describe('each of 27’s tints is drawn by its one owner (E-188)', () => {
   it('DECOY — a second reader is named', () => {
     const planted = [...files, { path: 'ui/Planted.tsx', text: "colors['state.lock']" }];
     expect(readers(planted)['state.lock']).toStrictEqual(['ui/DeniedState.tsx', 'ui/Planted.tsx']);
+  });
+});
+
+/**
+ * The empty state's two drawn forms (F-236, ADR-0128 D3): `27`'s card where the fix is elsewhere,
+ * `00`'s caption where it is on this screen.
+ */
+describe('the empty state is drawn as 27 and 00 draw it', () => {
+  /* ONE `join` per path, every segment literal, so verify-cache-scope can see what is read. */
+  const zero = JSON.parse(
+    readFileSync(join(__dirname, '..', '..', '..', 'mockups', 'inventory', '00.json'), 'utf8'),
+  ) as { readonly elements: readonly Element[] };
+  const zeroRaw = (id: string, key: string): number =>
+    zero.elements.find((e) => e.id === id)?.raw?.[key] ?? NaN;
+  /** 00's caption em in px: its ascender height over the sans' ascender share (ADR-0128 §1). */
+  const captionEmPx = zeroRaw('00.empty.message', 'inkHeightPx') / 0.73;
+
+  it('sizes 00’s drawing against its caption — 4.5 ems — and sets the step between them', () => {
+    const ems = zeroRaw('00.empty.art', 'inkWidthPx') / captionEmPx;
+    expect(Math.round(ems * 10) / 10).toBe(EMPTY_CAPTION.artEms);
+    expect(emptyArtWidth()).toBe(half(EMPTY_CAPTION.artEms * 10.3));
+    // The gap, in the caption's own ems, less the caption box's cap inset (about 4 dp, F-231).
+    const gap = (zeroRaw('00.empty.message', 'gapAbovePx') / captionEmPx) * 10.3 - 4;
+    expect(snap(gap)).toBe(EMPTY_CAPTION.gap);
+  });
+
+  it('draws 27’s card: the hanger, the heading, the body, the action — and no announcement', () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    announce.mockClear();
+    draw(
+      <EmptyState
+        title="Your Wardrobe is Empty"
+        body="Capture your first garment."
+        action={{ label: 'Scan First Garment', onPress: noop }}
+      />,
+    );
+    const ids = nodes(screen.toJSON() as TestNode)
+      .map((n) => n.props['testID'])
+      .filter((id): id is string => typeof id === 'string' && id.startsWith('state.empty.'));
+    expect(ids).toStrictEqual([
+      'state.empty.picture',
+      'state.empty.title',
+      'state.empty.body',
+      'state.empty.action',
+    ]);
+    const fills = nodes(screen.toJSON() as TestNode).map((n) => paint(n.props['fill']));
+    expect(fills).toContain(dark['state.hanger']);
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  it('draws 00’s caption: the small drawing, one centred caption, and nothing to press', () => {
+    draw(<EmptyState message="Nothing matches these filters." hint="Clear them." resolvedHere />);
+    expect(screen.getByText('Nothing matches these filters. Clear them.')).toBeTruthy();
+    expect(screen.queryByRole('button')).toBeNull();
+    const caption = flattenStyle(screen.getByText(/^Nothing matches/u).props['style']);
+    expect(caption).toMatchObject({ color: dark['foreground.2'], textAlign: 'center' });
+    screen.unmount();
+    // Japanese sets no space between sentences.
+    draw(
+      <EmptyState
+        message="条件に合う色はありません。"
+        hint="絞り込みを外してください。"
+        resolvedHere
+        script="japanese"
+      />,
+    );
+    expect(screen.getByText('条件に合う色はありません。絞り込みを外してください。')).toBeTruthy();
   });
 });

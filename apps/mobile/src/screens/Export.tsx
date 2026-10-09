@@ -122,11 +122,11 @@ export function Export({
       {/* NOTHING TO EXPORT, AND NOW A WAY TO MAKE SOMETHING (F-139). */}
       {subject === null ? (
         onBuildPalette === undefined ? (
-          <EmptyState message={t('export.empty')} art="swatches" script={script} resolvedHere />
+          <EmptyState message={t('export.empty')} script={script} resolvedHere />
         ) : (
           <EmptyState
-            art="swatches"
-            message={t('export.empty')}
+            title={t('export.emptyTitle')}
+            body={t('export.empty')}
             script={script}
             action={{ label: t('export.buildPalette'), onPress: onBuildPalette }}
           />

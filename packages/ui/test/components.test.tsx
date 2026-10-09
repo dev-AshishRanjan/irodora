@@ -344,7 +344,6 @@ describe('an empty state has to say where its action lives (F-139)', () => {
     const both = (
       // @ts-expect-error — both members at once, which claims the action is here AND elsewhere.
       <EmptyState
-        art="swatches"
         message="Nothing here yet"
         resolvedHere
         action={{ label: 'Add a garment', onPress: () => undefined }}
@@ -353,15 +352,21 @@ describe('an empty state has to say where its action lives (F-139)', () => {
     expect(both).toBeTruthy();
   });
 
-  it('refuses one with no drawing (F-191)', () => {
+  it('refuses 27’s card without its heading, and 00’s caption with one (F-236)', () => {
     /*
-     * The same argument as the resolution union, one prop along: a drawing that COULD be omitted
-     * would be omitted, twelve times, exactly as the button was before F-139. Three names cover
-     * all twelve empty states, so choosing is a second's work and forgetting is impossible.
+     * Each form is a drawing (ADR-0128 D3): 27's card draws a heading and a body, 00's caption a
+     * single message. And the picture is no longer the caller's — `art` is gone: 27 draws one
+     * picture and 00 another, so a caller choosing among R7's three would be choosing undrawn art.
      */
-    // @ts-expect-error — no `art`.
-    const undrawn = <EmptyState message="Nothing here yet" resolvedHere />;
-    expect(undrawn).toBeTruthy();
+    const headless = (
+      // @ts-expect-error — 27's card has a heading.
+      <EmptyState body="Capture a garment." action={{ label: 'Scan', onPress: () => undefined }} />
+    );
+    // @ts-expect-error — 00's caption draws no heading.
+    const titled = <EmptyState title="Empty" message="Nothing here yet" resolvedHere />;
+    // @ts-expect-error — no form takes `art` any more.
+    const art = <EmptyState art="swatches" message="Nothing here yet" resolvedHere />;
+    expect([headless, titled, art]).toHaveLength(3);
   });
 
   it('accepts each form on its own — the decoy for the two refusals above', () => {
@@ -371,15 +376,12 @@ describe('an empty state has to say where its action lives (F-139)', () => {
      */
     const elsewhere = (
       <EmptyState
-        art="swatches"
-        message="Nothing here yet"
-        hint="Add a garment and it appears here."
+        title="Your Wardrobe is Empty"
+        body="Add a garment and it appears here."
         action={{ label: 'Add a garment', onPress: () => undefined }}
       />
     );
-    const here = (
-      <EmptyState art="swatches" message="No colour matches these filters." resolvedHere />
-    );
+    const here = <EmptyState message="No colour matches these filters." resolvedHere />;
 
     expect(elsewhere).toBeTruthy();
     expect(here).toBeTruthy();

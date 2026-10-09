@@ -31,6 +31,8 @@ export interface RefusedStateProps {
   /** *Retry Capture*. */
   readonly retry: StateAction;
   readonly script?: Script;
+  /** Take the host's height, the action at the foot (27): only where the host bounds it. */
+  readonly fill?: boolean;
 }
 
 export function RefusedState({
@@ -38,6 +40,7 @@ export function RefusedState({
   body,
   retry,
   script = 'latin',
+  fill = false,
 }: RefusedStateProps): React.JSX.Element {
   const { colors } = useTheme();
   const { plate } = STATE_PICTURES;
@@ -73,6 +76,7 @@ export function RefusedState({
       action={retry}
       announce={`${title}. ${body}`}
       script={script}
+      fill={fill}
     />
   );
 }

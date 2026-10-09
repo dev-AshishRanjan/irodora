@@ -1,148 +1,153 @@
 /**
- * An empty state that cannot be written without saying how somebody gets out of it.
+ * An empty state that cannot be written without saying how somebody gets out of it — drawn as the
+ * mockups draw the two kinds (F-236, ADR-0128 D3).
  *
  * ## The defect this exists for (F-139)
  *
  * `/wardrobe/add` was a route nothing linked to except the Lens, after a successful camera
- * reading. Open the wardrobe directly and there was no way to put anything in it — and while
- * the frame processor was throwing on every frame (F-138), no way at all. Three more screens
- * told you to go and do something and then gave you no way to get there:
- *
- * ```
- * "Add a garment and it appears here…"          → nothing
- * "Nothing in your wardrobe fits a slot yet."   → nothing
- * "Add something to your wardrobe first…"       → nothing
- * "Build a palette first…"                      → nothing
- * ```
- *
- * The repository had already argued for the fix and half-applied it: `Wardrobe.tsx`'s own
- * comment says *"one is 'add a garment', the other is 'clear a filter'"* — and only the filter
- * case got a button.
- *
- * ## The union is the whole point
- *
- * `action` and `resolvedHere` are a **discriminated union**, so there is no way to render an
- * empty state without declaring which kind it is:
+ * reading. Open the wardrobe directly and there was no way to put anything in it. Three more screens
+ * told you to go and do something and then gave you no way to get there. So the props are a
+ * **discriminated union**, and there is no way to render an empty state without declaring which
+ * kind it is — [ADR-0005](../../../docs/adr/0005-measurement-provenance-is-a-type.md)'s argument
+ * applied to a product rule rather than to provenance:
  *
  * ```tsx
- * <EmptyState message={…} action={{ label: …, onPress: … }} />  // the action is elsewhere
- * <EmptyState message={…} resolvedHere />                       // the action is on this screen
+ * <EmptyState title={…} body={…} action={{ label: …, onPress: … }} />  // the fix is elsewhere
+ * <EmptyState message={…} resolvedHere />                            // the fix is on this screen
  * ```
  *
- * A written rule would rely on the next screen's author remembering it; this makes the careless
- * version **unbuildable**, which is
- * [ADR-0005](../../../docs/adr/0005-measurement-provenance-is-a-type.md)'s argument applied to
- * a product rule rather than to provenance. `tsc` is the guard — not a script that reads prose,
- * which this repository has now watched fail five separate times.
- *
  * **`resolvedHere` has no default, deliberately.** A default is a thing people accept without
- * reading, and accepting it is exactly the mistake being prevented. Both members carry the
- * other key as `never`, so passing both is also an error.
+ * reading, and accepting it is exactly the mistake being prevented.
+ *
+ * ## Each kind is the drawing the mockups make of it (F-236)
+ *
+ * - **The fix is elsewhere: `27`'s card.** The hanger with its blossom, a heading, a body, and the
+ *   action at the card's foot — the composition every one of `27`'s states shares (`StateCard`).
+ *   The picture is fixed (D2): `27` draws one, and an emptiness keyed to its own drawing would be a
+ *   picture nobody drew.
+ * - **The fix is on this screen: `00`'s empty.** Its small `no-results` drawing over a centred
+ *   caption, and nothing to press: a second control for an on-screen fix would be a second way to do
+ *   one thing (F-139). The drawing is sized against the caption — 4.5 of its em, as `00` draws it —
+ *   since `00` is a board with no screen scale.
+ *
+ * Every part has a fixed `testID`: `state.empty`, and its picture, title, body, message and action
+ * (ADR-0129). Copy is the caller's (ADR-0056).
  *
  * ## What it does not solve
  *
  * A screen that renders a bare `<Text>` for its empty branch bypasses this entirely, and `tsc`
- * cannot see that. The four known sites are converted and this is the obvious thing to reach
- * for next — that is the honest limit of the guarantee, not a claim that the gap is closed.
+ * cannot see that. ADR-0129's declarations and the blank-panel and zero rules are the check there.
  */
 
 import { View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
-import { Button } from './Button.js';
-import { Illustration, type IllustrationName } from './Illustration.js';
-// `TextProps` is generic over its size, and this only forwards `script` — so the prop's type is
-// taken from a concrete instantiation rather than by making this component generic too.
-import { Text, type TextProps } from './Text.js';
-
-type Script = TextProps<'body'>['script'];
+import { nativeSpacing, nativeType } from '@irodora/design-tokens';
+import { Illustration, illustrationBox } from './Illustration.js';
+import type { Script } from './layout.js';
+import { STATE_PICTURES } from './stateBoard.js';
+import { StateCard, STATE_TEST_IDS, type StateAction } from './stateCard.js';
+import { Text } from './Text.js';
 
 /** Where to go, and what to call it. The label is also the accessible name. */
-export interface EmptyAction {
-  readonly label: string;
-  readonly onPress: () => void;
-}
+export type EmptyAction = StateAction;
+
+/**
+ * `00`'s empty, by its own type (F-236): the drawing's width as a share of the caption's em, and
+ * the step between them. `empty-state.test` recomputes both from `00`'s inventory.
+ */
+export const EMPTY_CAPTION = { artEms: 4.5, gap: 'sm' } as const;
 
 /**
  * Exactly one of these, and the caller has to choose.
  *
- * `action` — the thing to do lives on ANOTHER screen, so this offers the route to it.
- * `resolvedHere` — the thing to do is on this screen already (a search field, a filter to
- * clear), so a second control would be a second way to do one thing.
+ * `action` — the thing to do lives on ANOTHER screen, so this offers the route to it, on `27`'s
+ * card with its heading and body. `resolvedHere` — the thing to do is on this screen already (a
+ * search field, a filter to clear), so this says what is empty in `00`'s caption, and offers
+ * nothing.
  */
-type Resolution =
-  | { readonly action: EmptyAction; readonly resolvedHere?: never }
-  | { readonly resolvedHere: true; readonly action?: never };
-
-export type EmptyStateProps = {
-  /** What is empty. One sentence, in the person's language. */
-  readonly message: string;
-  /**
-   * The drawing, keyed by what is missing (F-191).
-   *
-   * **Required, and for the reason `resolvedHere` is.** This component's whole design is that
-   * the careless version should be *unbuildable* rather than merely discouraged — that is what
-   * the resolution union does, and a drawing that could be omitted would be omitted, twelve
-   * times, exactly as the button was before F-139.
-   *
-   * There are three names for twelve empty states, because the twelve emptinesses are three:
-   * nothing collected, nothing measured, nothing put together. Choosing among three is a
-   * decision somebody can make correctly in a second; inventing a twelfth picture is not.
-   */
-  readonly art: IllustrationName;
-  /** Why it is empty, or what would fill it. Optional — some emptiness explains itself. */
-  readonly hint?: string;
-  /** Passed through to `Text`, so Japanese gets the bundled face rather than tofu. */
-  readonly script?: Script;
-} & Resolution;
+export type EmptyStateProps =
+  | {
+      /** The heading: *Your Wardrobe is Empty*. */
+      readonly title: string;
+      /** What would fill it, in a sentence or two. */
+      readonly body: string;
+      readonly action: EmptyAction;
+      /** Take the host's height, the action at the foot (27): only where the host bounds it. */
+      readonly fill?: boolean;
+      readonly resolvedHere?: never;
+      readonly message?: never;
+      readonly hint?: never;
+      readonly script?: Script;
+    }
+  | {
+      /** What is empty. One sentence, in the person's language. */
+      readonly message: string;
+      /** What would fill it, where the screen's own control does not say. Set after the message. */
+      readonly hint?: string;
+      readonly resolvedHere: true;
+      readonly action?: never;
+      readonly title?: never;
+      readonly body?: never;
+      readonly fill?: never;
+      readonly script?: Script;
+    };
 
 export function EmptyState(props: EmptyStateProps): React.JSX.Element {
-  /*
-   * `script` is defaulted rather than forwarded as `| undefined`. Under
-   * `exactOptionalPropertyTypes` a `?:` prop promises the key is absent or a real value, never
-   * present-and-undefined — so passing it straight through would not compile. `latin` matches
-   * `Text`'s own default, so a caller that omits it gets what it would have got anyway.
-   */
-  const { message, hint, art, script = 'latin' } = props;
+  const script = props.script ?? 'latin';
+  const id = STATE_TEST_IDS.empty;
 
+  if (props.resolvedHere !== true) {
+    const { hanger } = STATE_PICTURES;
+    const [boxWidth, boxHeight] = illustrationBox('hanger');
+    return (
+      <StateCard
+        kind="empty"
+        pictureHeight={(hanger.width * boxHeight) / boxWidth}
+        picture={
+          <Illustration
+            name="hanger"
+            width={hanger.width}
+            color="foreground"
+            tint="state.hanger"
+            stroke={hanger.stroke}
+          />
+        }
+        title={props.title}
+        body={props.body}
+        action={props.action}
+        fill={props.fill ?? false}
+        script={script}
+      />
+    );
+  }
+
+  // One caption, as 00 draws one: the hint follows the message — after a space in Latin, directly
+  // in Japanese, which sets no space between sentences.
+  const caption =
+    props.hint === undefined
+      ? props.message
+      : script === 'japanese'
+        ? `${props.message}${props.hint}`
+        : `${props.message} ${props.hint}`;
   return (
-    <View style={{ gap: nativeSpacing.sm }}>
-      {/*
-        THE DRAWING LEADS, AND CARRIES NOTHING (F-191).
-
-        Above the sentence because an empty state is read top to bottom and the picture is the
-        thing that says "this is a state, not a failure" before any words are read. It is
-        `accessibilityElementsHidden` and says nothing a screen reader needs — the message below
-        is the entire content, which is the third illustration rule and golden rule 13 read
-        strictly.
-      */}
-      <Illustration name={art} />
-      <Text size="body" color="foreground" script={script}>
-        {message}
-      </Text>
-
-      {hint === undefined ? null : (
-        <Text size="label" color="foreground.2" script={script}>
-          {hint}
+    <View testID={id} style={{ alignItems: 'center', gap: nativeSpacing[EMPTY_CAPTION.gap] }}>
+      <View
+        testID={`${id}.picture`}
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Illustration name="no-results" width={emptyArtWidth(script)} color="foreground.2" />
+      </View>
+      <View testID={`${id}.message`}>
+        <Text size="caption" color="foreground.2" script={script} align="center">
+          {caption}
         </Text>
-      )}
-
-      {/*
-        `'action' in props` and nothing else. The first draft also tested
-        `props.action !== undefined`, and `no-unnecessary-condition` rejected it — because after
-        the `in` check the compiler has already narrowed to the member where `action` is
-        REQUIRED. That error is the union doing its job, reported by the linter.
-      */}
-      {'action' in props ? (
-        <View style={{ alignItems: 'flex-start' }}>
-          {/*
-            THE SCRIPT REACHES THE BUTTON TOO (F-152). It was forwarded to the message and the
-            hint and stopped there, so a Japanese empty state drew its sentence in the bundled
-            face and its only control in the platform font — the one place on the screen where
-            a missing glyph would be sitting on the thing you are meant to press.
-          */}
-          <Button label={props.action.label} onPress={props.action.onPress} script={script} />
-        </View>
-      ) : null}
+      </View>
     </View>
   );
+}
+
+/** The caption form's drawing width, in dp: `EMPTY_CAPTION.artEms` of the caption step's em. */
+export function emptyArtWidth(script: Script = 'latin'): number {
+  return Math.round(EMPTY_CAPTION.artEms * nativeType[script].caption.fontSize * 2) / 2;
 }

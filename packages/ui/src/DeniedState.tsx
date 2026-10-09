@@ -24,6 +24,8 @@ export interface DeniedStateProps {
   /** *Open Device Settings*, or *Allow Camera Access* before the first request (D6). */
   readonly action: StateAction;
   readonly script?: Script;
+  /** Take the host's height, the action at the foot (27): only where the host bounds it. */
+  readonly fill?: boolean;
 }
 
 export function DeniedState({
@@ -31,6 +33,7 @@ export function DeniedState({
   body,
   action,
   script = 'latin',
+  fill = false,
 }: DeniedStateProps): React.JSX.Element {
   const { colors } = useTheme();
   const { camera, plate } = STATE_PICTURES;
@@ -52,6 +55,7 @@ export function DeniedState({
       body={body}
       action={action}
       script={script}
+      fill={fill}
     />
   );
 }

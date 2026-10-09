@@ -66,7 +66,7 @@
 
 import { Fragment } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, Line, Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { nativeArtOpacity, nativeArtStroke } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
 
@@ -102,9 +102,6 @@ export const UNBUILT_ILLUSTRATIONS = {
   signature: 'OQ-38 — 18 draws the word "Signed" in a script face, which is type, not a drawing',
 } as const;
 
-/** R7's three, keyed by what is missing. No mockup draws them; F-236 rebuilds their surfaces. */
-export const EMPTY_STATE_ILLUSTRATIONS = ['swatches', 'reading', 'pairing'] as const;
-
 /**
  * The set's version — *one versioned, vector set* is what F-229 asks for, and this is the half a
  * check can hold.
@@ -115,59 +112,13 @@ export const EMPTY_STATE_ILLUSTRATIONS = ['swatches', 'reading', 'pairing'] as c
  */
 export const ILLUSTRATION_SET_VERSION = '1.1.0';
 
-export const ILLUSTRATIONS = [...DRAWN_ILLUSTRATIONS, ...EMPTY_STATE_ILLUSTRATIONS] as const;
+/**
+ * The set: what the mockups draw. R7's three empty-state drawings — `swatches`, `reading` and
+ * `pairing`, which no mockup drew — were retired by F-236, whose empty states are `27`'s card and
+ * `00`'s caption (ADR-0128 D3).
+ */
+export const ILLUSTRATIONS = DRAWN_ILLUSTRATIONS;
 export type IllustrationName = (typeof ILLUSTRATIONS)[number];
-
-/**
- * The grid R7's three are expressed on.
- *
- * One grid for those three, so they share a stroke weight and an optical size. The mockups' set
- * carries a grid per drawing, because a 96-unit strip of leaves and a 24-unit sashiko tile are not
- * one square.
- */
-const GRID = 48;
-
-/** The stroke R7's three use, in grid units — predating the measurement, and kept with them. */
-const STROKE = 1.5;
-
-/**
- * A corner radius that matches the product's samples in spirit rather than by import.
- *
- * `radius.swatchRatio` is about a rendered sample and this is a drawing of one; taking the ratio
- * and applying it here would tie an illustration to a token whose reason — how a flat colour
- * field is judged — does not apply to an outline.
- */
-const SAMPLE_CORNER = 1.5;
-
-/**
- * A rounded rectangle, as a path.
- *
- * ## Why not `<Rect>`
- *
- * `react-native-svg`'s `Rect` inherits React Native's **deprecated `x` / `y` style props**
- * in its typings, so `no-deprecated` flags the rectangle's own geometry — the props are not the
- * deprecated ones, but nothing in the type says so. A path takes a single `d` and has no such
- * collision.
- *
- * It is also the more honest shape for this file: a rounded rectangle is four lines and four
- * arcs, and stating them is stating the drawing rather than asking a library to infer it.
- */
-function roundedRect(x: number, y: number, size: number, r: number): string {
-  const x2 = x + size;
-  const y2 = y + size;
-  return [
-    `M ${String(x + r)} ${String(y)}`,
-    `H ${String(x2 - r)}`,
-    `A ${String(r)} ${String(r)} 0 0 1 ${String(x2)} ${String(y + r)}`,
-    `V ${String(y2 - r)}`,
-    `A ${String(r)} ${String(r)} 0 0 1 ${String(x2 - r)} ${String(y2)}`,
-    `H ${String(x + r)}`,
-    `A ${String(r)} ${String(r)} 0 0 1 ${String(x)} ${String(y2 - r)}`,
-    `V ${String(y + r)}`,
-    `A ${String(r)} ${String(r)} 0 0 1 ${String(x + r)} ${String(y)}`,
-    'Z',
-  ].join(' ');
-}
 
 /**
  * What a drawing is given: one ink, and the line in its own grid's units — and, for the one drawing
@@ -189,8 +140,6 @@ interface Drawing {
    * finding 9). A surface scales the drawing; it does not restate it.
    */
   readonly box: readonly [number, number];
-  /** A line fixed in grid units, for the three that predate the measured one. */
-  readonly fixedStroke?: number;
   readonly draw: Draw;
 }
 
@@ -618,110 +567,6 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
       </Fragment>
     ),
   },
-
-  /**
-   * Nothing collected: four sample outlines in a grid, one of them absent.
-   *
-   * The gap is the subject. Four full outlines would read as "here are four things"; three and a
-   * space reads as "there is room for another", which is what an empty wardrobe actually is.
-   */
-  swatches: {
-    box: [GRID, GRID],
-    fixedStroke: STROKE,
-    draw: (p) => (
-      <Fragment>
-        {[
-          [8, 8],
-          [26, 8],
-          [8, 26],
-        ].map(([x, y]) => (
-          <Path
-            key={`${String(x)}-${String(y)}`}
-            d={roundedRect(x ?? 0, y ?? 0, 14, SAMPLE_CORNER)}
-            stroke={p.ink}
-            strokeWidth={p.sw}
-            fill="none"
-          />
-        ))}
-        {/* The absence, drawn as a dashed outline rather than left blank: a blank corner is a
-            drawing that looks unfinished, and this one is finished and saying something. */}
-        <Path
-          d={roundedRect(26, 26, 14, SAMPLE_CORNER)}
-          stroke={p.ink}
-          strokeWidth={p.sw}
-          strokeDasharray="3 3"
-          fill="none"
-        />
-      </Fragment>
-    ),
-  },
-
-  /**
-   * Nothing measured: the Lens's own reticle, with nothing in it.
-   *
-   * Four corner brackets and a centre point — the shape the viewfinder already draws, so a
-   * person who has used the Lens recognises what this screen is waiting for.
-   */
-  reading: {
-    box: [GRID, GRID],
-    fixedStroke: STROKE,
-    draw: (p) => (
-      <Fragment>
-        {[
-          [10, 10, 10, 18, 18, 10],
-          [38, 10, 38, 18, 30, 10],
-          [10, 38, 10, 30, 18, 38],
-          [38, 38, 38, 30, 30, 38],
-        ].map(([cx, cy, vx, vy, hx, hy]) => (
-          <Fragment key={`${String(cx)}-${String(cy)}`}>
-            <Line x1={cx} y1={cy} x2={vx} y2={vy} stroke={p.ink} strokeWidth={p.sw} fill="none" />
-            <Line x1={cx} y1={cy} x2={hx} y2={hy} stroke={p.ink} strokeWidth={p.sw} fill="none" />
-          </Fragment>
-        ))}
-        <Circle cx={24} cy={24} r={2.5} stroke={p.ink} strokeWidth={p.sw} fill="none" />
-      </Fragment>
-    ),
-  },
-
-  /**
-   * Nothing put together: two sample outlines that do not meet.
-   *
-   * The gap between them is the point, and it is the same gap `Pair` closes when there IS a
-   * pairing — F-151 established that this product answers *how do these two go together* at the
-   * boundary, so an absent pairing is drawn as a boundary that is not there.
-   */
-  pairing: {
-    box: [GRID, GRID],
-    fixedStroke: STROKE,
-    draw: (p) => (
-      <Fragment>
-        <Path
-          d={roundedRect(6, 17, 14, SAMPLE_CORNER)}
-          stroke={p.ink}
-          strokeWidth={p.sw}
-          fill="none"
-        />
-        <Path
-          d={roundedRect(28, 17, 14, SAMPLE_CORNER)}
-          stroke={p.ink}
-          strokeWidth={p.sw}
-          strokeDasharray="3 3"
-          fill="none"
-        />
-        {/* The join that is missing, dashed across the gap. */}
-        <Line
-          x1={20}
-          y1={24}
-          x2={28}
-          y2={24}
-          stroke={p.ink}
-          strokeWidth={p.sw}
-          strokeDasharray="2 3"
-          fill="none"
-        />
-      </Fragment>
-    ),
-  },
 };
 
 /** The grid a drawing is expressed on, for a caller that needs its height before it renders. */
@@ -779,7 +624,7 @@ export function Illustration(props: IllustrationProps): React.JSX.Element {
   const { name, width = 64, tone = 'figure', stroke, testID } = props;
   const color = props.color ?? 'foreground.3';
   const { colors } = useTheme();
-  const { box, fixedStroke, draw } = DRAWINGS[name];
+  const { box, draw } = DRAWINGS[name];
   const [boxWidth, boxHeight] = box;
   const height = (width * boxHeight) / boxWidth;
   /*
@@ -789,7 +634,7 @@ export function Illustration(props: IllustrationProps): React.JSX.Element {
    */
   const pen: Pen = {
     ink: colors[color],
-    sw: fixedStroke ?? ((stroke ?? nativeArtStroke) * boxWidth) / width,
+    sw: ((stroke ?? nativeArtStroke) * boxWidth) / width,
     ...(props.tint === undefined ? {} : { body: colors[props.tint] }),
   };
 

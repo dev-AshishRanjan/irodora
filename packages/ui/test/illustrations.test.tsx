@@ -17,7 +17,6 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { nativeArtOpacity, nativeArtStroke, nativeColors } from '@irodora/design-tokens';
 import {
   DRAWN_ILLUSTRATIONS,
-  EMPTY_STATE_ILLUSTRATIONS,
   Illustration,
   ILLUSTRATION_SET_VERSION,
   ILLUSTRATIONS,
@@ -123,12 +122,12 @@ describe('the set is the set the inventories bind', () => {
     }
   });
 
-  it("keeps R7's three outside the drawn set, where the inventories left them", () => {
-    // No mockup draws them; eight screens still render them (F-236 rebuilds those surfaces).
-    for (const name of EMPTY_STATE_ILLUSTRATIONS) {
-      expect(counts.has(name)).toBe(false);
-      expect(ILLUSTRATIONS as readonly string[]).toContain(name);
-    }
+  it("draws only what the mockups draw — R7's three are retired (F-236)", () => {
+    // The empty states are 27's card and 00's caption (ADR-0128 D3), so the three R7 drawings no
+    // mockup drew have no caller left. The versioned set never held them, so its digest stands.
+    expect(ILLUSTRATIONS).toStrictEqual(DRAWN_ILLUSTRATIONS);
+    for (const name of ['swatches', 'reading', 'pairing'])
+      expect(ILLUSTRATIONS as readonly string[]).not.toContain(name);
   });
 });
 

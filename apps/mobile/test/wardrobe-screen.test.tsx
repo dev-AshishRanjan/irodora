@@ -257,7 +257,7 @@ describe('the list', () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByText(en['browse.empty'])).toBeTruthy();
+    expect(screen.getByText(en['browse.empty'], { exact: false })).toBeTruthy();
     // And NOT the sentence explaining a grouping there is none of.
     expect(screen.queryByText(en['browse.grouping'])).toBeNull();
   });
@@ -365,9 +365,9 @@ describe('the filter controls', () => {
     fireEvent.press(screen.getByLabelText('jumper'));
     fireEvent.press(screen.getByLabelText(en['season.summer']));
 
-    expect(screen.getByText(en['browse.filterNone'])).toBeTruthy();
+    expect(screen.getByText(en['browse.filterNone'], { exact: false })).toBeTruthy();
     // THE DISTINCTION. One says "add a garment", the other says "clear a filter".
-    expect(screen.queryByText(en['browse.empty'])).toBeNull();
+    expect(screen.queryByText(en['browse.empty'], { exact: false })).toBeNull();
   });
 
   it('leaves the controls on screen when nothing matches, so they can be cleared', () => {
@@ -463,7 +463,7 @@ describe('the way out of an empty wardrobe (F-139)', () => {
     // The other member of EmptyState's union. The prose stays; only the control is absent.
     show();
 
-    expect(screen.getByText(en['browse.empty'])).toBeTruthy();
+    expect(screen.getByText(en['browse.empty'], { exact: false })).toBeTruthy();
     expect(screen.queryByLabelText(en['browse.add'])).toBeNull();
   });
 
@@ -509,6 +509,6 @@ describe('the way out of an empty wardrobe (F-139)', () => {
     // first draft shipped, and the suite caught it.
     expect(screen.getAllByLabelText(en['browse.add'])).toHaveLength(1);
     // And the narrowed branch offers the filter's own way out rather than a second add.
-    expect(screen.getByText(en['browse.filterNone'])).toBeTruthy();
+    expect(screen.getByText(en['browse.filterNone'], { exact: false })).toBeTruthy();
   });
 });

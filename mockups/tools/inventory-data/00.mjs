@@ -295,13 +295,20 @@ export default {
       illustration: 'viewfinder',
     }),
     el('00.empty', 'ui:EmptyState', B(1220, 610, 81, 83)),
+    // F-236 (2026-10-09): the drawing's ink is 55 × 40 px (x 1233–1287, y 611–650), and its size is
+    // read against the caption under it rather than against a board scale 00 does not have: 55 px
+    // is 4.5 of the caption's em, which EmptyState draws at the caption step (ADR-0128 D3).
     el('00.empty.art', 'ui:Illustration', B(1233, 610, 55, 42), {
       parent: '00.empty',
       illustration: 'no-results',
+      raw: { inkWidthPx: 55 },
     }),
+    // F-236: line 1 (*No results found*, no descender) is 8.91 px from its tallest letters to its
+    // baseline, at half maximum (664.97–673.88); its ink starts 15 px under the drawing's.
     el('00.empty.message', 'ui:Text', B(1220, 665, 81, 28), {
       parent: '00.empty',
       tokens: { fg: 'text.secondary' },
+      raw: { inkHeightPx: 8.91, gapAbovePx: 15 },
       type: sans('caption'),
       copy: { shape: 'body', script: 'latin', lines: 2 },
     }),

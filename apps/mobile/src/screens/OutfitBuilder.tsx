@@ -196,11 +196,11 @@ export function OutfitBuilder({
       */}
       {wearable.length === 0 ? (
         onAddGarment === undefined ? (
-          <EmptyState message={t('outfit.empty')} art="pairing" resolvedHere script={script} />
+          <EmptyState message={t('outfit.empty')} resolvedHere script={script} />
         ) : (
           <EmptyState
-            art="pairing"
-            message={t('outfit.empty')}
+            title={t('wardrobe.empty.title')}
+            body={t('outfit.empty')}
             action={{ label: t('browse.add'), onPress: onAddGarment }}
             script={script}
           />

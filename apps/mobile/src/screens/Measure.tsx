@@ -278,7 +278,6 @@ export function Measure({
           be a second route to something already on the screen.
         */
         <EmptyState
-          art="reading"
           message={t('measure.empty')}
           hint={t('measure.emptyHint')}
           script={script}

@@ -1655,6 +1655,9 @@
       "illustration": "no-results",
       "binding": null,
       "action": null,
+      "raw": {
+        "inkWidthPx": 55
+      },
       "copy": null
     },
     {
@@ -1681,6 +1684,10 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "inkHeightPx": 8.91,
+        "gapAbovePx": 15
+      },
       "copy": {
         "shape": "body",
         "script": "latin",

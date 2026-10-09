@@ -815,8 +815,16 @@ export const en = {
     'If you are reporting this, the line below is the part that identifies the cause.',
   // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
   'browse.title': 'Your wardrobe',
-  'browse.empty': 'Nothing here yet',
+  'browse.empty': 'Nothing here yet.',
   'browse.emptyHint': 'Add a garment and it appears here, gathered with the colours nearest to it.',
+  // F-236 — 27's empty wardrobe, as drawn: its heading, its body and its action, which opens the
+  // Lens (ADR-0128 D3). The other empty states that offer a way elsewhere take a heading too.
+  'wardrobe.empty.title': 'Your Wardrobe is Empty',
+  'wardrobe.empty.body':
+    'Capture your first garment with Colour Lens to unlock deterministic outfit combinations and palette gap analysis.',
+  'wardrobe.empty.scan': 'Scan First Garment',
+  'export.emptyTitle': 'Nothing to Export Yet',
+  'preferences.emptyTitle': 'Nothing Learned Yet',
   /*
    * THE WAY OUT OF AN EMPTY WARDROBE, and of the two screens that depend on one (F-139).
    *

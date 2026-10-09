@@ -396,7 +396,6 @@ export function Preferences({
           */}
           {onBuildOutfit === undefined ? (
             <EmptyState
-              art="pairing"
               message={t('preferences.empty')}
               hint={t('preferences.emptyHint')}
               script={script}
@@ -404,9 +403,8 @@ export function Preferences({
             />
           ) : (
             <EmptyState
-              art="pairing"
-              message={t('preferences.empty')}
-              hint={t('preferences.emptyHint')}
+              title={t('preferences.emptyTitle')}
+              body={t('preferences.emptyHint')}
               script={script}
               action={{ label: t('outfit.title'), onPress: onBuildOutfit }}
             />

@@ -191,11 +191,11 @@ export function Shopping({
       */}
       {wardrobe.length === 0 ? (
         onAddGarment === undefined ? (
-          <EmptyState message={t('shopping.empty')} art="pairing" resolvedHere script={script} />
+          <EmptyState message={t('shopping.empty')} resolvedHere script={script} />
         ) : (
           <EmptyState
-            art="pairing"
-            message={t('shopping.empty')}
+            title={t('wardrobe.empty.title')}
+            body={t('shopping.empty')}
             action={{ label: t('browse.add'), onPress: onAddGarment }}
             script={script}
           />
