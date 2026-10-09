@@ -49,6 +49,13 @@ import { find, type FinderKind } from '../finder';
 import { colorFor, type PublishedEntry } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the phrase
+ * found nothing.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Answer kind → the sentence that names it. Total, so a fourth kind is a compile error. */
 const ANSWERED: Readonly<Record<Exclude<FinderKind, 'empty'>, MessageKey>> = {

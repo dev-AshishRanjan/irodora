@@ -60,6 +60,13 @@ import { entrySwatch, homeContent, homeLead } from '../home';
 import { colorOf } from '../wardrobe';
 import { useMessages } from '../i18n/useMessages';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: no reading
+ * yet, and an empty wardrobe.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** What this screen needs from the repository, and nothing else, so a test can supply it. */
 export interface HomeStore {

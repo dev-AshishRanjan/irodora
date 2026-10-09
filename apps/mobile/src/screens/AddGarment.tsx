@@ -64,6 +64,13 @@ import type { ImageSource } from '../wardrobe/source';
 import { allEntries, colorFor } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). None. A refused
+ * photograph is feedback about the action just taken, not a condition of the data.
+ */
+export const STATES = {} as const satisfies ScreenStates;
 
 /** Problem → sentence. Total, so a new problem is a compile error rather than a blank space. */
 const PROBLEM_KEYS = {

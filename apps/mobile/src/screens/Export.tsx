@@ -36,6 +36,13 @@ import { ExportError, WRITERS, type ExportFile, type ExportSubject } from '@irod
 import type { FileSink, SaveResult } from '../export/sink';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: there is
+ * nothing to export. Saved and failed are feedback about the write.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Format → its line on the screen. Total, so a seventh writer is a compile error here. */
 const FORMAT_KEYS = {

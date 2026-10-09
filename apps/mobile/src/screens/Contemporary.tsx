@@ -33,6 +33,14 @@ import {
 } from '../contemporary';
 import { colorFor, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
+ * does not hold the colour this screen is about. Nothing within the ceiling is an answer with its
+ * threshold, not an absence.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 export interface ContemporaryProps {
   /** The colour this is about. A route parameter, so a miss is a state rather than a crash. */

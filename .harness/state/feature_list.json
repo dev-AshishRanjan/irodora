@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-08",
+  "updated": "2026-10-09",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -10748,6 +10748,33 @@
         "artifact"
       ],
       "notes": "FROM F-231 (ADR-0127 §2, R9 §4 E4). Today the native splash and the overlay follow the phone's appearance, because a launch screen can follow nothing else; an in-app theme appears as the overlay leaves. iOS has no equivalent, so the two platforms would differ — a decision to record when this is built."
+    },
+    {
+      "id": "F-322",
+      "title": "Gate 15 is green again: nine advisories published since its last green run",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "`pnpm security` exits 0",
+        "Each of the nine advisories is resolved by an upgrade or a pnpm override to its first patched version, or carries a disposition in .harness/verification/advisories.json under ADR-0059 — a reachability argument, an owner and an expiry — never a bare ignore",
+        "Every override is verified by the gates the dependency reaches (typecheck, test, build; the bundler for metro-side packages), so an override that breaks the toolchain is caught here rather than at release"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "typecheck",
+        "test",
+        "build",
+        "security"
+      ],
+      "notes": "FOUND DURING F-236 increment 12 (2026-10-09), running every gate. gitleaks and the key-material checks pass; the audit reports 18 advisories, 2 accepted with an expiry, and 9 unaccepted at a blocking severity (8 high, 1 critical). F-236 changed no dependency (no lockfile or package.json diff): these were published to the advisory database after the last green run, so the gate is red on every commit until this lands, and release.yml calls ci.yml first, so no tag can produce an artefact meanwhile — hence `must`. The nine, each with a patched version the audit names: GHSA-pqg4-j6r4-53mv shell-quote >=1.8.4 <1.11.0 (critical; fixed 1.11.0); GHSA-6j4f-fj2g-mc7p brace-expansion <1.1.19 and >=4.0.0 <5.0.10; GHSA-qhr7-859c-m2p7 brace-expansion <1.1.20 and >=4.0.0 <5.0.11; GHSA-vfj7-8cjw-p6xm braces <=3.0.3 (fixed 3.0.4); GHSA-86w9-cpqp-85rv node-forge <=1.4.0 (fixed 1.4.1); GHSA-68fv-2mgg-jv7q source-map-js >=1.0.0 <1.2.2; GHSA-vc2v-76pw-4v95 compression <1.8.2. Unlike F-079 a fixed version exists for each, so overrides are possible — but most arrive through Expo and Metro (dev-time tooling), so the reachability argument and the toolchain verification are the work, not the version bump. Out of F-236’s scope (rule 2): recorded, not fixed there."
     }
   ]
 }

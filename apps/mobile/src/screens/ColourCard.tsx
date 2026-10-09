@@ -26,6 +26,13 @@ import { CORPUS_LABEL, entryBySlug } from '../corpus';
 // one that drifts would be the one on the artefact that leaves the app.
 import { CLASSIFICATION_KEYS } from './ColourDetail';
 import { useMessages } from '../i18n/useMessages';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
+ * does not hold the colour this screen is about.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** How wide the full card is drawn. The document's own aspect does the rest. */
 const DISPLAY_WIDTH = 320;

@@ -69,6 +69,13 @@ import {
 } from '../wardrobe/cost';
 import { useMessages } from '../i18n/useMessages';
 import { isMessageKey, type MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: nothing in
+ * the wardrobe can be worn.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Slot → label. Total, so a fourth slot is a compile error rather than a blank column. */
 const SLOT_KEYS = {

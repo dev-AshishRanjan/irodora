@@ -8,6 +8,9 @@
  */
 
 export {
+  bareZeros,
+  blankPanels,
+  type BlankPanel,
   brokenFlexChains,
   carriesFigure,
   figureNodes,

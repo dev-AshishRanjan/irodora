@@ -65,6 +65,13 @@ import {
 } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: nothing
+ * matches the search and the filters.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /**
  * Corpus vocabulary → catalogue key.
@@ -158,6 +165,12 @@ export interface AtlasProps {
   readonly onOpenFinder?: (() => void) | undefined;
   readonly onOpenCompare?: (() => void) | undefined;
   readonly onOpenPalettes?: (() => void) | undefined;
+  /**
+   * The search as the screen opens. The Finder's `initialQuery` and the Wardrobe's `initialFilter`
+   * exist for the same reason: a screen with nothing matching is a tree the conformance suite has
+   * to be able to render (F-236), and typing into it is not something a render can do.
+   */
+  readonly initialQuery?: string;
 }
 
 /**
@@ -261,9 +274,10 @@ export function Atlas({
   onOpenFinder,
   onOpenCompare,
   onOpenPalettes,
+  initialQuery = '',
 }: AtlasProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
   const entries = useMemo(() => allEntries(), []);

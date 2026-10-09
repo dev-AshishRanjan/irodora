@@ -57,6 +57,13 @@ import { costEntry, formatMinor, type CostEntryProblem } from '../wardrobe/cost'
 import type { InvestmentUnknown } from '../wardrobe/investment';
 import { useMessages } from '../i18n/useMessages';
 import { isMessageKey, type MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: there is no
+ * wardrobe to compare against.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** How many corpus entries the picker offers. The same twelve `AddGarment` shows. */
 const PICKER_LIMIT = 12;

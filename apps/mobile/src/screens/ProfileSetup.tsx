@@ -43,6 +43,13 @@ import { TRIALS, type Trial, type TrialAnswer, type TrialOption } from '../profi
 import { estimateFromReading, worthOffering } from '../profile/photo';
 import type { LensReading } from '../lens/reading';
 import { activeProfile, toWorking, type ProfileStore } from '../profile/store';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). None. A refused
+ * portrait is feedback about the action just taken, and the trials are always drawn.
+ */
+export const STATES = {} as const satisfies ScreenStates;
 
 /**
  * Dimension → catalogue key. Total, so an eighth dimension is a compile error, not a blank row.

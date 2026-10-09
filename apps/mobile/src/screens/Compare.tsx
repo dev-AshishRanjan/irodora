@@ -62,6 +62,13 @@ import {
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
+ * does not hold one of the two colours.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Deficiency → catalogue key. Total, so a fourth deficiency is a compile error. */
 const CVD_KEYS = {

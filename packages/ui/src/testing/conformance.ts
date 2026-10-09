@@ -42,16 +42,19 @@ import { TEXT_CONTRAST } from '../inkOnSample.js';
 import { sampleEdge, sampleInk } from '../sampleInk.js';
 import {
   announcedStates,
+  bareZeros,
+  blankPanels,
   flattenStyle,
   paintedColors,
   pressableNodes,
   raggedFigures,
   renderedPairs,
-  resolveTextNodes,
   type ResolvedPressableNode,
+  resolveTextNodes,
   type TestNode,
 } from './tree.js';
 import { isStatusToken, type ColorResolution } from './tokens.js';
+import type { StateKind } from '../stateCard.js';
 
 export type ComponentKind = 'interactive' | 'navigation' | 'data' | 'static';
 
@@ -145,6 +148,14 @@ export interface ConformanceSubject {
    * pass for the component, so chrome painted with a literal is still caught.
    */
   readonly sampleValues?: readonly string[];
+  /**
+   * The data states this subject renders (ADR-0129): set by the app on every subject of a screen
+   * that declares a condition, `[]` where this one renders none. The app types it from the
+   * screen's own declaration and checks it against the tree; here it says which subjects the
+   * bare-zero rule reads, since a zero standing for nothing is only a defect where an empty state
+   * should have said so.
+   */
+  readonly shows?: readonly StateKind[];
 }
 
 export interface Finding {
@@ -499,6 +510,24 @@ export function checkSubject(
           'ragged-figure',
           `"${figure}" carries a figure in proportional digits — set it numeric (FR-48, C9)`,
         );
+
+      // --- the nothing the states replace (F-236, ADR-0129 §4) ------------------------------
+      //
+      // A panel drawn with nothing in it has no text to fault and no colour out of place, and a
+      // "0" in place of "nothing" is a figure like any other: the empty state is how a screen
+      // says a panel has nothing to show, and these are the two ways of not saying it.
+      for (const panel of blankPanels(tree, theme, [...samples]))
+        at(
+          'blank-panel',
+          `${panel.path.join('>')} is painted ${panel.token} and holds no text, name or ` +
+            'picture: a panel with nothing in it says nothing. Draw the empty state (ADR-0129).',
+        );
+      if (subject.shows !== undefined)
+        for (const zero of bareZeros(tree))
+          at(
+            'bare-zero',
+            `"${zero}" is a figure standing for nothing: draw the empty state (ADR-0129 §4)`,
+          );
 
       // --- anything pressable ------------------------------------------------------------
       const pressables = pressableNodes(tree);

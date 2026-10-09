@@ -93,6 +93,18 @@ import { captureSteps, pipelineProgress, progressText, stepText } from '../lens/
 import { refusalOf, refusalText } from '../lens/refusal';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Pending: a capture
+ * being read. Refused: a capture the engine calls poor. Not permitted: the camera denied, or not
+ * yet asked. A read that found nothing is feedback, and an unavailable camera is a fault.
+ */
+export const STATES = {
+  pending: 'working',
+  refused: 'refused',
+  notPermitted: 'denied',
+} as const satisfies ScreenStates;
 
 /** How many corpus names a capture is given. Three is a comparison; eight is a list to read. */
 export const LENS_NAME_LIMIT = 3;

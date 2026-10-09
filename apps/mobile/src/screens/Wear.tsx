@@ -43,6 +43,13 @@ import { ruleSet } from '../rules';
 import { useMessages } from '../i18n/useMessages';
 import { isMessageKey, type MessageKey } from '../i18n/index';
 import type { PersonalProfile } from '@irodora/recommendation';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
+ * does not hold the colour this screen is about, or no garment in a slot goes with it.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 export interface WearProps {
   /** The colour in hand. A route parameter, so a miss is a state rather than a crash. */

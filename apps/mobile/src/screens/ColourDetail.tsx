@@ -53,6 +53,14 @@ import {
 import { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS } from './Atlas';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
+ * does not hold the colour this screen is about. A relationship with none is a row's value, not an
+ * absent panel.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /**
  * Corpus vocabulary → catalogue key, as total records.

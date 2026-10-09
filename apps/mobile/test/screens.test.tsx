@@ -36,7 +36,14 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageTag: mockLanguageTag }],
 }));
 
-import { Text, ThemeProvider, swatchAccessibleName } from '@irodora/ui';
+import {
+  EmptyState,
+  STATE_TEST_IDS,
+  Text,
+  ThemeProvider,
+  swatchAccessibleName,
+  type StateKind,
+} from '@irodora/ui';
 import {
   brokenFlexChains,
   carriesFigure,
@@ -47,29 +54,45 @@ import {
   formatFindings,
   raggedFigures,
   tabularNodes,
+  REQUIRED_STATES,
   type ConformanceSubject,
   type TestNode,
 } from '@irodora/ui/testing';
-import { Home, type HomeStore } from '../src/screens/Home';
-import { Atlas } from '../src/screens/Atlas';
-import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
-import { Compare } from '../src/screens/Compare';
-import { Combinations } from '../src/screens/Combinations';
-import { Wear } from '../src/screens/Wear';
+import {
+  CONDITION_STATE,
+  shownBy,
+  type DataCondition,
+  type ScreenStates,
+  type ShownBy,
+} from '../src/states';
+import { Home, type HomeStore, STATES as HOME_STATES } from '../src/screens/Home';
+import { Atlas, STATES as ATLAS_STATES } from '../src/screens/Atlas';
+import {
+  ColourDetail,
+  type DerivedPanel,
+  STATES as COLOUR_DETAIL_STATES,
+} from '../src/screens/ColourDetail';
+import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
+import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
+import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
 import { TargetBar } from '../src/TargetBar';
 import type { PersonalProfile } from '@irodora/recommendation';
 import { combinationsFor } from '../src/combinations';
 import { allCombinations } from '../src/corpus';
-import { Contemporary } from '../src/screens/Contemporary';
-import { PaletteStudio } from '../src/screens/PaletteStudio';
-import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
-import { AddGarment } from '../src/screens/AddGarment';
-import { Wardrobe, type BrowseStore } from '../src/screens/Wardrobe';
-import { Export } from '../src/screens/Export';
+import { Contemporary, STATES as CONTEMPORARY_STATES } from '../src/screens/Contemporary';
+import { PaletteStudio, STATES as PALETTE_STUDIO_STATES } from '../src/screens/PaletteStudio';
+import {
+  Preferences,
+  type PreferenceStore,
+  STATES as PREFERENCES_STATES,
+} from '../src/screens/Preferences';
+import { AddGarment, STATES as ADD_GARMENT_STATES } from '../src/screens/AddGarment';
+import { Wardrobe, type BrowseStore, STATES as WARDROBE_STATES } from '../src/screens/Wardrobe';
+import { Export, STATES as EXPORT_STATES } from '../src/screens/Export';
 import type { FileSink } from '../src/export/sink';
-import { OutfitBuilder } from '../src/screens/OutfitBuilder';
-import { Shopping } from '../src/screens/Shopping';
-import { Measure, type ReferenceLibrary } from '../src/screens/Measure';
+import { OutfitBuilder, STATES as OUTFIT_BUILDER_STATES } from '../src/screens/OutfitBuilder';
+import { Shopping, STATES as SHOPPING_STATES } from '../src/screens/Shopping';
+import { Measure, type ReferenceLibrary, STATES as MEASURE_STATES } from '../src/screens/Measure';
 import { parseMeasurement } from '../src/measure';
 import { colorOf } from '../src/wardrobe';
 import { ruleSet } from '../src/rules';
@@ -90,10 +113,14 @@ import type { WearStore } from '../src/wardrobe/cost';
 import type { ImageSource } from '../src/wardrobe/source';
 import type { NewGarment } from '@irodora/store';
 import type { LensReading } from '../src/lens/reading';
-import { Finder } from '../src/screens/Finder';
-import { ColourCard } from '../src/screens/ColourCard';
-import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
-import { Lens } from '../src/screens/Lens';
+import { Finder, STATES as FINDER_STATES } from '../src/screens/Finder';
+import { ColourCard, STATES as COLOUR_CARD_STATES } from '../src/screens/ColourCard';
+import {
+  ProfileSetup,
+  DIMENSION_KEYS,
+  STATES as PROFILE_SETUP_STATES,
+} from '../src/screens/ProfileSetup';
+import { Lens, STATES as LENS_STATES } from '../src/screens/Lens';
 import { refusalText } from '../src/lens/refusal';
 import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
@@ -513,6 +540,22 @@ const SAMPLE_READING: LensReading = {
   qualityFailures: [],
 };
 
+/**
+ * A capture the engine calls poor (F-236, D1): three checks failed — which is what makes it poor —
+ * the samples first, so the refusal names too little fabric. The Lens refuses it with 27's card.
+ */
+const REFUSED_READING: LensReading = {
+  rgb: [0.4, 0.38, 0.36],
+  space: 'srgb',
+  usableSamples: 900,
+  variance: 0.09,
+  illumination: 'mixed',
+  quality: 'poor',
+  confidence: 0.21,
+  instruction: 'Move closer and fill the marked area.',
+  qualityFailures: ['samples', 'evenness', 'singleColour'],
+};
+
 /** A reading the Lens might have left for the wardrobe. Values are a plausible mid navy. */
 const OFFERED_READING: LensReading = {
   rgb: [0.29, 0.42, 0.55],
@@ -798,9 +841,20 @@ function preferenceStore(
   };
 }
 
+/**
+ * The states a subject renders (F-236, ADR-0129 §3), typed by its screen's own `STATES`: a subject
+ * cannot claim a state its screen does not declare. Set on every subject of a screen that declares a
+ * condition, with no states where this one renders none.
+ */
+const showing = <S extends ScreenStates>(
+  _declared: S,
+  ...shown: readonly ShownBy<S>[]
+): readonly StateKind[] => shown;
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Preferences',
+    shows: showing(PREFERENCES_STATES),
     // `static`, like the rest: its interactive parts are Button, registered in packages/ui
     // where the suite makes it render focus, active, disabled and loading differently.
     kind: 'static',
@@ -810,6 +864,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   {
     // EMPTY — the state most people see first, and the one a blank list would fail silently.
     name: 'screens/Preferences (nothing learned)',
+    shows: showing(PREFERENCES_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Preferences store={preferenceStore([])} />, theme),
@@ -822,6 +877,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * `EmptyState`'s union makes them genuinely different trees.
      */
     name: 'screens/Preferences (nothing learned, with somewhere to go)',
+    shows: showing(PREFERENCES_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -837,6 +893,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * middle one is off because it is the row whose off state a person is most likely to choose.
      */
     name: 'screens/Preferences (a display switch off)',
+    shows: showing(PREFERENCES_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -855,6 +912,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * rest — it is the state a person is least likely to be in and most likely to be harmed by.
      */
     name: 'screens/Preferences (confirming a reset)',
+    shows: showing(PREFERENCES_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -870,6 +928,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * meets the panel's own ground.
      */
     name: 'screens/Preferences (theme list open)',
+    shows: showing(PREFERENCES_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -877,6 +936,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Home',
+    shows: showing(HOME_STATES),
     /*
      * `static`, and F-146 tried `data` first — which was wrong for a reason worth recording.
      *
@@ -926,6 +986,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * was measured by nothing.
      */
     name: 'screens/Home (first run)',
+    shows: showing(HOME_STATES, 'empty'),
     kind: 'static',
     sampleValues: ['#6E7480', '#C5CFD4'],
     render: (_state, theme) =>
@@ -941,6 +1002,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Atlas',
+    shows: showing(ATLAS_STATES),
     // `static`, like Home — and it took a rewrite to earn that. The screen's interactive parts
     // are Chip, SearchField and Swatch, each registered in packages/ui where the suite asks
     // them to render focus, active, disabled and loading differently. A SCREEN has none of
@@ -964,6 +1026,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/ColourDetail',
+    shows: showing(COLOUR_DETAIL_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     // The comparison entry is rendered, so it is measured (F-181). See the Atlas subject above.
@@ -992,6 +1055,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * elsewhere in this file are what hold it there.
      */
     name: 'screens/ColourDetail (sections folded)',
+    shows: showing(COLOUR_DETAIL_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1008,6 +1072,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * the suite makes it render its states.
      */
     name: 'screens/Combinations',
+    shows: showing(COMBINATIONS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...GENERATED_HEXES],
     render: (_state, theme) =>
@@ -1024,6 +1089,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * combination, so without this subject the whole section would be measured by nothing.
      */
     name: 'screens/Combinations (curated)',
+    shows: showing(COMBINATIONS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...generatedHexes(CURATED_LEAD)],
     render: (_state, theme) =>
@@ -1036,6 +1102,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * is the weighted one rather than the geometric default.
      */
     name: 'screens/Combinations (weighted by a profile)',
+    shows: showing(COMBINATIONS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...generatedHexes(BOTH_COST_BRANCHES.entry.slug)],
     render: (_state, theme) =>
@@ -1056,6 +1123,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * no curated ones rather than a section that is silently missing.
      */
     name: 'screens/Combinations (a colour, not an entry)',
+    shows: showing(COMBINATIONS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...GARMENT_HEXES],
     render: (_state, theme) =>
@@ -1078,6 +1146,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * announcement and its own contrast, none of which the subject above renders.
      */
     name: 'screens/Combinations (not in this corpus)',
+    shows: showing(COMBINATIONS_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1092,6 +1161,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * each registered in packages/ui where the suite makes them render their states.
      */
     name: 'screens/Wear',
+    shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1105,6 +1175,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * only the profiled branch would leave all of that measured by nothing.
      */
     name: 'screens/Wear (no profile)',
+    shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1124,6 +1195,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * changes the answer rather than only the label.
      */
     name: 'screens/Wear (trouser)',
+    shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1163,6 +1235,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Compare',
+    shows: showing(COMPARE_STATES),
     // `static` for the same reason the Atlas is: its interactive parts are SearchField and
     // Swatch, both registered in packages/ui where the suite makes them render their states.
     kind: 'static',
@@ -1171,6 +1244,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/ColourCard',
+    shows: showing(COLOUR_CARD_STATES),
     kind: 'static',
     // The card's own colours live in an SVG document, which the tree carries as a STRING prop
     // rather than as a style the suite can read. They are checked exhaustively in card.test.ts,
@@ -1185,6 +1259,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * tree and gets its own subject below.
      */
     name: 'screens/Contemporary',
+    shows: showing(CONTEMPORARY_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Contemporary slug={CONTEMPORARY_NEAR} />, theme),
@@ -1196,6 +1271,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * tree — a registry that only had the first would be checking half a screen.
      */
     name: 'screens/Contemporary (already in a palette)',
+    shows: showing(CONTEMPORARY_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Contemporary slug={CONTEMPORARY_MEMBER} />, theme),
@@ -1212,6 +1288,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * opinion.
      */
     name: 'screens/Contemporary (an editorial equivalent)',
+    shows: showing(CONTEMPORARY_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1237,6 +1314,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Finder',
+    shows: showing(FINDER_STATES),
     // `static`, like the rest: its one interactive part is SearchField, registered in
     // packages/ui where the suite makes it render focus, active, disabled and loading.
     kind: 'static',
@@ -1250,12 +1328,14 @@ const SCREENS: readonly ConformanceSubject[] = [
      * would check a screen nobody has used yet.
      */
     name: 'screens/Finder (with a phrase answer)',
+    shows: showing(FINDER_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Finder initialQuery="dark muted green" />, theme),
   },
   {
     name: 'screens/OutfitBuilder',
+    shows: showing(OUTFIT_BUILDER_STATES),
     // `static`, like the rest: its interactive parts are Button and Swatch, each registered in
     // packages/ui where the suite makes them render focus, active, disabled and loading.
     kind: 'static',
@@ -1279,6 +1359,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * unchecked for the same reason. An empty wardrobe is also the state a new person is in.
      */
     name: 'screens/OutfitBuilder (nothing wearable)',
+    shows: showing(OUTFIT_BUILDER_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1301,6 +1382,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * the accessibility of a screen nobody has used. Same reasoning as the Studio's two.
      */
     name: 'screens/OutfitBuilder (a slot locked)',
+    shows: showing(OUTFIT_BUILDER_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1323,6 +1405,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * different size, and the contrast gate can only measure what something rendered.
      */
     name: 'screens/OutfitBuilder (cost per wear)',
+    shows: showing(OUTFIT_BUILDER_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1345,6 +1428,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * Surfaces this one does not.
      */
     name: 'screens/Shopping',
+    shows: showing(SHOPPING_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1359,6 +1443,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * a11y or contrast gates — and it is the first thing a new person sees on this screen.
      */
     name: 'screens/Shopping (no wardrobe at all)',
+    shows: showing(SHOPPING_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1377,6 +1462,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * something drew.
      */
     name: 'screens/Shopping (answered, with a duplicate)',
+    shows: showing(SHOPPING_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1399,6 +1485,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * a registry that never rendered it would be checking the accessibility of the happy path.
      */
     name: 'screens/Shopping (no slot for this garment)',
+    shows: showing(SHOPPING_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1422,6 +1509,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * typing the static registry never does.
      */
     name: 'screens/Shopping (the investment signal)',
+    shows: showing(SHOPPING_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1446,6 +1534,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * already done the recording — which is not the case most people are in.
      */
     name: 'screens/Shopping (not enough to compare against)',
+    shows: showing(SHOPPING_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1470,6 +1559,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * here or nowhere.
      */
     name: 'screens/Export',
+    shows: showing(EXPORT_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Export subject={EXPORT_SUBJECT} sink={noSink} />, theme),
@@ -1480,6 +1570,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * grey sentence for saved, cancelled and failed alike.
      */
     name: 'screens/Export (the write failed)',
+    shows: showing(EXPORT_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1498,6 +1589,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * different, asserted by rendering both rather than by trusting the branch.
      */
     name: 'screens/Export (saved)',
+    shows: showing(EXPORT_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1518,6 +1610,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * disjoint trees, and the state a person is in before they have built anything.
      */
     name: 'screens/Export (nothing to export)',
+    shows: showing(EXPORT_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1529,6 +1622,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * renders the sentence and no control. Both branches are reachable, so both are drawn.
      */
     name: 'screens/Export (nothing to export, nowhere to go)',
+    shows: showing(EXPORT_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Export subject={null} sink={noSink} />, theme),
@@ -1541,6 +1635,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * answered screen draws numeric rows this one does not.
      */
     name: 'screens/Measure',
+    shows: showing(MEASURE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Measure libraries={MEASURE_LIBRARIES} />, theme),
@@ -1554,6 +1649,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * can only measure what something drew.
      */
     name: 'screens/Measure (a table with rows)',
+    shows: showing(MEASURE_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1638,6 +1734,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * subjects above does.
      */
     name: 'screens/Wear (with destinations)',
+    shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1666,6 +1763,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   {
     /* Carries the persistent add control (F-139), which is drawn whether or not it is empty. */
     name: 'screens/Wardrobe',
+    shows: showing(WARDROBE_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1691,6 +1789,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * contrast and accessibility nothing has checked.
      */
     name: 'screens/Wardrobe (nothing in it)',
+    shows: showing(WARDROBE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1702,6 +1801,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * union. It renders prose and no control; both branches are reachable, so both are drawn.
      */
     name: 'screens/Wardrobe (nothing in it, nowhere to go)',
+    shows: showing(WARDROBE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Wardrobe store={fakeBrowseStore([])} />, theme),
@@ -1712,6 +1812,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * sentence and a clear control — none of which the unfiltered subject has.
      */
     name: 'screens/Wardrobe (narrowed)',
+    shows: showing(WARDROBE_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1729,6 +1830,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * still there — a filter bar that vanished with its result could not be cleared.
      */
     name: 'screens/Wardrobe (nothing matches)',
+    shows: showing(WARDROBE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1746,6 +1848,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * rather than starting empty, which is the branch `minorToMajor` exists for.
      */
     name: 'screens/Wardrobe (a garment open)',
+    shows: showing(WARDROBE_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1756,6 +1859,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/PaletteStudio',
+    shows: showing(PALETTE_STUDIO_STATES, 'empty'),
     // `static`, like the rest: its interactive parts are TextField, SearchField, Chip, Button
     // and Swatch, each registered in packages/ui where the suite makes them render focus,
     // active, disabled and loading differently.
@@ -1772,6 +1876,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * alone would check the accessibility of a screen nobody has used yet.
      */
     name: 'screens/PaletteStudio (with a draft)',
+    shows: showing(PALETTE_STUDIO_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1785,6 +1890,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * exactly what this panel would reach for if nobody had decided otherwise.
      */
     name: 'screens/PaletteStudio (CVD flag)',
+    shows: showing(PALETTE_STUDIO_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1867,6 +1973,7 @@ const SCREENS: readonly ConformanceSubject[] = [
    */
   {
     name: 'screens/Lens (undetermined)',
+    shows: showing(LENS_STATES, 'denied'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1874,6 +1981,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Lens (denied)',
+    shows: showing(LENS_STATES, 'denied'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Lens permission="denied" />, theme),
@@ -1886,6 +1994,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * has to meet the same contrast and type rules as everything else.
      */
     name: 'screens/Lens (waiting, with a diagnostic)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1909,6 +2018,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * point — a Lens nobody has asked anything of has read nothing.
      */
     name: 'screens/Lens (still, at rest)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1924,6 +2034,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * hue arc. Without it the whole panel would be measured by nothing.
      */
     name: 'screens/Lens (against a target)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, displayFromOklch(readingOklch(SAMPLE_READING)).hex],
     render: (_state, theme) =>
@@ -1956,6 +2067,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * contrast and type rules as the sheet does.
      */
     name: 'screens/Lens (live)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, displayFromOklch(readingOklch(SAMPLE_READING)).hex],
     render: (_state, theme) =>
@@ -1976,6 +2088,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * busy control still has to clear contrast — the state where that is easiest to get wrong.
      */
     name: 'screens/Lens (awaiting a capture)',
+    shows: showing(LENS_STATES, 'working'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -1997,6 +2110,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * hint above it.
      */
     name: 'screens/Lens (nothing was read)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -2018,6 +2132,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * the whole reason the camera reticle came up here from `viewfinder.tsx`.
      */
     name: 'screens/Lens (aimed off centre)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -2040,6 +2155,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * other side of that line is an arbitrary photograph.
      */
     name: 'screens/Lens (a photograph open)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -2068,6 +2184,7 @@ const SCREENS: readonly ConformanceSubject[] = [
      * is the one place a person sees a message written by a decoder rather than by us.
      */
     name: 'screens/Lens (a photograph refused)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
@@ -2085,6 +2202,7 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Lens (a capture on screen)',
+    shows: showing(LENS_STATES),
     kind: 'static',
     /*
      * The reading's OWN colour is a declared sample value.
@@ -2119,6 +2237,104 @@ const SCREENS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  {
+    /*
+     * NOTHING MATCHES THE SEARCH (F-236): 00's caption with its hint, the field that would change
+     * it on the same screen.
+     */
+    name: 'screens/Atlas (nothing matches)',
+    shows: showing(ATLAS_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Atlas initialQuery="zzqx" />, theme),
+  },
+  {
+    /*
+     * THE PHRASE FOUND NOTHING (F-236): 00's caption with the reason, under the field that would
+     * change it.
+     */
+    name: 'screens/Finder (the phrase found nothing)',
+    shows: showing(FINDER_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Finder initialQuery="zzqx" />, theme),
+  },
+  {
+    /*
+     * A COLOUR THIS CORPUS DOES NOT HOLD (F-236): 00's caption, the way out the header's back. The
+     * witness ADR-0129 asks for: the screen declares the condition, so a subject draws it.
+     */
+    name: 'screens/Compare (not in this corpus)',
+    shows: showing(COMPARE_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Compare initialA="no-such-colour" initialB={PAIR_B} />, theme),
+  },
+  {
+    /*
+     * A COLOUR THIS CORPUS DOES NOT HOLD (F-236): 00's caption, the way out the header's back. The
+     * witness ADR-0129 asks for: the screen declares the condition, so a subject draws it.
+     */
+    name: 'screens/ColourCard (not in this corpus)',
+    shows: showing(COLOUR_CARD_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<ColourCard slug="no-such-colour" />, theme),
+  },
+  {
+    /*
+     * A COLOUR THIS CORPUS DOES NOT HOLD (F-236): 00's caption, the way out the header's back. The
+     * witness ADR-0129 asks for: the screen declares the condition, so a subject draws it.
+     */
+    name: 'screens/ColourDetail (not in this corpus)',
+    shows: showing(COLOUR_DETAIL_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<ColourDetail slug="no-such-colour" />, theme),
+  },
+  {
+    /*
+     * A COLOUR THIS CORPUS DOES NOT HOLD (F-236): 00's caption, the way out the header's back. The
+     * witness ADR-0129 asks for: the screen declares the condition, so a subject draws it.
+     */
+    name: 'screens/Contemporary (not in this corpus)',
+    shows: showing(CONTEMPORARY_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Contemporary slug="no-such-colour" />, theme),
+  },
+  {
+    /*
+     * A COLOUR THIS CORPUS DOES NOT HOLD (F-236): 00's caption, the way out the header's back. The
+     * witness ADR-0129 asks for: the screen declares the condition, so a subject draws it.
+     */
+    name: 'screens/Wear (not in this corpus)',
+    shows: showing(WEAR_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Wear slug="no-such-colour" profile={WEARER} />, theme),
+  },
+  {
+    /*
+     * A POOR CAPTURE, REFUSED (F-236, D1): 27's refused card — the check, its threshold and the fix —
+     * with the result sheet shut, so no band, no conditions and no confidence.
+     */
+    name: 'screens/Lens (a capture refused)',
+    shows: showing(LENS_STATES, 'refused'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          capture={REFUSED_READING}
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+          onDismiss={() => undefined}
+        />,
+        theme,
+      ),
+  },
 ];
 
 describe('every screen conforms', () => {
@@ -2129,6 +2345,161 @@ describe('every screen conforms', () => {
   it('produces no findings, in either theme', () => {
     const findings = checkAll(SCREENS);
     expect(formatFindings(findings)).toBe('');
+  });
+});
+
+/**
+ * EVERY SCREEN DECLARES WHAT IT SHOWS, AND THE REGISTRY HOLDS IT TO THAT (F-236, ADR-0129 §3).
+ *
+ * Both directions: every condition a screen declares has a subject rendering its state, and every
+ * subject rendering a state declares it. And every module in `src/screens/` is in `DECLARED` — so a
+ * new screen is named here until it says what it shows, even when the answer is "none".
+ */
+describe('every screen declares its data conditions', () => {
+  /** Each screen module's declaration, by file name. Read from the modules, never restated. */
+  const DECLARED: Readonly<Record<string, ScreenStates | undefined>> = {
+    Home: HOME_STATES,
+    Atlas: ATLAS_STATES,
+    ColourDetail: COLOUR_DETAIL_STATES,
+    Compare: COMPARE_STATES,
+    Combinations: COMBINATIONS_STATES,
+    Wear: WEAR_STATES,
+    Contemporary: CONTEMPORARY_STATES,
+    PaletteStudio: PALETTE_STUDIO_STATES,
+    Preferences: PREFERENCES_STATES,
+    AddGarment: ADD_GARMENT_STATES,
+    Wardrobe: WARDROBE_STATES,
+    Export: EXPORT_STATES,
+    OutfitBuilder: OUTFIT_BUILDER_STATES,
+    Shopping: SHOPPING_STATES,
+    Measure: MEASURE_STATES,
+    Finder: FINDER_STATES,
+    ColourCard: COLOUR_CARD_STATES,
+    ProfileSetup: PROFILE_SETUP_STATES,
+    Lens: LENS_STATES,
+  };
+
+  /** The state roots a tree renders, found by the fixed `testID`s every state carries. */
+  const ROOT_KIND = new Map<string, StateKind>(
+    (Object.entries(STATE_TEST_IDS) as [StateKind, string][]).map(([kind, id]) => [id, kind]),
+  );
+  const rootsIn = (node: TestNode, out = new Set<StateKind>()): Set<StateKind> => {
+    const testID = node.props['testID'];
+    const kind = typeof testID === 'string' ? ROOT_KIND.get(testID) : undefined;
+    if (kind !== undefined) out.add(kind);
+    for (const child of node.children ?? []) if (typeof child !== 'string') rootsIn(child, out);
+    return out;
+  };
+
+  /** A subject's screen module: `screens/Home (first run)` → `Home`. */
+  const screenOf = (name: string): string => name.replace(/^screens\//u, '').replace(/ \(.*$/u, '');
+
+  interface Rendered {
+    readonly name: string;
+    readonly shows: readonly StateKind[] | undefined;
+    readonly renders: ReadonlySet<StateKind>;
+  }
+
+  /** Every way the registry and the declarations disagree, in words that name the screen. */
+  function disagreements(
+    files: readonly string[],
+    declared: Readonly<Record<string, ScreenStates | undefined>>,
+    subjects: readonly Rendered[],
+  ): string[] {
+    const out: string[] = [];
+    for (const file of files)
+      if (declared[file] === undefined) out.push(`${file}: exports no STATES`);
+    for (const subject of subjects) {
+      const screen = screenOf(subject.name);
+      const states = declared[screen] ?? {};
+      const declares = shownBy(states);
+      if (declares.length > 0 && subject.shows === undefined)
+        out.push(
+          `${subject.name}: its screen declares a condition, and it does not say what it shows`,
+        );
+      const shows = subject.shows ?? [];
+      for (const kind of subject.renders)
+        if (!shows.includes(kind))
+          out.push(`${subject.name}: renders ${kind}, and does not declare it`);
+      for (const kind of shows) {
+        if (!subject.renders.has(kind))
+          out.push(`${subject.name}: claims ${kind}, and does not render it`);
+        if (!declares.includes(kind))
+          out.push(`${subject.name}: shows ${kind}, which ${screen} does not declare`);
+      }
+    }
+    for (const [screen, states] of Object.entries(declared))
+      for (const condition of Object.keys(CONDITION_STATE) as DataCondition[]) {
+        const kind = states?.[condition];
+        if (kind === undefined) continue;
+        const witnessed = subjects.some(
+          (sub) =>
+            screenOf(sub.name) === screen &&
+            (sub.shows ?? []).includes(kind) &&
+            sub.renders.has(kind),
+        );
+        if (!witnessed)
+          out.push(`${screen}: declares ${condition} (${kind}), and no subject renders it`);
+      }
+    return out;
+  }
+
+  const files = readdirSync(join(__dirname, '../src/screens'))
+    .filter((f) => f.endsWith('.tsx'))
+    .map((f) => f.replace(/\.tsx$/u, ''));
+
+  /** Each subject in its first required state, light: where a screen's data condition is drawn. */
+  const rendered = (): Rendered[] =>
+    SCREENS.map((subject) => {
+      const state = REQUIRED_STATES[subject.kind][0] ?? 'default';
+      const tree = subject.render(state, 'light');
+      return {
+        name: subject.name,
+        shows: subject.shows,
+        renders: tree === null ? new Set() : rootsIn(tree),
+      };
+    });
+
+  it('agrees with the registry, in both directions, for every screen', () => {
+    expect(files.length).toBeGreaterThan(0);
+    expect(disagreements(files, DECLARED, rendered())).toStrictEqual([]);
+  });
+
+  it('witnesses every state at least once, so the agreement is not over nothing', () => {
+    const all = rendered();
+    for (const kind of ['empty', 'working', 'refused', 'denied'] as const)
+      expect({ [kind]: all.some((r) => r.renders.has(kind)) }).toStrictEqual({ [kind]: true });
+  });
+
+  it('DECOY — a module without the export is named', () => {
+    expect(disagreements([...files, 'Ghost'], DECLARED, rendered())).toContain(
+      'Ghost: exports no STATES',
+    );
+  });
+
+  it('DECOY — a declared condition with no subject is named', () => {
+    expect(disagreements(['Ghost'], { Ghost: { pending: 'working' } }, [])).toStrictEqual([
+      'Ghost: declares pending (working), and no subject renders it',
+    ]);
+  });
+
+  it('DECOY — a subject that renders a state it does not declare is named', () => {
+    const tree = render(
+      <ThemeProvider theme="light">
+        <EmptyState message="Nothing here." resolvedHere />
+      </ThemeProvider>,
+    ).toJSON() as TestNode;
+    const subject: Rendered = { name: 'screens/Ghost', shows: [], renders: rootsIn(tree) };
+    expect(disagreements(['Ghost'], { Ghost: { absent: 'empty' } }, [subject])).toContain(
+      'screens/Ghost: renders empty, and does not declare it',
+    );
+  });
+
+  it('DECOY — a subject that claims a state it does not render is named', () => {
+    const subject: Rendered = { name: 'screens/Ghost', shows: ['empty'], renders: new Set() };
+    expect(disagreements(['Ghost'], { Ghost: { absent: 'empty' } }, [subject])).toContain(
+      'screens/Ghost: claims empty, and does not render it',
+    );
   });
 });
 

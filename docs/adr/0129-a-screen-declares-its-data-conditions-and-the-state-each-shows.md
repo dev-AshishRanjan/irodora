@@ -72,10 +72,30 @@ declarations test then checks:
 Each check carries a decoy that must fail: a planted condition with no subject, a subject that
 renders a state it does not declare, and a module without the export.
 
+As built (F-236 increment 12):
+
+- `shows` is set on **every** subject of a screen that declares a condition, empty where the
+  subject renders no state. A subject of such a screen that leaves it unset is named. That is what
+  lets §4's zero rule reach the subject where a forgotten empty branch would print its zero.
+- A subject that **claims** a state it does not render is named too, so `shows` cannot run ahead
+  of the tree.
+- Every subject is rendered in its first required state, in light. The registry gained eight
+  subjects to witness conditions no subject drew: the Atlas and the Finder finding nothing, a
+  colour the corpus does not hold on five screens, and the Lens refusing a capture.
+
 ### 4. Two rules catch the nothing the states replace
 
 - **A blank panel is refused.** That is a node painted with a surface colour, or a `Card`, with no
   text, accessible name or image anywhere beneath it.
+  - **A panel is sized by what it holds.** The grounds are the elevations above the page:
+    `surface.1` to `surface.3`, read from the manifest's levels.
+  - **A mark is not a panel.** That is a box drawn at a set width or height, or laid over
+    something in absolute position: a rule, a track, a knob, a handle, an indicator, a selection
+    frame. Read literally, the rule's first run over the component registry flagged only marks
+    of these kinds, and no panel.
+  - **A declared sample counts as content.** A corpus colour can share its hex with a surface
+    token. Combinations draws one, which read as a blank panel until the subject's samples were
+    taken as what they are.
 - **A bare zero is refused.** In a subject that declares a condition, a figure of zero standing
   for "nothing" is refused: "0%", "0 pieces", "0件". A zero that is part of a reading passes:
   "Showing 0 / 120", "#20232A".

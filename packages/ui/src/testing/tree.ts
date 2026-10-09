@@ -28,7 +28,7 @@
  * sufficient one, and the device half stays attested (ADR-0055).
  */
 
-import { nativeFamilies, type Theme } from '@irodora/design-tokens';
+import { nativeElevation, nativeFamilies, type Theme } from '@irodora/design-tokens';
 import { resolveColor, type ColorResolution } from './tokens.js';
 
 /**
@@ -785,4 +785,117 @@ export function raggedFigures(node: TestNode, feature: string): readonly string[
   return figureNodes(node)
     .filter((n) => !tabular.has(n))
     .flatMap((n) => (n.children ?? []).filter((c): c is string => typeof c === 'string'));
+}
+
+/*
+ * --- THE NOTHING THE STATES REPLACE (F-236, ADR-0129 §4) -----------------------------------------
+ *
+ * A screen whose panel has nothing to show is meant to say so with an empty state. Two ways of
+ * showing nothing slip past every other check here: a panel drawn with nothing in it has no text
+ * to fault and no colour out of place, and a "0" in place of "nothing" is a figure like any other.
+ */
+
+/**
+ * The grounds a panel is painted with: every elevation above the page's own (ADR-0044). Read from
+ * the manifest's levels, so a level added there is covered here.
+ */
+const PANEL_GROUNDS: ReadonlySet<string> = new Set(
+  Object.entries(nativeElevation)
+    .filter(([level]) => level !== '0')
+    .map(([, token]) => token),
+);
+
+/** A box painted as a panel, with nothing in it a person can perceive. */
+export interface BlankPanel {
+  readonly token: string;
+  readonly path: readonly string[];
+}
+
+/** Host types that are content by being drawn: a picture, a drawing, a field. */
+const CONTENT_TYPES = /^(?:Image|RNSVG|TextInput)/u;
+
+/**
+ * Whether a subtree carries anything a person can perceive: text, a name, a picture, a field, or a
+ * declared colour sample — data, which can share its value with a surface token by coincidence.
+ */
+function perceivable(node: TestNode, samples: ReadonlySet<string>): boolean {
+  const name = node.props['accessibilityLabel'] ?? node.props['aria-label'];
+  if (typeof name === 'string' && name.trim() !== '') return true;
+  if (CONTENT_TYPES.test(node.type)) return true;
+  const ground = flattenStyle(node.props['style'])['backgroundColor'];
+  if (typeof ground === 'string' && samples.has(ground.toLowerCase())) return true;
+  return (node.children ?? []).some((c) =>
+    typeof c === 'string' ? c.trim() !== '' : perceivable(c, samples),
+  );
+}
+
+/**
+ * Whether a painted box is a MARK rather than a panel. A panel is sized by what it holds and laid
+ * out in flow. A box drawn at a set size (a rule, a track, a knob, a handle) or laid over something
+ * else (a selection frame, an indicator) is painted to be seen as itself, and holds nothing by
+ * design. Its first run over the component registry flagged only marks of these kinds, and no
+ * panel (F-236).
+ */
+const isMark = (style: Readonly<Record<string, unknown>>): boolean =>
+  typeof style['height'] === 'number' ||
+  typeof style['width'] === 'number' ||
+  style['position'] === 'absolute';
+
+/**
+ * Every panel-painted box with no text, accessible name or picture anywhere beneath it — the
+ * outermost of each, since everything inside a blank panel is blank too.
+ */
+export function blankPanels(
+  root: TestNode,
+  theme: Theme,
+  sampleValues: readonly string[] = [],
+): readonly BlankPanel[] {
+  const samples = new Set(sampleValues.map((v) => v.toLowerCase()));
+  const out: BlankPanel[] = [];
+  const walk = (node: TestNode, path: readonly string[]): void => {
+    const here = path.concat(node.type);
+    const style = flattenStyle(node.props['style']);
+    const ground = style['backgroundColor'];
+    const resolution = resolveColor(typeof ground === 'string' ? ground : undefined, theme);
+    const token =
+      resolution.kind === 'token' && !isMark(style)
+        ? resolution.tokens.find((t) => PANEL_GROUNDS.has(t))
+        : undefined;
+    if (token !== undefined && !perceivable(node, samples)) {
+      out.push({ token, path: here });
+      return;
+    }
+    for (const child of node.children ?? []) if (isNode(child)) walk(child, here);
+  };
+  walk(root, []);
+  return out;
+}
+
+/**
+ * A zero standing for "nothing": a paragraph that is, whole, a zero — alone, or with a percent sign
+ * or a word or counter after it: "0", "0%", "0 pieces", "0件". A zero inside a reading is not one:
+ * "Showing 0 / 120", "#20232A", "0.00", "0.42".
+ */
+const BARE_ZERO = /^[0０]\s*(?:[%％]|\p{L}+(?:\s\p{L}+)?)?$/u;
+
+/** All the text of a subtree, in order, as one paragraph renders it. */
+const paragraph = (node: TestNode): string =>
+  (node.children ?? []).map((c) => (typeof c === 'string' ? c : paragraph(c))).join('');
+
+/**
+ * Every paragraph that is a bare zero. A paragraph is an outermost `Text`: React Native sets a
+ * nested `Text` inline, so "0" and " pieces" in two nodes read as one sentence, and are judged as one.
+ */
+export function bareZeros(root: TestNode): readonly string[] {
+  const out: string[] = [];
+  const walk = (node: TestNode): void => {
+    if (node.type === 'Text') {
+      const text = paragraph(node).trim();
+      if (BARE_ZERO.test(text)) out.push(text);
+      return;
+    }
+    for (const child of node.children ?? []) if (isNode(child)) walk(child);
+  };
+  walk(root);
+  return out;
 }

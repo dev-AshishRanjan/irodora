@@ -74,6 +74,13 @@ import { costEntry, minorToMajor, type CostEntryProblem } from '../wardrobe/cost
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: nothing in
+ * the wardrobe, or nothing matches the filters.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /**
  * What browsing and editing need from the store, and nothing else.

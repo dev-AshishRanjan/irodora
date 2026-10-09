@@ -79,6 +79,13 @@ import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpu
 import { findSeparationProblems } from '../outfit/cvd';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the draft
+ * has no colour yet.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Role → catalogue key. Total, so a fifth role is a compile error rather than a blank chip. */
 const ROLE_KEYS = {

@@ -59,6 +59,13 @@ import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 import type { DeviceTheme } from '../appearance';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: nothing has
+ * been learned yet.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** What this screen needs from the repository — nothing more, so a test can supply it. */
 export interface PreferenceStore {

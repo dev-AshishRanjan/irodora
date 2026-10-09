@@ -61,6 +61,13 @@ import {
 } from '../measure';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { ScreenStates } from '../states';
+
+/**
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: no sample
+ * measured yet.
+ */
+export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** Problem → sentence. Total, so a fourth problem is a compile error rather than a blank space. */
 const PROBLEM_KEYS = {
