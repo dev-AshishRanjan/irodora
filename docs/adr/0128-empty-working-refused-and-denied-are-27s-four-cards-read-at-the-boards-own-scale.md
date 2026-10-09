@@ -181,7 +181,11 @@ glow takes `state.mark`.
   - The check is the engine's first failure, in its own fix-first order (`QUALITY_CHECKS`).
   - **D10:** no confidence is printed, as 27 prints none.
 - **D4 and D5, working:**
-  - The first step is the one under way: *Waiting for a camera frame…* or *Decoding the photo…*.
+  - The first step is the one under way: *Waiting for a camera frame…*.
+  - **Only the camera waits** (F-236's review, B1). A photograph's point is read at once when the
+    shutter is pressed, and while the system picker is open the Open-photo button carries its own
+    loading state. So a photograph shows no working card. An earlier draft showed it during the
+    picker, with *Decoding the photo…*, and announced work that was not happening.
   - The second is the one that follows: *Converting to OKLCh: D65 (6504K)*, in 27's form, step,
     illuminant, then temperature.
   - D65 is `CANONICAL_WHITE`. 6504 K is its published correlated colour temperature; McCamy's
@@ -194,6 +198,11 @@ glow takes `state.mark`.
   - `action`: 27's card, with its picture, title, body and action;
   - `resolvedHere`: 00's caption with its small `no-results` art, where the fix is already on the
     screen. F-139's rule stands: no second control for an on-screen fix.
+  - **The empty wardrobe keeps its add** (F-236's review, S2). 27's card offers *Scan First
+    Garment*, which opens the Lens. F-139's criterion 2 says a garment can be added from the
+    wardrobe whether it is empty or not, and a person without a camera must still be able to. So
+    the Wardrobe's persistent *Add a garment* stays on screen beside 27's card. It is hidden only
+    where the empty state itself is the add (a host with no route to the Lens).
   - **A colour this corpus does not hold** (a route to a slug the bundled corpus version lacks —
     only a link from outside or from another corpus version can name one) is the same caption.
     No mockup draws it. Each of the six screens that names a colour is pushed in the Atlas stack,
@@ -207,9 +216,12 @@ glow takes `state.mark`.
 
 ### 7. Accessibility
 
-Each state is announced once, when it mounts, and never again on a re-render.
+Working and refused are each announced once, when they mount, and never again on a re-render.
+Denied and empty are not announced: each is what the screen rests on, read in order like the rest
+(F-236's review, M2).
 
-- The ring is a `progressbar` with a label, a value and `busy`.
+- The ring is a `progressbar` with its own name, a value and `busy`. Its name is not the heading,
+  which a screen reader has just read (M10).
 - The titles are headings.
 - The pictures are hidden.
 - Retry and the settings action carry hints.

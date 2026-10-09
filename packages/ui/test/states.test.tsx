@@ -95,7 +95,7 @@ const WORKING = (
     title="Analysing Fabric Colour…"
     body="Hold steady. The reading is being computed on this device."
     steps={['Waiting for a camera frame…', 'Converting to OKLCh: D65 (6504K)']}
-    progress={{ value: 0, text: 'Step 1 of 2' }}
+    progress={{ value: 0, text: 'Step 1 of 2', label: 'Capture progress' }}
   />
 );
 const REFUSED = (
@@ -375,6 +375,11 @@ describe('each state is read correctly', () => {
     screen.unmount();
     draw(WORKING);
     expect(screen.getByRole('progressbar')).toBeTruthy();
+    // The ring has its own name, not the heading a screen reader has just read (review, M10).
+    expect(screen.getByRole('progressbar').props['accessibilityLabel']).toBe('Capture progress');
+    expect(screen.getByRole('progressbar').props['accessibilityLabel']).not.toBe(
+      'Analysing Fabric Colour…',
+    );
     expect(
       screen.getByTestId('state.working.picture').props['accessibilityElementsHidden'],
     ).toBeUndefined();
@@ -454,19 +459,26 @@ describe('the glow is the disc 27 draws, blurred', () => {
 });
 
 describe('each of 27’s tints is drawn by its one owner (E-188)', () => {
-  /** Every source file of the two packages that draw, with the state tints each names. */
+  /**
+   * Every source file, with the state tints each names: in either quote form, so a JSX attribute
+   * (`tint="state.hanger"`) counts, and through `MARK_TINT`, the mark's tint by name (F-236's
+   * review, S4). The barrel's re-export is not a reader.
+   */
   function readers(
     files: readonly { readonly path: string; readonly text: string }[],
   ): Record<string, string[]> {
     const out: Record<string, string[]> = {};
-    for (const { path, text } of files)
+    const add = (name: string, path: string): void => {
+      const list = (out[name] ??= []);
+      if (!list.includes(path)) list.push(path);
+    };
+    for (const { path, text } of files) {
       for (const token of text.match(
-        /'state\.(?:hanger|mark|refused\.plate|refused\.edge|refused\.glyph|lock)'/gu,
-      ) ?? []) {
-        const name = token.slice(1, -1);
-        const list = (out[name] ??= []);
-        if (!list.includes(path)) list.push(path);
-      }
+        /(['"])state\.(?:hanger|mark|refused\.plate|refused\.edge|refused\.glyph|lock)\1/gu,
+      ) ?? [])
+        add(token.slice(1, -1), path);
+      if (!path.endsWith('/index.ts') && /\bMARK_TINT\b/u.test(text)) add('state.mark', path);
+    }
     for (const list of Object.values(out)) list.sort();
     return out;
   }
@@ -485,8 +497,10 @@ describe('each of 27’s tints is drawn by its one owner (E-188)', () => {
 
   it('names each tint in its owner and nowhere else', () => {
     expect(readers(files)).toStrictEqual({
-      'state.hanger': ['ui/Illustration.tsx'],
-      'state.mark': ['ui/brand.tsx'],
+      // The hanger's tint is typed by the drawing and passed by its one consumer, the empty card.
+      'state.hanger': ['ui/EmptyState.tsx', 'ui/Illustration.tsx'],
+      // The mark's is named once, as MARK_TINT, and drawn by the working card.
+      'state.mark': ['ui/WorkingState.tsx', 'ui/brand.tsx'],
       'state.refused.plate': ['ui/RefusedState.tsx'],
       'state.refused.edge': ['ui/RefusedState.tsx'],
       'state.refused.glyph': ['ui/RefusedState.tsx'],
@@ -494,9 +508,16 @@ describe('each of 27’s tints is drawn by its one owner (E-188)', () => {
     });
   });
 
-  it('DECOY — a second reader is named', () => {
+  it('DECOY — a second reader is named, in each form a reader can take', () => {
     const planted = [...files, { path: 'ui/Planted.tsx', text: "colors['state.lock']" }];
     expect(readers(planted)['state.lock']).toStrictEqual(['ui/DeniedState.tsx', 'ui/Planted.tsx']);
+    const attribute = [
+      ...files,
+      { path: 'ui/Planted.tsx', text: '<Illustration tint="state.hanger" />' },
+    ];
+    expect(readers(attribute)['state.hanger']).toContain('ui/Planted.tsx');
+    const symbol = [...files, { path: 'ui/Planted.tsx', text: '<Mark color={MARK_TINT} />' }];
+    expect(readers(symbol)['state.mark']).toContain('ui/Planted.tsx');
   });
 });
 

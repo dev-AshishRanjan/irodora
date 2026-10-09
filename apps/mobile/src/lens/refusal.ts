@@ -24,12 +24,25 @@ import {
 import type { MessageKey } from '../i18n';
 import type { LensReading } from './reading';
 
-/** The check a reading is refused for, or `null` when it is not refused. */
+/**
+ * The check a reading is refused for, or `null` when it is not refused.
+ *
+ * **It fails closed** (F-236's review, M1). The engine calls a capture poor because three or more
+ * of its checks failed (`checks.test` holds that), so a poor reading naming no failure is the class
+ * and its failures disagreeing: a defect, not a capture. Returning `null` would open the result sheet
+ * on a poor capture, which D1 refuses, and naming a check would print a reason nobody measured; so it
+ * throws, and the error boundary shows a fault.
+ */
 export function refusalOf(
   reading: Pick<LensReading, 'quality' | 'qualityFailures'>,
 ): QualityCheck | null {
   if (reading.quality !== 'poor') return null;
-  return reading.qualityFailures[0] ?? null;
+  const first = reading.qualityFailures[0];
+  if (first === undefined)
+    throw new Error(
+      'refusalOf: a poor reading names no failed check — the engine’s class and its failures disagree',
+    );
+  return first;
 }
 
 /** Each check's words: its name, the quantity it reads, and what to do. */

@@ -89,7 +89,7 @@ import { PREVIEW_ASPECT } from '../lens/camera';
 import { PHOTO_CENTRE, pointFrom, reticleBox, type PhotoPoint } from '../lens/photo';
 import type { CaptureSpace, LensReading } from '../lens/reading';
 import type { LensPermission } from '../lens/permission';
-import { captureSteps, pipelineProgress, progressText, stepText } from '../lens/pipeline';
+import { CAPTURE_STEPS, pipelineProgress, progressText, stepText } from '../lens/pipeline';
 import { refusalOf, refusalText } from '../lens/refusal';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -563,12 +563,13 @@ export function Lens({
   const refusal = capture === null ? null : refusalOf(capture);
 
   /*
-   * THE PIPELINE AT WORK (F-236, D4 and D5): a frame from the camera, or a photograph being
-   * decoded, then the conversion. Only acquisition takes time a person can see, so the ring reads
-   * none of its two steps done while the Lens waits.
+   * THE PIPELINE AT WORK (F-236, D4 and D5): a frame from the camera, then the conversion. Only
+   * acquisition takes time a person can see, so the ring reads none of its two steps done while the
+   * Lens waits. ONLY THE CAMERA WAITS (F-236's review, B1): a photograph's point is read at once,
+   * and while the picker is open the Open-photo button carries its own loading state — showing
+   * this card then announced work that was not happening.
    */
-  const working = awaiting || opening;
-  const steps = captureSteps(opening || photo !== null ? 'photo' : 'camera');
+  const working = awaiting;
 
   return (
     <Screen title={t('lens.title')} script={script}>
@@ -813,8 +814,12 @@ export function Lens({
         <WorkingState
           title={t('lens.working.title')}
           body={t('lens.working.body')}
-          steps={[stepText(steps[0], t), stepText(steps[1], t)]}
-          progress={{ value: pipelineProgress(steps, 0), text: progressText(steps, 0, t) }}
+          steps={[stepText(CAPTURE_STEPS[0], t, script), stepText(CAPTURE_STEPS[1], t, script)]}
+          progress={{
+            value: pipelineProgress(CAPTURE_STEPS, 0),
+            text: progressText(CAPTURE_STEPS, 0, t),
+            label: t('lens.pipeline.progress'),
+          }}
           script={script}
         />
       ) : null}

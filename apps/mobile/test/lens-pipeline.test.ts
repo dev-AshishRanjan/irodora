@@ -4,14 +4,16 @@
  * - **D65 at its published temperature.** `D65_CCT_K` is held against McCamy's cubic from the
  *   engine's own D65 chromaticity, so the figure cannot drift from the white the engine converts
  *   under; `27`'s 5500 K and D55's chromaticity are the decoys.
- * - **The steps are the pipeline's**, per source, and the ring's value is the share of them done.
- * - **The conversion's words name the engine's illuminant**, appended to the copy, in both languages.
+ * - **The steps are the pipeline's**: a camera frame, then the conversion, and the ring's value is
+ *   the share of them done. A photograph has no working state (F-236's review, B1).
+ * - **The conversion's words name the engine's illuminant**, appended to the copy with each
+ *   script's own separator, in both languages.
  */
 
 import { CANONICAL_ILLUMINANT, CANONICAL_WHITE } from '@irodora/color-spaces';
 import { t } from '../src/i18n';
 import {
-  captureSteps,
+  CAPTURE_STEPS,
   D65_CCT_K,
   pipelineProgress,
   progressText,
@@ -54,36 +56,41 @@ describe('D65 at its published temperature', () => {
 });
 
 describe('the steps are the pipeline’s', () => {
-  it('acquires, then converts — a frame from the camera, a decode from a photo', () => {
-    expect(captureSteps('camera')).toStrictEqual(['frame', 'convert']);
-    expect(captureSteps('photo')).toStrictEqual(['decode', 'convert']);
+  it('waits for a camera frame, then converts — and names no photo step, since none waits', () => {
+    expect(CAPTURE_STEPS).toStrictEqual(['frame', 'convert']);
   });
 
   it('shows the share of steps done, and refuses a count that is not one', () => {
-    const steps = captureSteps('camera');
-    expect([0, 1, 2].map((done) => pipelineProgress(steps, done))).toStrictEqual([0, 0.5, 1]);
+    expect([0, 1, 2].map((done) => pipelineProgress(CAPTURE_STEPS, done))).toStrictEqual([
+      0, 0.5, 1,
+    ]);
     for (const done of [-1, 0.5, 3, Number.NaN])
-      expect(() => pipelineProgress(steps, done)).toThrow(RangeError);
+      expect(() => pipelineProgress(CAPTURE_STEPS, done)).toThrow(RangeError);
   });
 
   it('says which step is under way, out of how many', () => {
     const say = (key: Parameters<typeof t>[1]): string => t('en', key);
-    const steps = captureSteps('photo');
-    expect(progressText(steps, 0, say)).toBe('Step 1 / 2');
-    expect(progressText(steps, 2, say)).toBe('Step 2 / 2');
+    expect(progressText(CAPTURE_STEPS, 0, say)).toBe('Step 1 / 2');
+    expect(progressText(CAPTURE_STEPS, 2, say)).toBe('Step 2 / 2');
   });
 });
 
 describe('the conversion names the engine’s white, in both languages', () => {
   it.each(['en', 'ja'] as const)('appends D65 and its temperature to the %s copy', (locale) => {
-    const text = stepText('convert', (key) => t(locale, key));
-    expect(text).toBe(`${t(locale, 'lens.pipeline.convert')}: D65 (6504K)`);
+    const script = locale === 'ja' ? 'japanese' : 'latin';
+    const text = stepText('convert', (key) => t(locale, key), script);
+    // Each script's own colon, as the refusal's: full-width and unspaced in Japanese (M5).
+    const colon = locale === 'ja' ? '：' : ': ';
+    expect(text).toBe(`${t(locale, 'lens.pipeline.convert')}${colon}D65 (6504K)`);
     // DECOY — neither the drawn 5500 K nor a spectrum reaches the words.
     expect(text).not.toMatch(/5500|spectr|スペクトル/u);
   });
 
-  it('says the step under way for each source', () => {
-    expect(stepText('frame', (key) => t('en', key))).toBe('Waiting for a camera frame…');
-    expect(stepText('decode', (key) => t('en', key))).toBe('Decoding the photo…');
+  it('DECOY — the ASCII colon is not the Japanese separator', () => {
+    expect(stepText('convert', (key) => t('ja', key), 'japanese')).not.toContain(': ');
+  });
+
+  it('says the step under way', () => {
+    expect(stepText('frame', (key) => t('en', key), 'latin')).toBe('Waiting for a camera frame…');
   });
 });

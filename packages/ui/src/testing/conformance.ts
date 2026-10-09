@@ -516,7 +516,7 @@ export function checkSubject(
       // A panel drawn with nothing in it has no text to fault and no colour out of place, and a
       // "0" in place of "nothing" is a figure like any other: the empty state is how a screen
       // says a panel has nothing to show, and these are the two ways of not saying it.
-      for (const panel of blankPanels(tree, theme, [...samples]))
+      for (const panel of blankPanels(tree, theme))
         at(
           'blank-panel',
           `${panel.path.join('>')} is painted ${panel.token} and holds no text, name or ` +

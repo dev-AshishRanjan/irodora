@@ -8,6 +8,85 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-09 — F-236 Empty, working, refused and denied are mockup 27
+
+**Done.** The four states are `27`'s cards, read at `27`'s own scale, and every screen declares which
+it shows. It shipped in fifteen commits, `b863ecd` through this one
+([ADR-0128](../../docs/adr/0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md),
+[ADR-0129](../../docs/adr/0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md),
+[ADR-0130](../../docs/adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)).
+
+- **27 re-read** at 0.973 dp per pixel. The glow is a blurred disc (`glow-fit.mjs --radial`), the
+  bodies are white, and the steps are a narrow mono.
+- **Criterion 1: the four cards** (`StateCard`, `WorkingState`, `RefusedState`, `DeniedState`,
+  `EmptyState`'s two forms, `ProgressRing`).
+  - Six `state.*` tints are minted as one C10 group.
+  - `camera-locked` and `glare` are redrawn from 27, and the hanger is tinted.
+  - The steps' mono is Inconsolata, cut at wdth 83 and wght 600.
+  - R7's three empty-state drawings are retired.
+- **Criterion 3: bound to the pipeline.**
+  - The engine names its failed checks (`QUALITY_CHECKS`, `failures`), and no value moved.
+  - A poor capture is refused for its first failure, with its threshold and fix, and the sheet
+    never opens for it (D1, D10).
+  - The camera's steps end in *Converting to OKLCh: D65 (6504K)*, from the engine's white.
+- **Criterion 2: every screen declares.**
+  - All nineteen modules export `STATES`, and every subject of a declaring screen says what it
+    shows, typed from that declaration.
+  - The declarations test runs both ways, with a decoy for each check. Eight witness subjects
+    were added.
+  - Two new conformance rules: `blank-panel` and `bare-zero`.
+- **The inline absences** are `EmptyState`: Home's two, Atlas, Finder, Palette Studio, and the six
+  screens that name a colour the corpus does not hold.
+- **Record.**
+  - Effects E-185 to E-191, and E-137, E-172 and E-177 updated.
+  - R9 §4, §6 and §8; DESIGN-SYSTEM.md; ACCESSIBILITY.md §6.
+  - Criterion 1 attested, and F-222's 27 half discharged.
+  - Downstream notes on F-242 to F-267.
+  - Backlog: F-322 (gate 15's nine advisories), F-323 (the readout's English instruction in
+    Japanese), F-324 (the a11y proof's tap-target plant, broken since F-232), F-325 (the content
+    proof's unjournalled file).
+
+**Review (once, cut off by a usage limit and resumed): FAIL**, with 1 blocking, 4 significant and
+10 minor findings. Every one is fixed or recorded; the plan's `review` row lists each.
+
+- **B1, fixed:** the photo picker showed the working card and announced work that was not happening.
+- **S1, fixed:** the denied card's action was never checked at screen level.
+- **S2, fixed:** the empty wardrobe had lost F-139's add.
+- **S3, fixed:** the blank-panel and zero rules had blind spots, and AddGarment printed *In your
+  wardrobe: 0*.
+- **S4, fixed:** the tint scans missed a JSX attribute.
+- **M1 to M10:** fixed, or recorded on F-244, F-245 and F-267.
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm format:check` · `pnpm typecheck` · `pnpm lint` · `pnpm build`
+- `pnpm test` (35/35: ui 934, mobile 1188) · `pnpm test:golden` · `pnpm test:a11y` ·
+  `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content` · `pnpm bench`
+
+**Not green, and why:**
+
+- `pnpm security` exits 1: nine advisories in dependencies F-236 never changed (F-322). This
+  feature did not run gate 15 until increment 12, so when they appeared is not known. The lesson
+  [[an-increments-gate-list-is-a-floor-not-the-set]] says why it was not run sooner.
+- `verify:ci --all`: 32 of 38 steps green. Its known reds are F-295 (test,
+  a11y and contrast print past a 1 MiB buffer but exit 0 on their own), the iOS prebuild half (no
+  `ios/` on win32), F-322 and F-324.
+
+**Not run:** `artifact` (no JDK) and `e2e` (pending). Nothing ran on a device: the pixels beside
+27, what VoiceOver and TalkBack speak, the settings deep link, and 200 % text are F-236's
+attestation.
+
+### Lessons
+
+[[an-increments-gate-list-is-a-floor-not-the-set]]
+
+### Next
+
+The next eligible R9 feature by id, under the loop.
+
+---
+
 ## 2026-10-08 — F-231 The app icon, the adaptive and themed icons, and the splash are mockup 14
 
 **Done.** The icon is 14's tile on iOS and Android, and a cold start runs the native splash into 14's

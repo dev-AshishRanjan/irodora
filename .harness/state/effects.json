@@ -7736,7 +7736,7 @@
           "ref": "test"
         }
       ],
-      "guard": "lens-refusal.test: a poor reading is refused for its first failure; fair, good and excellent are not (decoys); every check has a title and body, with thresholds read from the engine rather than retyped. screens.test: a poor capture renders 27's refused card, with its check, threshold, fix and Retry Capture, and none of the sheet's band, conditions or confidence in any format. The `screens/Lens (a capture refused)` subject is in the conformance sweep and witnesses the Lens's `refused` declaration.",
+      "guard": "lens-refusal.test: a poor reading is refused for its first failure; fair, good and excellent are not (decoys); every check has a title and body, with thresholds read from the engine rather than retyped. screens.test: a poor capture renders 27's refused card, with its check, threshold, fix and Retry Capture, and none of the sheet's band, conditions or confidence in any format. The `screens/Lens (a capture refused)` subject is in the conformance sweep and witnesses the Lens's `refused` declaration. F-236 review (M1): refusalOf fails closed — a poor reading naming no failed check throws, and lens-refusal.test pins it.",
       "memory": "memory/effects/a-poor-capture-is-refused-and-never-reaches-the-sheet.md",
       "rationale": "D1 (ADR-0128): FR-18's poor band blocks a confident claim, so a poor capture is refused and the result sheet never opens for it. Nothing downstream of the sheet — the profile and wardrobe hand-offs, ProfileSetup's photo estimate — can receive a poor reading. Changing refusalOf's trigger changes what can be offered to all of them, and F-244 composes the sheet on that guarantee."
     },
@@ -7830,7 +7830,7 @@
           "ref": "contrast"
         }
       ],
-      "guard": "c10-exceptions.test (the group carries 27's five elements and retires their element exception); cvd/mark.test (27's mark read with `state.mark` on `surface.1`, a declared pair); brand.test (MARK_TINT is `state.mark` and chromatic, the neutral inks achromatic); the single-consumer scans in states.test (ui/src) and state-tints.test (the app): each `state.*` token has the one consumer it was minted for, and a planted second consumer is named.",
+      "guard": "c10-exceptions.test (the group carries 27's five elements and retires their element exception); cvd/mark.test (27's mark read with `state.mark` on `surface.1`, a declared pair); brand.test (MARK_TINT is `state.mark` and chromatic, the neutral inks achromatic); the single-consumer scans in states.test (ui/src) and state-tints.test (the app), which read either quote form and the MARK_TINT symbol (F-236 review, S4): each `state.*` token is named by its owner alone — the hanger by Illustration and EmptyState, the mark by brand.tsx and WorkingState — and a planted reader is named in each form, a JSX attribute included.",
       "memory": "memory/effects/27s-tints-are-one-group-with-one-consumer-each.md",
       "rationale": "The six `state.*` tokens are decoration minted for 27 alone (ADR-0128 §4): the same in every palette, each with exactly one consumer. A second consumer would turn a picture's tint into a vocabulary colour, and moving a value moves 27's pictures and the mark's CVD pair."
     },
@@ -7914,7 +7914,7 @@
           "ref": "test"
         }
       ],
-      "guard": "lens-pipeline.test: the steps by source, the share done (RangeError outside), the conversion step naming the engine's CANONICAL_ILLUMINANT and 6504 K, and McCamy's formula on the engine's own D65 within 2 K of 6504, with 27's 5500 K and D55 as decoys. progress-ring.test holds the ring's range, its full and empty arcs and its progressbar semantics.",
+      "guard": "lens-pipeline.test: the camera's two steps (a photograph has none: F-236 review, B1), the share done (RangeError outside), the conversion step naming the engine's CANONICAL_ILLUMINANT and 6504 K with each script's own colon, and McCamy's formula on the engine's own D65 within 2 K of 6504, with 27's 5500 K and D55 as decoys. progress-ring.test holds the ring's range, its full and empty arcs and its progressbar semantics. screens.test: the photo picker shows no working card (the button is busy), with the camera waiting as its decoy.",
       "memory": "memory/effects/the-working-card-says-the-engines-white.md",
       "rationale": "27's working card prints a white point and a temperature. Both are read from the engine and pinned here, so no translation or redraw can print a white the engine does not use (E2). F-243 places the card in 02, and F-266 animates the ring; both read these steps and this value."
     },
@@ -7956,7 +7956,7 @@
           "ref": "test"
         }
       ],
-      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys.",
+      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129.",
       "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
       "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
     }

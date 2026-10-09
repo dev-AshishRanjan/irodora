@@ -13,7 +13,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { writeFileSync } from 'node:fs';
 import { AccessibilityInfo } from 'react-native';
 
@@ -1984,7 +1984,10 @@ const SCREENS: readonly ConformanceSubject[] = [
     shows: showing(LENS_STATES, 'denied'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Lens permission="denied" />, theme),
+    // With the way out the route always gives (F-236's review, S1): the card's action is checked
+    // in both themes and both locales, its hint included.
+    render: (_state, theme) =>
+      draw(<Lens permission="denied" onOpenSettings={() => undefined} />, theme),
   },
   {
     /*
@@ -4241,6 +4244,73 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     expect(text).not.toMatch(/\d+% Confidence|0\.21/u);
     // A reading refused, never a measurement (E2).
     expect(title).toBe('Reading Refused: Too Little Fabric');
+  });
+
+  it('prints no confidence on a refused capture in Japanese either (D10, F-236 review M9)', () => {
+    mockLanguageTag = 'ja-JP';
+    try {
+      const text = textOf(
+        draw(<Lens permission="granted" capture={POOR} onCapture={() => undefined} />, 'light'),
+      ).join(' ');
+      // The refusal is drawn in Japanese, so a missing confidence is not a missing render.
+      expect(text).toContain(t('ja', 'lens.refused.retry'));
+      expect(text).not.toContain(t('ja', 'confidence.word'));
+      expect(text).not.toMatch(/\d+%|0\.21/u);
+    } finally {
+      mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+    }
+  });
+
+  it('shows no working card while the photo picker is open: the button is busy, nothing is analysed (F-236 review, B1)', () => {
+    const text = textOf(
+      draw(<Lens permission="granted" opening onOpenPhoto={() => undefined} />, 'light'),
+    ).join(' ');
+    expect(text).toContain(en['lens.opening']);
+    for (const claim of [
+      en['lens.working.title'],
+      en['lens.working.body'],
+      en['lens.pipeline.frame'],
+      en['lens.pipeline.convert'],
+    ])
+      expect(text).not.toContain(claim);
+  });
+
+  it('asks before the first request and opens settings once denied, each to its own handler (F-236 review, S1)', () => {
+    const asks: string[] = [];
+    const lens = (permission: 'undetermined' | 'denied') =>
+      render(
+        <ThemeProvider theme="light">
+          <Lens
+            permission={permission}
+            onRequestPermission={() => asks.push('allow')}
+            onOpenSettings={() => asks.push('settings')}
+          />
+        </ThemeProvider>,
+      );
+
+    const undetermined = lens('undetermined');
+    fireEvent.press(undetermined.getByLabelText(en['lens.permission.allow']));
+    // DECOY — not swapped: nothing in settings to open before the first ask.
+    expect(undetermined.queryByLabelText(en['lens.permission.openSettings'])).toBeNull();
+    undetermined.unmount();
+
+    const denied = lens('denied');
+    const open = denied.getByLabelText(en['lens.permission.openSettings']);
+    expect(open.props['accessibilityHint']).toBe(en['lens.permission.openSettingsHint']);
+    fireEvent.press(open);
+    // DECOY — and once denied, asking again would do nothing the platform allows.
+    expect(denied.queryByLabelText(en['lens.permission.allow'])).toBeNull();
+    denied.unmount();
+
+    expect(asks).toStrictEqual(['allow', 'settings']);
+  });
+
+  it('DECOY — the camera waiting for a frame does show the working card', () => {
+    const text = textOf(
+      draw(<Lens permission="granted" awaiting onCapture={() => undefined} />, 'light'),
+    ).join(' ');
+    expect(text).toContain(en['lens.working.title']);
+    expect(text).toContain(en['lens.pipeline.frame']);
   });
 
   it('says what Retry Capture does: a camera reads again, a photo stays open for another tap (F-236)', () => {

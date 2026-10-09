@@ -288,9 +288,10 @@ export const en = {
   'lens.refused.retryHint': 'Takes another reading.',
   'lens.refused.retryPhotoHint': 'Clears this, so you can tap another part of the photo.',
   'lens.pipeline.frame': 'Waiting for a camera frame…',
-  'lens.pipeline.decode': 'Decoding the photo…',
   'lens.pipeline.convert': 'Converting to OKLCh',
   'lens.pipeline.step': 'Step',
+  // The ring's own name, read before its value — not the heading, read just before it.
+  'lens.pipeline.progress': 'Capture progress',
   // F-236 — 27's refused state (D1): a reading refused, never a measurement (E2). Each check's
   // name, the quantity it reads (its threshold is appended from the engine), and what to do — the
   // engine's own instruction, which lens-refusal.test holds this wording to.
@@ -308,7 +309,7 @@ export const en = {
   'lens.check.sharpness.reason': 'Detail across the region, the least a reading allows',
   'lens.check.sharpness.fix': 'Hold steadier, or let the camera focus.',
   'lens.check.singleColour.name': 'Mixed Colours',
-  'lens.check.singleColour.reason': 'Variation in lightness, the most a reading allows',
+  'lens.check.singleColour.reason': 'Variation in luminance, the most a reading allows',
   'lens.check.singleColour.fix': 'Select a single region of fabric.',
   'lens.capture': 'Read this colour',
   'lens.capturing': 'Reading…',

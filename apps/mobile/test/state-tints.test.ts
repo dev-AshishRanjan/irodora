@@ -10,7 +10,12 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const TINT = /'state\.(?:hanger|mark|refused\.plate|refused\.edge|refused\.glyph|lock)'/gu;
+/**
+ * A tint by name, in either quote form (a JSX attribute counts), or the mark's tint by its symbol,
+ * `MARK_TINT`, which `<Mark color={MARK_TINT} />` would compile with (F-236's review, S4).
+ */
+const TINT =
+  /(['"])state\.(?:hanger|mark|refused\.plate|refused\.edge|refused\.glyph|lock)\1|\bMARK_TINT\b/gu;
 
 /** Every TypeScript source under a directory, with its text. */
 function sources(dir: string): { readonly path: string; readonly text: string }[] {
@@ -39,9 +44,15 @@ describe('the app names none of 27’s state tints', () => {
     expect(readers(files)).toStrictEqual([]);
   });
 
-  it('DECOY — a planted reader is named', () => {
+  it('DECOY — a planted reader is named, in each form a reader can take', () => {
     expect(readers([{ path: 'Planted.tsx', text: "colors['state.mark']" }])).toStrictEqual([
       "Planted.tsx: 'state.mark'",
+    ]);
+    expect(
+      readers([{ path: 'Planted.tsx', text: '<Illustration tint="state.hanger" />' }]),
+    ).toStrictEqual(['Planted.tsx: "state.hanger"']);
+    expect(readers([{ path: 'Planted.tsx', text: '<Mark color={MARK_TINT} />' }])).toStrictEqual([
+      'Planted.tsx: MARK_TINT',
     ]);
   });
 });

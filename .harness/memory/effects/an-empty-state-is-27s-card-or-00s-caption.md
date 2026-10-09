@@ -18,3 +18,11 @@ not hold is the caption, because the header's back is the way out already there 
 
 A screen that prints a bare sentence for an absence bypasses the type. The declarations test and the
 blank-panel and zero rules are the check there (E-191).
+
+## F-236's review (2026-10-09): the empty wardrobe keeps its add (S2)
+
+27's card offers *Scan First Garment*, which opens the Lens. With the Wardrobe's persistent *Add a
+garment* hidden while empty, as it had been, a garment could reach an empty wardrobe only through a
+camera reading, which is F-139's defect again. The persistent add now stays beside 27's card. It is
+hidden only where the empty state is itself the add, and `wardrobe-screen.test` renders the props
+the route passes.

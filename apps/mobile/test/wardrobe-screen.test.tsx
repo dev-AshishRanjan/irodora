@@ -459,6 +459,25 @@ describe('the way out of an empty wardrobe (F-139)', () => {
     expect(pressed).toHaveLength(1);
   });
 
+  it('keeps the way to add beside 27’s Scan First Garment, with the props the route gives (F-236 review, S2)', () => {
+    // The route passes both (app/(tabs)/wardrobe/index.tsx), so this is the branch production takes.
+    const pressed: string[] = [];
+    render(
+      <ThemeProvider theme="light">
+        <Wardrobe
+          store={empty}
+          onAddGarment={() => pressed.push('add')}
+          onScan={() => pressed.push('scan')}
+        />
+      </ThemeProvider>,
+    );
+    fireEvent.press(screen.getByLabelText(en['wardrobe.empty.scan']));
+    // DECOY — exactly one add control: the persistent one, since 27's card offers the scan.
+    expect(screen.getAllByLabelText(en['browse.add'])).toHaveLength(1);
+    fireEvent.press(screen.getByLabelText(en['browse.add']));
+    expect(pressed).toStrictEqual(['scan', 'add']);
+  });
+
   it('still explains itself when there is nowhere to go', () => {
     // The other member of EmptyState's union. The prose stays; only the control is absent.
     show();

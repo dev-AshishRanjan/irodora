@@ -18,3 +18,12 @@ second trigger anywhere else would refuse a reading the Lens offered.
 
 This is the largest reading F-236 made: the old screen showed a poor capture at a capped confidence.
 It is flagged for comparison by eye. Live readings are not refused.
+
+## F-236's review (2026-10-09)
+
+- **It fails closed (M1).** A poor reading that names no failed check is the engine's class and
+  its failures disagreeing. `refusalOf` throws rather than open the sheet, and the test pins it.
+- **F-201's poor-capture line is unreachable.** `against.poorCapture` printed a warning above the
+  distance to a target. A poor capture is now refused before the sheet opens, so the line cannot
+  show. It is left to F-245, which rebuilds that block for 04, rather than removed from F-201's
+  tested code inside F-236.

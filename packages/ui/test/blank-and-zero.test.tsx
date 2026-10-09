@@ -6,6 +6,7 @@
 
 import { Text as NativeText, View } from 'react-native';
 import { render } from '@testing-library/react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, type Theme } from '@irodora/design-tokens';
 import { Card, Surface, Swatch, Text, ThemeProvider } from '../src/index.js';
@@ -99,17 +100,63 @@ describe('a blank panel', () => {
     expect(blankPanels(panel, 'light')).toHaveLength(1);
   });
 
-  it('DECOY — a declared sample that shares a surface’s value is a colour, not a ground', () => {
-    // Found on Combinations: a corpus colour whose hex equals a theme's surface.1, drawn as a sample.
+  it('is an empty panel at a set size the tap target or larger (F-236 review, S3)', () => {
+    const ground = nativeColors.light['surface.1'];
+    // Any set size was exempt once, so an empty panel 160 dp tall, or a card 300 dp wide, passed.
+    for (const style of [{ height: 160 }, { width: 300 }, { height: 44, width: 44 }])
+      expect({
+        [JSON.stringify(style)]: blankPanels(
+          draw(<View style={{ ...style, backgroundColor: ground }} />),
+          'light',
+        ).length,
+      }).toStrictEqual({ [JSON.stringify(style)]: 1 });
+    // DECOY — one dp under the tap target in either direction is still a mark.
+    for (const style of [{ height: 43 }, { width: 43 }])
+      expect(
+        blankPanels(draw(<View style={{ ...style, backgroundColor: ground }} />), 'light'),
+      ).toStrictEqual([]);
+  });
+
+  it('is a panel holding only an empty drawing, and not one holding a drawn shape', () => {
+    const ground = nativeColors.light['surface.1'];
+    const empty = draw(
+      <View style={{ padding: 8, backgroundColor: ground }}>
+        <Svg width={24} height={24} />
+      </View>,
+    );
+    expect(blankPanels(empty, 'light')).toHaveLength(1);
+    // DECOY — a shape inside the drawing is a picture.
+    const drawn = draw(
+      <View style={{ padding: 8, backgroundColor: ground }}>
+        <Svg width={24} height={24}>
+          <Circle cx={12} cy={12} r={6} fill="#000000" />
+        </Svg>
+      </View>,
+    );
+    expect(blankPanels(drawn, 'light')).toStrictEqual([]);
+  });
+
+  it('DECOY — a box inside a named element is part of it, even on a surface’s value', () => {
+    // Found on Combinations: a generated companion lands on #FFFFFF, light surface.1, and is drawn
+    // as a sample inside its named swatch (F-236 review, M3).
     const hex = nativeColors.light['surface.1'];
-    const sample = draw(
+    const named = draw(
       <Card level="2">
-        <View style={{ padding: 8, backgroundColor: hex }} />
+        <View accessibilityLabel="Shiro, #FFFFFF">
+          <View style={{ padding: 8, backgroundColor: hex }} />
+        </View>
       </Card>,
     );
-    expect(blankPanels(sample, 'light', [hex])).toStrictEqual([]);
-    // Undeclared, the same box is a panel with nothing in it.
-    expect(blankPanels(sample, 'light')).toHaveLength(1);
+    expect(blankPanels(named, 'light')).toStrictEqual([]);
+    // Outside a named element, the same box is a panel with nothing in it.
+    const unnamed = draw(
+      <Card level="2">
+        <View>
+          <View style={{ padding: 8, backgroundColor: hex }} />
+        </View>
+      </Card>,
+    );
+    expect(blankPanels(unnamed, 'light')).toHaveLength(1);
   });
 
   it('reports through checkSubject as `blank-panel`, and not for a filled card', () => {
@@ -146,7 +193,16 @@ describe('a bare zero', () => {
     );
 
   it('is a zero standing for nothing: alone, a percentage, a count, a counter', () => {
-    for (const text of ['0', '0%', '0 pieces', '0件', '０着'])
+    for (const text of [
+      '0',
+      '0%',
+      '0 pieces',
+      '0件',
+      '０着',
+      // With a full stop, and with words after the count (F-236 review, S3).
+      '0 pieces.',
+      '0 garments in your wardrobe',
+    ])
       expect({ [text]: bareZeros(line(text)) }).toStrictEqual({ [text]: [text] });
   });
 
@@ -155,7 +211,20 @@ describe('a bare zero', () => {
   });
 
   it('DECOY — a zero inside a reading, and a count that is not zero, pass', () => {
-    for (const text of ['Showing 0 / 120', '#20232A', '0.00', '0.42', '10 pieces', 'ΔE00 0'])
+    for (const text of [
+      'Showing 0 / 120',
+      '0 of 12',
+      '#20232A',
+      '0.00',
+      '0.42',
+      '10 pieces',
+      'ΔE00 0',
+      'ΔE00: 0.00',
+      // A labelled zero is read as a value: a computed answer takes this form (Shopping's "New
+      // outfits this would add: 0"), so the rule leaves both; ADR-0129 records the limit.
+      'New outfits this would add: 0',
+      'In your wardrobe: 0',
+    ])
       expect({ [text]: bareZeros(line(text)) }).toStrictEqual({ [text]: [] });
   });
 

@@ -52,7 +52,7 @@ export type EmptyAction = StateAction;
 
 /**
  * `00`'s empty, by its own type (F-236): the drawing's width as a share of the caption's em, and
- * the step between them. `empty-state.test` recomputes both from `00`'s inventory.
+ * the step between them. `states.test` recomputes both from `00`'s inventory.
  */
 export const EMPTY_CAPTION = { artEms: 4.5, gap: 'sm' } as const;
 

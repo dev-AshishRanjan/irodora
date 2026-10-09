@@ -89,19 +89,28 @@ As built (F-236 increment 12):
   text, accessible name or image anywhere beneath it.
   - **A panel is sized by what it holds.** The grounds are the elevations above the page:
     `surface.1` to `surface.3`, read from the manifest's levels.
-  - **A mark is not a panel.** That is a box drawn at a set width or height, or laid over
-    something in absolute position: a rule, a track, a knob, a handle, an indicator, a selection
-    frame. Read literally, the rule's first run over the component registry flagged only marks
-    of these kinds, and no panel.
-  - **A declared sample counts as content.** A corpus colour can share its hex with a surface
-    token. Combinations draws one, which read as a blank panel until the subject's samples were
-    taken as what they are.
+  - **A mark is not a panel.** That is a box drawn smaller than the tap target in either
+    direction, or laid over something in absolute position: a rule, a track, a knob, a handle, an
+    indicator, a selection frame. Read literally, the rule's first run over the component registry
+    flagged only marks of these kinds. Its first form exempted any set size, so an empty panel
+    160 dp tall passed; the review narrowed it (S3).
+  - **A box inside a named element is part of it.** A sample inside a named swatch is announced by
+    the swatch, and its colour can equal a surface token by coincidence. On Combinations a
+    generated companion lands on `#FFFFFF`, light `surface.1`. No corpus or CVD colour equals a
+    surface token in any palette (the review's M3; an earlier text said a corpus colour did). An
+    earlier form exempted every box painted a declared sample hex, which blinded the light pass to a
+    blank `surface.1` panel on any subject declaring `#FFFFFF`.
+  - **Content is drawn.** Text, an accessible name, an image, a field, or an SVG element that draws
+    a shape. An empty `<Svg>` is not content (S3).
 - **A bare zero is refused.** In a subject that declares a condition, a figure of zero standing
-  for "nothing" is refused: "0%", "0 pieces", "0件". A zero that is part of a reading passes:
-  "Showing 0 / 120", "#20232A".
+  for "nothing" is refused: a paragraph that is, whole, "0", "0%", "0 pieces", "0 garments in your
+  wardrobe.", "0件". A zero that is part of a reading passes: "Showing 0 / 120", "0 of 12",
+  "#20232A", "0.00".
 
-Both run in `checkAll`, so every subject in both registries is held to them in both themes and both
-locales.
+`blank-panel` runs in `checkAll`, so every subject in both registries is held to it, in both themes
+and both locales. `bare-zero` runs only on subjects with `shows`: every subject of a screen that
+declares a condition. It never runs on the component registry, or on AddGarment and ProfileSetup,
+which declare none (M4).
 
 ## Consequences
 
@@ -118,6 +127,13 @@ locales.
   undeclared and unregistered still passes. Review is the guard there.
 - **Every screen module carries an export**, even when it is `{}`.
 - **The zero rule reads text.** A zero drawn as a picture, or spelled out ("none"), is outside it.
+- **A labelled zero is read as a value.** Shopping's "New outfits this would add: 0" is a computed
+  answer (buying this adds nothing), and "In your wardrobe: 0" was a tally of nothing. The two have
+  one form, so a rule that refused both would refuse an answer. A labelled tally of stored things is
+  the screen's to handle and a reviewer's to see. AddGarment's tally was one, and is now drawn only
+  when there is something to count (F-236's review, S3).
+- **The mark bound is a size.** A blank panel drawn smaller than the tap target, or in absolute
+  position, is read as a mark and passes.
 
 **Neutral.** Feedback and faults stay where they are and are not counted here.
 

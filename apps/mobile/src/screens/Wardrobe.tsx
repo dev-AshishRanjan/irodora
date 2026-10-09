@@ -720,8 +720,14 @@ export function Wardrobe({
         garment", which a screen reader announces twice and which the suite caught as
         "Found multiple elements with accessibility label". One affordance per screen — the
         empty state owns it when the wardrobe is empty, this owns it afterwards.
+
+        AND WHEN THE EMPTY STATE IS 27'S, IT OWNS NO ADD (F-236's review, S2). 27's card offers
+        Scan First Garment, which opens the Lens; with this hidden, an empty wardrobe could be
+        filled only through a camera reading, which is F-139's defect again (its criterion 2: a
+        garment can be added from this screen whether it is empty or not). So this is hidden
+        only where the empty state itself is the add.
       */}
-      {garments.length === 0 || onAddGarment === undefined ? null : (
+      {onAddGarment === undefined || (garments.length === 0 && onScan === undefined) ? null : (
         <View style={{ alignItems: 'flex-start' }}>
           <Button
             label={t('browse.add')}

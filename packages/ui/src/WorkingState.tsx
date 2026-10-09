@@ -33,8 +33,12 @@ export interface WorkingStateProps {
   readonly body: string;
   /** The step under way, and the step that follows — the pipeline's own (D5). */
   readonly steps: readonly [string, string];
-  /** How far the pipeline has got: its share of steps done (D4), and that share in words. */
-  readonly progress: { readonly value: number; readonly text: string };
+  /**
+   * How far the pipeline has got: its share of steps done (D4), that share in words, and the ring's
+   * own name. The name is not the heading, which a screen reader has just read (F-236's review,
+   * M10): *Capture progress*, then *Step 1 / 2*.
+   */
+  readonly progress: { readonly value: number; readonly text: string; readonly label: string };
   readonly script?: Script;
   /** Take the host's height, the action at the foot (27): only where the host bounds it. */
   readonly fill?: boolean;
@@ -88,7 +92,7 @@ export function WorkingState({
         <ProgressRing
           testID={`${id}.progress`}
           value={progress.value}
-          label={title}
+          label={progress.label}
           valueText={progress.text}
         >
           <StateGlow />

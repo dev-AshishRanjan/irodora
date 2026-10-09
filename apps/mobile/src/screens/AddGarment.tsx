@@ -434,9 +434,17 @@ export function AddGarment({
         </Text>
       )}
 
-      <Text size="body" color="foreground.2" numeric script={script}>
-        {`${t('wardrobe.count')}: ${String(count)}`}
-      </Text>
+      {/*
+        THE TALLY, ONLY WHEN THERE IS SOMETHING TO COUNT (F-236's review, S3). With nothing in the
+        wardrobe it read "In your wardrobe: 0": an absence reported as a zero, which F-236's
+        criterion 2 refuses. The form above is what this screen is for, so an empty wardrobe needs
+        no sentence here, only no figure.
+      */}
+      {count === 0 ? null : (
+        <Text size="body" color="foreground.2" numeric script={script}>
+          {`${t('wardrobe.count')}: ${String(count)}`}
+        </Text>
+      )}
     </Screen>
   );
 }

@@ -13,3 +13,11 @@
 The card says the step the engine takes, the conversion to OKLCh, and the engine's own white,
 `CANONICAL_ILLUMINANT` at 6504 K, composed in code so no translation can print another. F-243 places
 the card in 02. F-266 animates the ring, whose value this module gives.
+
+## F-236's review (2026-10-09): only the camera waits (B1)
+
+The card showed while the photo picker was open, announcing *Analysing Fabric Colour…*,
+*Decoding the photo…* and a conversion that was not happening. A photo's point is read at once.
+So the card is the camera's alone, the photo step is gone, and the Open-photo button's loading
+state covers the picker, as it did before F-236. The conversion's separator is each script's own:
+a full-width colon in Japanese (M5).

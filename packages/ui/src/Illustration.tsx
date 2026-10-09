@@ -1,7 +1,7 @@
 /**
- * The drawings this product is drawn with — the mockups' set, and the three that predate it.
+ * The drawings this product is drawn with: the mockups' set.
  *
- * ## Two sets, and the reason there are two
+ * ## One set, and the three it replaced
  *
  * **The mockups' set (F-229).** Every drawing F-220's inventories bind an `illustration` to: the
  * plum branch, the kimono, the leaves, the sashiko stitching, the seigaiha wave, the silk band, the
@@ -11,9 +11,9 @@
  * name check says nothing about the drawing, so each of these was drawn against a magnified crop of
  * the element that binds it.
  *
- * **R7's three** — `swatches`, `reading`, `pairing` — are keyed by what is MISSING rather than by a
- * picture, and no mockup draws them. Eight screens render them today, so they stay until F-236
- * rebuilds those surfaces to `27`'s empty, working, refused and denied (golden rule 6).
+ * **R7's three** — `swatches`, `reading`, `pairing` — were keyed by what is MISSING rather than by a
+ * picture, and no mockup draws them. F-236 retired them once no screen rendered them: an empty state
+ * is now `27`'s card, with its hanger, or `00`'s caption, with its no-results drawing (ADR-0128 D3).
  *
  * ## The line and the tone are measurements, not taste
  *

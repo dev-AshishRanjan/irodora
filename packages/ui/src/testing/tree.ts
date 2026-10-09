@@ -28,7 +28,12 @@
  * sufficient one, and the device half stays attested (ADR-0055).
  */
 
-import { nativeElevation, nativeFamilies, type Theme } from '@irodora/design-tokens';
+import {
+  nativeElevation,
+  nativeFamilies,
+  nativeTapTarget,
+  type Theme,
+} from '@irodora/design-tokens';
 import { resolveColor, type ColorResolution } from './tokens.js';
 
 /**
@@ -811,48 +816,56 @@ export interface BlankPanel {
   readonly path: readonly string[];
 }
 
-/** Host types that are content by being drawn: a picture, a drawing, a field. */
-const CONTENT_TYPES = /^(?:Image|RNSVG|TextInput)/u;
-
 /**
- * Whether a subtree carries anything a person can perceive: text, a name, a picture, a field, or a
- * declared colour sample — data, which can share its value with a surface token by coincidence.
+ * Host types that are content by being drawn: a picture, a field, or an SVG element that draws
+ * something. An SVG container (`RNSVGSvgView`, a group, a clip path) is content only through what
+ * it holds — an empty `<Svg>` draws nothing (F-236's review, S3).
  */
-function perceivable(node: TestNode, samples: ReadonlySet<string>): boolean {
+const CONTENT_TYPES =
+  /^(?:Image|TextInput|RNSVG(?:Path|Circle|Rect|Ellipse|Line|Polygon|Polyline|Text|TSpan|Image|Use))$/u;
+
+/** Whether a node carries an accessible name. */
+const named = (node: TestNode): boolean => {
   const name = node.props['accessibilityLabel'] ?? node.props['aria-label'];
-  if (typeof name === 'string' && name.trim() !== '') return true;
+  return typeof name === 'string' && name.trim() !== '';
+};
+
+/** Whether a subtree carries anything a person can perceive: text, a name, a picture or a field. */
+function perceivable(node: TestNode): boolean {
+  if (named(node)) return true;
   if (CONTENT_TYPES.test(node.type)) return true;
-  const ground = flattenStyle(node.props['style'])['backgroundColor'];
-  if (typeof ground === 'string' && samples.has(ground.toLowerCase())) return true;
   return (node.children ?? []).some((c) =>
-    typeof c === 'string' ? c.trim() !== '' : perceivable(c, samples),
+    typeof c === 'string' ? c.trim() !== '' : perceivable(c),
   );
 }
 
 /**
- * Whether a painted box is a MARK rather than a panel. A panel is sized by what it holds and laid
- * out in flow. A box drawn at a set size (a rule, a track, a knob, a handle) or laid over something
- * else (a selection frame, an indicator) is painted to be seen as itself, and holds nothing by
- * design. Its first run over the component registry flagged only marks of these kinds, and no
- * panel (F-236).
+ * Whether a painted box is a MARK rather than a panel. A panel holds a line of text with its
+ * padding, so it is sized by what it holds. A box drawn smaller than the tap target in either
+ * direction (a rule, a track, a knob, a handle) or laid over something else (a selection frame, an
+ * indicator) cannot hold one: it is painted to be seen as itself. The tap target is the bound
+ * because it is the smallest box the system draws to be read or touched (F-236's review, S3: any
+ * set size had been exempt, so an empty panel 160 dp tall passed).
  */
-const isMark = (style: Readonly<Record<string, unknown>>): boolean =>
-  typeof style['height'] === 'number' ||
-  typeof style['width'] === 'number' ||
-  style['position'] === 'absolute';
+const isMark = (style: Readonly<Record<string, unknown>>): boolean => {
+  const below = (v: unknown): boolean => typeof v === 'number' && v < nativeTapTarget;
+  return below(style['height']) || below(style['width']) || style['position'] === 'absolute';
+};
 
 /**
  * Every panel-painted box with no text, accessible name or picture anywhere beneath it — the
  * outermost of each, since everything inside a blank panel is blank too.
+ *
+ * **A box inside a named element is part of it.** A sample inside a named `Swatch` is announced by
+ * the swatch, and its colour can equal a surface token by coincidence: a generated companion lands
+ * on `#FFFFFF`, light `surface.1` (F-236's review, M3). So the walk does not descend into a named
+ * element. An earlier draft exempted every box painted a declared sample hex instead, which blinded
+ * the light pass to a blank `surface.1` panel on any subject that declared `#FFFFFF`.
  */
-export function blankPanels(
-  root: TestNode,
-  theme: Theme,
-  sampleValues: readonly string[] = [],
-): readonly BlankPanel[] {
-  const samples = new Set(sampleValues.map((v) => v.toLowerCase()));
+export function blankPanels(root: TestNode, theme: Theme): readonly BlankPanel[] {
   const out: BlankPanel[] = [];
   const walk = (node: TestNode, path: readonly string[]): void => {
+    if (named(node)) return;
     const here = path.concat(node.type);
     const style = flattenStyle(node.props['style']);
     const ground = style['backgroundColor'];
@@ -861,7 +874,7 @@ export function blankPanels(
       resolution.kind === 'token' && !isMark(style)
         ? resolution.tokens.find((t) => PANEL_GROUNDS.has(t))
         : undefined;
-    if (token !== undefined && !perceivable(node, samples)) {
+    if (token !== undefined && !perceivable(node)) {
       out.push({ token, path: here });
       return;
     }
@@ -873,10 +886,16 @@ export function blankPanels(
 
 /**
  * A zero standing for "nothing": a paragraph that is, whole, a zero — alone, or with a percent sign
- * or a word or counter after it: "0", "0%", "0 pieces", "0件". A zero inside a reading is not one:
- * "Showing 0 / 120", "#20232A", "0.00", "0.42".
+ * or words or a counter after it, and optionally a full stop: "0", "0%", "0 pieces", "0 garments in
+ * your wardrobe.", "0件". A zero inside a reading is not one: "Showing 0 / 120", "0 of 12",
+ * "#20232A", "0.00", "0.42".
+ *
+ * **A labelled zero is read as a value** (F-236's review, S3). "New outfits this would add: 0" is a
+ * computed answer — buying this adds nothing — and "In your wardrobe: 0" is a tally of nothing, and
+ * the two have one form. A rule that refused both would refuse an answer, so a labelled tally of
+ * stored things is the screen's to handle and a reviewer's to see; ADR-0129 records the limit.
  */
-const BARE_ZERO = /^[0０]\s*(?:[%％]|\p{L}+(?:\s\p{L}+)?)?$/u;
+const BARE_ZERO = /^[0０]\s*(?:[%％]|\p{L}+(?:\s\p{L}+)*)?[.。]?$/u;
 
 /** All the text of a subtree, in order, as one paragraph renders it. */
 const paragraph = (node: TestNode): string =>

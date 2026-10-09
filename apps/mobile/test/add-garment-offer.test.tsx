@@ -101,3 +101,28 @@ describe('a colour offered from a combination', () => {
     expect(store.written).toHaveLength(1);
   });
 });
+
+describe('the wardrobe tally (F-236 review, S3)', () => {
+  /** The recording store, holding `n` garments for the tally to count. */
+  const holding = (n: number): WardrobeStore => ({
+    ...recordingStore(),
+    listGarments: () =>
+      Array.from({ length: n }, () => ({}) as ReturnType<WardrobeStore['listGarments']>[number]),
+  });
+  const tally = (n: number) =>
+    render(
+      <ThemeProvider theme="light">
+        <AddGarment store={holding(n)} imageSource={noImages()} offered={null} />
+      </ThemeProvider>,
+    );
+
+  it('prints no figure for an empty wardrobe: an absence is not a zero', () => {
+    const tree = tally(0);
+    expect(tree.queryByText(/In your wardrobe/u)).toBeNull();
+  });
+
+  it('DECOY — a wardrobe with something in it is counted', () => {
+    const tree = tally(2);
+    expect(tree.getByText('In your wardrobe: 2')).toBeTruthy();
+  });
+});

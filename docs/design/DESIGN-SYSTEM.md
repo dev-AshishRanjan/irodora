@@ -374,8 +374,10 @@ card's foot ([ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-fou
 - **The steps are the mono**, Inconsolata cut at `27`'s width
   ([ADR-0130](../adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)).
 - **Every screen declares what it shows**: a module exports `STATES`, and the registry is held to it
-  in both directions. `blank-panel` and `bare-zero` catch an absence drawn as nothing
-  ([ADR-0129](../adr/0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md)).
+  in both directions. `blank-panel` refuses a surface panel with nothing in it, and `bare-zero` a
+  paragraph that is only a zero. Neither sees everything: a labelled zero, a blank box smaller than
+  the tap target, and a condition nobody registers pass, and
+  [ADR-0129](../adr/0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md) lists them.
 
 ---
 

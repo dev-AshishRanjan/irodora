@@ -2119,7 +2119,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           title="Analysing Fabric Colour…"
           body="Hold steady. The reading is being computed on this device."
           steps={['Waiting for a camera frame…', 'Converting to OKLCh: D65 (6504K)']}
-          progress={{ value: 0.5, text: 'Step 2 of 2' }}
+          progress={{ value: 0.5, text: 'Step 2 of 2', label: 'Capture progress' }}
         />,
         theme,
       ),
@@ -2133,7 +2133,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           title="生地の色を解析中…"
           body="そのままお待ちください。読み取りはこの端末で計算されています。"
           steps={['カメラの画像を待っています…', 'OKLCh に変換中: D65 (6504K)']}
-          progress={{ value: 0.5, text: '2 / 2 段階' }}
+          progress={{ value: 0.5, text: '2 / 2 段階', label: '読み取りの進み具合' }}
           script="japanese"
         />,
         theme,

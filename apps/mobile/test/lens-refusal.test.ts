@@ -35,8 +35,10 @@ describe('only a poor capture is refused', () => {
     expect(refusalOf(failing('excellent', []))).toBeNull();
   });
 
-  it('refuses nothing it cannot name', () => {
-    expect(refusalOf(failing('poor', []))).toBeNull();
+  it('fails closed on a poor reading that names no failure: a defect, never an open sheet (review M1)', () => {
+    // The engine calls a capture poor because three checks failed; one naming none is a disagreement
+    // between the class and its failures. Returning null would open the sheet on a poor capture.
+    expect(() => refusalOf(failing('poor', []))).toThrow(/names no failed check/u);
   });
 });
 
