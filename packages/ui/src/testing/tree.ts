@@ -28,7 +28,7 @@
  * sufficient one, and the device half stays attested (ADR-0055).
  */
 
-import type { Theme } from '@irodora/design-tokens';
+import { nativeFamilies, type Theme } from '@irodora/design-tokens';
 import { resolveColor, type ColorResolution } from './tokens.js';
 
 /**
@@ -761,10 +761,19 @@ export function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
   return out;
 }
 
-/** The nodes set in tabular digits: their font variant carries the manifest's numeric feature. */
+/**
+ * The nodes set in tabular digits: their font variant carries the manifest's numeric feature — or
+ * they are set in the mono (ADR-0130), every glyph of which shares one advance, so its figures are
+ * equal-width by what the face is rather than by a feature asked of it.
+ */
 export function tabularNodes(node: TestNode, feature: string, out: TestNode[] = []): TestNode[] {
-  const variant = flattenStyle(node.props['style'])['fontVariant'];
-  if (Array.isArray(variant) && (variant as unknown[]).includes(feature)) out.push(node);
+  const style = flattenStyle(node.props['style']);
+  const variant = style['fontVariant'];
+  if (
+    (Array.isArray(variant) && (variant as unknown[]).includes(feature)) ||
+    style['fontFamily'] === nativeFamilies.mono
+  )
+    out.push(node);
   for (const child of node.children ?? [])
     if (typeof child !== 'string') tabularNodes(child, feature, out);
   return out;

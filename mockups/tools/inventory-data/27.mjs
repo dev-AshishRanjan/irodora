@@ -133,7 +133,7 @@ export default {
       padPx: 18.7,
       topPx: 69,
     }),
-    el('27.wardrobe-empty.art', 'ui:Illustration', B(116, 253, 175, 127), {
+    el('27.wardrobe-empty.art', 'ui:Illustration', B(117, 254, 173, 126), {
       parent: '27.wardrobe-empty',
       illustration: 'hanger',
       tokens: { fg: 'text.primary' },
@@ -215,7 +215,7 @@ export default {
       // sun and rays: the sun a ring of radius 12 px on its centre line; eight rays whose ink runs
       // from 18.5 to 25.8 px; the slash, in the edge's amber, 27.6 px each way along the diagonal
       // through the centre, cap to cap — it stops at the rays' tips. F-228's drawing had a smaller
-      // sun (3.5 of 8.5 units, against 27's 4.15) and a slash corner to corner.
+      // sun (3.5 of 8.5 units, against 27's 4.18) and a slash corner to corner.
       raw: {
         cornerPx: 14.25,
         edgePx: 3,

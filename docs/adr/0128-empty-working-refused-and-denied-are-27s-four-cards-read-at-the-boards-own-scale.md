@@ -108,8 +108,10 @@ lines are 27's own. Each line is wider than `size.iconStroke` (1.65 dp) or `size
   - **D11: the glow is drawn and radial.** `glow-fit.mjs --radial` reads a petal-against-notch
     modulation of 0.037; 14's blurred mark reads 0.90. The best fit is a disc of radius 29.7 dp at
     0.296 of the ink, blurred by σ 7.9 dp.
-  - It is built as an SVG radial gradient in `state.mark`, its stops computed from those three
-    numbers.
+  - It is built as concentric SVG discs of `state.mark`, each at a fill opacity solved from those
+    three numbers so the discs compose to the fitted profile within a level, every half dp. It is
+    not a gradient: a gradient stop's opacity is folded into its colour, and a translucent colour
+    is not the token it was mixed from (F-232's review, M6).
   - So it needs no image asset and no generator. E-192 is not needed.
   - Under the ink the profile is an extrapolation (0.26 against the outline's 0.29–0.33 at 18–20
     px). The filled blossom hides all of it but its cuts.
@@ -117,9 +119,9 @@ lines are 27's own. Each line is wider than `size.iconStroke` (1.65 dp) or `size
   - corner `lg` (14.0–14.5 px; F-220's `md` was a guess);
   - fill `state.refused.plate`;
   - a 3 dp edge in `state.refused.edge`;
-  - `Glyph glare`, redrawn from 27's readings, at 67.5 dp: its rays' tips kept at 8.5 units, so 24
-    units are 69.5 px. Its sun and rays are in `state.refused.glyph`, its slash in the edge's
-    amber, at 2.5 dp. 27's sun is larger than F-228's (4.15 units against 3.5), and its slash stops
+  - `Glyph glare`, redrawn from 27's readings, at 67 dp: its rays' tips kept at 8.5 units, so 24
+    units are 68.9 px. Its sun and rays are in `state.refused.glyph`, its slash in the edge's
+    amber, at 2.5 dp. 27's sun is larger than F-228's (4.18 units against 3.5), and its slash stops
     at the rays' tips.
 - **The camera:** `Glyph camera-locked`, redrawn from 27's geometry:
   - a 93.8 × 61.3 px body with a 12 px hump;
@@ -243,8 +245,8 @@ Each state is announced once, when it mounts, and never again on a re-render.
 - **Snap the top inset as one interval (67 → `xxl` 48).** Literal. But it loses 19 dp the drawing
   plainly has. The card's padding is one value on every side, so the inset is two intervals.
 - **Draw the glow as 14's: the mark blurred, a generated mask.** One mechanism for both glows. But
-  the reading says radial (modulation 0.04 against 0.90), and a radial gradient is what react-native-svg
-  draws natively.
+  the reading says radial (modulation 0.04 against 0.90), and discs of the token at stated opacities
+  draw a radial profile natively.
 - **Art keyed by the reason or the absence.** More specific. But the variants would be undrawn
   pictures chosen by an agent, which rule 14 forbids.
 - **Bodies in `foreground.2`, as F-220 recorded them.** Quieter, and the helper's default. But 27

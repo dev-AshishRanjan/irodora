@@ -7,7 +7,7 @@
  */
 
 import { render } from '@testing-library/react-native';
-import { nativeFaces, nativeFamilies } from '@irodora/design-tokens';
+import { nativeFaces, nativeFamilies, nativeNumericFeature } from '@irodora/design-tokens';
 import { Text, type TextProps, type TypeSize as Step } from '../src/Text.js';
 import { ThemeProvider } from '../src/theme.js';
 
@@ -75,6 +75,15 @@ describe('each face resolves to the family the manifest names', () => {
     expect(s['fontFamily']).toBe(nativeFamilies.jp);
     // DECOY: the family the mono resolves to in Latin is not the gothic's.
     expect(nativeFamilies.mono).not.toBe(nativeFamilies.jp);
+    // The gothic's figures are proportional, so the mono element asks for tabular ones (ADR-0130).
+    expect(s['fontVariant']).toStrictEqual([nativeNumericFeature]);
+    // DECOY: in Latin the mono needs no feature — its figures are equal-width already.
+    const latin = styleOf(
+      <Text size="body" color="foreground" face="mono">
+        Irodora
+      </Text>,
+    );
+    expect(latin).not.toHaveProperty('fontVariant');
   });
 
   it('leaves the Latin sans to the platform — no family at all (ADR-0057 §6)', () => {

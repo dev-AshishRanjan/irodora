@@ -32,6 +32,9 @@ import {
   PageDots,
   ProgressBar,
   ProgressRing,
+  RefusedState,
+  DeniedState,
+  WorkingState,
   ProximityHeadline,
   Radar,
   RankedRow,
@@ -2082,6 +2085,100 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <ProgressRing value={0.5} label="Analysing Fabric Colour" valueText="Step 2 of 2" />,
+        theme,
+      ),
+  },
+  {
+    // The working state (F-236, 27): the ring a progressbar, the steps read, the picture's centre hidden.
+    name: 'WorkingState (27)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <WorkingState
+          title="Analysing Fabric Colour…"
+          body="Hold steady. The reading is being computed on this device."
+          steps={['Waiting for a camera frame…', 'Converting to OKLCh: D65 (6504K)']}
+          progress={{ value: 0.5, text: 'Step 2 of 2' }}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'WorkingState (27, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <WorkingState
+          title="生地の色を解析中…"
+          body="そのままお待ちください。読み取りはこの端末で計算されています。"
+          steps={['カメラの画像を待っています…', 'OKLCh に変換中: D65 (6504K)']}
+          progress={{ value: 0.5, text: '2 / 2 段階' }}
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    // The refused state (F-236, 27): the plate hidden, the reason and retry read.
+    name: 'RefusedState (27)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <RefusedState
+          title="Reading Refused: Glare"
+          body="Glare covers 31 % of the region, above the 20 % the reading allows. Move out of direct light."
+          retry={{ label: 'Retry Capture', onPress: () => undefined }}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'RefusedState (27, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <RefusedState
+          title="読み取りを中止: 反射"
+          body="反射が領域の 31 % を覆っています。読み取りの上限は 20 % です。直射光を避けてください。"
+          retry={{ label: 'もう一度撮影', onPress: () => undefined }}
+          script="japanese"
+        />,
+        theme,
+      ),
+  },
+  {
+    // The denied state (F-236, 27): the camera hidden, the way to settings named and hinted.
+    name: 'DeniedState (27)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <DeniedState
+          title="Camera Access Needed"
+          body="Irodora reads colour on this device and sends nothing anywhere."
+          action={{
+            label: 'Open Device Settings',
+            onPress: () => undefined,
+            hint: 'Opens the Settings app',
+          }}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'DeniedState (27, ja)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <DeniedState
+          title="カメラへのアクセスが必要です"
+          body="Irodora はこの端末で色を読み取り、どこにも送信しません。"
+          action={{
+            label: '端末の設定を開く',
+            onPress: () => undefined,
+            hint: '設定アプリが開きます',
+          }}
+          script="japanese"
+        />,
         theme,
       ),
   },

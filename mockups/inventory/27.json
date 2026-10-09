@@ -59,10 +59,10 @@
       "parent": "27.wardrobe-empty",
       "component": "ui:Illustration",
       "box": {
-        "x": 116,
-        "y": 253,
-        "w": 175,
-        "h": 127
+        "x": 117,
+        "y": 254,
+        "w": 173,
+        "h": 126
       },
       "dp": null,
       "tokens": {

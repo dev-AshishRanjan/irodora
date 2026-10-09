@@ -312,7 +312,11 @@ export function Text<S extends TypeSize>({
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:
         // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
         // absent one, and the conformance suite reads what the NODE carries.
-        ...(numeric && tabularNumerals ? { fontVariant: [nativeNumericFeature] } : {}),
+        // A mono element set in Japanese falls to the gothic (C6), whose figures are proportional;
+        // it asks for the tabular figures the mono's own would have been (ADR-0130).
+        ...((numeric || (face === 'mono' && japanese)) && tabularNumerals
+          ? { fontVariant: [nativeNumericFeature] }
+          : {}),
         ...(align === undefined ? {} : { textAlign: align }),
       }}
     >

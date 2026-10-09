@@ -125,6 +125,11 @@ export interface CardProps {
   readonly edge?: boolean;
   readonly padding?: SpacingStep;
   readonly radius?: keyof typeof nativeRadius;
+  /**
+   * Take the host's height, and let the body take the card's (F-236): `27`'s state cards fill the
+   * panel they stand in, their action at the foot. A card sized by its content leaves it out.
+   */
+  readonly fill?: boolean;
   /** Makes the WHOLE card the control. Requires {@link label}. */
   readonly onPress?: () => void;
   /**
@@ -174,6 +179,7 @@ export function Card({
   edge = level === '1',
   padding = 'md',
   radius = CARD_RADIUS,
+  fill = false,
   onPress,
   label,
   selected = false,
@@ -206,6 +212,7 @@ export function Card({
     overflow: 'hidden',
     ...selectionStyle(tone),
     opacity: inert ? 0.5 : 1,
+    ...(fill ? { flexGrow: 1 } : {}),
     /*
      * BOTH MINIMUMS, and the suite is why. It requires `minWidth` AND `minHeight` — WCAG 2.2
      * asks for the target, not for the content, and a card is only reliably wide in a layout
@@ -245,7 +252,9 @@ export function Card({
           <Rule color={colors.border} />
         </>
       )}
-      {children === undefined ? null : <View style={{ padding: inset }}>{children}</View>}
+      {children === undefined ? null : (
+        <View style={{ padding: inset, ...(fill ? { flexGrow: 1 } : {}) }}>{children}</View>
+      )}
       {footer === undefined ? null : (
         <>
           <Rule color={colors.border} />

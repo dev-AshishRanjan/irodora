@@ -585,14 +585,14 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
 
   /**
    * `27`: a sun with a slash through it — too much light to read (F-236, re-drawn from 27's
-   * readings at 2.894 px per unit, the rays' tips kept at 8.5): the sun a ring of 4.15, eight rays
-   * from 6.81, and the slash stopping at the rays' tips rather than crossing the grid.
+   * readings at 2.871 px per unit, the rays' tips kept at 8.5): the sun a ring of 4.18, eight rays
+   * from 6.93, and the slash stopping at the rays' tips rather than crossing the grid.
    */
   glare: (p) => (
     <>
-      {ring(12, 12, 4.15, p, 'sun')}
-      {line(rays(8, 6.81, 8.5), p, 'rays')}
-      {line('M5.6 5.6l12.8 12.8', tinted(p, 'slash'), 'slash')}
+      {ring(12, 12, 4.18, p, 'sun')}
+      {line(rays(8, 6.93, 8.5), p, 'rays')}
+      {line('M5.55 5.55l12.9 12.9', tinted(p, 'slash'), 'slash')}
     </>
   ),
 
