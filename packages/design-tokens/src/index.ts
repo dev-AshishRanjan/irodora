@@ -74,6 +74,14 @@ export {
 export { ON_SAMPLE_FLOOR, onSample, paintedOver, type OnSample } from './on-sample.js';
 
 export {
+  PREVIEW_DEFICIENCY,
+  PREVIEW_MODES,
+  simulatePaint,
+  simulatePalette,
+  type PreviewMode,
+} from './preview.js';
+
+export {
   CONTRAST_CROSSOVER_L,
   settleFloors,
   settleSeparation,
