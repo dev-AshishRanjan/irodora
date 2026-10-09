@@ -4243,6 +4243,39 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     expect(title).toBe('Reading Refused: Too Little Fabric');
   });
 
+  it('says what Retry Capture does: a camera reads again, a photo stays open for another tap (F-236)', () => {
+    const PHOTO = {
+      uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII=',
+      width: 1200,
+      height: 900,
+      at: { x: 0.4, y: 0.6 },
+    };
+    const hintOf = (tree: ReturnType<typeof render>): unknown =>
+      tree.getByLabelText(en['lens.refused.retry']).props['accessibilityHint'];
+    const camera = render(
+      <ThemeProvider theme="light">
+        <Lens permission="granted" capture={POOR} onCapture={() => undefined} />
+      </ThemeProvider>,
+    );
+    expect(hintOf(camera)).toBe(en['lens.refused.retryHint']);
+    camera.unmount();
+    const photo = render(
+      <ThemeProvider theme="light">
+        <Lens
+          permission="granted"
+          capture={POOR}
+          photo={PHOTO}
+          onCapture={() => undefined}
+          onDismiss={() => undefined}
+        />
+      </ThemeProvider>,
+    );
+    // DECOY: the camera's hint would be wrong here — the photo is not taken again.
+    expect(hintOf(photo)).toBe(en['lens.refused.retryPhotoHint']);
+    expect(hintOf(photo)).not.toBe(en['lens.refused.retryHint']);
+    photo.unmount();
+  });
+
   it('names all three conditions, and the value after them (FR-17)', () => {
     const text = shown(FAIR);
     for (const label of [en['lens.quality'], en['lens.light'], en['lens.space']])

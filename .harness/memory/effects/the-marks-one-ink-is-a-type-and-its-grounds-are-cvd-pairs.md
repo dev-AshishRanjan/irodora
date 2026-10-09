@@ -23,3 +23,8 @@ be recognisable. Two changes run through `MARK_INKS`:
 
 ADR-0093's red and green petals, as a pair, score 54.8 under deutan against a minimum of 60. So the
 check can fail for a coloured mark: the icon ADR-0122 superseded would not have passed it.
+
+## F-236 (2026-10-09)
+
+27's tint is minted: `MARK_TINT` is `state.mark`, the one chromatic `MarkInk`, part of the C10 group
+E-188 describes. Its ground, `surface.1`, is a declared CVD pair, and the census's one exception reads it.

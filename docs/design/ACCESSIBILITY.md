@@ -147,6 +147,13 @@ The hardest surface, and it must work for everyone:
 - **Motor**: a large target area, no required precision gesture, no time limit.
 - **Photosensitivity**: no flashing, no rapid luminance change from the live preview.
 - **Audio naming**: the result can be spoken on demand.
+- **Its states** (`27`, F-236): each is announced once, when it appears, and never again on a
+  re-render. A capture in flight announces its heading. A refused capture announces its reason: the
+  check, the threshold and the fix. The ring is a `progressbar`, with its label, its value and
+  `busy` until it is full. The pictures are hidden, and the headings are headings. *Retry Capture*
+  and *Open Device Settings* say what follows them, and each keeps the platform's hit area. A
+  refusal prints no confidence. The tree half is tested; what VoiceOver and TalkBack speak, and
+  where the settings link lands, are attested on a device (F-236's criterion 1).
 
 ---
 

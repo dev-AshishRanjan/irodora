@@ -830,10 +830,22 @@ export function Lens({
           {...(photo !== null
             ? onDismiss === undefined
               ? {}
-              : { retry: { label: t('lens.refused.retry'), onPress: onDismiss } }
+              : {
+                  retry: {
+                    label: t('lens.refused.retry'),
+                    hint: t('lens.refused.retryPhotoHint'),
+                    onPress: onDismiss,
+                  },
+                }
             : onCapture === undefined
               ? {}
-              : { retry: { label: t('lens.refused.retry'), onPress: onCapture } })}
+              : {
+                  retry: {
+                    label: t('lens.refused.retry'),
+                    hint: t('lens.refused.retryHint'),
+                    onPress: onCapture,
+                  },
+                })}
           script={script}
         />
       )}

@@ -73,6 +73,7 @@ The exact gates to run, and the evidence to capture
 ```
 node scripts/verify-state.mjs
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
+pnpm security   # always (gates.json): every commit, whatever an increment’s own list says
 # plus: color-golden | cvd | content | a11y | contrast — whichever apply
 ```
 

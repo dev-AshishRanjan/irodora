@@ -353,6 +353,30 @@ content; it never re-draws a display's insides.
   control — a ranked row's action, a carousel's neighbour — the control is the component's own and
   carries its own states and target.
 
+### Empty, working, refused and denied are `27`'s four cards (F-236)
+
+One composition, `StateCard`, read at `27`'s own scale (0.973 dp per pixel). It is a level-1 card
+padded `md`, with the picture, an optional pair of steps, a heading, a body, and the action at the
+card's foot ([ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md)).
+
+| state | component | picture | binds to |
+|---|---|---|---|
+| empty, the fix elsewhere | `EmptyState` `{title, body, action}` | the hanger in `state.hanger` | the screen's own route out |
+| empty, the fix on the screen | `EmptyState` `{message, hint?, resolvedHere}` | `00`'s `no-results` over a caption | nothing to press (F-139) |
+| working | `WorkingState` | `ProgressRing`, the mark in `state.mark` over its glow | `lens/pipeline.ts`: the steps, the share done, the engine's white |
+| refused | `RefusedState` | the glare plate in `state.refused.*` | `refusalOf`: the engine's first failed check, its threshold, its fix |
+| denied | `DeniedState` | the camera with `state.lock` | the platform permission; *Open Device Settings*, or *Allow Camera Access* before the first ask |
+
+- **The pictures are fixed per state**, never keyed by the reason or the absence: those would be
+  drawings nobody made (rule 14).
+- **The six `state.*` tints are one C10 group**, the same in every palette, each with exactly one
+  consumer.
+- **The steps are the mono**, Inconsolata cut at `27`'s width
+  ([ADR-0130](../adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)).
+- **Every screen declares what it shows**: a module exports `STATES`, and the registry is held to it
+  in both directions. `blank-panel` and `bare-zero` catch an absence drawn as nothing
+  ([ADR-0129](../adr/0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md)).
+
 ---
 
 ## Verification

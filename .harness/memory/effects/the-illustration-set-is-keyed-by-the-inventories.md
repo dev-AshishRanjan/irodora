@@ -40,3 +40,9 @@ magnified crops by a person, and five were wrong on the first pass — a solid d
 outline, a turned corner drawn as a slab, half circles where the wave is a corner fan, stitches that
 joined across their blocks, a hanger twice as thick as the one `27` draws. No assertion here could
 see any of that; **F-281** is the check that could.
+
+## F-236 (2026-10-09)
+
+R7's three empty-state drawings are retired. No screen renders them: an empty state is 27's card,
+with its hanger, or 00's caption, with its no-results drawing, both bound by the inventories (E-187).
+The set's version did not move, because its digest covers only the drawn set.

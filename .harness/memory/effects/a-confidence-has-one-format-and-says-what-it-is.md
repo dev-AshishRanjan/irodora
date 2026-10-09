@@ -18,3 +18,8 @@ packages scan for one.
 
 `Shopping.tsx` prints `CompatibilityScore.confidence`, how much evidence a profile brought to a score:
 a different quantity, allowed by name until F-258 rebuilds the screen.
+
+## F-236 (2026-10-09)
+
+27's half of F-222's drawn criterion is discharged. The refused state prints no confidence in any
+format, and the Lens test asserts it on a refused capture (E-186). 03's chip is F-244's.

@@ -284,6 +284,9 @@ export const en = {
   'lens.permission.openSettingsHint': 'Opens the Settings app, where the camera can be allowed.',
   'lens.permission.allow': 'Allow Camera Access',
   'lens.refused.retry': 'Retry Capture',
+  // What retry does, read after the label: a camera reads again; a photo stays open for another tap.
+  'lens.refused.retryHint': 'Takes another reading.',
+  'lens.refused.retryPhotoHint': 'Clears this, so you can tap another part of the photo.',
   'lens.pipeline.frame': 'Waiting for a camera frame…',
   'lens.pipeline.decode': 'Decoding the photo…',
   'lens.pipeline.convert': 'Converting to OKLCh',

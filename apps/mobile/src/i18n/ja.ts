@@ -253,6 +253,8 @@ export const ja: Record<MessageKey, string> = {
   'lens.permission.openSettingsHint': '設定アプリが開き、カメラを許可できます。',
   'lens.permission.allow': 'カメラへのアクセスを許可',
   'lens.refused.retry': 'もう一度撮影',
+  'lens.refused.retryHint': 'もう一度読み取ります。',
+  'lens.refused.retryPhotoHint': 'これを閉じると、写真の別の場所をタップできます。',
   'lens.pipeline.frame': 'カメラの映像を待っています…',
   'lens.pipeline.decode': '写真を読み込んでいます…',
   'lens.pipeline.convert': 'OKLCh に変換中',

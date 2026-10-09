@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-08",
+  "updated": "2026-10-09",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -5504,10 +5504,10 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "packages/ui/test/illustrations.test.tsx reads mockups/inventory/*.json and asserts both directions with a decoy each way; that the one UNBUILT name is still bound and still carries its open question; that R7's three are bound by nothing and still exported, because eight screens render them until F-236; that no drawn illustration box overlaps a drawn sample box, over 33 drawings against the 86 elements that draw a colour a person judges, with a planted overlap as its decoy and 10.art's two pairs declared as the exceptions (F-282 — its box is a scan blob; the second surfaced only when the scan was widened past Swatch); and a digest of every path against the set's version, so a redrawn line cannot land silently. The conformance suite registers two of the drawings — the plum branch as a backdrop and the hanger, which is the one drawn with fills — so they are read under the colour-literal and both-theme rules. typecheck holds the eight screens that name an empty-state drawing.",
+      "guard": "packages/ui/test/illustrations.test.tsx reads mockups/inventory/*.json and asserts both directions with a decoy each way; that the one UNBUILT name is still bound and still carries its open question; that R7's three are retired (F-236: the empty states are 27's card and 00's caption, ADR-0128 D3); that no drawn illustration box overlaps a drawn sample box, over 33 drawings against the 86 elements that draw a colour a person judges, with a planted overlap as its decoy and 10.art's two pairs declared as the exceptions (F-282 — its box is a scan blob; the second surfaced only when the scan was widened past Swatch); and a digest of every path against the set's version, so a redrawn line cannot land silently. The conformance suite registers two of the drawings — the plum branch as a backdrop and the hanger, which is the one drawn with fills — so they are read under the colour-literal and both-theme rules. typecheck holds every EmptyState call site to one of its two forms, neither of which takes a drawing (E-187).",
       "feature": "F-229",
       "memory": "memory/effects/the-illustration-set-is-keyed-by-the-inventories.md",
-      "rationale": "The drawings are keyed by the names F-220's inventories bind, so the inventories are an input to @irodora/ui for a second time (E-134 is the icon set's). High for the same reason: a renamed illustration leaves a surface asking for a drawing that does not exist, and a drawing nothing binds is a design nobody made — and neither shows up as a colour, a contrast or a layout failure. It also reaches the eight screens that still render R7's three empty-state drawings, which is why those are kept and declared rather than deleted.",
+      "rationale": "The drawings are keyed by the names F-220's inventories bind, so the inventories are an input to @irodora/ui for a second time (E-134 is the icon set's). High for the same reason: a renamed illustration leaves a surface asking for a drawing that does not exist, and a drawing nothing binds is a design nobody made — and neither shows up as a colour, a contrast or a layout failure. F-236 retired R7's three empty-state drawings once no screen rendered them: an empty state now draws 27's hanger or 00's no-results, both bound by the inventories (E-187).",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -7121,9 +7121,9 @@
           "ref": "cvd"
         }
       ],
-      "guard": "The type refusal in brand.test (`<Mark color=\"status.ok\" />` is @ts-expect-error) and its achromatic check of every MARK_INKS token in all four palettes, status.ok the decoy; mark-census.test.ts (every governing placement neutral, exactly one exception, 27.lens-working.mark); cvd/mark.test.ts (every (ink, ground) a governing mockup draws a mark on is in cvdPairs, the placements counted, a planted placement named, ADR-0093's red/green petals scoring 54.8 under deutan as the decoy).",
+      "guard": "The type refusal in brand.test (`<Mark color=\"status.ok\" />` is @ts-expect-error) and its achromatic check of every MARK_INKS token in all four palettes, status.ok the decoy; mark-census.test.ts (every governing placement neutral, exactly one exception, 27.lens-working.mark); cvd/mark.test.ts (every (ink, ground) a governing mockup draws a mark on is in cvdPairs, the placements counted, a planted placement named, ADR-0093's red/green petals scoring 54.8 under deutan as the decoy). F-236: 27's tint is MARK_TINT (`state.mark`), the one chromatic MarkInk, and the census's one exception now reads it from the C10 group (E-188).",
       "memory": "memory/effects/the-marks-one-ink-is-a-type-and-its-grounds-are-cvd-pairs.md",
-      "rationale": "ADR-0122 makes the mark ONE neutral ink, and BRAND §7 disqualifies a mark that depends on colour. Two things change with MARK_INKS: F-236 adds 27's tint when it mints it (the one C10 exception), and a mark placed on a new ground — 02's capture button (F-243) draws it on `accent` in `accent.foreground`, which equals `inverse.foreground` in every palette — must have its pair declared in cvdPairs, or gate 10 never scores it."
+      "rationale": "ADR-0122 makes the mark ONE neutral ink, and BRAND §7 disqualifies a mark that depends on colour. Two things change with MARK_INKS: F-236 added 27's tint when it minted it — `state.mark`, the one C10 exception, as MARK_TINT, and a mark placed on a new ground — 02's capture button (F-243) draws it on `accent` in `accent.foreground`, which equals `inverse.foreground` in every palette — must have its pair declared in cvdPairs, or gate 10 never scores it."
     },
     {
       "kind": "EFFECT_LINK",
@@ -7359,9 +7359,9 @@
           "ref": "test"
         }
       ],
-      "guard": "gate:test — percent.test (the float64 guard and never-round-up decoys) and the shared secondConfidenceFormats rule, scanned by @irodora/ui over its src and by the app over its own (comments stripped), with planted decoys; Shopping.tsx's CompatibilityScore.confidence is the one named exception, owned by F-258. The Lens screen test asserts the format and the meaning line, and that the bare figure is gone.",
+      "guard": "gate:test — percent.test (the float64 guard and never-round-up decoys) and the shared secondConfidenceFormats rule, scanned by @irodora/ui over its src and by the app over its own (comments stripped), with planted decoys; Shopping.tsx's CompatibilityScore.confidence is the one named exception, owned by F-258. The Lens screen test asserts the format and the meaning line, and that the bare figure is gone. F-236: 27's refused state prints no confidence in any format, asserted on the refused capture (E-186); the drawn half that remains is 03's chip (F-244).",
       "memory": "memory/effects/a-confidence-has-one-format-and-says-what-it-is.md",
-      "rationale": "A reading's confidence is a ceiling, not a probability, and a percentage beside a colour reads as the chance it is right. One format, floored, with the meaning beside it on the Lens, is the mitigation; a second format anywhere would undo it. F-244 (03's chip) and F-236 (27's refused state) discharge the drawn half of F-222's attested criterion."
+      "rationale": "A reading's confidence is a ceiling, not a probability, and a percentage beside a colour reads as the chance it is right. One format, floored, with the meaning beside it on the Lens, is the mitigation; a second format anywhere would undo it. F-236 discharged 27's half of F-222's attested criterion (its refused state prints none, asserted); F-244 (03's chip) owns the rest."
     },
     {
       "kind": "EFFECT_LINK",
@@ -7656,6 +7656,309 @@
       "guard": "verify-native-assets --prove (14 cases, ci.yml) and verify-apk --prove: the resource-table reader runs everywhere (aapt2's printed form read, the old aapt's form read as nothing); the aapt2-built branded fixtures — a branded APK, the same with shortened paths, and a disc foreground, F-230's splash, a light night background and a missing themed layer — run where the SDK is (android-build.yml, release.yml). NOT RUN on a workstation without the SDK. F-231's review (B2): `brandResources` routes only rasters through the resource table — ic_launcher and ic_launcher_round also carry the anydpi-v26 adaptive-icon XML, which read as an image failed every real release APK; the SDK-free half of --prove now routes a shortened table with that XML in it (decoy: routing by name alone takes it), and the branded fixture carries both XMLs and Expo's .webp names.",
       "memory": "memory/effects/one-table-routes-every-brand-resource-to-its-verdict.md",
       "rationale": "Two checks read the same drawings out of different files; one table decides what each resource is and what it must look like, so they cannot choose differently again."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "packages/color-sampling",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "id": "E-185",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/color-sampling/src/quality.ts#QualityAssessment"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/reading.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/modes.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/refusal.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "color-golden"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/color-sampling/test/checks.test.ts: over seeded random regions, `failures` comes in QUALITY_CHECKS order, the class follows from the count (poor at three), the instruction from the first failure, and each check is compared through QUALITY_CHECK_RULES, with decoys. The existing quality tests pass unchanged, so no comparison, threshold, class or instruction moved. typecheck holds every LensReading literal to `qualityFailures`; color-golden run as evidence.",
+      "memory": "memory/effects/the-engine-names-the-checks-a-capture-failed.md",
+      "rationale": "A refusal names a check, its threshold and the fix, and all three must be the engine's own, read from one table: otherwise a refusal could cite a threshold the engine does not apply. A change to QUALITY_CHECKS's order, a rule, a threshold or an instruction changes what the Lens says."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "id": "E-186",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/lens/refusal.ts#refusalOf"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-243"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-244"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "lens-refusal.test: a poor reading is refused for its first failure; fair, good and excellent are not (decoys); every check has a title and body, with thresholds read from the engine rather than retyped. screens.test: a poor capture renders 27's refused card, with its check, threshold, fix and Retry Capture, and none of the sheet's band, conditions or confidence in any format. The `screens/Lens (a capture refused)` subject is in the conformance sweep and witnesses the Lens's `refused` declaration.",
+      "memory": "memory/effects/a-poor-capture-is-refused-and-never-reaches-the-sheet.md",
+      "rationale": "D1 (ADR-0128): FR-18's poor band blocks a confident claim, so a poor capture is refused and the result sheet never opens for it. Nothing downstream of the sheet — the profile and wardrobe hand-offs, ProfileSetup's photo estimate — can receive a poor reading. Changing refusalOf's trigger changes what can be offered to all of them, and F-244 composes the sheet on that guarantee."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "id": "E-187",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ui/src/EmptyState.tsx#EmptyStateProps"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/screens"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Illustration.tsx#DRAWN_ILLUSTRATIONS"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/stateCard.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "guard": "typecheck (the union: `{title, body, action}` or `{message, hint?, resolvedHere: true}`, no `art`). states.test draws both forms against 27's and 00's inventories, en and ja. The conformance registries render both in both themes and both locales. The declarations test (E-191) finds every state root a screen renders, and illustrations.test asserts R7's three drawings are retired.",
+      "memory": "memory/effects/an-empty-state-is-27s-card-or-00s-caption.md",
+      "rationale": "The two forms are the two drawings (D3), and which one a screen gets is the F-139 decision: the fix is elsewhere, or it is already on the screen. A third form, a picture keyed by the absence, or `art` coming back would be a drawing nobody made (rule 14). Every call site in src/screens names its form."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "docs",
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-188",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json#color.state"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/brand.tsx#MARK_TINT"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/WorkingState.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/RefusedState.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/DeniedState.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Illustration.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "guard": "c10-exceptions.test (the group carries 27's five elements and retires their element exception); cvd/mark.test (27's mark read with `state.mark` on `surface.1`, a declared pair); brand.test (MARK_TINT is `state.mark` and chromatic, the neutral inks achromatic); the single-consumer scans in states.test (ui/src) and state-tints.test (the app): each `state.*` token has the one consumer it was minted for, and a planted second consumer is named.",
+      "memory": "memory/effects/27s-tints-are-one-group-with-one-consumer-each.md",
+      "rationale": "The six `state.*` tokens are decoration minted for 27 alone (ADR-0128 §4): the same in every palette, each with exactly one consumer. A second consumer would turn a picture's tint into a vocabulary colour, and moving a value moves 27's pictures and the mark's CVD pair."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "packages/ui",
+        "docs",
+        "scripts"
+      ],
+      "severity": "low",
+      "id": "E-189",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/Text.tsx#Face"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Chip.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/WorkingState.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/tree.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "guard": "text-face.test: the mono face is Inconsolata SemiBold, at body only, and takes no weight. badges.test: a mono badge fixes its step. tree.ts treats the mono family as tabular, so the ragged-figure rule passes its figures by what the face is. verify-font-coverage checks Inconsolata at 600 against the Latin it must render, and generate-font-subset --check pins the cut at wdth 83, wght 600.",
+      "memory": "memory/effects/the-mono-is-a-bundled-face-at-27s-width.md",
+      "rationale": "ADR-0130: the platform monos are too wide for 27's steps, and Inconsolata's width axis reaches the drawn proportion. A step set in another face, a weight or width change, or a new string in the mono outside the subset would overflow the card or fall back to the platform face in silence."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "id": "E-190",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/pipeline.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/WorkingState.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-243"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-266"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "lens-pipeline.test: the steps by source, the share done (RangeError outside), the conversion step naming the engine's CANONICAL_ILLUMINANT and 6504 K, and McCamy's formula on the engine's own D65 within 2 K of 6504, with 27's 5500 K and D55 as decoys. progress-ring.test holds the ring's range, its full and empty arcs and its progressbar semantics.",
+      "memory": "memory/effects/the-working-card-says-the-engines-white.md",
+      "rationale": "27's working card prints a white point and a temperature. Both are read from the engine and pinned here, so no translation or redraw can print a white the engine does not use (E2). F-243 places the card in 02, and F-266 animates the ring; both read these steps and this value."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-236",
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "id": "E-191",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/states.ts"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/screens"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/testing/conformance.ts#checkSubject"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-242"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys.",
+      "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
+      "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
     }
   ]
 }
