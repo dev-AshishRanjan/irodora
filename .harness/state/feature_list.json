@@ -8074,7 +8074,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-225"
       ],
@@ -8095,9 +8095,11 @@
         "a11y",
         "contrast",
         "cvd",
-        "color-golden"
+        "color-golden",
+        "content"
       ],
-      "notes": "Mockup 15 section 2. ADR-0009 makes CVD an engine concern for scoring; a preview through the same engine does not contradict it. React Native has no whole-screen colour filter, so the path is the token and Swatch layer every colour already flows through. FROM F-225 (2026-09-25): there are four declared palettes, dark = Sumi, light = Washi, slate.dark and obsidian.dark, plus the runtime device palette, which no build-time name refers to. The preview has to re-render whichever one is painting, including the device palette. It cannot assume dark and light."
+      "notes": "Mockup 15 section 2. ADR-0009 makes CVD an engine concern for scoring; a preview through the same engine does not contradict it. React Native has no whole-screen colour filter, so the path is the token and Swatch layer every colour already flows through. FROM F-225 (2026-09-25): there are four declared palettes, dark = Sumi, light = Washi, slate.dark and obsidian.dark, plus the runtime device palette, which no build-time name refers to. The preview has to re-render whichever one is painting, including the device palette. It cannot assume dark and light. AT CLAIM (2026-10-09): `content` added to verification — the Japanese copy (the four modes and the strip) needs font coverage.",
+      "plan": "plans/F-240-the-whole-app-can-be-previewed-as-a-cvd-user-sees-it.md"
     },
     {
       "id": "F-241",
