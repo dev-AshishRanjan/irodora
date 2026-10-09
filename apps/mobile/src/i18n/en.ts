@@ -268,6 +268,31 @@ export const en = {
   'lens.privacy':
     'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
   'lens.viewfinderTarget': 'Camera view. Tap the part of it you want read.',
+  // F-236 — 27's working state: the pipeline's real steps (D5). The conversion's illuminant and
+  // temperature are appended from the engine and pipeline.ts, never written here.
+  'lens.pipeline.frame': 'Waiting for a camera frame…',
+  'lens.pipeline.decode': 'Decoding the photo…',
+  'lens.pipeline.convert': 'Converting to OKLCh',
+  'lens.pipeline.step': 'Step',
+  // F-236 — 27's refused state (D1): a reading refused, never a measurement (E2). Each check's
+  // name, the quantity it reads (its threshold is appended from the engine), and what to do — the
+  // engine's own instruction, which lens-refusal.test holds this wording to.
+  'lens.refused.title': 'Reading Refused',
+  'lens.check.samples.name': 'Too Little Fabric',
+  'lens.check.samples.reason': 'Usable samples, the fewest a reading allows',
+  'lens.check.samples.fix': 'Move closer, or select a larger area of the fabric.',
+  'lens.check.clipping.name': 'Exposure Clipped',
+  'lens.check.clipping.reason': 'Clipped pixels, the most a reading allows',
+  'lens.check.clipping.fix': 'Move out of direct light, or reduce exposure.',
+  'lens.check.evenness.name': 'Uneven Light',
+  'lens.check.evenness.reason': 'Light falloff across the region, the most a reading allows',
+  'lens.check.evenness.fix': 'Avoid mixed lighting.',
+  'lens.check.sharpness.name': 'Blur',
+  'lens.check.sharpness.reason': 'Detail across the region, the least a reading allows',
+  'lens.check.sharpness.fix': 'Hold steadier, or let the camera focus.',
+  'lens.check.singleColour.name': 'Mixed Colours',
+  'lens.check.singleColour.reason': 'Variation in lightness, the most a reading allows',
+  'lens.check.singleColour.fix': 'Select a single region of fabric.',
   'lens.askTitle': 'The Lens needs the camera',
   'lens.askBody': 'Only to read the colour in front of it. No picture is kept.',
   'lens.ask': 'Allow the camera',
