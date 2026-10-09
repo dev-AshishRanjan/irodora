@@ -44,7 +44,18 @@
 
 import { useMemo } from 'react';
 import { Pressable } from 'react-native';
-import { Appear, Button, Card, Row, Screen, Stack, Swatch, Text, Wordmark } from '@irodora/ui';
+import {
+  Appear,
+  Button,
+  Card,
+  EmptyState,
+  Row,
+  Screen,
+  Stack,
+  Swatch,
+  Text,
+  Wordmark,
+} from '@irodora/ui';
 import { entrySwatch, homeContent, homeLead } from '../home';
 import { colorOf } from '../wardrobe';
 import { useMessages } from '../i18n/useMessages';
@@ -325,48 +336,59 @@ export function Home({
         screen will ever have.
       */}
       <Appear index={1}>
-        <Card
-          level="1"
-          header={
-            <Text size="caption" color="foreground.2" script={script}>
-              {t('home.wardrobe')}
-            </Text>
-          }
-        >
-          {content.wardrobe.count === 0 ? (
-            <Stack gap="sm">
-              <Text size="body" color="foreground.2" script={script}>
-                {t('home.wardrobeEmpty')}
-              </Text>
-              <Button
-                label={t('home.addGarment')}
-                variant="secondary"
-                onPress={() => {
-                  onAddGarment?.();
-                }}
-                script={script}
-              />
-            </Stack>
+        {content.wardrobe.count === 0 ? (
+          /*
+            THE EMPTY WARDROBE IS 27'S CARD (F-236): the same data condition as the Wardrobe
+            screen's, so the same heading, body and way out — Scan First Garment opens the Lens.
+            F-242 places it in 01's composition.
+          */
+          onOpenLens !== undefined ? (
+            <EmptyState
+              title={t('wardrobe.empty.title')}
+              body={t('wardrobe.empty.body')}
+              action={{ label: t('wardrobe.empty.scan'), onPress: onOpenLens }}
+              script={script}
+            />
+          ) : onAddGarment !== undefined ? (
+            <EmptyState
+              title={t('wardrobe.empty.title')}
+              body={t('browse.emptyHint')}
+              action={{ label: t('home.addGarment'), onPress: onAddGarment }}
+              script={script}
+            />
           ) : (
-            <Stack gap="sm">
-              <Row gap="sm" wrap>
-                {content.wardrobe.colors.map((c) => (
-                  <Swatch
-                    caption="name"
-                    key={c.id}
-                    name={c.name}
-                    hex={c.hex}
-                    color={colorOf(c)}
-                    size={STRIP_SAMPLE}
-                  />
-                ))}
-              </Row>
-              <Text size="caption" color="foreground.2" script={script} numeric>
-                {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
+            <EmptyState message={t('home.wardrobeEmpty')} resolvedHere script={script} />
+          )
+        ) : (
+          <Card
+            level="1"
+            header={
+              <Text size="caption" color="foreground.2" script={script}>
+                {t('home.wardrobe')}
               </Text>
-            </Stack>
-          )}
-        </Card>
+            }
+          >
+            {
+              <Stack gap="sm">
+                <Row gap="sm" wrap>
+                  {content.wardrobe.colors.map((c) => (
+                    <Swatch
+                      caption="name"
+                      key={c.id}
+                      name={c.name}
+                      hex={c.hex}
+                      color={colorOf(c)}
+                      size={STRIP_SAMPLE}
+                    />
+                  ))}
+                </Row>
+                <Text size="caption" color="foreground.2" script={script} numeric>
+                  {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
+                </Text>
+              </Stack>
+            }
+          </Card>
+        )}
       </Appear>
 
       {/*
@@ -389,33 +411,19 @@ export function Home({
               {t('home.todayNote')}
             </Text>
           </Card>
+        ) : /*
+            NO READINGS YET IS 27'S CARD (F-236): a heading, what fills it, and the way to the Lens.
+            F-242 places it in 01's composition.
+          */
+        onOpenLens !== undefined ? (
+          <EmptyState
+            title={t('home.noReadingsTitle')}
+            body={t('home.noReadingsBody')}
+            action={{ label: t('home.takeReading'), onPress: onOpenLens }}
+            script={script}
+          />
         ) : (
-          <Card
-            level="1"
-            header={
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('home.lastReading')}
-              </Text>
-            }
-          >
-            <Stack gap="sm">
-              <Text size="body" color="foreground.2" script={script}>
-                {t('home.noReadings')}
-              </Text>
-              {/*
-                SECONDARY, because the accent is spent on the lead. Two primaries on one page is
-                the "three bold moves" failure with a different count.
-              */}
-              <Button
-                label={t('home.takeReading')}
-                variant="secondary"
-                onPress={() => {
-                  onOpenLens?.();
-                }}
-                script={script}
-              />
-            </Stack>
-          </Card>
+          <EmptyState message={t('home.noReadings')} resolvedHere script={script} />
         )}
       </Appear>
     </Screen>

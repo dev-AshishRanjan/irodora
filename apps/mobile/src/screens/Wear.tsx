@@ -111,9 +111,11 @@ export function Wear({
   if (answer === null)
     return (
       <Screen title={t('wear.title')} script={script}>
-        <Text size="body" color="foreground" script={script}>
-          {t('detail.notFound')}
-        </Text>
+        {/*
+          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
+          back, already on this screen — a second control would be a second way to do one thing.
+        */}
+        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
       </Screen>
     );
 

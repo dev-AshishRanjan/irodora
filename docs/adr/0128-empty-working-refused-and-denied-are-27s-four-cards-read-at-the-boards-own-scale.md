@@ -194,6 +194,16 @@ glow takes `state.mark`.
   - `action`: 27's card, with its picture, title, body and action;
   - `resolvedHere`: 00's caption with its small `no-results` art, where the fix is already on the
     screen. F-139's rule stands: no second control for an on-screen fix.
+  - **A colour this corpus does not hold** (a route to a slug the bundled corpus version lacks —
+    only a link from outside or from another corpus version can name one) is the same caption.
+    No mockup draws it. Each of the six screens that names a colour is pushed in the Atlas stack,
+    so its way out, the header's back, is already on the screen. A *Go back* button would be the
+    second control F-139 refuses, and a 27 card would need a heading and a picture nobody drew.
+  - **Not every absence is a panel** (found in increment 11):
+    - Contemporary's *nothing within the ceiling* prints its ΔE00 ceiling as a tabular figure: an
+      answer with its threshold, not an empty panel, so it keeps its own block.
+    - ColourDetail's *none* and Combinations' *no personal weighting* are a row's value and a note
+      above a list that stands. A drawing beside each would be decoration on a value.
 
 ### 7. Accessibility
 

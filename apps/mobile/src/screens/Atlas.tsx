@@ -44,12 +44,12 @@ import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Appear,
   Button,
+  EmptyState,
   ChoiceGroup,
   Row,
   Screen,
   SearchField,
   Stack,
-  Surface,
   Swatch,
   Text,
 } from '@irodora/ui';
@@ -463,20 +463,13 @@ export function Atlas({
       ) : null}
 
       {shown.length === 0 ? (
-        <Surface
-          /* surface-not-card: an empty state — a message and a hint. The box is its ground, not a card about it. */
-          level="1"
-          padding="md"
-        >
-          <Stack gap="sm">
-            <Text size="body" color="foreground" script={script}>
-              {t('atlas.empty')}
-            </Text>
-            <Text size="label" color="foreground.2" script={script}>
-              {t('atlas.emptyHint')}
-            </Text>
-          </Stack>
-        </Surface>
+        // 00's empty (F-236): the search and the filters that would change it are on this screen.
+        <EmptyState
+          message={t('atlas.empty')}
+          hint={t('atlas.emptyHint')}
+          resolvedHere
+          script={script}
+        />
       ) : null}
     </Stack>
   );

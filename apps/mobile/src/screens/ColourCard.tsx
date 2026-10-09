@@ -19,7 +19,7 @@
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { SvgXml } from 'react-native-svg';
-import { Card, Screen, Stack, Text, useTheme } from '@irodora/ui';
+import { Card, EmptyState, Screen, Stack, Text, useTheme } from '@irodora/ui';
 import { cardSvg, CARD_HEIGHT, CARD_WIDTH, THUMBNAIL_WIDTH } from '../card';
 import { CORPUS_LABEL, entryBySlug } from '../corpus';
 // The SAME map the detail screen uses. Two copies of the FR-23 vocabulary would drift, and the
@@ -42,9 +42,11 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
   if (entry === null)
     return (
       <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
-        <Text size="body" color="foreground" script={script}>
-          {t('detail.notFound')}
-        </Text>
+        {/*
+          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
+          back, already on this screen — a second control would be a second way to do one thing.
+        */}
+        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
       </View>
     );
 

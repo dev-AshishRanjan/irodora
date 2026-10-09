@@ -33,7 +33,17 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Card, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import {
+  Card,
+  EmptyState,
+  Row,
+  Screen,
+  SearchField,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+} from '@irodora/ui';
 import { LEXICON_AXES, type LexiconAxis } from '@irodora/corpus';
 import { find, type FinderKind } from '../finder';
 import { colorFor, type PublishedEntry } from '../corpus';
@@ -153,14 +163,13 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
       {result.kind === 'empty' ? null : (
         <>
           {shown.length === 0 ? (
-            <Stack gap="xs">
-              <Text size="label" color="foreground" script={script}>
-                {t('finder.none')}
-              </Text>
-              <Text size="caption" color="foreground.2" script={script}>
-                {t(NOTHING[result.kind])}
-              </Text>
-            </Stack>
+            // 00's empty (F-236): the phrase that would change it is in the field above.
+            <EmptyState
+              message={t('finder.none')}
+              hint={t(NOTHING[result.kind])}
+              resolvedHere
+              script={script}
+            />
           ) : (
             <Surface
               /* surface-not-card: a result list opened by a count. A count is a fact about the list, not a heading over it. */

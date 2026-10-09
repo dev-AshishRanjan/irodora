@@ -36,6 +36,9 @@ export const ja: Record<MessageKey, string> = {
   'home.onDevice': 'すべてこの端末の中で。どこにも送られません。',
   'home.lastReading': '最後の読み取り',
   'home.noReadings': 'まだ読み取りがありません',
+  // F-236 — see en.ts.
+  'home.noReadingsTitle': 'まだ読み取りはありません',
+  'home.noReadingsBody': 'レンズで色を読むと、ここに表示されます。',
   'home.takeReading': 'レンズを開く',
   'home.wardrobe': '衣装',
   'home.wardrobeCount': '点',

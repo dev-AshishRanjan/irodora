@@ -47,6 +47,7 @@ import {
   Button,
   Card,
   Chip,
+  EmptyState,
   Row,
   Screen,
   SearchField,
@@ -363,14 +364,13 @@ export function PaletteStudio({
           </Text>
 
           {draft.members.length === 0 ? (
-            <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.sm }}>
-              <Text size="label" color="foreground" script={script}>
-                {t('studio.empty')}
-              </Text>
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('studio.emptyHint')}
-              </Text>
-            </View>
+            // 00's empty (F-236): the search that adds a colour is on this screen.
+            <EmptyState
+              message={t('studio.empty')}
+              hint={t('studio.emptyHint')}
+              resolvedHere
+              script={script}
+            />
           ) : (
             draft.members.map((m, i) => (
               <Member key={m.slug} slug={m.slug} role={m.role} index={i} />

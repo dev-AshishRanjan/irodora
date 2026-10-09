@@ -92,16 +92,37 @@ const draw = (populated: boolean) =>
   );
 
 describe('the first-run state', () => {
-  it('says there are no readings, and offers the Lens', () => {
-    const tree = draw(false);
-    expect(tree.getByText('No readings yet')).toBeTruthy();
-    expect(tree.getByLabelText('Open the Lens')).toBeTruthy();
+  /** A new install with its route: somewhere to go from each absence. */
+  const firstRun = () =>
+    render(
+      <ThemeProvider theme="light">
+        <Home
+          store={store(false)}
+          now={() => FIXED}
+          onOpenLens={() => undefined}
+          onAddGarment={() => undefined}
+        />
+      </ThemeProvider>,
+    );
+
+  it('says there are no readings, and offers the Lens — 27’s card (F-236)', () => {
+    const tree = firstRun();
+    expect(tree.getByText(en['home.noReadingsTitle'])).toBeTruthy();
+    expect(tree.getByLabelText(en['home.takeReading'])).toBeTruthy();
   });
 
-  it('says the wardrobe is empty, and offers to add', () => {
+  it('says the wardrobe is empty, and offers to scan the first garment — 27’s card (F-236)', () => {
+    const tree = firstRun();
+    expect(tree.getByText(en['wardrobe.empty.title'])).toBeTruthy();
+    expect(tree.getByLabelText(en['wardrobe.empty.scan'])).toBeTruthy();
+  });
+
+  it('DECOY — with nowhere to go, each says what is empty and offers nothing (00’s caption)', () => {
     const tree = draw(false);
-    expect(tree.getByText('Nothing added yet')).toBeTruthy();
-    expect(tree.getByLabelText('Add a garment')).toBeTruthy();
+    expect(tree.getByText(en['home.noReadings'])).toBeTruthy();
+    expect(tree.getByText(en['home.wardrobeEmpty'])).toBeTruthy();
+    expect(tree.queryByLabelText(en['home.takeReading'])).toBeNull();
+    expect(tree.queryByLabelText(en['wardrobe.empty.scan'])).toBeNull();
   });
 
   it("still shows today's colour, because the corpus is not empty on a new install", () => {
@@ -202,7 +223,8 @@ describe('the front door states what the product is for (F-164)', () => {
     const tree = draw(false);
     const text = textOf(tree.toJSON()).join(' ');
     expect(text.indexOf(en['home.today'])).toBeGreaterThan(-1);
-    expect(text.indexOf(en['home.today'])).toBeLessThan(text.indexOf(en['home.lastReading']));
+    // The absence of a reading is 00's caption here (no route): it comes after today.
+    expect(text.indexOf(en['home.today'])).toBeLessThan(text.indexOf(en['home.noReadings']));
   });
 
   it('DECOY — with a reading, the reading leads and today drops below it', () => {

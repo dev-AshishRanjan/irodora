@@ -40,6 +40,9 @@ export const en = {
   'home.onDevice': 'All of it on your phone. Nothing is sent anywhere.',
   'home.lastReading': 'Last reading',
   'home.noReadings': 'No readings yet',
+  // F-236 — Home's no-readings card, in 27's form (a heading, what fills it).
+  'home.noReadingsTitle': 'No Readings Yet',
+  'home.noReadingsBody': 'Read a colour with the Lens and it appears here.',
   'home.takeReading': 'Open the Lens',
   'home.wardrobe': 'Wardrobe',
   'home.wardrobeCount': 'pieces',

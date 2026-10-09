@@ -22,7 +22,7 @@
  * by a test that never renders anything. This file formats and labels.
  */
 
-import { Card, Pair, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Card, EmptyState, Pair, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { View } from 'react-native';
 
 import {
@@ -64,9 +64,11 @@ export function Contemporary({
   if (subject === null)
     return (
       <Screen title={t('contemporary.title')} script={script}>
-        <Text size="body" color="foreground" script={script}>
-          {t('detail.notFound')}
-        </Text>
+        {/*
+          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
+          back, already on this screen — a second control would be a second way to do one thing.
+        */}
+        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
       </Screen>
     );
 
