@@ -47,10 +47,16 @@ export {
 export {
   assessQuality,
   confidenceCeiling,
+  failedChecks,
   QUALITY_CEILING,
+  QUALITY_CHECK_RULES,
+  QUALITY_CHECKS,
+  QUALITY_INSTRUCTIONS,
   QUALITY_THRESHOLDS,
   type CaptureQuality,
   type QualityAssessment,
+  type QualityCheck,
+  type QualityCheckRule,
   type QualityMetrics,
   type Region,
 } from './quality.js';

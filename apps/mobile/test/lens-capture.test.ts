@@ -36,6 +36,7 @@ const reading = (over: Partial<LensReading> = {}): LensReading => ({
   quality: 'good',
   confidence: 0.7,
   instruction: '',
+  qualityFailures: [],
   ...over,
 });
 

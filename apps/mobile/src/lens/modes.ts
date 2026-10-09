@@ -92,6 +92,7 @@ export function read(mode: CaptureMode, input: CaptureInput): LensReading {
       cappedConfidence(input.space, illumination.confidenceCeiling, quality.confidenceCeiling),
     ),
     instruction: quality.instruction,
+    qualityFailures: quality.failures,
   };
 }
 
@@ -118,6 +119,7 @@ export function readManual(rgb: readonly [number, number, number]): LensReading 
     // recorded alongside it (`declared`, not `estimated`) is what carries that distinction.
     confidence: 1,
     instruction: '',
+    qualityFailures: [],
   };
 }
 

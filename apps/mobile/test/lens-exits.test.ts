@@ -32,6 +32,7 @@ const reading = (): LensReading => ({
   quality: 'good',
   confidence: 0.7,
   instruction: '',
+  qualityFailures: [],
 });
 
 /** A recorder that keeps the ORDER, because the order is the half that is easy to get wrong. */

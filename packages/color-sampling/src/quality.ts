@@ -36,6 +36,12 @@ export interface QualityAssessment {
   readonly confidenceCeiling: number;
   /** What to change. Empty when nothing needs changing. */
   readonly instruction: string;
+  /**
+   * Every check the capture failed, in the order a person should fix them ({@link QUALITY_CHECKS}).
+   * `quality` is how many there are, and `instruction` is the first one's (F-236): a surface that
+   * refuses a capture names the check, its threshold and what to do, from here.
+   */
+  readonly failures: readonly QualityCheck[];
   readonly metrics: QualityMetrics;
 }
 
@@ -65,6 +71,59 @@ export const QUALITY_THRESHOLDS = {
   maxUnevenness: 0.25,
   maxColourVariance: 0.02,
 } as const;
+
+/**
+ * The checks a capture is held to, in the order a person should FIX them — not by the severity of
+ * the number. An instruction that names the second-most-important problem gets followed and does
+ * not help. The order is FR-18's and predates the names; F-236 named the checks so a surface can say
+ * which one failed.
+ */
+export const QUALITY_CHECKS = [
+  'samples',
+  'clipping',
+  'evenness',
+  'sharpness',
+  'singleColour',
+] as const;
+export type QualityCheck = (typeof QUALITY_CHECKS)[number];
+
+/** One check: the metric it reads, which side of its threshold fails, and which threshold. */
+export interface QualityCheckRule {
+  readonly metric: keyof QualityMetrics;
+  readonly fails: 'below' | 'above';
+  readonly threshold: keyof typeof QUALITY_THRESHOLDS;
+}
+
+/**
+ * What each check reads and against what — DATA, so the one comparison `assessQuality` makes is
+ * the one a refusal can describe, and neither retypes a threshold.
+ */
+export const QUALITY_CHECK_RULES: Readonly<Record<QualityCheck, QualityCheckRule>> = {
+  samples: { metric: 'usableSamples', fails: 'below', threshold: 'minSamples' },
+  clipping: { metric: 'clipped', fails: 'above', threshold: 'maxClipped' },
+  evenness: { metric: 'unevenness', fails: 'above', threshold: 'maxUnevenness' },
+  sharpness: { metric: 'sharpness', fails: 'below', threshold: 'minSharpness' },
+  singleColour: { metric: 'colourVariance', fails: 'above', threshold: 'maxColourVariance' },
+};
+
+/** What to change, per check: the engine's own words. */
+export const QUALITY_INSTRUCTIONS: Readonly<Record<QualityCheck, string>> = {
+  samples: 'move closer, or select a larger area of the fabric',
+  clipping: 'the exposure is clipping — move out of direct light, or reduce exposure',
+  evenness: 'the light falls unevenly across the fabric — avoid mixed lighting',
+  sharpness: 'hold steadier, or let the camera focus',
+  singleColour: 'more than one colour is in the area — select a single region of fabric',
+};
+
+/** The checks a set of metrics fails, in fix-first order. */
+export function failedChecks(metrics: QualityMetrics): QualityCheck[] {
+  return QUALITY_CHECKS.filter((check) => {
+    const rule = QUALITY_CHECK_RULES[check];
+    const value = metrics[rule.metric];
+    const limit = QUALITY_THRESHOLDS[rule.threshold];
+    return rule.fails === 'below' ? value < limit : value > limit;
+  });
+}
 
 export const QUALITY_CEILING: Readonly<Record<CaptureQuality, number>> = {
   excellent: 1,
@@ -152,32 +211,8 @@ export function assessQuality(region: Region): QualityAssessment {
     colourVariance: stats.variance,
   };
 
-  // Ordered by what a person should fix FIRST, not by severity of the number. An instruction
-  // that names the second-most-important problem gets followed and does not help.
-  const problems: { readonly failed: boolean; readonly instruction: string }[] = [
-    {
-      failed: metrics.usableSamples < QUALITY_THRESHOLDS.minSamples,
-      instruction: 'move closer, or select a larger area of the fabric',
-    },
-    {
-      failed: metrics.clipped > QUALITY_THRESHOLDS.maxClipped,
-      instruction: 'the exposure is clipping — move out of direct light, or reduce exposure',
-    },
-    {
-      failed: metrics.unevenness > QUALITY_THRESHOLDS.maxUnevenness,
-      instruction: 'the light falls unevenly across the fabric — avoid mixed lighting',
-    },
-    {
-      failed: metrics.sharpness < QUALITY_THRESHOLDS.minSharpness,
-      instruction: 'hold steadier, or let the camera focus',
-    },
-    {
-      failed: metrics.colourVariance > QUALITY_THRESHOLDS.maxColourVariance,
-      instruction: 'more than one colour is in the area — select a single region of fabric',
-    },
-  ];
-
-  const failures = problems.filter((p) => p.failed);
+  // In fix-first order (QUALITY_CHECKS), each compared as QUALITY_CHECK_RULES says.
+  const failures = failedChecks(metrics);
   const quality: CaptureQuality =
     failures.length === 0
       ? 'excellent'
@@ -187,10 +222,12 @@ export function assessQuality(region: Region): QualityAssessment {
           ? 'fair'
           : 'poor';
 
+  const first = failures[0];
   return {
     quality,
     confidenceCeiling: QUALITY_CEILING[quality],
-    instruction: failures[0]?.instruction ?? '',
+    instruction: first === undefined ? '' : QUALITY_INSTRUCTIONS[first],
+    failures,
     metrics,
   };
 }

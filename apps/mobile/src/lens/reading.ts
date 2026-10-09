@@ -24,7 +24,7 @@
  */
 
 import type { Triple } from '@irodora/color-spaces';
-import type { CaptureQuality, Illumination } from '@irodora/color-sampling';
+import type { CaptureQuality, Illumination, QualityCheck } from '@irodora/color-sampling';
 
 /**
  * Colour spaces a capture may arrive in.
@@ -72,6 +72,12 @@ export interface LensReading {
   readonly confidence: number;
   /** What to change, when anything needs changing. */
   readonly instruction: string;
+  /**
+   * Every quality check the capture failed, fix-first (F-236): the engine's own, so a poor capture
+   * can be refused with the check that failed, its threshold and what to do. Empty for a value the
+   * person entered — nothing was captured to fail.
+   */
+  readonly qualityFailures: readonly QualityCheck[];
 }
 
 /**

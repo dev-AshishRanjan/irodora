@@ -84,6 +84,7 @@ function reading(overrides: Partial<LensReading> = {}): LensReading {
     quality: 'good',
     confidence: 0.71,
     instruction: '',
+    qualityFailures: [],
     ...overrides,
   };
 }

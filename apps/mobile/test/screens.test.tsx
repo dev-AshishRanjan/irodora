@@ -509,6 +509,7 @@ const SAMPLE_READING: LensReading = {
   quality: 'excellent',
   confidence: 1,
   instruction: '',
+  qualityFailures: [],
 };
 
 /** A reading the Lens might have left for the wardrobe. Values are a plausible mid navy. */
@@ -521,6 +522,7 @@ const OFFERED_READING: LensReading = {
   quality: 'good',
   confidence: 0.82,
   instruction: '',
+  qualityFailures: [],
 };
 
 /** Everything `regenerate` needs that the screen does not own. Built from published content. */
@@ -3825,6 +3827,9 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     quality: 'poor',
     confidence: 0.21,
     instruction: 'Move closer and fill the marked area.',
+    // Three checks failed — which is what makes it poor — the samples first, whose instruction
+    // this is (F-236).
+    qualityFailures: ['samples', 'evenness', 'singleColour'],
   };
 
   const shown = (reading: LensReading): string =>

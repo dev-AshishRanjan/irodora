@@ -551,6 +551,7 @@ describe('a photo estimate', () => {
     quality: 'excellent',
     confidence: 1,
     instruction: '',
+    qualityFailures: [],
     ...over,
   });
 
@@ -766,6 +767,7 @@ describe('a near-neutral reading proposes no temperature (ADR-0076)', () => {
     quality: 'excellent',
     confidence: 1,
     instruction: '',
+    qualityFailures: [],
   });
 
   it('a grey reading lands near zero, whichever side of the circle its hue falls', () => {

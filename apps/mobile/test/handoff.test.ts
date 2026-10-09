@@ -32,6 +32,7 @@ const reading = (): LensReading => ({
   quality: 'good',
   confidence: 0.72,
   instruction: '',
+  qualityFailures: [],
 });
 
 beforeEach(() => {

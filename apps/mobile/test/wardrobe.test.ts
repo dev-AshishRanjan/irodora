@@ -36,6 +36,7 @@ const READING: LensReading = {
   quality: 'good',
   confidence: 0.82,
   instruction: '',
+  qualityFailures: [],
 };
 
 let n = 0;

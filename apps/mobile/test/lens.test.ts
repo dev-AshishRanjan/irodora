@@ -40,7 +40,14 @@ import {
  * comment claimed jest could resolve it; that claim was never run, and it was wrong (F-104).
  */
 import { permissionState } from '../src/lens/permission';
-import { aggregate, partition, type Region, type Sample } from '@irodora/color-sampling';
+import {
+  aggregate,
+  assessQuality,
+  partition,
+  QUALITY_CHECKS,
+  type Region,
+  type Sample,
+} from '@irodora/color-sampling';
 
 const px = (r: number, g: number, b: number): Sample => ({ r, g, b, alpha: 1 });
 
@@ -66,6 +73,7 @@ const READING: LensReading = {
   quality: 'good',
   confidence: 0.7,
   instruction: '',
+  qualityFailures: [],
 };
 
 /**
@@ -147,6 +155,17 @@ describe('all four capture modes exist and each calls the engine', () => {
     expect(manual.illumination).toBe('unknown');
     expect(manual.usableSamples).toBe(0);
   });
+
+  it('carries the checks the capture failed, as the engine named them (F-236)', () => {
+    // The Lens refuses a poor capture with the check that failed: the reading carries the engine's
+    // own list, in its fix-first order, never one recomputed here.
+    const tiny = textured(8, 8);
+    const reading = read('precision', { region: tiny, space: 'srgb' });
+    expect(reading.qualityFailures).toStrictEqual(assessQuality(tiny).failures);
+    expect(reading.qualityFailures[0]).toBe('samples');
+    // DECOY: a manual entry captured nothing, so nothing failed.
+    expect(readManual([0.32, 0.42, 0.43]).qualityFailures).toStrictEqual([]);
+  });
 });
 
 describe('only numbers cross the bridge', () => {
@@ -159,6 +178,7 @@ describe('only numbers cross the bridge', () => {
       'illumination',
       'instruction',
       'quality',
+      'qualityFailures',
       'rgb',
       'space',
       'usableSamples',
@@ -166,6 +186,12 @@ describe('only numbers cross the bridge', () => {
     ]);
     for (const [key, value] of Object.entries(reading)) {
       if (key === 'rgb') continue;
+      // The checks that failed (F-236) are the engine's own names — words, never pixels.
+      if (key === 'qualityFailures') {
+        for (const check of value as readonly string[])
+          expect(QUALITY_CHECKS as readonly string[]).toContain(check);
+        continue;
+      }
       // The key is folded into the compared value so a failure names WHICH field, since
       // jest's `expect` takes no message argument.
       expect(`${key}:${typeof value}`).toMatch(/:(number|string)$/u);
