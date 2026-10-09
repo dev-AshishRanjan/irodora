@@ -12,7 +12,7 @@
  * The manifest wins, because it is the source of truth the contrast and CVD gates read.
  */
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useColorScheme, type ColorSchemeName } from 'react-native';
 import {
@@ -20,11 +20,14 @@ import {
   DRAWN_THEMES,
   nativeColors,
   nativeDefaultTheme,
+  simulatePaint,
+  simulatePalette,
   themeMode,
   type DrawnTheme,
   type Mode,
   type Theme,
 } from '@irodora/design-tokens';
+import { useVisionPreview, type VisionMode } from './vision.js';
 
 /** Colour tokens for one theme, exactly as the manifest declares them. */
 export type ThemeColors = (typeof nativeColors)[Theme];
@@ -48,7 +51,26 @@ export interface ThemeValue {
    * asking "am I on dark" wants this; a component asking "which palette am I" wants the name.
    */
   readonly mode: Mode;
+  /**
+   * The colours to PAINT: the palette as declared, through the colour-vision preview in force
+   * (F-240, ADR-0131). In Standard this is the declared palette itself — the same object.
+   */
   readonly colors: ThemeColors;
+  /**
+   * The palette AS DECLARED, whatever the preview. Anything DERIVED from colours — the ink on a
+   * sample, a sample's edge — is derived from this and then painted, so the preview shows the
+   * app as it is, never an app that re-solved its contrast moves for simulated colours
+   * (ADR-0131 §3).
+   */
+  readonly source: ThemeColors;
+  /** The colour-vision preview in force: `standard`, or a deficiency `15` draws. */
+  readonly vision: VisionMode;
+  /**
+   * Paint a colour that is not a token — a sample — through the same preview. The identity in
+   * Standard. Accepts the tokens' formats (`#RRGGBB`, `#RRGGBBAA`, `rgba()`) and throws on any
+   * other, so nothing passes through unsimulated.
+   */
+  readonly paint: (css: string) => string;
 }
 
 /**
@@ -205,10 +227,32 @@ export function ThemeProvider({
    * suite forces a palette by name, and a test that could be overruled by a device accent would
    * be checking the accent.
    */
-  const value =
+  const declared =
     palette !== undefined && theme === undefined
       ? { name: palette.name, mode: palette.mode, colors: palette.colors }
       : { name, mode: themeMode(name), colors: nativeColors[name] };
+  /*
+   * THE PREVIEW IS APPLIED HERE, ONCE, to whichever palette is painting (F-240, ADR-0131): the
+   * declared themes, the derived ones and the runtime device palette alike. The mode comes from
+   * its own context, so a nested provider inherits it. `simulatePalette` returns the declared
+   * object itself in Standard and one memoised object per palette and mode otherwise, so a reader
+   * comparing identity sees nothing move until the mode does.
+   */
+  const vision = useVisionPreview();
+  const paint = useMemo(
+    () =>
+      vision === 'standard'
+        ? (css: string): string => css
+        : (css: string) => simulatePaint(css, vision),
+    [vision],
+  );
+  const value: ThemeValue = {
+    ...declared,
+    colors: simulatePalette(declared.colors, vision),
+    source: declared.colors,
+    vision,
+    paint,
+  };
   return (
     <ThemeContext.Provider value={value}>
       {/*

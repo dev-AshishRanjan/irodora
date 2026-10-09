@@ -76,6 +76,7 @@ import {
   Text,
   TextField,
   ThemeProvider,
+  VisionPreviewProvider,
   Wordmark,
   type ActionBarProps,
   type AppBarProps,
@@ -774,6 +775,27 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             A grey with indigo in it.
           </Text>
         </Card>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE PREVIEW AT REST (F-240, ADR-0131). `VisionPreviewProvider` in Standard paints the
+     * declared palette itself — the same object — so a subject under it is the subject as
+     * declared, and every rule here reads it as such. The simulated modes are swept apart (D10): a
+     * simulated colour is no declared token, so the rules that resolve tokens cannot read it.
+     */
+    name: 'VisionPreviewProvider (Standard)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <VisionPreviewProvider mode="standard">
+          <Card level="2">
+            <Text size="body" color="foreground.2">
+              A grey with indigo in it.
+            </Text>
+          </Card>
+        </VisionPreviewProvider>,
         theme,
       ),
   },

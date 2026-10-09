@@ -26,6 +26,13 @@ export {
   type ThemeValue,
 } from './theme.js';
 export {
+  useVisionPreview,
+  VISION_MODES,
+  VisionPreviewProvider,
+  type VisionMode,
+  type VisionPreviewProviderProps,
+} from './vision.js';
+export {
   Text,
   type ColorFor,
   type LargeTypeSize,
