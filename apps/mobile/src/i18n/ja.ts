@@ -240,6 +240,16 @@ export const ja: Record<MessageKey, string> = {
   'lens.privacy': '映像はこのデバイスの中だけで見て、すぐに捨てます。保存も送信もしません。',
   'lens.viewfinderTarget': 'カメラの映像です。読み取りたい部分をタップしてください。',
   // F-236 — see en.ts.
+  // F-236 — see en.ts.
+  'lens.working.title': '生地の色を解析中…',
+  'lens.working.body': 'CIEDE2000 の ΔE と OKLCh の座標を計算しています。',
+  'lens.permission.title': 'カメラへのアクセスが必要です',
+  'lens.permission.body':
+    'Irodora は端末の中だけで、完全にオフラインで動作します。画像が端末の外に出ることはありません。',
+  'lens.permission.openSettings': '端末の設定を開く',
+  'lens.permission.openSettingsHint': '設定アプリが開き、カメラを許可できます。',
+  'lens.permission.allow': 'カメラへのアクセスを許可',
+  'lens.refused.retry': 'もう一度撮影',
   'lens.pipeline.frame': 'カメラの映像を待っています…',
   'lens.pipeline.decode': '写真を読み込んでいます…',
   'lens.pipeline.convert': 'OKLCh に変換中',
@@ -260,12 +270,6 @@ export const ja: Record<MessageKey, string> = {
   'lens.check.singleColour.name': '複数の色',
   'lens.check.singleColour.reason': '読み取りで許容される明るさのばらつきの上限',
   'lens.check.singleColour.fix': '布の一色の範囲を選んでください。',
-  'lens.askTitle': 'レンズにはカメラが必要です',
-  'lens.askBody': '目の前の色を読むためだけに使います。写真は残しません。',
-  'lens.ask': 'カメラを許可する',
-  'lens.deniedTitle': 'カメラを使えません',
-  'lens.deniedBody':
-    'このアプリのカメラ利用がオフになっています。端末の設定から戻せます。ほかの機能はカメラがなくても使えます。',
   'lens.capture': 'この色を読む',
   'lens.capturing': '読み取り中…',
   'lens.captureFailed':
@@ -284,7 +288,6 @@ export const ja: Record<MessageKey, string> = {
     '写真をタップして読み取る部分を選びます。写真はどんな光で撮られたか、加工されたかを示しません。そのため、その場で読むよりも確かさは低くなります。',
   'lens.photoFailed': 'この写真は読み取れませんでした。',
   'lens.waiting': '画面の中心を色に合わせてください。',
-  'lens.noReading': 'まだ色を読んでいません。',
   'lens.sheetTitle': 'この読み取り',
   'lens.sheetClose': '読み取りを閉じてカメラに戻る',
   'lens.sheetHandle': '読み取りパネル',

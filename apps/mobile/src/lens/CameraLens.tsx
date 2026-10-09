@@ -41,6 +41,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { Linking } from 'react-native';
 import { router } from 'expo-router';
 import { Lens } from '../screens/Lens';
 import { Viewfinder, useLensPermission } from './viewfinder';
@@ -302,6 +303,10 @@ export default function CameraLens({
       diagnostic={diagnostic}
       permission={permission}
       onRequestPermission={request}
+      // 27's Open Device Settings (F-236): the app's own page in the device's settings.
+      onOpenSettings={() => {
+        void Linking.openSettings();
+      }}
       photo={capture.photo}
       opening={capture.opening}
       onCapture={onCapture}

@@ -270,6 +270,17 @@ export const en = {
   'lens.viewfinderTarget': 'Camera view. Tap the part of it you want read.',
   // F-236 — 27's working state: the pipeline's real steps (D5). The conversion's illuminant and
   // temperature are appended from the engine and pipeline.ts, never written here.
+  // F-236 — 27's working state: its heading in the catalogue's spelling (D9: 27 writes
+  // 'Analyzing … Color' beside its own 'Colour Lens'), and its body as drawn.
+  'lens.working.title': 'Analysing Fabric Colour…',
+  'lens.working.body': 'Computing CIEDE2000 ΔE metrics and OKLCh coordinates.',
+  // F-236 — 27's permission card, as drawn; before the first request it asks instead (D6).
+  'lens.permission.title': 'Camera Access Needed',
+  'lens.permission.body': 'Irodora operates 100% offline on-device. No images leave your phone.',
+  'lens.permission.openSettings': 'Open Device Settings',
+  'lens.permission.openSettingsHint': 'Opens the Settings app, where the camera can be allowed.',
+  'lens.permission.allow': 'Allow Camera Access',
+  'lens.refused.retry': 'Retry Capture',
   'lens.pipeline.frame': 'Waiting for a camera frame…',
   'lens.pipeline.decode': 'Decoding the photo…',
   'lens.pipeline.convert': 'Converting to OKLCh',
@@ -293,12 +304,6 @@ export const en = {
   'lens.check.singleColour.name': 'Mixed Colours',
   'lens.check.singleColour.reason': 'Variation in lightness, the most a reading allows',
   'lens.check.singleColour.fix': 'Select a single region of fabric.',
-  'lens.askTitle': 'The Lens needs the camera',
-  'lens.askBody': 'Only to read the colour in front of it. No picture is kept.',
-  'lens.ask': 'Allow the camera',
-  'lens.deniedTitle': 'The camera is not available',
-  'lens.deniedBody':
-    'Camera access was turned off for Irodora. You can turn it back on in your device settings. Everything else in the app works without it.',
   'lens.capture': 'Read this colour',
   'lens.capturing': 'Reading…',
   'lens.captureFailed': 'Nothing was read. The camera sent no frame to read from — try again.',
@@ -316,7 +321,6 @@ export const en = {
     'Tap the photo to choose what is read. A photo does not say what light it was taken in, or whether it was edited, so the reading is less sure than one taken here.',
   'lens.photoFailed': 'That photo could not be read.',
   'lens.waiting': 'Point the centre of the frame at a colour.',
-  'lens.noReading': 'No colour has been read yet.',
   'lens.sheetTitle': 'This reading',
   'lens.sheetClose': 'Close the reading and go back to the frame',
   'lens.sheetHandle': 'Reading panel',

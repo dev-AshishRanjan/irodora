@@ -94,6 +94,7 @@ import { Finder } from '../src/screens/Finder';
 import { ColourCard } from '../src/screens/ColourCard';
 import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
 import { Lens } from '../src/screens/Lens';
+import { refusalText } from '../src/lens/refusal';
 import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
@@ -3817,18 +3818,27 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     return out;
   }
 
-  /** A reading with something to say about itself: poor capture, mixed light, an instruction. */
-  const POOR: LensReading = {
+  /**
+   * A reading with something to say about itself: a fair capture, mixed light, an instruction.
+   * FAIR rather than poor since F-236: a poor capture is refused and never reaches the readout.
+   */
+  const FAIR: LensReading = {
     rgb: [0.4, 0.38, 0.36],
     space: 'display-p3',
     usableSamples: 1100,
     variance: 0.09,
     illumination: 'mixed',
+    quality: 'fair',
+    confidence: 0.42,
+    instruction: 'Move closer and fill the marked area.',
+    // Two checks failed — which is what makes it fair — the samples first, whose instruction this is.
+    qualityFailures: ['samples', 'evenness'],
+  };
+  /** The same capture with a third check failed: poor, so refused (F-236, D1). */
+  const POOR: LensReading = {
+    ...FAIR,
     quality: 'poor',
     confidence: 0.21,
-    instruction: 'Move closer and fill the marked area.',
-    // Three checks failed — which is what makes it poor — the samples first, whose instruction
-    // this is (F-236).
     qualityFailures: ['samples', 'evenness', 'singleColour'],
   };
 
@@ -3839,12 +3849,31 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     // The engine has classified every capture since R2 and nothing rendered it. What the
     // screen showed instead was `confidence.toFixed(2)`, whose own type says it is never a
     // probability. This is the assertion that the word arrives.
-    expect(shown(POOR)).toContain(en['lens.quality.poor']);
+    expect(shown(FAIR)).toContain(en['lens.quality.fair']);
     expect(shown(SAMPLE_READING)).toContain(en['lens.quality.excellent']);
   });
 
+  it('refuses a poor capture: 27’s refused card, the check, its threshold and the fix — and no readout (F-236)', () => {
+    // With a shutter to retry through, as the route always gives one.
+    const text = textOf(
+      draw(<Lens permission="granted" capture={POOR} onCapture={() => undefined} />, 'light'),
+    ).join(' \u0000 ');
+    const { title, body } = refusalText('samples', (key) => en[key], 'latin');
+    expect(text).toContain(title);
+    expect(text).toContain(body);
+    expect(text).toContain(en['lens.refused.retry']);
+    // The sheet stays shut: no band, no conditions, and no confidence in any format (D10).
+    expect(text).not.toContain(en['lens.quality.poor']);
+    // (Not the quality label itself, which is the word Capture, as in Retry Capture.)
+    // The closed sheet keeps its title in the tree; what it never builds is its contents.
+    for (const label of [en['lens.light'], en['lens.space']]) expect(text).not.toContain(label);
+    expect(text).not.toMatch(/\d+% Confidence|0\.21/u);
+    // A reading refused, never a measurement (E2).
+    expect(title).toBe('Reading Refused: Too Little Fabric');
+  });
+
   it('names all three conditions, and the value after them (FR-17)', () => {
-    const text = shown(POOR);
+    const text = shown(FAIR);
     for (const label of [en['lens.quality'], en['lens.light'], en['lens.space']])
       expect(text).toContain(label);
     expect(text).toContain(en['lens.light.mixed']);
@@ -3854,24 +3883,24 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
     // BEFORE the result, "because a number shown first has already been read by the time its
     // qualifier arrives" — so a test that only checked presence would pass on the arrangement
     // the requirement exists to forbid.
-    expect(text.indexOf(en['lens.quality.poor'])).toBeLessThan(text.indexOf('21% Confidence'));
+    expect(text.indexOf(en['lens.quality.fair'])).toBeLessThan(text.indexOf('42% Confidence'));
   });
 
   it('keeps the confidence figure in its one format, with what the number is (F-222)', () => {
-    const text = shown(POOR);
+    const text = shown(FAIR);
     // Kept rather than hidden: it is the honest ceiling FR-15 produces, and removing it would
     // conceal how far the engine is willing to go. ADR-0124 gives it one format — the percentage
     // 03 draws, floored — and the sentence under it says it is not the chance the colour is right.
-    expect(text).toContain('21% Confidence');
+    expect(text).toContain('42% Confidence');
     expect(text).toContain(en['confidence.meaning']);
     // DECOY: the old bare figure is gone, so a second format cannot survive beside the first.
-    expect(text).not.toContain('0.21');
+    expect(text).not.toContain('0.42');
   });
 
   it('gives the instruction as a next step, not as a warning (criterion 4)', () => {
-    const text = shown(POOR);
+    const text = shown(FAIR);
     expect(text).toContain(en['lens.next']);
-    expect(text).toContain(POOR.instruction);
+    expect(text).toContain(FAIR.instruction);
   });
 
   it('says nothing about conditions when there is no reading', () => {
@@ -3920,7 +3949,8 @@ describe('the Lens says why there is no reading (F-119)', () => {
      */
     const text = textOf(draw(<Lens permission="denied" diagnostic={why} />, 'dark')).join('\u0000');
     expect(text).not.toContain(why);
-    expect(text).toContain(en['lens.noReading']);
+    // 27's denied card says why (F-236).
+    expect(text).toContain(en['lens.permission.title']);
   });
   it('shows nothing extra when there is no diagnostic', () => {
     const text = textOf(draw(<Lens permission="granted" mode="live" />, 'dark')).join('\u0000');

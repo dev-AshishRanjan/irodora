@@ -21,8 +21,12 @@ export interface DeniedStateProps {
   /** *Camera Access Needed*. */
   readonly title: string;
   readonly body: string;
-  /** *Open Device Settings*, or *Allow Camera Access* before the first request (D6). */
-  readonly action: StateAction;
+  /**
+   * *Open Device Settings*, or *Allow Camera Access* before the first request (D6). Absent only
+   * where the host has nothing to act through — the conformance registry renders the Lens without
+   * its route — and then no button is drawn rather than one that does nothing.
+   */
+  readonly action?: StateAction;
   readonly script?: Script;
   /** Take the host's height, the action at the foot (27): only where the host bounds it. */
   readonly fill?: boolean;
@@ -53,7 +57,7 @@ export function DeniedState({
       }
       title={title}
       body={body}
-      action={action}
+      {...(action === undefined ? {} : { action })}
       script={script}
       fill={fill}
     />

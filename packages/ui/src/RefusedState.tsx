@@ -28,8 +28,8 @@ export interface RefusedStateProps {
   readonly title: string;
   /** The engine's reason: what was read, against what threshold, and what to do. */
   readonly body: string;
-  /** *Retry Capture*. */
-  readonly retry: StateAction;
+  /** *Retry Capture*. Absent only where the host has nothing to retry through (DeniedState's note). */
+  readonly retry?: StateAction;
   readonly script?: Script;
   /** Take the host's height, the action at the foot (27): only where the host bounds it. */
   readonly fill?: boolean;
@@ -73,7 +73,7 @@ export function RefusedState({
       }
       title={title}
       body={body}
-      action={retry}
+      {...(retry === undefined ? {} : { action: retry })}
       announce={`${title}. ${body}`}
       script={script}
       fill={fill}

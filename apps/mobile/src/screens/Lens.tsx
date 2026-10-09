@@ -63,12 +63,14 @@ import {
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  DeniedState,
+  RefusedState,
+  WorkingState,
   confidenceText,
   Chip,
   Row,
   Screen,
   Sheet,
-  Skeleton,
   Stack,
   Surface,
   Swatch,
@@ -87,6 +89,8 @@ import { PREVIEW_ASPECT } from '../lens/camera';
 import { PHOTO_CENTRE, pointFrom, reticleBox, type PhotoPoint } from '../lens/photo';
 import type { CaptureSpace, LensReading } from '../lens/reading';
 import type { LensPermission } from '../lens/permission';
+import { captureSteps, pipelineProgress, progressText, stepText } from '../lens/pipeline';
+import { refusalOf, refusalText } from '../lens/refusal';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
@@ -359,6 +363,11 @@ export interface LensProps {
   readonly permission?: LensPermission;
   /** Ask for camera access. Absent in the conformance suite. */
   readonly onRequestPermission?: () => void;
+  /**
+   * Open the device's own settings for this app, where a denied camera is allowed again (`27`'s
+   * *Open Device Settings*, F-236). Absent in the conformance suite.
+   */
+  readonly onOpenSettings?: () => void;
   /** Take a reading now. The one obvious action on this screen. */
   readonly onCapture?: () => void;
   /** Choose how readings are taken. Choosing `still` while live is running is the stop. */
@@ -438,6 +447,7 @@ export function Lens({
   diagnostic = null,
   permission = 'undetermined',
   onRequestPermission,
+  onOpenSettings,
   onCapture,
   onModeChange,
   onOpenPhoto,
@@ -531,6 +541,22 @@ export function Lens({
   const offerableToWardrobe = usable && onUseForWardrobe !== undefined;
 
   const granted = permission === 'granted';
+
+  /*
+   * A POOR CAPTURE IS REFUSED (F-236, ADR-0128 D1). FR-18: poor quality blocks a confident claim
+   * and returns a specific, actionable instruction — so a held reading the engine calls poor never
+   * opens the result sheet: it is 27's refused card instead, naming the check that failed first,
+   * its threshold and what to do, with no confidence printed (D10).
+   */
+  const refusal = capture === null ? null : refusalOf(capture);
+
+  /*
+   * THE PIPELINE AT WORK (F-236, D4 and D5): a frame from the camera, or a photograph being
+   * decoded, then the conversion. Only acquisition takes time a person can see, so the ring reads
+   * none of its two steps done while the Lens waits.
+   */
+  const working = awaiting || opening;
+  const steps = captureSteps(opening || photo !== null ? 'photo' : 'camera');
 
   return (
     <Screen title={t('lens.title')} script={script}>
@@ -642,23 +668,29 @@ export function Lens({
           </Pressable>
         </Surface>
       ) : (
-        <Surface
-          /* surface-not-card: the permission ask: a sentence, a sentence and a button. */
-          level="1"
-          padding="md"
-        >
-          <Stack gap="sm">
-            <Text size="body" color="foreground" script={script}>
-              {t(permission === 'denied' ? 'lens.deniedTitle' : 'lens.askTitle')}
-            </Text>
-            <Text size="label" color="foreground.2" script={script}>
-              {t(permission === 'denied' ? 'lens.deniedBody' : 'lens.askBody')}
-            </Text>
-            {permission === 'undetermined' && onRequestPermission !== undefined ? (
-              <Button label={t('lens.ask')} onPress={onRequestPermission} script={script} />
-            ) : null}
-          </Stack>
-        </Surface>
+        /*
+          27'S DENIED CARD (F-236). Before the first request there is nothing in settings to open,
+          and both platforms require the app to ask in context: the same card asks instead (D6,
+          R9 §4 E4). Once denied, only the device's settings can allow the camera again.
+        */
+        <DeniedState
+          title={t('lens.permission.title')}
+          body={t('lens.permission.body')}
+          {...(permission === 'undetermined'
+            ? onRequestPermission === undefined
+              ? {}
+              : { action: { label: t('lens.permission.allow'), onPress: onRequestPermission } }
+            : onOpenSettings === undefined
+              ? {}
+              : {
+                  action: {
+                    label: t('lens.permission.openSettings'),
+                    onPress: onOpenSettings,
+                    hint: t('lens.permission.openSettingsHint'),
+                  },
+                })}
+          script={script}
+        />
       )}
 
       {/*
@@ -694,9 +726,6 @@ export function Lens({
             that is not the size of the thing it stands in for is a grey box that reintroduces
             the flicker it was added to remove.
           */}
-          {awaiting ? (
-            <Skeleton height={LENS_SAMPLE} label={t('lens.capturing')} testID="lens-awaiting" />
-          ) : null}
 
           {/*
             FR-40'S FOURTH PATH, and it is a control rather than a mode.
@@ -765,6 +794,39 @@ export function Lens({
       ) : null}
 
       {/*
+        27'S WORKING CARD, where a grey skeleton stood (F-185, F-236): what the pipeline is doing,
+        in its own steps, and the ring a person can ask how far it has got.
+      */}
+      {working ? (
+        <WorkingState
+          title={t('lens.working.title')}
+          body={t('lens.working.body')}
+          steps={[stepText(steps[0], t), stepText(steps[1], t)]}
+          progress={{ value: pipelineProgress(steps, 0), text: progressText(steps, 0, t) }}
+          script={script}
+        />
+      ) : null}
+
+      {/*
+        27'S REFUSED CARD (F-236): the check that failed first, its threshold and the fix. Retry
+        is the shutter for the camera — a new press clears the held reading — and, for a
+        photograph, putting the reading away, since the same point would be refused again.
+      */}
+      {refusal === null ? null : (
+        <RefusedState
+          {...refusalText(refusal, t, script)}
+          {...(photo !== null
+            ? onDismiss === undefined
+              ? {}
+              : { retry: { label: t('lens.refused.retry'), onPress: onDismiss } }
+            : onCapture === undefined
+              ? {}
+              : { retry: { label: t('lens.refused.retry'), onPress: onCapture } })}
+          script={script}
+        />
+      )}
+
+      {/*
         WHY THERE IS NOTHING TO SHOW, when there is nothing to show.
 
         Four distinct states, and each says something different. Silence in still mode at rest is
@@ -778,11 +840,8 @@ export function Lens({
             <Text size="label" color="foreground" script={script}>
               {t(FAILURE_KEYS[failed])}
             </Text>
-          ) : !granted && photo === null ? (
-            <Text size="label" color="foreground.2" script={script}>
-              {t('lens.noReading')}
-            </Text>
-          ) : photo !== null ? null : mode === 'live' && live === null ? (
+          ) : !granted && photo === null ? null : photo !== null ? null : mode === 'live' &&
+            live === null ? (
             <Text size="label" color="foreground.2" script={script}>
               {t('lens.waiting')}
             </Text>
@@ -867,7 +926,7 @@ export function Lens({
       <Sheet
         // 03's sheet floats over the live frame (F-234). Its contents are F-244's.
         form="floating"
-        open={capture !== null}
+        open={capture !== null && refusal === null}
         onOpenChange={(open) => {
           if (!open) onDismiss?.();
         }}
@@ -883,7 +942,7 @@ export function Lens({
           the move dropped it — four Lens tests went red on `Cannot read properties of null`,
           before any of them had opened a sheet.
         */}
-        {capture === null || display === null ? null : (
+        {capture === null || display === null || refusal !== null ? null : (
           <>
             <Surface
               /* surface-not-card: the capture readout inside a sheet. The sheet is the container; a card in it is a box in a box. */
