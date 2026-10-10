@@ -48,3 +48,12 @@ gate 0 proofs finish in under a minute.
 Until **F-295** is done, `verify-ci` reports test, a11y and contrast red on a clean tree when they
 run uncached: each prints about 7 MB, and its `spawnSync` stops reading at 1 MiB. Read those three
 by their own exit codes.
+
+## Addendum — 2026-10-10 (ADR-0132): "always" is every feature, not every commit
+
+Rule 1 above read `requiredFor: ["always"]` as *before every commit*. In `gates.json` it names the
+kinds of change a gate is required for — every feature, whatever its type. Run on every commit, it
+became a full verification per increment, and the person called it what it was: a review per
+increment. The finding stands — an always-gate must run, and its result must be read — but its
+place is **Tier 2**: once per feature at Verify, and again on the final tree. A commit that changes
+`package.json` or the lockfile runs `security` in Tier 1, because that is what it touched.

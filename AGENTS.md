@@ -97,10 +97,13 @@ initialize → select feature → plan → implement → verify → trace effect
    [`TEMPLATE.md`](.harness/plans/TEMPLATE.md). Use the **planner** subagent for
    non-trivial work.
 4. **Implement** — [`add-feature`](.harness/skills/add-feature/SKILL.md) and the
-   [rules](.harness/rules/). Small, verifiable increments. Tests alongside or first.
+   [rules](.harness/rules/). Small, verifiable increments. Tests alongside or first. Each
+   increment's commit passes **Tier 1**: format, typecheck, the root lint, and the tests of what it
+   changed and what depends on it ([ADR-0132](docs/adr/0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md)).
 5. **Verify** — [`verify-gate`](.harness/skills/verify-gate/SKILL.md). The **evaluator**
-   subagent reviews the feature **once**, so the checker is not the implementer. The implementer
-   then fixes its findings or records them as `backlog` features, re-runs the gates and records the
+   subagent reviews the feature **once**, so the checker is not the implementer. The full gate set
+   (**Tier 2**) runs here, once per feature, before that review. The implementer then fixes its
+   findings or records them as `backlog` features, re-runs Tier 2 on the final tree and records the
    evidence — a feature is **never sent back for a second review**. A finding that can be neither
    fixed nor recorded stops the loop for the user.
    → [`/verify`](.harness/commands/verify.md)

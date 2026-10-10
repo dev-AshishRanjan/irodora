@@ -38,3 +38,15 @@ Links: [[a-package-gate-is-not-the-repository-gate]]
 run. So a plain run never reaches the steps after test. At F-236's close-out, `--all` found the a11y
 mutation proof red since F-232 (F-324). Read test, a11y and contrast by their own exit codes, as the
 lesson above says, and every other step from `--all`.
+
+## Addendum — 2026-10-10 (ADR-0132): the floor is per feature
+
+The floor this lesson set — state, security and the five code gates under every increment — made
+each increment cost a feature's verification. Corrected by the person and recorded in ADR-0132:
+
+- **An increment's commit is Tier 1.** Format, typecheck, the root lint, and the tests of what
+  changed and its dependents. A plan's per-increment list still adds to that; it never replaces it.
+- **The full set, the always-gates included, is Tier 2**, run once per feature at Verify.
+
+What this lesson caught is still caught: lint is in Tier 1, and security is in Tier 2, which the
+evaluator also runs.

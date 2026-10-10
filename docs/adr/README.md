@@ -147,6 +147,7 @@ Two rules that matter more than the format:
 | [0129](0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md) | A screen declares its data conditions and the state each shows | Accepted |
 | [0130](0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md) | The steps' mono is Inconsolata, cut at 27's width and weight | Accepted |
 | [0131](0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md) | The CVD preview is Machado at full severity on every token and sample, and is never stored | Accepted |
+| [0132](0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md) | Verification is tiered: scoped checks per increment, the full gate set once per feature | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

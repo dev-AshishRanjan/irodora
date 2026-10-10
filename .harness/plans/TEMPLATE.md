@@ -73,7 +73,10 @@ The exact gates to run, and the evidence to capture
 ```
 node scripts/verify-state.mjs
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
-pnpm security   # always (gates.json): every commit, whatever an increment’s own list says
+# Tier 1, each increment's commit (ADR-0132): format:check, typecheck, the ROOT lint, and
+#   pnpm turbo run test --filter='...[HEAD]'   — plus a domain gate only where its inputs changed.
+# Tier 2, once per feature at Verify and again after the review's fixes: every gate above,
+#   the always-gates (state, security) and node scripts/verify-ci.mjs --all.
 # plus: color-golden | cvd | content | a11y | contrast — whichever apply
 ```
 

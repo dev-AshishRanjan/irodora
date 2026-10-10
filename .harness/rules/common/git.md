@@ -24,7 +24,14 @@ Branch protection: required checks green · one review · linear history · no f
 **Never commit red.** A commit is a point someone can return to; a red one is not.
 
 Before committing: the gates that apply to what you changed are green, and the evidence is
-in `progress.md`.
+recorded. **Two tiers** ([ADR-0132](../../../docs/adr/0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md)):
+
+- **An increment's commit — Tier 1.** `pnpm format:check`, `pnpm typecheck`, the ROOT `pnpm lint`,
+  and `pnpm turbo run test --filter='...[HEAD]'` (what changed and everything that depends on it).
+  State, or a domain gate, only when the increment changes what it reads.
+- **A feature — Tier 2, once.** The feature's whole `verification` list, the always-gates (`state`,
+  `security`) and `verify-ci --all`: before the one review, and again on the final tree after its
+  fixes. Its evidence goes in `progress.md`.
 
 **Never push without being asked.** Committing is local bookkeeping; pushing is
 publication.

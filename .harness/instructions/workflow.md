@@ -51,7 +51,10 @@ for whatever you are touching.
   and a second implementation of anything in `packages/color-*` is a defect by definition.
 - **Tests alongside or first.**
 - **Keep typecheck, lint and tests green between increments** — not only at the end. A
-  green build is a place you can return to; a red one is not.
+  green build is a place you can return to; a red one is not. Per increment that means Tier 1: the
+  root lint and typecheck, and the tests of what changed plus its dependents
+  (`pnpm turbo run test --filter='...[HEAD]'`). The full gate set is Tier 2, once per feature
+  ([ADR-0132](../../docs/adr/0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md)).
 - **No unrelated refactors.** Note them, and move on. "While I'm here" is how a
   three-file change becomes a thirty-file review nobody can assess.
 

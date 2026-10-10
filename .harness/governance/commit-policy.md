@@ -19,7 +19,9 @@ work with nothing to return to.
 ### Never commit red
 
 The gates that apply to what you changed are green, and the evidence is recorded, before
-you commit.
+you commit. For an increment that is **Tier 1**, the checks scoped to what it touched; the full gate
+set is **Tier 2**, run once per feature at Verify ([ADR-0132](../../docs/adr/0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md)). An increment is a
+logical unit with its own commit, not a verification checkpoint.
 
 A red commit on `main` blocks everyone, and a red commit on a branch is a landmine for
 whoever bisects through it later.
