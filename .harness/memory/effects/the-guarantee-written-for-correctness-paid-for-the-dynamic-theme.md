@@ -92,3 +92,8 @@ settles a broken floor with `settleFloors`, the same function the generator uses
 by the E3 rule, and reported as a `floor` correction. Lightness now moves only with a correction
 naming it, and `seed.test.ts` asserts that across all 720 seeds, every one of which still applies.
 The ceiling it clamps to is 0.026 now, not 0.01.
+
+## F-240: the device palette is simulated too
+
+`ThemeProvider` applies `simulatePalette` to whichever palette paints, the device palette included.
+The app's preview sweep renders four subjects on a palette seeded from a device accent to hold it.

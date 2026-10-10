@@ -663,7 +663,7 @@ Checked against the source on 2026-09-10 — each returned no implementation:
 | `06` | bookmark a colour | `F-237` |
 | `13` | *"Save Outfit to Lookbook"* | `F-238` |
 | `15` | *Tabular Numeric Figures*, *Show Provenance Badges* switches (haptics exists, its switch does not) | `F-239` |
-| `15` | app-wide CVD preview — Standard · Protanopia · Deuteranopia · Tritanopia | `F-240` |
+| `15` | app-wide CVD preview — Standard · Protanopia · Deuteranopia · Tritanopia | `F-240` ✓ |
 | `23` | avatar | `F-241` |
 | `23` | seasonal summary label | `F-223` |
 | `23` `08` | *Export Profile PDF*, *Export Precision Delta PDF* | `F-263` — the existing `ExportSubject` shape carries both |

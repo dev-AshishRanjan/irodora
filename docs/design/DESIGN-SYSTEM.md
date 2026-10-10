@@ -306,7 +306,7 @@ Every component in `@irodora/ui` must:
    `scripts/a11y-scope.mjs` fails on a component reachable from neither.
 6. **Never rely on colour alone** to convey state.
 
-### Colour components carry two more
+### Colour components carry three more
 
 7. **Never render a colour without its provenance.** The type system enforces it
    ([ADR-0005](../adr/0005-measurement-provenance-is-a-type.md)).
@@ -316,6 +316,11 @@ Every component in `@irodora/ui` must:
    through `Text on={sample}` ([ADR-0116](../adr/0116-text-on-a-sample-and-a-samples-edge-move-the-e3-way-per-sample.md)).
    A token on a sample is the pairing nothing declares, and the conformance rule `sample-ink`
    reports it where it fails.
+10. **Derive on `source`, paint through `paint`** (F-240). `useTheme().colors` is the palette as
+    it paints, which under the colour-vision preview is simulated. Anything computed from a
+    colour (an ink, an edge, a shadow, a document) reads `source`, the declared palette, and
+    paints its result through `paint`. In Standard the two are the same object
+    ([ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)).
 
 ### The chrome is drawn once, and placed by `Screen` (F-234)
 
@@ -378,6 +383,27 @@ card's foot ([ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-fou
   paragraph that is only a zero. Neither sees everything: a labelled zero, a blank box smaller than
   the tap target, and a condition nobody registers pass, and
   [ADR-0129](../adr/0129-a-screen-declares-its-data-conditions-and-the-state-each-shows.md) lists them.
+
+### The colour-vision preview repaints every token and sample (F-240)
+
+`15`'s section 2 offers Standard, Protanopia, Deuteranopia and Tritanopia. A mode repaints every
+token and every sample through the engine's own simulation, Machado at severity 1, in whichever
+palette is painting, the device palette included
+([ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)).
+
+- **One simulation.** `simulatePaint` and `simulatePalette` in `@irodora/design-tokens` call
+  `@irodora/cvd-engine`. No component simulates, and no copy of the model exists outside the
+  engine; `verify-preview-boundary` holds both.
+- **Simulate the render, never render the simulation.** `ThemeProvider` paints `colors`; a
+  component derives on `source` and paints through `paint` (rule 10).
+- **Labelled while on.** `VisionStrip` sits above the tab bar on every route, names the model and
+  the severity, says photographs and the camera are not simulated, and calls Tritanopia
+  approximate (R9 §4 E4).
+- **Never stored, never exported.** The mode is held in memory at the root; every stored row and
+  exported byte is the declared colour.
+- **Held by two sweeps.** The ui and app registries render each subject in Standard and in each
+  mode, and every painted value must be the engine's simulation of the Standard one, with nothing
+  else changed.
 
 ---
 

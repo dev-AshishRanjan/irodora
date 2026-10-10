@@ -32,3 +32,9 @@ F-233, and anything else that sets text on a sample, should call this rather tha
 eye.
 
 Related: [[two-thorough-checks-and-neither-looked-at-a-pair]].
+
+## F-240: chosen on the declared colours, then painted
+
+Under the colour-vision preview the ink is still chosen on the declared palette and sample, and the
+choice is painted through the simulation. Re-choosing on simulated colours would show a corrected app
+(E-193).

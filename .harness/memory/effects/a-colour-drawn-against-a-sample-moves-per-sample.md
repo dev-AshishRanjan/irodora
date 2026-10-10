@@ -44,3 +44,9 @@ every sample, and the colour is computed on Hermes and on Node alike.
 
 Related: [[text-on-a-sample-chooses-its-ink-and-says-when-neither-passes]],
 [[a-component-can-satisfy-the-letter-of-its-own-proof]], [[text-on-a-sample-is-measured-whatever-chose-its-ink]].
+
+## F-240: solved on `source`, painted through `paint`
+
+`onSample`, `sampleInk` and `sampleEdge` read the declared palette and the declared sample. The
+preview paints what they return. Both preview sweeps name a derivation from the painted palette
+(E-193).

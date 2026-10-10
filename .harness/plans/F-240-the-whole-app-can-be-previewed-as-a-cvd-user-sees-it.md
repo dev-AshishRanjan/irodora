@@ -310,5 +310,17 @@ not confirmed. Increment 1 re-checks what an ADR quotes before it is written.
 - content;
 - a11y (after the fix): ui 409, mobile 344, scope 86/86;
 - contrast: ui 385, mobile 344. |
-| 10 | | |
+| 10 | this commit | **Close-out.** **Effects:** E-192 to E-196, each with its note and index line:
+- E-192: the engine's simulation, one copy;
+- E-193: `colors` is painted, and a derivation reads `source`;
+- E-194: never stored or exported;
+- E-195: the strip rides on the tab bar;
+- E-196: 15's section 2 is ChoiceGroup's pill form.
+
+E-095 (the device palette is simulated too, with a `to` on `simulatePalette`), E-158 and E-160 (chosen on `source`, then painted) are updated, each with a section in its note. **Documents:** DESIGN-SYSTEM.md gains component rule 10 (derive on `source`, paint through `paint`) and a section on the preview; R9 §9 marks F-240 ✓. **Recorded, not fixed:**
+- F-326: one simulation, one name;
+- F-327: whether the census's 11 simulated pairings below their floor stand or move;
+- F-328: OutfitBuilder's slot cards without keys. Mockup 13 governs that screen; gate 0 refuses an R9 UI feature without a mockup.
+
+**Downstream notes** on F-262, F-264, F-265, F-266, F-267, F-247, F-241, F-243, F-255 and F-256. No feature owns a simulated-CVD e2e journey (NFR-10); F-240's notes say so. **The attestation:** criterion 1 quoted verbatim, `blocks: release`, `outstanding`: the tree half is gated, and a device run in every palette is what remains, which this workstation cannot make. **Tier 1, each exit 0:** format, lint, state (19 checks, 177 warnings, the new one F-240's attestation). Nothing executable changed, so typecheck and tests are not re-run here; Tier 2 follows. |
 | review | | |

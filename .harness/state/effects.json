@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-09",
+  "updated": "2026-10-10",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3635,6 +3635,10 @@
         {
           "kind": "file",
           "ref": "packages/design-tokens/src/settle.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/design-tokens/src/preview.ts#simulatePalette"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3644,7 +3648,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE DEVICE RUNS THE GATE’S OWN FUNCTIONS. `checkContrast` and `checkSeparation` take the palettes as an argument, so CI passes the real manifest and a phone passes a palette it derived a millisecond ago — one set of functions, two callers, rather than a second implementation that agrees until it does not. `CheckableManifest` is the argument type, and a full `Manifest` satisfies it, so the two cannot diverge without a compile error. `seed.test.ts` sweeps every hue in both modes — 720 cases — asserting each is applied or refused with a reason and never applied unchecked, that lightness is preserved exactly EXCEPT where a reported `floor` correction names the move (F-225 — a silent lightness change is the failure), that every derived value is in gamut, and that the refusals are reachable while an ordinary accent is not refused. The app-side tests assert that `appearance.tsx` hands the provider a seeded theme ONLY when it was both chosen and checked. They do not render `_layout.tsx`, so the layout's own use of that result is held by its type, not by a test (F-225's review). The runtime policy is a generated target, so a manifest change that is not regenerated fails the build.",
+      "guard": "THE DEVICE RUNS THE GATE’S OWN FUNCTIONS. `checkContrast` and `checkSeparation` take the palettes as an argument, so CI passes the real manifest and a phone passes a palette it derived a millisecond ago — one set of functions, two callers, rather than a second implementation that agrees until it does not. `CheckableManifest` is the argument type, and a full `Manifest` satisfies it, so the two cannot diverge without a compile error. `seed.test.ts` sweeps every hue in both modes — 720 cases — asserting each is applied or refused with a reason and never applied unchecked, that lightness is preserved exactly EXCEPT where a reported `floor` correction names the move (F-225 — a silent lightness change is the failure), that every derived value is in gamut, and that the refusals are reachable while an ordinary accent is not refused. The app-side tests assert that `appearance.tsx` hands the provider a seeded theme ONLY when it was both chosen and checked. They do not render `_layout.tsx`, so the layout's own use of that result is held by its type, not by a test (F-225's review). The runtime policy is a generated target, so a manifest change that is not regenerated fails the build. F-240 (ADR-0131 §3): the device palette is simulated like every declared one — ThemeProvider applies simulatePalette to whichever palette paints — and the app preview sweep renders four subjects on a palette seeded from a device accent (hue 258) to hold it; packages/ui/test/vision.test.tsx simulates a seeded palette.",
       "memory": "memory/effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md",
       "rationale": "NFR-3 PAID FOR THIS, AND NOBODY WROTE IT FOR THAT. A theme seeded by a platform accent cannot be verified when the manifest is compiled, and every accessibility guarantee here rests on gate 9 and gate 10 having measured a palette before it ships — so the checks have to run on the device, against the values that will be painted. That is possible only because the colour packages have no runtime dependencies, no `node:*`, no DOM and no `process`, and return byte-identical results everywhere. That rule exists so a colour is the SAME colour everywhere, argued on correctness grounds; it turns out to be the property that makes a PROVABLY ACCESSIBLE dynamic theme possible, which most products cannot do because their checking code is a build-time tool with a filesystem. SECOND TIME IN THREE FEATURES that a constraint written for one reason answered a question asked later — the chroma ceiling did it in E-093 — and both times the constraint gave a better answer than the one being invented. It is also a reason not to relax NFR-3 for convenience, recorded where somebody weighing that would find it. THE DEVICE CARRIES THE POLICY AND NOT THE PROSE: 11 KB rather than 36, because `role` is a paragraph for a reader and there is no reader on a phone. THE PATH THAT CANNOT FAIL IS SAID OUT LOUD: a derived theme preserves lightness exactly and caps chroma at 0.01, so it differs from a palette the gate already passed by less than the check can resolve, and a 720-case sweep confirms no valid seed is ever refused by the checks. The check still runs, because \"it cannot fail today\" is a statement about today’s derivation rule rather than a licence to stop asking. AND IT FORCED A WIDENING: three types assumed a palette always has a name from a build-time list, and the shareable card had the same assumption one level out — it took a theme name and used it only to index a colour table. A name is a fine handle for a thing somebody declared and the wrong handle for a thing derived a moment ago. F-225 (2026-09-25) BROKE THE PATH THAT COULD NOT FAIL, AND THE CHECK KEPT FOR THAT DAY CAUGHT IT. The README's values sit at zero margin on their floors (the E3 moves are the SMALLEST passing step), so a tint that lifts chroma can now push one under. The device settles it with `settleFloors`, the same function the generator uses for Slate, in its own theme only, and reports each move as a `floor` correction. All 720 seeds still apply. The rule that decides it is ADR-0096's replacement, not ADR-0096's, and E-148 carries it. THE RAISED CEILING REACHES THE DEVICE TOO: a device tint may now carry C 0.026 in the chrome where it carried 0.01, because the tint clamps to the manifest ceiling and ADR-0111 raised it. The ceiling a device tint may reach is therefore the mockups' own, not a stricter one.",
       "confidence": 0.9,
@@ -6486,7 +6490,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "packages/ui/test/badges.test.tsx: inkOnSample reports NEITHER on 24's mid-tones (#87795D, #827252), picks the dark ink on #4495A3 (the decoy), and swaps inks with the theme's polarity. `pair-undeclared` cannot see text on a sample, which is why this has its own tests.",
+      "guard": "packages/ui/test/badges.test.tsx: inkOnSample reports NEITHER on 24's mid-tones (#87795D, #827252), picks the dark ink on #4495A3 (the decoy), and swaps inks with the theme's polarity. `pair-undeclared` cannot see text on a sample, which is why this has its own tests. F-240 (ADR-0131 §3): the ink is chosen on the declared palette and sample (`source`) and painted through `paint`, so a preview simulates the choice instead of choosing again on simulated colours — held by both preview sweeps (E-193).",
       "memory": "memory/effects/text-on-a-sample-chooses-its-ink-and-says-when-neither-passes.md",
       "rationale": "C8: text drawn ON a colour sample takes whichever of foreground / inverse.foreground has the higher WCAG contrast against the sample, and the result says whether it clears 4.5:1. A mid-tone clears it with neither ink — 24's tinted ΔE00 badges do — and that is F-259's to settle, not something the helper hides. F-233 (any text on a sample) should reuse it rather than choose an ink by eye."
     },
@@ -6579,7 +6583,7 @@
       ],
       "severity": "high",
       "feature": "F-233",
-      "guard": "test:packages/design-tokens/test/on-sample.test.ts (the gamut scan in four palettes; the reach per luminance; the 222 device-palette gaps answered; the tie, the chromatic fallback and minimality, each with a decoy) · test:packages/design-tokens/test/swatch-edge.test.ts (the moved keyline measured by its own arithmetic) · gate:contrast — apps/mobile/test/screens-sample-ink.test.ts pins the census and a digest of every value drawn against the corpus in every palette, and a 0.01 change to the edge floor was shown to fail all four.",
+      "guard": "test:packages/design-tokens/test/on-sample.test.ts (the gamut scan in four palettes; the reach per luminance; the 222 device-palette gaps answered; the tie, the chromatic fallback and minimality, each with a decoy) · test:packages/design-tokens/test/swatch-edge.test.ts (the moved keyline measured by its own arithmetic) · gate:contrast — apps/mobile/test/screens-sample-ink.test.ts pins the census and a digest of every value drawn against the corpus in every palette, and a 0.01 change to the edge floor was shown to fail all four. F-240 (ADR-0131 §3): onSample, sampleInk and sampleEdge solve on `source` — the declared palette and the declared sample — and the result is painted through `paint`; both preview sweeps (E-193) name a derivation from the painted palette.",
       "memory": "memory/effects/a-colour-drawn-against-a-sample-moves-per-sample.md",
       "rationale": "ADR-0116: E3 applied per sample. Every ink set on a sample and every line around one is chosen by onSample at render, so a change to its search, its tie-break, its floors, the inks, the keyline or the well repaints every sample in the product and changes the colour drawn on Hermes and on Node alike. The gate-9 corpus test is the one place a drift shows before a device does. The sample family's components draw ONLY what sampleEdge and sampleInk return: a component that painted a token on a sample instead would pass as a token and fail the floor on a mid-tone. F-233's review: the line is drawn at the element's width (keylineWidth, raw.keylinePx; C20), no line is drawn where an element binds none and the sample holds its own edge, and OQ-46 asks a person whether a line the drawing lacks should be drawn at all."
     },
@@ -7959,6 +7963,242 @@
       "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129.",
       "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
       "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-240",
+      "id": "E-192",
+      "severity": "high",
+      "scope": [
+        "packages/cvd-engine",
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/cvd-engine/src/machado.ts#simulateAnomalous"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/design-tokens/src/preview.ts#simulatePaint"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/design-tokens/src/preview.ts#simulatePalette"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/theme.tsx#ThemeProvider"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/VisionStrip.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/cvd/preview-palettes.test.ts"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "color-golden"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "packages/design-tokens/test/preview.test.ts: simulatePaint is the engine’s simulateAnomalous at CVD_SEVERITY for every token of every palette; Chrome’s published deuteranopia matrix equals MACHADO_DEUTAN at full severity to three decimals; Machado commutes with alpha compositing, and Viénot, the decoy, does not (46.5 % of blends off). scripts/verify-preview-boundary.mjs, in `lint`: no Machado coefficient (read from the engine’s own tables) in any source outside packages/cvd-engine/src, and no simulateDichromacy, VIENOT_1999 or hasDichromacySupport in the preview’s five modules, each proved on a planted break every run. gate:color-golden holds the engine’s matrices to their published values. The census (preview-palettes.test) pins what each mode does to the declared pairings, so a change of model or severity shows there.",
+      "memory": "memory/effects/the-preview-is-the-engines-simulation-and-nothing-else.md",
+      "rationale": "ADR-0131 D1: the preview is the engine’s Machado simulation at severity 1, the scoring’s own model, on every token and sample. Change the model, the severity or a matrix and every painted colour, the strip’s words (it names the model and the severity), the census and the ADR move with it. A second copy of the model would agree until either changed, which is why the boundary scan exists. Tritan stays Machado’s, labelled approximate; Brettel tritan is F-008’s decision and would not commute with compositing (D1d)."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-240",
+      "id": "E-193",
+      "severity": "high",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/theme.tsx#ThemeValue"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "packages/ui/src"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleInk"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleEdge"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/elevation.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/card.ts#paintedCard"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "guard": "Both preview sweeps render every subject in Standard and in each mode and require previewMismatches to be empty — every painted value simulatePaint of its Standard value, every other prop, string and layout unchanged: packages/ui/test/conformance.test.tsx over every registered component (decoys: a fixture painting a literal, a derivation from the painted palette), and apps/mobile/test/screens.test.tsx over 82 subjects plus a palette seeded from a device accent. packages/ui/test/vision.test.tsx: Standard is the identity, object for object; `source` is the declared palette and `paint` the same simulation. `typecheck` holds every reader to `colors`, `source`, `paint` and `vision`.",
+      "memory": "memory/effects/colors-is-painted-and-a-derivation-reads-source.md",
+      "rationale": "ADR-0131 D3, D4: `colors` is the PAINTED palette. Anything derived from a colour — a sample’s ink, its edge, the card document — reads `source` and paints the result through `paint`. Derived from the painted palette instead, the preview would show a corrected app rather than a simulated one, and only the sweeps would see it. Every new reader of the theme chooses which of the two it needs."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-240",
+      "id": "E-194",
+      "severity": "high",
+      "scope": [
+        "apps/mobile",
+        "packages/store",
+        "packages/export"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/vision.tsx"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "packages/store/src"
+        },
+        {
+          "kind": "module",
+          "ref": "packages/export/src"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/store"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/export"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/card.ts#cardSvg"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/vision.test.tsx: choosing every mode writes nothing to the device (decoy: a display setting changed the same way writes exactly one row), and every launch starts in Standard. export-screen.test: every format’s bytes are identical across modes (with a decoy). add-garment-offer.test: the stored row is identical across modes. card.test: the document is built from the declared palette and only its display is painted. scripts/verify-preview-boundary.mjs, in `lint`: no preview API and no useTheme in the store, the export writers, the app’s store and export adapters or cardSvg’s body, proved on a planted break every run.",
+      "memory": "memory/effects/the-preview-is-never-stored-or-exported.md",
+      "rationale": "F-240 criterion 2, ADR-0131 §4: the mode is held in memory at the root and never written, and what is stored or exported is the declared colour. A writer that reached for the theme would record a simulation as if it were the value, and golden rule 12’s provenance would be false."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-240",
+      "id": "E-195",
+      "severity": "medium",
+      "scope": [
+        "apps/mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/tabBar.tsx#AppTabBar"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "apps/mobile/app"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-262"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-264"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-265"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-267"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        }
+      ],
+      "guard": "apps/mobile/test/vision.test.tsx: the strip is above the bar while a mode is on and absent in Standard (decoy); it qualifies Tritanopia, and only Tritanopia, as approximate; it says the same in Japanese with its own separator. The `screens/VisionStrip` conformance subject (tritanopia) and its census entry; F-145’s tab-ownership test in screens.test.",
+      "memory": "memory/effects/the-strip-rides-on-the-tab-bar.md",
+      "rationale": "ADR-0131 D7, R9 §4 E4: the strip labels the preview on every route by riding on the tab bar, so a change to the bar moves it. A sheet covers it while open. Any layout compared with a mockup while a mode is on (F-262, F-264, F-265, F-267) carries the strip, which no mockup draws."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-240",
+      "id": "E-196",
+      "severity": "medium",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/ChoiceGroup.tsx#ChoiceGroupProps"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Preferences.tsx"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/state/feature_list.json#F-262"
+        }
+      ],
+      "guard": "The conformance subject `ChoiceGroup (pills, 15)`. packages/ui/test/pill-selection.test.tsx recomputes the pill form’s default height (23 dp) and its xs gap. apps/mobile/test/preferences-vision.test.tsx recomputes VISION_PILL_HEIGHT from 15’s inventory (decoy: the chosen box), and holds the order, the chosen pill, the presses and the route’s wiring.",
+      "memory": "memory/effects/fifteens-section-two-is-choicegroups-pill-form.md",
+      "rationale": "ChoiceGroup’s pill form (radio-group semantics, F-232’s choice-pill tone) is the control in 15’s section 2. A change to its height, gap or semantics changes 15’s section, and F-262, which composes 15, keeps it."
     }
   ]
 }
