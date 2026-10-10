@@ -113,8 +113,10 @@ export function FabricSwatch({
   keyline = FABRIC_KEYLINE,
   testID,
 }: FabricSwatchProps): React.JSX.Element {
-  const { colors } = useTheme();
-  const edge = sampleEdge(hex, colors, keyline);
+  const { source, paint } = useTheme();
+  // DERIVED FROM THE APP AS DECLARED, THEN PAINTED (F-240, ADR-0131 §3): the edge is solved on the
+  // declared palette and sample, and the preview simulates what is drawn — never re-solves for it.
+  const edge = sampleEdge(hex, source, keyline);
   const { d } = pinkedOutline(size);
   return (
     <View
@@ -131,7 +133,13 @@ export function FabricSwatch({
         none is given, and the conformance scan reads it as a colour literal (as Glyph notes).
       */}
       <Svg width={size} height={size} fill="none" accessible={false}>
-        <Path d={d} fill={hex} stroke={edge.hex} strokeWidth={LINE} strokeLinejoin="miter" />
+        <Path
+          d={d}
+          fill={paint(hex)}
+          stroke={paint(edge.hex)}
+          strokeWidth={LINE}
+          strokeLinejoin="miter"
+        />
       </Svg>
     </View>
   );

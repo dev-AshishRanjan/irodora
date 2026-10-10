@@ -140,7 +140,7 @@ export function Strip({
   keyline = STRIP_KEYLINE,
   testID,
 }: StripProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { source, paint } = useTheme();
 
   /*
    * THE FLOOR IS A FLOOR. A caller asking for less gets the floor, silently, rather than a
@@ -171,7 +171,8 @@ export function Strip({
               // quantity it already has instead of converting to fractions.
               flex: weights?.[index] ?? 1,
               height: tall,
-              backgroundColor: member.hex,
+              // The sample as the preview paints it; its edge solved on the declared one (F-240).
+              backgroundColor: paint(member.hex),
               /*
                * WHERE TWO SAMPLES MEET THERE IS NO LINE AND NO CORNER.
                *
@@ -184,7 +185,7 @@ export function Strip({
               borderBottomWidth: KEYLINE,
               borderLeftWidth: first ? KEYLINE : 0,
               borderRightWidth: end ? KEYLINE : 0,
-              borderColor: sampleEdge(member.hex, colors, keyline).hex,
+              borderColor: paint(sampleEdge(member.hex, source, keyline).hex),
               borderTopLeftRadius: first ? corner.sample : 0,
               borderBottomLeftRadius: first ? corner.sample : 0,
               borderTopRightRadius: end ? corner.sample : 0,

@@ -12,6 +12,7 @@ export {
   blankPanels,
   type BlankPanel,
   brokenFlexChains,
+  colourValues,
   carriesFigure,
   figureNodes,
   flattenStyle,
@@ -30,6 +31,8 @@ export {
   type TestNode,
   type TextStyle,
 } from './tree.js';
+
+export { previewMismatches } from './preview.js';
 
 export { isStatusToken, resolveColor, tokensForValue, type ColorResolution } from './tokens.js';
 

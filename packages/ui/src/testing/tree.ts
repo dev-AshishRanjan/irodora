@@ -343,6 +343,154 @@ export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[]
   return out;
 }
 
+/** The colour properties a node can paint, in `style` or, for SVG, in props. */
+const COLOUR_PROPS = [
+  'color',
+  'backgroundColor',
+  'borderColor',
+  'tintColor',
+  'shadowColor',
+  'fill',
+  'stroke',
+] as const;
+
+/**
+ * A gradient's stops, as painted colours (F-232).
+ *
+ * `<LinearGradient><Stop stopColor="#5DA9E5" /></LinearGradient>` renders to ONE node whose
+ * `gradient` prop is `[offset, argb, offset, argb, …]`, each colour a signed 32-bit integer. The
+ * `Stop` elements themselves are gone. Without this a gradient track would be colour no gate
+ * measures, and a hand-typed stop would pass the colour-literal rule by being invisible to it:
+ * the same blindness `svgPaint` below closed for strokes.
+ */
+function gradientStops(node: TestNode): readonly string[] {
+  const raw: unknown = node.props['gradient'];
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (let i = 1; i < raw.length; i += 2) {
+    const argb: unknown = raw[i];
+    if (typeof argb !== 'number') continue;
+    const word = argb >>> 0;
+    const alpha = (word >>> 24) & 0xff;
+    const hex = `#${(word & 0xffffff).toString(16).padStart(6, '0')}`;
+    // A translucent stop keeps its alpha (F-232's review), so it resolves as the colour it is.
+    out.push(
+      alpha === 0xff
+        ? hex
+        : `rgba(${String((word >>> 16) & 0xff)}, ${String((word >>> 8) & 0xff)}, ${String(word & 0xff)}, ${String(Math.round((alpha / 255) * 1000) / 1000)})`,
+    );
+  }
+  return out;
+}
+
+/**
+ * An SVG element's paint, as if it had been written in `style`.
+ *
+ * ## It arrives parsed, not as the string that was written
+ *
+ * `<Path stroke="#131110" />` renders to
+ * `{"stroke": {"type": 0, "payload": 4279439632}}` — react-native-svg resolves the colour into
+ * an ARGB integer before the tree is built, and `4279439632` is `0xFF131110`. So a scan
+ * looking for a string finds nothing, which is how the first version of this reported a
+ * component whose every shape is stroked as painting no colour at all.
+ *
+ * `type: 0` is a solid colour. Anything else is a gradient or a pattern, which has no single
+ * value to resolve against a token and is skipped rather than guessed at.
+ *
+ * `none` and `null` are dropped for the reason `transparent` is below: they say *do not paint
+ * this*, and asking which token the absence of a colour is would report every deliberately
+ * unfilled shape as a literal.
+ */
+function svgPaint(node: TestNode): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  /*
+   * A TSPAN'S FILL IS THE LIBRARY'S, NOT THE AUTHOR'S.
+   *
+   * `SvgXml` parses the content of a `<text>` into a `TSpan` child and gives that child a
+   * hard `#000000` default — it does not inherit from the `<text>` element above it, from an
+   * enclosing group, or from a `fill` on the `<svg>` root. All three were tried: wrapping
+   * the content in an explicit `<tspan fill>` produced a NESTED tspan with the same black,
+   * and declaring a token default on the root changed nothing.
+   *
+   * The colour a person sees is on the `RNSVGText` node, which this scan reads. The exported
+   * artefact — which is what a card IS — is an SVG string whose fills are correct and where
+   * ordinary inheritance applies.
+   *
+   * So this is a defect in what the parser REPORTS rather than in what the product paints,
+   * and excluding the one node type it fabricates is narrower than the alternative:
+   * contorting a shared, exported artefact to satisfy a preview renderer.
+   */
+  if (node.type === 'RNSVGTSpan') return out;
+  for (const property of ['fill', 'stroke'] as const) {
+    const raw: unknown = node.props[property];
+
+    const asString = stringOrUndefined(raw);
+    if (asString !== undefined) {
+      if (asString !== 'none') out[property] = asString;
+      continue;
+    }
+
+    if (raw === null || typeof raw !== 'object') continue;
+    const paint = raw as { readonly type?: unknown; readonly payload?: unknown };
+    if (paint.type !== 0 || typeof paint.payload !== 'number') continue;
+
+    // Alpha is dropped: the token registry is keyed by `#rrggbb`, and an SVG paint's opacity
+    // is a separate prop this scan does not read.
+    out[property] = `#${(paint.payload & 0xffffff).toString(16).padStart(6, '0')}`;
+  }
+  return out;
+}
+
+/**
+ * The colours ONE node paints, as written: no token resolution and no descent.
+ *
+ * Extracted from `paintedColors` (F-240) so the CVD preview sweep can compare a node's paint, as
+ * written, with the engine's simulation of the same node in Standard — one reader of SVG props,
+ * gradient stops and `style`, never two that could drift.
+ */
+export function colourValues(
+  node: TestNode,
+): readonly { readonly property: string; readonly value: string }[] {
+  const out: { property: string; value: string }[] = [];
+  /*
+   * SVG PAINTS THROUGH PROPS, NOT THROUGH `style`.
+   *
+   * `<Path stroke="#131110" />` is a colour on the screen and it is not in `style`, so this
+   * scan could not see it — and a component whose only colour is a stroke was reported as
+   * painting NOTHING. F-162's navigation glyphs are exactly that shape, and without this the
+   * product would have gained a colour surface that no gate measures.
+   *
+   * The same failure family as [[a-new-engine-can-make-an-old-gate-blind]]: the checker was
+   * correct about the technology it was written against, and a new one arrived that expresses
+   * the same thing differently. `fill` and `stroke` are read from props and merged with the
+   * style, so everything downstream — the literal check, the token resolution, the contrast
+   * pairing — treats them as the colours they are.
+   */
+  const style = { ...svgPaint(node), ...flattenStyle(node.props['style']) };
+  for (const property of COLOUR_PROPS) {
+    const value = stringOrUndefined(style[property]);
+    if (value === undefined) continue;
+    /*
+     * `transparent` PAINTS NOTHING, so there is nothing to resolve and nothing to measure
+     * the contrast of. Asking which token the absence of a colour is would report every
+     * deliberately see-through surface as a literal.
+     *
+     * It went unnoticed until F-023 for a small reason worth recording: `Icon` has set it on
+     * its triangle glyph since F-003, and the only registered subject that renders an Icon is
+     * `Status`, which is registered with `kind="bad"` — the CROSS glyph. The transparent
+     * branch had never once been rendered through this suite.
+     *
+     * Narrow on purpose: this skips one keyword, and `LiteralColour` still proves a real
+     * hand-typed hex is reported.
+     */
+    if (value.toLowerCase() === 'transparent') continue;
+    out.push({ property, value });
+  }
+  for (const stop of gradientStops(node)) out.push({ property: 'stopColor', value: stop });
+  return out;
+}
+
 /** Every colour any node paints, with where it came from. Used by the colour-literal check. */
 export function paintedColors(
   root: TestNode,
@@ -353,104 +501,6 @@ export function paintedColors(
   readonly path: readonly string[];
 }[] {
   const out: { property: string; resolution: ColorResolution; path: readonly string[] }[] = [];
-  const PROPS = [
-    'color',
-    'backgroundColor',
-    'borderColor',
-    'tintColor',
-    'shadowColor',
-    'fill',
-    'stroke',
-  ] as const;
-
-  /**
-   * A gradient's stops, as painted colours (F-232).
-   *
-   * `<LinearGradient><Stop stopColor="#5DA9E5" /></LinearGradient>` renders to ONE node whose
-   * `gradient` prop is `[offset, argb, offset, argb, …]`, each colour a signed 32-bit integer. The
-   * `Stop` elements themselves are gone. Without this a gradient track would be colour no gate
-   * measures, and a hand-typed stop would pass the colour-literal rule by being invisible to it:
-   * the same blindness `svgPaint` below closed for strokes.
-   */
-  const gradientStops = (node: TestNode): readonly string[] => {
-    const raw: unknown = node.props['gradient'];
-    if (!Array.isArray(raw)) return [];
-    const out: string[] = [];
-    for (let i = 1; i < raw.length; i += 2) {
-      const argb: unknown = raw[i];
-      if (typeof argb !== 'number') continue;
-      const word = argb >>> 0;
-      const alpha = (word >>> 24) & 0xff;
-      const hex = `#${(word & 0xffffff).toString(16).padStart(6, '0')}`;
-      // A translucent stop keeps its alpha (F-232's review), so it resolves as the colour it is.
-      out.push(
-        alpha === 0xff
-          ? hex
-          : `rgba(${String((word >>> 16) & 0xff)}, ${String((word >>> 8) & 0xff)}, ${String(word & 0xff)}, ${String(Math.round((alpha / 255) * 1000) / 1000)})`,
-      );
-    }
-    return out;
-  };
-
-  /**
-   * An SVG element's paint, as if it had been written in `style`.
-   *
-   * ## It arrives parsed, not as the string that was written
-   *
-   * `<Path stroke="#131110" />` renders to
-   * `{"stroke": {"type": 0, "payload": 4279439632}}` — react-native-svg resolves the colour into
-   * an ARGB integer before the tree is built, and `4279439632` is `0xFF131110`. So a scan
-   * looking for a string finds nothing, which is how the first version of this reported a
-   * component whose every shape is stroked as painting no colour at all.
-   *
-   * `type: 0` is a solid colour. Anything else is a gradient or a pattern, which has no single
-   * value to resolve against a token and is skipped rather than guessed at.
-   *
-   * `none` and `null` are dropped for the reason `transparent` is below: they say *do not paint
-   * this*, and asking which token the absence of a colour is would report every deliberately
-   * unfilled shape as a literal.
-   */
-  const svgPaint = (node: TestNode): Record<string, unknown> => {
-    const out: Record<string, unknown> = {};
-
-    /*
-     * A TSPAN'S FILL IS THE LIBRARY'S, NOT THE AUTHOR'S.
-     *
-     * `SvgXml` parses the content of a `<text>` into a `TSpan` child and gives that child a
-     * hard `#000000` default — it does not inherit from the `<text>` element above it, from an
-     * enclosing group, or from a `fill` on the `<svg>` root. All three were tried: wrapping
-     * the content in an explicit `<tspan fill>` produced a NESTED tspan with the same black,
-     * and declaring a token default on the root changed nothing.
-     *
-     * The colour a person sees is on the `RNSVGText` node, which this scan reads. The exported
-     * artefact — which is what a card IS — is an SVG string whose fills are correct and where
-     * ordinary inheritance applies.
-     *
-     * So this is a defect in what the parser REPORTS rather than in what the product paints,
-     * and excluding the one node type it fabricates is narrower than the alternative:
-     * contorting a shared, exported artefact to satisfy a preview renderer.
-     */
-    if (node.type === 'RNSVGTSpan') return out;
-    for (const property of ['fill', 'stroke'] as const) {
-      const raw: unknown = node.props[property];
-
-      const asString = stringOrUndefined(raw);
-      if (asString !== undefined) {
-        if (asString !== 'none') out[property] = asString;
-        continue;
-      }
-
-      if (raw === null || typeof raw !== 'object') continue;
-      const paint = raw as { readonly type?: unknown; readonly payload?: unknown };
-      if (paint.type !== 0 || typeof paint.payload !== 'number') continue;
-
-      // Alpha is dropped: the token registry is keyed by `#rrggbb`, and an SVG paint's opacity
-      // is a separate prop this scan does not read.
-      out[property] = `#${(paint.payload & 0xffffff).toString(16).padStart(6, '0')}`;
-    }
-    return out;
-  };
-
   const walk = (node: TestNode, path: readonly string[]): void => {
     /*
      * A CLIP IS GEOMETRY, NEVER PAINT (F-232). react-native-svg gives a `ClipPath` and its shapes a
@@ -459,42 +509,8 @@ export function paintedColors(
      */
     if (node.type === 'RNSVGClipPath') return;
     const here = path.concat(node.type);
-    /*
-     * SVG PAINTS THROUGH PROPS, NOT THROUGH `style`.
-     *
-     * `<Path stroke="#131110" />` is a colour on the screen and it is not in `style`, so this
-     * scan could not see it — and a component whose only colour is a stroke was reported as
-     * painting NOTHING. F-162's navigation glyphs are exactly that shape, and without this the
-     * product would have gained a colour surface that no gate measures.
-     *
-     * The same failure family as [[a-new-engine-can-make-an-old-gate-blind]]: the checker was
-     * correct about the technology it was written against, and a new one arrived that expresses
-     * the same thing differently. `fill` and `stroke` are read from props and merged with the
-     * style, so everything downstream — the literal check, the token resolution, the contrast
-     * pairing — treats them as the colours they are.
-     */
-    const style = { ...svgPaint(node), ...flattenStyle(node.props['style']) };
-    for (const property of PROPS) {
-      const value = stringOrUndefined(style[property]);
-      if (value === undefined) continue;
-      /*
-       * `transparent` PAINTS NOTHING, so there is nothing to resolve and nothing to measure
-       * the contrast of. Asking which token the absence of a colour is would report every
-       * deliberately see-through surface as a literal.
-       *
-       * It went unnoticed until F-023 for a small reason worth recording: `Icon` has set it on
-       * its triangle glyph since F-003, and the only registered subject that renders an Icon is
-       * `Status`, which is registered with `kind="bad"` — the CROSS glyph. The transparent
-       * branch had never once been rendered through this suite.
-       *
-       * Narrow on purpose: this skips one keyword, and `LiteralColour` still proves a real
-       * hand-typed hex is reported.
-       */
-      if (value.toLowerCase() === 'transparent') continue;
+    for (const { property, value } of colourValues(node))
       out.push({ property, resolution: resolveColor(value, theme), path: here });
-    }
-    for (const stop of gradientStops(node))
-      out.push({ property: 'stopColor', resolution: resolveColor(stop, theme), path: here });
     for (const child of node.children ?? []) if (isNode(child)) walk(child, here);
   };
 
@@ -502,7 +518,6 @@ export function paintedColors(
   return out;
 }
 
-/** A foreground drawn over a ground, as it actually appears in a rendered tree. */
 export interface RenderedPair {
   /** The text's colour, resolved. */
   readonly foreground: ColorResolution;

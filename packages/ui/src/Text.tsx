@@ -54,7 +54,7 @@ import {
   type LargeTextToken,
   type TextToken,
 } from '@irodora/design-tokens';
-import { useTheme, type ThemeColors } from './theme.js';
+import { useTheme, type ThemeValue } from './theme.js';
 import { useDisplaySettings } from './displaySettings.js';
 import type { Sample } from './inkOnSample.js';
 import { sampleInk } from './sampleInk.js';
@@ -206,9 +206,10 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
 function inkOf(
   color: ColorFor<TypeSize> | undefined,
   on: Sample | undefined,
-  colors: ThemeColors,
+  { colors, source, paint }: Pick<ThemeValue, 'colors' | 'source' | 'paint'>,
 ): string {
-  if (on !== undefined) return sampleInk(on.hex, colors).hex;
+  // On a sample: solved on the declared palette and sample, then painted (F-240, ADR-0131 §3).
+  if (on !== undefined) return paint(sampleInk(on.hex, source).hex);
   if (color === undefined) throw new TypeError('Text: neither a colour nor a sample to sit on');
   return colors[color];
 }
@@ -271,7 +272,7 @@ export function Text<S extends TypeSize>({
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const { tabularNumerals } = useDisplaySettings();
   const step = nativeType[script][size];
   const japanese = script === 'japanese';
@@ -306,7 +307,7 @@ export function Text<S extends TypeSize>({
       // a mockup draws them. The Latin sans keeps the platform font: it has no tofu failure mode.
       style={{
         ...step,
-        color: inkOf(color, on, colors),
+        color: inkOf(color, on, theme),
         ...faceStyle(face, japanese, step.fontSize),
         ...(weight === undefined ? {} : { fontWeight: weightOf(weight) }),
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:

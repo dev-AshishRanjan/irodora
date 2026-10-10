@@ -10,7 +10,13 @@
 import { Pressable, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  nativeColors,
+  nativeNumericFeature,
+  nativeTapTarget,
+  simulatePaint,
+  simulatePalette,
+} from '@irodora/design-tokens';
 import type { Theme } from '@irodora/design-tokens';
 import {
   Accordion,
@@ -76,7 +82,10 @@ import {
   Text,
   TextField,
   ThemeProvider,
+  sampleEdge,
+  useTheme,
   VisionPreviewProvider,
+  type VisionMode,
   Wordmark,
   type ActionBarProps,
   type AppBarProps,
@@ -89,6 +98,7 @@ import {
   checkStatusAdjacency,
   checkSubject,
   formatFindings,
+  previewMismatches,
   REQUIRED_STATES,
   type ConformanceSubject,
   type Finding,
@@ -126,12 +136,38 @@ import {
  * the harness rather than of the component — and it only became visible when the first portalled
  * component was registered.
  */
+/**
+ * The CVD preview mode `draw` renders in (F-240): Standard everywhere but the preview sweep, which
+ * sets it around each render and restores it.
+ */
+let drawVision: VisionMode = 'standard';
+
 function draw(node: React.JSX.Element, theme: Theme): TestNode {
-  const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
+  const rendered = render(
+    <VisionPreviewProvider mode={drawVision}>
+      <ThemeProvider theme={theme}>{node}</ThemeProvider>
+    </VisionPreviewProvider>,
+  );
   const json = rendered.toJSON();
   rendered.unmount();
   if (json === null) throw new Error('rendered nothing');
   return Array.isArray(json) ? { type: 'Root', props: {}, children: json } : json;
+}
+
+/**
+ * A fixture's own colour, painted as a screen paints a sample: through the theme's `paint`
+ * (F-240). `paint` is the identity in Standard, so every rule in this file reads exactly what it
+ * read before; under the CVD preview it is the engine's simulation, which the preview sweep holds
+ * every painted value to. A literal written straight into a style would be a colour no preview
+ * reaches — in a fixture as in a screen.
+ */
+function Painted({
+  children,
+}: {
+  readonly children: (paint: (css: string) => string) => React.JSX.Element;
+}): React.JSX.Element {
+  const { paint } = useTheme();
+  return children(paint);
 }
 
 /** A colour that carries provenance, which is what Swatch requires by type (ADR-0005). */
@@ -764,7 +800,11 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               Ai-nezumi
             </Text>
           }
-          media={<View style={{ height: 48, backgroundColor: '#526A6B' }} />}
+          media={
+            <Painted>
+              {(paint) => <View style={{ height: 48, backgroundColor: paint('#526A6B') }} />}
+            </Painted>
+          }
           footer={
             <Text size="caption" color="foreground.2">
               Measured under D65
@@ -869,7 +909,11 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       draw(
         <Card
           radius="sm"
-          media={<View style={{ height: 96, backgroundColor: '#526A6B' }} />}
+          media={
+            <Painted>
+              {(paint) => <View style={{ height: 96, backgroundColor: paint('#526A6B') }} />}
+            </Painted>
+          }
           mediaInset={7.25}
           mediaRadius="sm"
         >
@@ -1090,11 +1134,15 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     sampleValues: [hex],
     render: (_state, theme) =>
       draw(
-        <View style={{ backgroundColor: hex }}>
-          <Text size="body" on={{ hex, color: SAMPLE }}>
-            Kuri-iro
-          </Text>
-        </View>,
+        <Painted>
+          {(paint) => (
+            <View style={{ backgroundColor: paint(hex) }}>
+              <Text size="body" on={{ hex, color: SAMPLE }}>
+                Kuri-iro
+              </Text>
+            </View>
+          )}
+        </Painted>,
         theme,
       ),
   })),
@@ -1577,9 +1625,11 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     kind: 'static',
     render: (_state, theme) => {
       const rendered = render(
-        <ThemeProvider theme={theme}>
-          <DeltaBars rows={DELTA_ROWS} scale={1} scaleName="Share of tolerance" testID="deltas" />
-        </ThemeProvider>,
+        <VisionPreviewProvider mode={drawVision}>
+          <ThemeProvider theme={theme}>
+            <DeltaBars rows={DELTA_ROWS} scale={1} scaleName="Share of tolerance" testID="deltas" />
+          </ThemeProvider>
+        </VisionPreviewProvider>,
       );
       const layout = (width: number) => ({
         nativeEvent: { layout: { x: 0, y: 0, width, height: 26 } },
@@ -1776,23 +1826,25 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     kind: 'static',
     render: (_state, theme) => {
       const rendered = render(
-        <ThemeProvider theme={theme}>
-          <Carousel
-            form="centred"
-            index={1}
-            onIndexChange={() => undefined}
-            testID="carousel"
-            items={['Ai-nezumi', 'Kuchiba', 'Sabi-asagi'].map((name) => ({
-              key: name,
-              name: `Show ${name}`,
-              node: (
-                <Text size="title" color="foreground">
-                  {name}
-                </Text>
-              ),
-            }))}
-          />
-        </ThemeProvider>,
+        <VisionPreviewProvider mode={drawVision}>
+          <ThemeProvider theme={theme}>
+            <Carousel
+              form="centred"
+              index={1}
+              onIndexChange={() => undefined}
+              testID="carousel"
+              items={['Ai-nezumi', 'Kuchiba', 'Sabi-asagi'].map((name) => ({
+                key: name,
+                name: `Show ${name}`,
+                node: (
+                  <Text size="title" color="foreground">
+                    {name}
+                  </Text>
+                ),
+              }))}
+            />
+          </ThemeProvider>
+        </VisionPreviewProvider>,
       );
       fireEvent(rendered.getByTestId('carousel'), 'layout', {
         nativeEvent: { layout: { x: 0, y: 0, width: 384, height: 600 } },
@@ -1895,15 +1947,17 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         reading: ['やや暗い', 'やや鮮やか', 'やや寒色'][i] ?? row.reading,
       }));
       const rendered = render(
-        <ThemeProvider theme={theme}>
-          <DeltaBars
-            rows={rows}
-            scale={1}
-            scaleName="許容差に対する割合"
-            script="japanese"
-            testID="deltas"
-          />
-        </ThemeProvider>,
+        <VisionPreviewProvider mode={drawVision}>
+          <ThemeProvider theme={theme}>
+            <DeltaBars
+              rows={rows}
+              scale={1}
+              scaleName="許容差に対する割合"
+              script="japanese"
+              testID="deltas"
+            />
+          </ThemeProvider>
+        </VisionPreviewProvider>,
       );
       const layout = (width: number) => ({
         nativeEvent: { layout: { x: 0, y: 0, width, height: 26 } },
@@ -2274,13 +2328,17 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     kind: 'static',
     render: (_state, theme) =>
       draw(
-        <Row gap="sm">
-          {NAV_ICON_NAMES.map((name) => (
-            <NavIcon key={name} name={name} color="#131110" />
-          ))}
-          {/* 01's active Home, filled (F-234). */}
-          <NavIcon name="home" color="#131110" filled />
-        </Row>,
+        <Painted>
+          {(paint) => (
+            <Row gap="sm">
+              {NAV_ICON_NAMES.map((name) => (
+                <NavIcon key={name} name={name} color={paint('#131110')} />
+              ))}
+              {/* 01's active Home, filled (F-234). */}
+              <NavIcon name="home" color={paint('#131110')} filled />
+            </Row>
+          )}
+        </Painted>,
         theme,
       ),
   },
@@ -2845,6 +2903,172 @@ const SUBJECTS: readonly ConformanceSubject[] = [
 describe('the derived themes conform too (F-225)', () => {
   it('produces no findings on Slate or Obsidian', () => {
     expect(formatFindings(checkAll(SUBJECTS, ['slate.dark', 'obsidian.dark']))).toBe('');
+  });
+});
+
+/**
+ * THE CVD PREVIEW, THROUGH THE SAME REGISTRY (F-240, ADR-0131 D10).
+ *
+ * Every subject, in every required state, is rendered in Standard and then in each preview mode,
+ * and the two trees are walked together: every painted value must be the engine's simulation of the
+ * Standard one, and nothing else may change — no printed hex, no name, no layout. Sumi for every
+ * subject; the subjects that paint samples in all four palettes as well, since a sample's edge and
+ * ink are solved per palette. The conformance rules above stay in Standard: a simulated colour is no
+ * declared token, so the rules that resolve tokens cannot read it.
+ */
+describe('the CVD preview paints every subject through the engine, and changes nothing else (F-240)', () => {
+  const MODES = ['protanopia', 'deuteranopia', 'tritanopia'] as const;
+
+  afterEach(() => {
+    drawVision = 'standard';
+  });
+
+  /** Every way a subject, in one palette, is not its Standard render simulated, in each mode. */
+  const mismatches = (subject: ConformanceSubject, theme: Theme): string[] => {
+    const out: string[] = [];
+    for (const state of REQUIRED_STATES[subject.kind]) {
+      drawVision = 'standard';
+      const standard = subject.render(state, theme);
+      if (standard === null) continue;
+      for (const mode of MODES) {
+        drawVision = mode;
+        const preview = subject.render(state, theme);
+        drawVision = 'standard';
+        if (preview === null) {
+          out.push(`${theme}/${state}/${mode}: renders nothing`);
+          continue;
+        }
+        for (const finding of previewMismatches(standard, preview, mode))
+          out.push(`${theme}/${state}/${mode}: ${finding}`);
+      }
+    }
+    return out;
+  };
+
+  it.each(SUBJECTS.map((s) => [s.name, s] as const))('%s, in Sumi', (_name, subject) => {
+    expect(mismatches(subject, 'dark')).toStrictEqual([]);
+  });
+
+  it.each(SUBJECTS.filter((s) => s.sampleValues !== undefined).map((s) => [s.name, s] as const))(
+    '%s, which paints samples, in Washi, Slate and Obsidian',
+    (_name, subject) => {
+      for (const theme of ['light', 'slate.dark', 'obsidian.dark'] as const)
+        expect({ [theme]: mismatches(subject, theme) }).toStrictEqual({ [theme]: [] });
+    },
+  );
+
+  describe('DECOYS — each way of getting the preview wrong is named', () => {
+    const DECOY_HEX = '#B5495B';
+    const subject = (name: string, body: () => React.JSX.Element): ConformanceSubject => ({
+      name,
+      kind: 'static',
+      render: (_state, theme) => draw(body(), theme),
+    });
+
+    it('a sample painted past paint(), as its raw hex', () => {
+      function RawHex(): React.JSX.Element {
+        return <View style={{ width: 48, height: 48, backgroundColor: DECOY_HEX }} />;
+      }
+      expect(
+        mismatches(
+          subject('raw', () => <RawHex />),
+          'dark',
+        ).length,
+      ).toBe(MODES.length);
+    });
+
+    it('a sample simulated with another deficiency’s model', () => {
+      function WrongModel(): React.JSX.Element {
+        const { vision, paint } = useTheme();
+        // Protan and deutan swapped: a simulation, but not the one the mode names.
+        const wrong =
+          vision === 'protanopia'
+            ? 'deuteranopia'
+            : vision === 'deuteranopia'
+              ? 'protanopia'
+              : vision;
+        const hex = wrong === vision ? paint(DECOY_HEX) : simulatePaint(DECOY_HEX, wrong);
+        return <View style={{ width: 48, height: 48, backgroundColor: hex }} />;
+      }
+      const found = mismatches(
+        subject('wrong model', () => <WrongModel />),
+        'dark',
+      );
+      expect(found.some((f) => f.includes('/protanopia:'))).toBe(true);
+      expect(found.some((f) => f.includes('/deuteranopia:'))).toBe(true);
+    });
+
+    it('an edge derived from the PAINTED palette rather than the declared one', () => {
+      // Find a sample whose edge, solved on the simulated palette, is not the simulated edge solved
+      // on the declared one: where the two orders differ. Searched, and asserted to exist.
+      const declared = nativeColors.dark;
+      const greys = Array.from({ length: 32 }, (_, i) => {
+        const v = (40 + i * 6).toString(16).padStart(2, '0').toUpperCase();
+        return `#${v}${v}${v}`;
+      });
+      const witness = MODES.flatMap((mode) =>
+        greys
+          .map((hex) => ({ hex, mode }))
+          .filter(
+            ({ hex }) =>
+              sampleEdge(hex, simulatePalette(declared, mode), false).hex.toUpperCase() !==
+              simulatePaint(sampleEdge(hex, declared, false).hex, mode).toUpperCase(),
+          ),
+      )[0];
+      expect(witness).toBeDefined();
+      if (witness === undefined) return;
+      function PaintedEdge(): React.JSX.Element {
+        const { colors, paint } = useTheme();
+        return (
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderWidth: 1,
+              // Wrong: solved on the painted palette, then not painted.
+              borderColor: sampleEdge(witness?.hex ?? '', colors, false).hex,
+              backgroundColor: paint(witness?.hex ?? ''),
+            }}
+          />
+        );
+      }
+      const found = mismatches(
+        subject('painted edge', () => <PaintedEdge />),
+        'dark',
+      );
+      expect(found.some((f) => f.includes(`/${witness.mode}:`) && f.includes('borderColor'))).toBe(
+        true,
+      );
+    });
+
+    it('a printed value that the preview changed', () => {
+      function PrintsPainted(): React.JSX.Element {
+        const { paint } = useTheme();
+        return (
+          <Text size="body" color="foreground">
+            {paint(DECOY_HEX)}
+          </Text>
+        );
+      }
+      const found = mismatches(
+        subject('printed', () => <PrintsPainted />),
+        'dark',
+      );
+      expect(found.some((f) => f.includes('where Standard has'))).toBe(true);
+    });
+
+    it('and the sweep passes a component that does it right', () => {
+      function Right(): React.JSX.Element {
+        const { paint } = useTheme();
+        return <View style={{ width: 48, height: 48, backgroundColor: paint(DECOY_HEX) }} />;
+      }
+      expect(
+        mismatches(
+          subject('right', () => <Right />),
+          'dark',
+        ),
+      ).toStrictEqual([]);
+    });
   });
 });
 

@@ -204,9 +204,10 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
     script = 'latin',
     testID,
   } = props;
-  const { colors } = useTheme();
-  // On a sample the ink is chosen against the sample (C8); otherwise it is the surface's own.
-  const ink = tint === undefined ? 'foreground' : inkOnSample(tint.hex, colors).ink;
+  const { colors, source, paint } = useTheme();
+  // On a sample the ink is chosen against the sample (C8); otherwise it is the surface's own. Chosen
+  // on the declared palette and sample, then painted (F-240, ADR-0131 §3).
+  const ink = tint === undefined ? 'foreground' : inkOnSample(tint.hex, source).ink;
   const outlined = edge || (fill === undefined && tint === undefined);
   return (
     <View
@@ -224,7 +225,7 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
         paddingHorizontal: nativeSpacing.sm,
         borderRadius: nativeRadius[radius],
         backgroundColor:
-          tint !== undefined ? tint.hex : fill !== undefined ? colors[fill] : 'transparent',
+          tint !== undefined ? paint(tint.hex) : fill !== undefined ? colors[fill] : 'transparent',
         borderWidth: outlined ? 1 : 0,
         ...(outlined ? { borderColor: colors.border } : {}),
       }}
@@ -272,7 +273,7 @@ function ChipControl({
   kanji,
   ...rest
 }: ChipControlProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, paint } = useTheme();
   const inert = disabled || loading;
   const tone = pillTone(selected, selectedFill, selectedEdge, colors);
 
@@ -321,7 +322,7 @@ function ChipControl({
             width: SAMPLE_DOT,
             height: SAMPLE_DOT,
             borderRadius: nativeRadius.pill,
-            backgroundColor: dot.hex,
+            backgroundColor: paint(dot.hex),
           }}
         />
       )}

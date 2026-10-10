@@ -236,7 +236,7 @@ export function Swatch({
   bleed = false,
   children,
 }: SwatchProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, source, paint } = useTheme();
   const tone = selectionTone({ selected, focused }, colors);
   /*
    * THE PRESS RESPONSE (F-189). A tap on a colour sample did NOTHING until the next screen
@@ -252,7 +252,9 @@ export function Swatch({
   const corner = bleed
     ? { sample: 0, keyline: 0 }
     : swatchCorner(fill ? tall : Math.min(wide, tall), cornerStep);
-  const edge = sampleEdge(hex, colors, keyline);
+  // DERIVED FROM THE APP AS DECLARED, THEN PAINTED (F-240, ADR-0131 §3): the edge is solved on the
+  // declared palette and sample, and the preview simulates what is drawn — never re-solves for it.
+  const edge = sampleEdge(hex, source, keyline);
   /*
    * A LINE ONLY WHERE ONE IS DRAWN OR NEEDED. An element that draws the keyline always carries it;
    * one that does not carries a line only where the sample would otherwise lose its edge (the well
@@ -287,19 +289,21 @@ export function Swatch({
         height: tall,
         padding: 1,
         borderWidth: keylineWidth - KEYLINE_INSET,
-        borderColor: edge.hex,
-        backgroundColor: edge.hex,
+        borderColor: paint(edge.hex),
+        backgroundColor: paint(edge.hex),
         borderRadius: lineRadius,
       }}
     >
-      <View style={{ flex: 1, backgroundColor: hex, borderRadius: corner.sample }}>{children}</View>
+      <View style={{ flex: 1, backgroundColor: paint(hex), borderRadius: corner.sample }}>
+        {children}
+      </View>
     </View>
   ) : (
     <View
       style={{
         width: fill ? '100%' : wide,
         height: tall,
-        backgroundColor: hex,
+        backgroundColor: paint(hex),
         borderRadius: corner.sample,
       }}
     >
