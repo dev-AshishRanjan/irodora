@@ -41,8 +41,11 @@ import {
   STATE_TEST_IDS,
   Text,
   ThemeProvider,
+  VisionPreviewProvider,
   swatchAccessibleName,
   type StateKind,
+  type ThemeColors,
+  type VisionMode,
 } from '@irodora/ui';
 import {
   brokenFlexChains,
@@ -54,6 +57,7 @@ import {
   formatFindings,
   raggedFigures,
   tabularNodes,
+  previewMismatches,
   REQUIRED_STATES,
   type ConformanceSubject,
   type TestNode,
@@ -127,7 +131,8 @@ import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
-import type { Theme } from '@irodora/design-tokens';
+import type { Mode, Theme } from '@irodora/design-tokens';
+import { deviceTheme } from '../src/appearance';
 import { find } from '../src/finder';
 import { deriveWeights, toStoreWrite } from '../src/palette';
 import { equivalentsFor } from '../src/contemporary';
@@ -173,8 +178,28 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
+/**
+ * What `draw` renders under (F-240): Standard and the declared palette everywhere but the preview
+ * sweep, which sets the mode — and for its device-palette pass, a seeded palette — around each
+ * render and restores both.
+ */
+let drawVision: VisionMode = 'standard';
+let drawPalette: {
+  readonly name: string;
+  readonly mode: Mode;
+  readonly colors: ThemeColors;
+} | null = null;
+
 function draw(node: React.JSX.Element, theme: Theme): TestNode {
-  const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
+  const rendered = render(
+    <VisionPreviewProvider mode={drawVision}>
+      {drawPalette === null ? (
+        <ThemeProvider theme={theme}>{node}</ThemeProvider>
+      ) : (
+        <ThemeProvider palette={drawPalette}>{node}</ThemeProvider>
+      )}
+    </VisionPreviewProvider>,
+  );
   const json = rendered.toJSON();
   /*
    * UNMOUNTED BEFORE THE NEXT SUBJECT, and this is not tidiness.
@@ -2369,6 +2394,69 @@ describe('every screen conforms', () => {
  * subject rendering a state declares it. And every module in `src/screens/` is in `DECLARED` — so a
  * new screen is named here until it says what it shows, even when the answer is "none".
  */
+
+/**
+ * THE CVD PREVIEW, OVER EVERY SCREEN (F-240, ADR-0131 D10).
+ *
+ * Each subject is rendered in Standard and then in each preview mode, and the two trees walked
+ * together: every painted value must be the engine's simulation of the Standard one, and nothing
+ * else may change — no printed hex, no name, no layout. Sumi for every subject; a handful again on a
+ * palette SEEDED from a device accent, which no build-time name refers to and which the preview has
+ * to reach all the same (F-225's note on this feature).
+ */
+describe('the CVD preview paints every screen through the engine, and changes nothing else (F-240)', () => {
+  const MODES = ['protanopia', 'deuteranopia', 'tritanopia'] as const;
+
+  afterEach(() => {
+    drawVision = 'standard';
+    drawPalette = null;
+  });
+
+  const mismatches = (subject: ConformanceSubject, theme: Theme): string[] => {
+    const out: string[] = [];
+    for (const state of REQUIRED_STATES[subject.kind]) {
+      drawVision = 'standard';
+      const standard = subject.render(state, theme);
+      if (standard === null) continue;
+      for (const mode of MODES) {
+        drawVision = mode;
+        const preview = subject.render(state, theme);
+        drawVision = 'standard';
+        if (preview === null) {
+          out.push(`${state}/${mode}: renders nothing`);
+          continue;
+        }
+        for (const finding of previewMismatches(standard, preview, mode))
+          out.push(`${state}/${mode}: ${finding}`);
+      }
+    }
+    return out;
+  };
+
+  it.each(SCREENS.map((s) => [s.name, s] as const))(
+    '%s, in Sumi',
+    (_name, subject) => {
+      expect(mismatches(subject, 'dark')).toStrictEqual([]);
+    },
+    60_000,
+  );
+
+  it('reaches a palette seeded from a device accent, which no build-time name refers to', () => {
+    const seeded = deviceTheme({ read: () => ({ l: 0.55, c: 0.09, h: 258 }) }, 'dark');
+    expect(seeded.kind).toBe('applied');
+    if (seeded.kind !== 'applied') return;
+    drawPalette = { name: seeded.name, mode: seeded.mode, colors: seeded.colors };
+    const subjects = SCREENS.filter((s) =>
+      ['screens/Home', 'screens/Wardrobe', 'screens/ColourDetail', 'screens/VisionStrip'].includes(
+        s.name,
+      ),
+    );
+    expect(subjects).toHaveLength(4);
+    for (const subject of subjects)
+      expect({ [subject.name]: mismatches(subject, 'dark') }).toStrictEqual({ [subject.name]: [] });
+  }, 120_000);
+});
+
 describe('every screen declares its data conditions', () => {
   /** Each screen module's declaration, by file name. Read from the modules, never restated. */
   const DECLARED: Readonly<Record<string, ScreenStates | undefined>> = {

@@ -19,9 +19,13 @@ import { colourValues, flattenStyle, type TestNode } from './tree.js';
 /**
  * Props that are not compared as written:
  * - `fill`, `stroke` and `gradient` carry colour, and are read through `colourValues`;
- * - `jestInlineStyle` is the test renderer's mirror of `style`, which is compared.
+ * - `jestInlineStyle` is the test renderer's mirror of `style`, which is compared;
+ * - `xml` (`SvgXml`'s document) carries paint as attributes, compared through `XML_PAINT`.
  */
-const SKIPPED_PROPS = new Set(['fill', 'stroke', 'gradient', 'jestInlineStyle']);
+const SKIPPED_PROPS = new Set(['fill', 'stroke', 'gradient', 'jestInlineStyle', 'xml']);
+
+/** A paint attribute inside an SVG document handed over as text. */
+const XML_PAINT = /\b(fill|stroke|stop-color)="([^"]*)"/gu;
 
 /** The colours `colourValues` reads from `style`; any other `…Color` key is compared here. */
 const READ_STYLE_COLOURS = new Set([
@@ -65,7 +69,15 @@ const label = (c: TestNode | string | undefined): string =>
 function comparable(value: unknown): string {
   if (typeof value === 'function') return 'function';
   try {
-    return value === undefined ? 'undefined' : sameIds(JSON.stringify(value));
+    return value === undefined
+      ? 'undefined'
+      : sameIds(
+          // A React element handed over as a prop (a list's header) renders into the tree, where
+          // it is compared node by node; as a prop it is only its own description.
+          JSON.stringify(value, (_key, v: unknown) =>
+            typeof v === 'object' && v !== null && '$$typeof' in v ? 'element' : v,
+          ),
+        );
   } catch {
     return 'unserialisable';
   }
@@ -169,6 +181,18 @@ export function previewMismatches(
           `${here}.${key}: ${other?.value ?? 'nothing'} where the engine gives ${expected} (Standard ${value})`,
         );
     });
+
+    // An SVG document handed over as text (`SvgXml`'s `xml`): its paint attributes are simulated,
+    // everything else — the printed text included — must be as it was.
+    const xa = a.props['xml'];
+    const xb = b.props['xml'];
+    if (typeof xa === 'string') {
+      const expected = xa.replace(XML_PAINT, (attribute: string, name: string, value: string) =>
+        value === 'none' ? attribute : `${name}="${simulatePaint(value, mode)}"`,
+      );
+      if (typeof xb !== 'string' || xb.toLowerCase() !== expected.toLowerCase())
+        out.push(`${here}.xml: the document is not its Standard self with every paint simulated`);
+    }
 
     // A shadow is paint too: the colours inside `boxShadow` are simulated, the geometry is not.
     const sa = flattenStyle(a.props['style'])['boxShadow'];

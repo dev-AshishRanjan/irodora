@@ -11,8 +11,18 @@
  * evidence about this one.
  */
 
-import { render } from '@testing-library/react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { fireEvent, render } from '@testing-library/react-native';
+
+/*
+ * Saving shows a confirmation (`useConfirm`), and HeroUI's toast reads the safe area, which jest has
+ * no layout to measure. The library's own mock supplies the insets (F-240's stored-row check saves).
+ */
+jest.mock(
+  'react-native-safe-area-context',
+  () => jest.requireActual<{ default: object }>('react-native-safe-area-context/jest/mock').default,
+);
+import { ThemeProvider, VisionPreviewProvider, type VisionMode } from '@irodora/ui';
+import { en } from '../src/i18n/en';
 import { AddGarment } from '../src/screens/AddGarment';
 import { allEntries } from '../src/corpus';
 import type { WardrobeStore } from '../src/wardrobe';
@@ -124,5 +134,48 @@ describe('the wardrobe tally (F-236 review, S3)', () => {
   it('DECOY — a wardrobe with something in it is counted', () => {
     const tree = tally(2);
     expect(tree.getByText('In your wardrobe: 2')).toBeTruthy();
+  });
+});
+
+/**
+ * A colour-vision preview never reaches a stored row (F-240, ADR-0131 §5): the same garment, saved
+ * in every mode, writes the same row — its ids aside, which every save makes anew. The decoy shows
+ * the mode was on: the screen that saved it is painted differently.
+ */
+describe('a colour-vision preview never reaches a stored row (F-240)', () => {
+  const MODES = ['protanopia', 'deuteranopia', 'tritanopia'] as const;
+  const saveIn = (mode: VisionMode): { readonly row: string; readonly drawn: string } => {
+    const store = recordingStore();
+    const rendered = render(
+      <VisionPreviewProvider mode={mode}>
+        <ThemeProvider theme="light">
+          <AddGarment
+            store={store}
+            imageSource={noImages()}
+            offered={{ kind: 'corpus', slug: SLUG }}
+          />
+        </ThemeProvider>
+      </VisionPreviewProvider>,
+    );
+    fireEvent.changeText(rendered.getByLabelText(en['wardrobe.type']), 'Shirt');
+    const drawn = JSON.stringify(rendered.toJSON());
+    fireEvent.press(rendered.getByLabelText(en['wardrobe.save']));
+    rendered.unmount();
+    expect(store.written).toHaveLength(1);
+    const written = store.written[0];
+    // Ids are made anew by every save; everything else is the garment.
+    const row = JSON.stringify(written, (key, value: unknown) => (key === 'id' ? '·' : value));
+    return { row, drawn };
+  };
+
+  it('saves the same row in every mode', () => {
+    const standard = saveIn('standard');
+    for (const mode of MODES)
+      expect({ [mode]: saveIn(mode).row }).toStrictEqual({ [mode]: standard.row });
+  });
+
+  it('DECOY — the screen that saved it is painted differently, so the mode was on', () => {
+    const standard = saveIn('standard');
+    for (const mode of MODES) expect(saveIn(mode).drawn).not.toBe(standard.drawn);
   });
 });

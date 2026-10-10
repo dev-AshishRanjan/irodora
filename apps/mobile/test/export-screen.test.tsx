@@ -12,7 +12,7 @@
  */
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { ThemeProvider, VisionPreviewProvider, type VisionMode } from '@irodora/ui';
 import { toCsv, toJson, WRITERS, type ExportFile, type ExportSubject } from '@irodora/export';
 import { Export } from '../src/screens/Export';
 import type { FileSink, SaveResult } from '../src/export/sink';
@@ -186,3 +186,63 @@ describe('with nothing to export', () => {
 function cap(format: string): string {
   return format.charAt(0).toUpperCase() + format.slice(1);
 }
+
+/**
+ * A colour-vision preview never reaches an exported file (F-240, ADR-0131 §5): every format writes
+ * the same bytes in every mode. The decoy shows the mode was on — the screen itself is painted
+ * differently — so the identity is not the preview having done nothing.
+ */
+describe('a colour-vision preview never reaches an exported file (F-240)', () => {
+  const FORMATS = [
+    'export.formatCsv',
+    'export.formatJson',
+    'export.formatCss',
+    'export.formatTokens',
+    'export.formatAse',
+    'export.formatPdf',
+  ] as const;
+  const MODES = ['protanopia', 'deuteranopia', 'tritanopia'] as const;
+
+  /** The file one format writes, and the screen as drawn, in one mode. */
+  const exportIn = (
+    mode: VisionMode,
+    format: (typeof FORMATS)[number],
+  ): { readonly file: string; readonly drawn: string } => {
+    const written: ExportFile[] = [];
+    const sink: FileSink = {
+      save: (file) => {
+        written.push(file);
+        return Promise.resolve({ kind: 'saved', filename: 'x' });
+      },
+    };
+    const rendered = render(
+      <VisionPreviewProvider mode={mode}>
+        <ThemeProvider theme="light">
+          <Export subject={SUBJECT} sink={sink} />
+        </ThemeProvider>
+      </VisionPreviewProvider>,
+    );
+    choose(en[format]);
+    exportNow();
+    const drawn = JSON.stringify(rendered.toJSON());
+    rendered.unmount();
+    expect(written).toHaveLength(1);
+    const file = written[0];
+    return {
+      file: `${file?.filename ?? ''}|${Buffer.from(file?.bytes ?? []).toString('base64')}`,
+      drawn,
+    };
+  };
+
+  it.each(FORMATS)('%s: the same bytes in every mode', (format) => {
+    const standard = exportIn('standard', format);
+    for (const mode of MODES)
+      expect({ [mode]: exportIn(mode, format).file }).toStrictEqual({ [mode]: standard.file });
+  });
+
+  it('DECOY — the screen itself is painted differently, so the mode was on', () => {
+    const standard = exportIn('standard', 'export.formatCsv');
+    for (const mode of MODES)
+      expect(exportIn(mode, 'export.formatCsv').drawn).not.toBe(standard.drawn);
+  });
+});
