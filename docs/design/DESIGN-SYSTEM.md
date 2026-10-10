@@ -318,8 +318,9 @@ Every component in `@irodora/ui` must:
    reports it where it fails.
 10. **Derive on `source`, paint through `paint`** (F-240). `useTheme().colors` is the palette as
     it paints, which under the colour-vision preview is simulated. Anything computed from a
-    colour (an ink, an edge, a shadow, a document) reads `source`, the declared palette, and
-    paints its result through `paint`. In Standard the two are the same object
+    colour (an ink, an edge, a document) reads `source`, the declared palette, and paints its
+    result through `paint`. A shadow is a token at an alpha, and reads the painted palette: the
+    simulation commutes with alpha. In Standard the two palettes are the same object
     ([ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)).
 
 ### The chrome is drawn once, and placed by `Screen` (F-234)
@@ -397,8 +398,8 @@ palette is painting, the device palette included
 - **Simulate the render, never render the simulation.** `ThemeProvider` paints `colors`; a
   component derives on `source` and paints through `paint` (rule 10).
 - **Labelled while on.** `VisionStrip` sits above the tab bar on every route, names the model and
-  the severity, says photographs and the camera are not simulated, and calls Tritanopia
-  approximate (R9 §4 E4).
+  the severity, says photographs, the camera and anything the system draws are not simulated, and
+  calls Tritanopia approximate (R9 §4 E4).
 - **Never stored, never exported.** The mode is held in memory at the root; every stored row and
   exported byte is the declared colour.
 - **Held by two sweeps.** The ui and app registries render each subject in Standard and in each

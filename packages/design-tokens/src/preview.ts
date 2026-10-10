@@ -47,7 +47,7 @@ export const PREVIEW_DEFICIENCY: Readonly<Record<Exclude<PreviewMode, 'standard'
 type Rgb = readonly [number, number, number];
 
 const HEX = /^#([0-9a-f]{6})([0-9a-f]{2})?$/iu;
-const RGBA = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([^)\s]+)\s*\)$/u;
+const RGBA = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d*\.?\d+)\s*\)$/u;
 
 const fromHex = (six: string): Rgb => {
   const n = Number.parseInt(six, 16);
@@ -67,19 +67,24 @@ export function simulatePaint(css: string, mode: PreviewMode): string {
   const deficiency = PREVIEW_DEFICIENCY[mode];
   const simulate = (rgb: Rgb): Rgb => simulateAnomalous(rgb, deficiency, CVD_SEVERITY);
 
+  // The alpha suffix in the case `toHex` writes, so a value is one string whichever way it came.
   const hex = HEX.exec(css);
-  if (hex !== null) return `${toHex(simulate(fromHex(hex[1] ?? '')))}${hex[2] ?? ''}`;
+  if (hex !== null)
+    return `${toHex(simulate(fromHex(hex[1] ?? '')))}${(hex[2] ?? '').toUpperCase()}`;
 
   const rgba = RGBA.exec(css);
-  if (rgba !== null) {
-    const rgb: Rgb = [Number(rgba[1]) / 255, Number(rgba[2]) / 255, Number(rgba[3]) / 255];
+  // A channel above 255 or an alpha above 1 is not a colour: refused, never clamped into one.
+  const channels = rgba === null ? [] : [rgba[1], rgba[2], rgba[3]].map(Number);
+  if (rgba !== null && channels.every((c) => c <= 255) && Number(rgba[4]) <= 1) {
+    const rgb: Rgb = [(channels[0] ?? 0) / 255, (channels[1] ?? 0) / 255, (channels[2] ?? 0) / 255];
     const [r, g, b] = simulate(rgb).map(byte);
     // The alpha as it was written: the preview moves the colour, never its opacity.
     return `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${rgba[4] ?? ''})`;
   }
 
   throw new TypeError(
-    `simulatePaint: "${css}" is not a format the tokens use (#RRGGBB, #RRGGBBAA, rgba()), so it ` +
+    `simulatePaint: "${css}" is not a colour in a format the tokens use (#RRGGBB, #RRGGBBAA, ` +
+      'rgba() with channels to 255 and an alpha to 1), so it ' +
       'cannot be simulated — and passing it through would leave a colour the preview claims to cover',
   );
 }

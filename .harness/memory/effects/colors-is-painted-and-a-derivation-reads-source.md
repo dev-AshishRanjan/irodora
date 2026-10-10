@@ -10,9 +10,13 @@
 ## Why B changes when A does
 
 Since F-240, `colors` is the palette as it paints, which in a preview mode is simulated. Anything
-computed FROM a colour (a sample's ink, its edge, a shadow, the card's document) must be computed on
+computed FROM a colour (a sample's ink, its edge, the card's document) must be computed on
 `source`, the declared palette, and painted through `paint`. Computed on the painted palette it
 would pick inks for the simulated colours and show a corrected app, not a simulated one.
+
+A shadow is the exception that is not one: `elevationShadow` takes a token and applies only an
+alpha, and Machado commutes with alpha compositing (ADR-0131 D1d), so reading the painted palette
+gives the simulated shadow. A shadow that mixed two colours would have to read `source`.
 
 ## How the sweeps see it
 

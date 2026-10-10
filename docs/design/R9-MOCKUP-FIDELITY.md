@@ -281,7 +281,7 @@ Preserved, built from the mockup's own components, and listed here so it is visi
 - **The CVD preview's label** — `15` draws the mode pills and no indication of the mode anywhere
   else. F-240's second criterion asks that the mode be labelled on screen while it is on, so a
   strip above the tab bar, in `15`'s badge vocabulary, names the mode, the model and severity, and
-  what is not simulated (photographs, the camera), on every route (`F-240`,
+  what is not simulated (photographs, the camera, anything the system draws), on every route (`F-240`,
   [ADR-0131](../adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md) §5).
 - **The camera permission not yet asked for** — `27` draws the Lens without the camera only once it
   is denied, with *Open Device Settings*. Before the first request there is nothing to open: both

@@ -6,7 +6,8 @@
  * composed from `15`'s own badge vocabulary: a `surface.2` pill with the `contrast` glyph naming the
  * mode in words, and one caption line under it saying what the screen is (a simulation, by which
  * model, at which severity), where the model is an approximation (tritanopia), and what it does not
- * reach (photographs and the camera). The words carry the mode (golden rule 13).
+ * reach (photographs, the camera, and whatever the operating system draws: the status bar, the
+ * keyboard, alerts, the share sheet, the photo picker). The words carry the mode (golden rule 13).
  *
  * It sits directly above the tab bar, which is on every route (FR-71, F-145), so it reaches every
  * screen through an invariant that is already tested. It is not interactive: the way back is the

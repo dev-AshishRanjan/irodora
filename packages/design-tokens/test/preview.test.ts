@@ -209,6 +209,24 @@ describe('formats and alpha are kept, and an unreadable format is refused', () =
     },
   );
 
+  // F-240's review (minor 10): a channel past 255 or an alpha past 1 is not a colour, and clamping
+  // it into one would simulate something nobody painted.
+  it.each(['rgba(300, 0, 0, 0.5)', 'rgba(0, 256, 0, 1)', 'rgba(0, 0, 0, 1.5)', 'rgba(0, 0, 0, x)'])(
+    'refuses %j: not a colour, so not clamped into one',
+    (css) => {
+      expect(() => simulatePaint(css, 'deuteranopia')).toThrow(TypeError);
+    },
+  );
+
+  it('DECOY — the limits themselves are colours: 255 and an alpha of 1', () => {
+    expect(simulatePaint('rgba(255, 255, 255, 1)', 'deuteranopia')).toMatch(/^rgba\(.*, 1\)$/u);
+  });
+
+  it('writes a lowercase alpha suffix in toHex’s case, so one colour is one string', () => {
+    expect(simulatePaint('#c0392b8a', 'protanopia')).toBe(simulatePaint('#C0392B8A', 'protanopia'));
+    expect(simulatePaint('#c0392b8a', 'protanopia')).toMatch(/^#[0-9A-F]{8}$/u);
+  });
+
   it('leaves a grey grey, within one level', () => {
     for (const level of [0, 32, 128, 200, 255])
       for (const mode of SIMULATED) {

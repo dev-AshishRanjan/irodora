@@ -148,8 +148,9 @@ only be recoloured by the renderer's arithmetic, which is not the engine's (crit
 
 - **Two names for one simulation** until F-326: *Protanopia* here, *Red-weak (protan)* on the
   colour detail.
-- **Photographs and the camera are not simulated.** The strip says so; a person can still compare a
-  photograph with the simulated chrome around it and be misled about the chrome.
+- **Photographs, the camera and what the OS draws are not simulated.** The strip says so, in those
+  words (*anything the system draws*, F-240’s review S1); a person can still compare a photograph
+  with the simulated chrome around it and be misled about the chrome.
 - **A sheet covers the strip** while it is open.
 - **The detail block's simulated swatches are simulated again** when a mode is on. That is correct
   for "what this screen shows", but it is not idempotent.

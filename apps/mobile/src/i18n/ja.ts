@@ -563,7 +563,7 @@ export const ja: Record<MessageKey, string> = {
   'vision.mode.tritanopia': '3型2色覚',
   'vision.strip.label': 'シミュレーション',
   'vision.strip.model':
-    'Machado（2009）のモデルで、最大の重症度で表示しています。写真とカメラは対象外です。',
+    'Machado（2009）のモデルで、最大の重症度で表示しています。写真、カメラ、システムが表示する部分は対象外です。',
   'vision.strip.tritan': '3型2色覚は近似です。このモデルは3型の人で検証されていません。',
   'settings.tabular': '数字を等幅で表示（ΔE / OKLCh）',
   'settings.haptics': '色見本を選んだときの触覚フィードバック',

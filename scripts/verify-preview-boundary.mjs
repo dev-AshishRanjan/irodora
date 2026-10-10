@@ -10,9 +10,9 @@
  *    none of the preview's API. Byte-identity tests hold the outputs (`export-screen.test`,
  *    `add-garment-offer.test`, `card.test`); this holds the code paths, so a new writer that reached
  *    for the theme would be named before any test had a fixture for it.
- * 2. **One simulation, the engine's** (criterion 1). No Machado coefficient is written anywhere but
- *    `packages/cvd-engine/src`: a second copy of the model would be a second implementation, and the
- *    preview would drift from the scoring the moment either changed.
+ * 2. **One simulation, the engine's** (criterion 1). No Machado matrix, at any severity, is written
+ *    anywhere but `packages/cvd-engine/src`: a second copy of the model would be a second
+ *    implementation, and the preview would drift from the scoring the moment either changed.
  * 3. **The engine's tritan refusal is never bypassed.** The preview's own modules name neither
  *    `simulateDichromacy`, `VIENOT_1999` nor `hasDichromacySupport` (ADR-0131 §1).
  *
@@ -94,31 +94,57 @@ function storedOrExportedFindings(files, card) {
 
 /* --- 2. one simulation ----------------------------------------------------------------------- */
 
-/** Machado's matrices at full severity, read from the engine's own tables, never retyped here. */
-function machadoCoefficients() {
+/**
+ * Machado's matrices at every severity the engine tabulates, one entry per matrix, read from the
+ * engine's own tables and never retyped here: a copy at any severity is a second model (F-240's
+ * review, minor 6).
+ *
+ * A COPY IS A MATRIX, NOT A NUMBER. One six-decimal value turns up by chance in data — a corpus
+ * colour's XYZ equals one of the deutan coefficients — so a file is named only when it holds
+ * {@link COPY_FLOOR} or more of one matrix's distinctive values.
+ *
+ * THE LIMIT, SAID: the scan finds the engine's own digits. A copy rounded to three decimals — the
+ * precision Chrome publishes, which `preview.test` quotes as an oracle — reads as ordinary numbers
+ * and is not found; E-192 says so.
+ */
+const COPY_FLOOR = 3;
+
+function machadoMatrices() {
   const engine = readFileSync(join(ROOT, 'packages/cvd-engine/src/machado.ts'), 'utf8');
-  const out = new Set();
+  const out = [];
   for (const table of ['MACHADO_PROTAN', 'MACHADO_DEUTAN', 'MACHADO_TRITAN']) {
     const body = engine.slice(engine.indexOf(`export const ${table}`));
-    const rows = [...body.slice(0, body.indexOf('];')).matchAll(/\[([^[\]]+)\]/gu)];
-    const full = rows.at(-1)?.[1] ?? '';
-    for (const n of full.split(',').map((x) => x.trim()))
+    let severity = 0;
+    for (const [, row] of body.slice(0, body.indexOf('];')).matchAll(/\[([^[\]]+)\]/gu)) {
       // Distinctive values only: a coefficient of 0 or 1 is everywhere for other reasons.
-      if (/^-?\d\.\d{5,}$/u.test(n)) out.add(n);
+      const values = (row ?? '')
+        .split(',')
+        .map((x) => x.trim())
+        .filter((n) => /^-?\d\.\d{5,}$/u.test(n));
+      if (values.length >= COPY_FLOOR) out.push({ name: `${table}[${String(severity)}]`, values });
+      severity += 1;
+    }
   }
-  if (out.size < 20)
-    throw new Error(`read ${String(out.size)} Machado coefficients from the engine; expected 27`);
+  if (out.length < 30)
+    throw new Error(`read ${String(out.length)} Machado matrices from the engine; expected 30`);
   return out;
 }
 
-function secondSimulationFindings(files, coefficients) {
+/** Every decimal a text writes, as written, each a whole number rather than part of a longer one. */
+const decimalsIn = (text) => new Set(text.match(/(?<![\d.])-?\d+\.\d+(?!\d)/gu) ?? []);
+
+function secondSimulationFindings(files, matrices) {
   const out = [];
-  for (const { path, text } of files)
-    for (const n of coefficients)
-      if (text.includes(n)) {
-        out.push(`${path} writes Machado's ${n} — the model belongs to packages/cvd-engine alone`);
-        break;
-      }
+  for (const { path, text } of files) {
+    const written = decimalsIn(text);
+    const copied = matrices.find(
+      (m) => m.values.filter((n) => written.has(n)).length >= COPY_FLOOR,
+    );
+    if (copied !== undefined)
+      out.push(
+        `${path} writes Machado's ${copied.name} — the model belongs to packages/cvd-engine alone`,
+      );
+  }
   return out;
 }
 
@@ -146,8 +172,8 @@ function refusalFindings(files) {
 
 console.log(`\n${BOLD}Irodora — the colour-vision preview's boundary (F-240)${OFF}\n`);
 
-const coefficients = machadoCoefficients();
-const anyCoefficient = [...coefficients][0];
+const matrices = machadoMatrices();
+const someMatrix = matrices.at(-1)?.values ?? [];
 
 // The proof first: each promise, broken in planted text, must be named.
 const planted = {
@@ -159,15 +185,23 @@ const planted = {
     },
   ),
   second: secondSimulationFindings(
-    [{ path: 'planted/filter.ts', text: `const m = [${anyCoefficient}, 0, 0];` }],
-    coefficients,
+    [{ path: 'planted/filter.ts', text: `const m = [${someMatrix.slice(0, 3).join(', ')}];` }],
+    matrices,
+  ),
+  // The decoy: one coefficient by chance in data, as the corpus holds one, is not a copy.
+  coincidence: secondSimulationFindings(
+    [{ path: 'planted/colour.json', text: `{"xyz": {"y": ${someMatrix[0] ?? ''}}}` }],
+    matrices,
   ),
   refusal: refusalFindings([
     { path: 'planted/preview.ts', text: "simulateDichromacy(rgb, 'tritan')" },
   ]),
 };
 const proven =
-  planted.stored.length === 2 && planted.second.length === 1 && planted.refusal.length === 1;
+  planted.stored.length === 2 &&
+  planted.second.length === 1 &&
+  planted.coincidence.length === 0 &&
+  planted.refusal.length === 1;
 
 // Then the repository.
 const storedFiles = STORED_OR_EXPORTED.flatMap((dir) => sources(join(ROOT, dir))).map(read);
@@ -191,7 +225,7 @@ const previewFiles = PREVIEW_MODULES.map((p) => read(join(ROOT, p)));
 
 const findings = [
   ...storedOrExportedFindings(storedFiles, card),
-  ...secondSimulationFindings(allSources, coefficients),
+  ...secondSimulationFindings(allSources, matrices),
   ...refusalFindings(previewFiles),
 ];
 
@@ -199,13 +233,13 @@ console.log(
   `${DIM}  ${String(storedFiles.length)} stored or exported source(s) and cardSvg; ${String(allSources.length)} source(s) for a second simulation; ${String(previewFiles.length)} preview module(s)${OFF}`,
 );
 if (!proven) {
-  const detail = `planted breaks named: stored ${String(planted.stored.length)}/2, second simulation ${String(planted.second.length)}/1, refusal ${String(planted.refusal.length)}/1`;
+  const detail = `planted breaks named: stored ${String(planted.stored.length)}/2, second simulation ${String(planted.second.length)}/1, a chance coefficient ${String(planted.coincidence.length)}/0, refusal ${String(planted.refusal.length)}/1`;
   console.log(`  ${RED}✗${OFF} the check could not see its own planted breaks — ${detail}`);
   ciError('verify-preview-boundary', detail);
   process.exit(1);
 }
 console.log(
-  `  ${GREEN}✓${OFF} names each planted break ${DIM}(a writer reaching the preview, a copied coefficient, the tritan refusal)${OFF}`,
+  `  ${GREEN}✓${OFF} names each planted break ${DIM}(a writer reaching the preview, a copied matrix, the tritan refusal), and not a chance coefficient${OFF}`,
 );
 if (findings.length > 0) {
   for (const f of findings) console.log(`  ${RED}✗${OFF} ${f}`);

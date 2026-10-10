@@ -95,7 +95,16 @@ const CASES = [
   },
 ];
 
-/** Run gate 8 over packages/ui. Returns the combined output and whether it passed. */
+/**
+ * Run gate 8 over packages/ui. Returns the combined output, whether it passed, and — when the
+ * suite could not be run or read at all — why, so an execution failure is never reported as a
+ * red suite.
+ *
+ * THE BUFFER IS 64 MiB, AS `verify-audit` AND `verify-guards` GIVE THEIRS. Node's default is
+ * 1 MiB, and the suite prints 1.6 MB since F-240's preview sweep added its renders: `execSync`
+ * then killed a suite that had passed and threw ENOBUFS, which this script read as "the baseline
+ * is already red" (F-240's review, S3). F-295 is the same defect in verify-ci's own runner.
+ */
 function runGate() {
   try {
     // execSync with one command string rather than execFileSync + shell:true, which node
@@ -103,18 +112,33 @@ function runGate() {
     const out = execSync('pnpm --filter @irodora/ui test:a11y', {
       cwd: ROOT,
       encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    return { passed: true, out };
+    return { passed: true, out, error: null };
   } catch (error) {
-    const e = /** @type {{ stdout?: string; stderr?: string }} */ (error);
-    return { passed: false, out: `${e.stdout ?? ''}\n${e.stderr ?? ''}` };
+    const e =
+      /** @type {{ status?: number | null; code?: string; signal?: string | null; stdout?: string; stderr?: string }} */ (
+        error
+      );
+    const out = `${e.stdout ?? ''}\n${e.stderr ?? ''}`;
+    // A suite that ran and failed exits with a status. No status means it never finished: it
+    // could not start, was killed, or its output could not be held.
+    if (typeof e.status === 'number') return { passed: false, out, error: null };
+    return { passed: false, out, error: e.code ?? e.signal ?? String(error) };
   }
 }
 
 console.log(`\n${BOLD}Gate 8 — proving the a11y checks fire${OFF}\n`);
 
 const baseline = runGate();
+if (baseline.error !== null) {
+  console.log(
+    `${RED}${BOLD}Gate 8 could not be run or read${OFF} (${baseline.error}). Nothing below would mean anything.
+`,
+  );
+  process.exit(1);
+}
 if (!baseline.passed) {
   console.log(
     `${RED}${BOLD}The baseline is already red.${OFF} Nothing below would mean anything —\n` +
@@ -146,7 +170,10 @@ for (const c of CASES) {
   writeFileSync(c.file, original.replace(c.find, c.replace));
   try {
     const result = runGate();
-    if (result.passed) {
+    if (result.error !== null) {
+      failures.push(`${c.name}: gate 8 could not be run or read (${result.error})`);
+      console.log(`  ${RED}✗${OFF} ${c.name} ${DIM}— gate 8 did not finish: ${result.error}${OFF}`);
+    } else if (result.passed) {
       failures.push(`${c.name}: gate 8 stayed GREEN with the defect planted`);
       console.log(`  ${RED}✗${OFF} ${c.name} ${DIM}— gate stayed green${OFF}`);
     } else if (!result.out.includes(c.expect)) {
@@ -165,6 +192,14 @@ for (const c of CASES) {
 }
 
 const restored = runGate();
+if (restored.error !== null) {
+  console.log(
+    `
+${RED}${BOLD}Gate 8 could not be run or read after the restore${OFF} (${restored.error}).
+`,
+  );
+  process.exit(1);
+}
 if (!restored.passed) {
   console.log(
     `\n${RED}${BOLD}The tree did not come back green.${OFF} A mutation was not restored.${OFF}\n`,

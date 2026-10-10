@@ -518,6 +518,7 @@ export function paintedColors(
   return out;
 }
 
+/** A foreground drawn over a ground, as it actually appears in a rendered tree. */
 export interface RenderedPair {
   /** The text's colour, resolved. */
   readonly foreground: ColorResolution;

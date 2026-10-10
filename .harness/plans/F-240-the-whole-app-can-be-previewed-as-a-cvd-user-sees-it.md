@@ -18,7 +18,8 @@ or **Tritanopia** in the row `15` draws under *2. Accessibility & Colour-Vision 
 Mode*, and every screen repaints through the engine's own simulation. That covers every chrome token
 in whichever palette is painting (Sumi, Washi, Slate, Obsidian or the runtime device palette) and
 every colour sample. While the preview is on, a strip above the tab bar says in words that a
-simulation is running, which model it uses, and what it does not reach (photographs and the camera).
+simulation is running, which model it uses, and what it does not reach (photographs, the camera and
+anything the system draws).
 **Standard** turns it off. Nothing the person stores or exports changes, and the preview itself is
 never stored: it is gone after a restart.
 
@@ -125,8 +126,8 @@ stay distinguishable under each simulation, without being misled about what they
 
 | element | drawn | built | tokens | binding / copy |
 |---|---|---|---|---|
-| `15.section-2.heading` | body 500, a heading | `Text body` weight 500 `heading` in the card's header (F-239's form) | foreground | *2. Accessibility & Colour-Vision Deficiency (CVD) Mode* |
-| `15.section-2` | card 355.5 × 69.5 dp, `md` | `Card level="1"`, padding as measured | surface.1, border | — |
+| `15.section-2.heading` | body 500, a heading, above the card | `Text body` weight 500 `heading`, above the card, its line box meeting the card's edge (review S2; F-239's header form was the first build) | foreground | *2. Accessibility & Colour-Vision Deficiency (CVD) Mode* |
+| `15.section-2` | card 355.5 × 69.5 dp; the pills inset 10–12 dp | `Card level="1" padding="sm"`: the four insets' median, 11, snapped (`VISION_CARD_PADDING`, review S2) | surface.1, border | — |
 | `15.cvd.standard` | pill, level 2, text.primary edge | chosen pill: `pillTone(…, 'surface.2', true)` | surface.2, foreground | *Standard* / 標準 |
 | `15.cvd.standard.dot` | 6.5 dp | `SelectionDot` | foreground | — |
 | `15.cvd.protanopia` · `.deuteranopia` · `.tritanopia` | pills 23 dp, outline | unchosen pills | border | *Protanopia* / *Deuteranopia* / *Tritanopia* (1型2色覚 / 2型2色覚 / 3型2色覚), Machado at 1.0 (D1) |
@@ -323,4 +324,33 @@ E-095 (the device palette is simulated too, with a `to` on `simulatePalette`), E
 - F-328: OutfitBuilder's slot cards without keys. Mockup 13 governs that screen; gate 0 refuses an R9 UI feature without a mockup.
 
 **Downstream notes** on F-262, F-264, F-265, F-266, F-267, F-247, F-241, F-243, F-255 and F-256. No feature owns a simulated-CVD e2e journey (NFR-10); F-240's notes say so. **The attestation:** criterion 1 quoted verbatim, `blocks: release`, `outstanding`: the tree half is gated, and a device run in every palette is what remains, which this workstation cannot make. **Tier 1, each exit 0:** format, lint, state (19 checks, 177 warnings, the new one F-240's attestation). Nothing executable changed, so typecheck and tests are not re-run here; Tier 2 follows. |
-| review | | |
+| review | this commit | **The one review** (the evaluator subagent, 2026-10-10). A usage limit cut it off; it was resumed, so it is still one review. **FAIL**: 1 blocking, 3 significant and 11 minor findings. Criterion 1, and criterion 2's never-stored and never-exported half, held in the code. Every finding is fixed or recorded:
+- **B1, fixed: a flaky `test`.** The ui conformance file's cleanup hook passed jest's 5 s limit once under turbo's load, and the re-run passed. The cause was increment 9's leak, with `clearMocks` set only in the app's config. `packages/ui/jest.config.mjs` now sets it too: retained heap ≤ 317 MB, ending at 232 MB, where it had peaked at 511 MB. Two consecutive uncached `pnpm turbo run test --force` runs under full parallel load were green, 35/35 each.
+- **S1, fixed: the strip claimed less than ADR-0131 §4 said it did.** It said only "photographs and the camera", so a status bar or keyboard read as simulated. It now says *Photographs, the camera and anything the system draws are not simulated* (ja: 写真、カメラ、システムが表示する部分は対象外です). `vision.test` asserts all three in both languages. The ADR, R9 §4 E4, DESIGN-SYSTEM.md, the plan's intent and the attestation now say the same.
+- **S2, fixed: section 2 departed from 15.**
+  - The heading is now above the card at 500, its line box meeting the card's edge.
+  - The card is padded `sm`, as `VISION_CARD_PADDING`: 15's insets 11.5, 10, 12 and 10.5 dp, median 11.
+  - `preferences-vision.test` recomputes the padding, with a decoy, and checks the heading's place and weight.
+  - The fidelity table above is corrected. The inset census re-records six Preferences subjects, each gaining only 8.
+  - F-239's section 3 keeps its header form; F-262's notes carry its measurements.
+- **S3, fixed: the a11y mutation proof read a passing suite as red.** The suite now prints 1.6 MB; `execSync`'s 1 MiB buffer threw ENOBUFS, and the proof reported "baseline is already red". The proof now has a 64 MiB buffer, and when the suite could not run or be read it names the error instead. In verify-ci the baseline is green, five of six cases plant, and only F-324's case fails, as recorded.
+- **Minors.**
+  1. Pill hit areas overlap their neighbours: **F-329**. It is systemic across Chip, the segments and Button through ADR-0114.
+  2. Fixed: E-196's wording.
+  3. Fixed: the docs said a shadow is derived on `source`. A shadow reads the painted palette, and commutation makes that correct; both texts now say so.
+  4. Fixed: `RenderedPair`'s comment, restored.
+  5. Fixed: `previewMismatches` now names colours painted only in the preview and checks object colours. A colour as a number or boolean is named. An SVG document is compared exactly except its paint values, its CSS paints included.
+  6. Fixed: the boundary scan reads every severity. A copy is three or more values of one matrix, because a corpus XYZ equals a deutan coefficient by chance, and a decoy plants one. E-192 states the three-decimal limit.
+  7. Fixed: `vision.test`'s console spy is restored.
+  8. Fixed: the stale ordinal comment.
+  9. Fixed: criterion 2 is attested on its own, verbatim.
+  10. Fixed with tests: `simulatePaint` refuses a channel above 255 and an alpha above 1, and writes a lowercase alpha suffix in toHex's case. The store-boundary half is **F-330**.
+  11. The `progress.md` entry is in this commit, and the lesson [[a-mock-records-every-call-until-something-clears-it]] is written.
+
+**Tier 2 on the final tree:**
+- Each exit 0:
+  - `state`, `typecheck`, `lint`, `format:check`, `build`;
+  - `test` twice, uncached (ui 1137, mobile 1313);
+  - `test:golden`, `test:a11y`, `test:contrast`, `test:cvd`, `test:content`.
+- `security` exits 1 on F-322's nine advisories.
+- `verify-ci --all`: 32 of 38 steps green. The six red are F-295's buffer (test, a11y and contrast, each exit 0 alone), the iOS half on win32, F-324 and F-322. The tree was clean after it, but its plant journal was not. The next `lint` failed on a stale journal naming the two workflow files, which matched HEAD. `plant.mjs --recover` rewrote identical bytes, and `lint` passed again: **F-331**, pre-existing. |

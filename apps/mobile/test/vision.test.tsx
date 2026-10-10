@@ -103,8 +103,14 @@ describe('the preview is never written', () => {
       useVision();
       return null;
     }
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    expect(() => render(<Reads />)).toThrow(/outside a <VisionProvider>/u);
+    // React reports the thrown render on console.error; silenced for this test alone, and restored
+    // so a later test's error is still seen (F-240's review, minor 7).
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      expect(() => render(<Reads />)).toThrow(/outside a <VisionProvider>/u);
+    } finally {
+      quiet.mockRestore();
+    }
   });
 });
 
@@ -158,6 +164,21 @@ describe('the strip labels the preview exactly while it is on', () => {
       screen.getByText(`${ja['vision.strip.model']}${ja['vision.strip.tritan']}`),
     ).toBeTruthy();
   });
+
+  /*
+   * WHAT THE PREVIEW DOES NOT REACH IS NAMED, ALL OF IT (ADR-0131 §4, F-240's review S1). The caption
+   * had named photographs and the camera only, so a status bar or a keyboard, drawn by the system and
+   * never simulated, read as if it were. Rule 11: the strip claims no more than the preview does.
+   */
+  it.each([
+    ['en', en['vision.strip.model'], [/Photographs/u, /camera/u, /anything the system draws/u]],
+    ['ja', ja['vision.strip.model'], [/写真/u, /カメラ/u, /システムが表示する部分/u]],
+  ] as const)(
+    '%s: names photographs, the camera and what the system draws',
+    (_lang, caption, names) => {
+      for (const name of names) expect(caption).toMatch(name);
+    },
+  );
 });
 
 describe('the strip rides on the tab bar, on every route', () => {

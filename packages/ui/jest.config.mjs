@@ -33,6 +33,16 @@ export default {
   passWithNoTests: false,
 
   /*
+   * EVERY MOCK'S RECORD IS CLEARED BEFORE EACH TEST: `apps/mobile/jest.config.mjs` gives the
+   * measurement (F-240). React Native's jest setup mocks `performance.now` and `AccessibilityInfo`'s
+   * listener, and an uncleared record keeps every call and every unmounted tree alive for the rest
+   * of the file. Here the conformance file grew from 317 MB to 511 MB retained, and under turbo's
+   * parallel load its cleanup hook ran past jest's 5 s limit once (F-240's review, B1): a flaky
+   * `test`. Implementations stay; only the records go.
+   */
+  clearMocks: true,
+
+  /*
    * THE THREE PIECES THAT LET A HeroUI TREE RENDER HERE (F-087, ADR-0062).
    *
    * Each was found by running it, and each has a distinct failure without which the suite

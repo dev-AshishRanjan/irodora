@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-10 — F-240 The whole app can be previewed as a CVD user sees it
+
+**Done.** `15`'s section 2 offers Standard, Protanopia, Deuteranopia and Tritanopia. A mode repaints
+every token and every sample through the engine's own simulation, Machado at severity 1, in
+whichever palette is painting, the device palette included. A strip above the tab bar says so on
+every route, and nothing stored or exported moves. It shipped in twelve commits, `699c788`
+through this one
+([ADR-0131](../../docs/adr/0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md)).
+ADR-0132, which made verification tiered, was decided between increments 3 and 4 at the user's
+direction, in a harness commit of its own (`89039f6`).
+
+- **Criterion 1: one simulation, the engine's.**
+  - `simulatePaint` and `simulatePalette` in `@irodora/design-tokens` call `simulateAnomalous` at
+    `CVD_SEVERITY`. Chrome's published deuteranopia matrix is the oracle.
+  - Machado commutes with alpha compositing, so a token layer is honest about translucency. Viénot
+    does not, and is the test's decoy.
+  - The tritan refusal is never reached; the strip calls Tritanopia approximate.
+- **`colors` is painted; a derivation reads `source`.** `ThemeValue` gains `source`, `paint` and
+  `vision`. The sample family solves its inks and edges on the declared palette and paints the
+  result. The colour card's document is built from `source`, and only its display is painted.
+- **Two sweeps hold it.** The ui registry and the app's 82 subjects, plus a palette seeded from a
+  device accent, render each subject in Standard and in each mode. Every painted value must be the
+  engine's simulation of the Standard one, with nothing else changed.
+- **Criterion 2.**
+  - **The strip** (`VisionStrip`, above `TabBar`) names the mode, the model and the severity, and
+    says that photographs, the camera and anything the system draws are not simulated.
+  - **Session-only.** The mode is held in memory at the root.
+  - **Never stored or exported.** Export bytes and stored rows are identical across modes.
+    `verify-preview-boundary`, in `lint`, keeps the preview's API out of every writer and any copy
+    of the model out of every source.
+- **The control.** `ChoiceGroup`'s new pill form, at 15's 23 dp, sits in a level-1 card padded
+  `sm`, under 15's numbered heading at 500.
+- **A test-harness leak, found and fixed.** `a11y` died out of memory: uncleared `jest.fn` records
+  of React Native's `performance.now` and `AccessibilityInfo` listener kept every render of
+  `screens.test` alive (2.1 GB). `clearMocks: true` in both jest configs fixed it; the app's file
+  now holds 257–344 MB and runs in 195 s instead of 286 s.
+- **Record.**
+  - Effects E-192 to E-196, and E-095, E-158 and E-160 updated.
+  - DESIGN-SYSTEM.md rule 10 and its section; R9 §4 E4 and §9.
+  - Both criteria attested for their device halves.
+  - Downstream notes on F-241, F-243, F-247, F-255, F-256 and F-262 to F-267.
+  - Backlog:
+    - F-326: one simulation, two names.
+    - F-327: 11 declared pairings below their floor under simulation.
+    - F-328: OutfitBuilder's keys.
+    - F-329: neighbouring hit areas overlap.
+    - F-330: stored colours validated at the store boundary.
+    - F-331: verify-ci left a stale plant journal on win32, and the next lint failed on it (below).
+
+**Review (once, cut off by a usage limit and resumed): FAIL**, with 1 blocking, 3 significant and
+11 minor findings. Every one is fixed or recorded; the plan's `review` row lists each.
+
+- **B1, fixed:** `test` was flaky, because the ui conformance file's cleanup hook ran past 5 s
+  under load. The cause was the same mock-record leak, now cleared in `packages/ui`'s config too.
+- **S1, fixed:** the strip named photographs and the camera only. It now names what the system
+  draws too, as ADR-0131 §4 said it did.
+- **S2, fixed:** section 2's heading is now above the card at 500, and the card is padded at 15's
+  measured `sm`. F-239's section 3 is F-262's.
+- **S3, fixed:** the a11y mutation proof read a passing 1.6 MB suite as red through a 1 MiB
+  buffer. It now has 64 MiB, and names an execution failure as one.
+- **Minors:** fixed, or recorded as F-329 and F-330.
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`, twice in a row (35/35 each: ui 1137, mobile 1313)
+- `pnpm test:golden` · `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` ·
+  `pnpm test:content`
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on the same nine advisories as before, in dependencies F-240 never
+  changed (F-322).
+- `node scripts/verify-ci.mjs --all`: 32 of 38 steps green.
+  - F-295's 1 MiB buffer turns test, a11y and contrast red there, though each exits 0 on its own.
+  - The iOS half of the icon check is red: there is no `ios/` on win32.
+  - The a11y mutation proof is red on F-324 alone. Its baseline is now green, and five of its six
+    cases plant.
+  - Security is red on F-322.
+
+**After Tier 2:** a `lint` run before this commit failed. Tier 2's verify-ci had left a stale plant
+journal naming the two workflow files, which matched HEAD. `plant.mjs --recover` rewrote identical
+bytes and cleared it, and `lint` then exited 0 (F-331).
+
+**Not run:** `artifact` (no JDK) and `e2e` (pending). Nothing ran on a device. These remain for a
+device run, attested and blocking the release:
+- each mode in every palette, where nothing beyond what the strip names may stay unsimulated;
+- the strip at 200 % text;
+- a sheet covering the strip only while open.
+
+### Lessons
+
+[[a-mock-records-every-call-until-something-clears-it]]
+
+### Next
+
+The next eligible R9 feature by id, under the loop.
+
+---
+
 ## 2026-10-09 — F-236 Empty, working, refused and denied are mockup 27
 
 **Done.** The four states are `27`'s cards, read at `27`'s own scale, and every screen declares which

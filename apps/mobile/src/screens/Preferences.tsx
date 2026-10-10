@@ -33,6 +33,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { View } from 'react-native';
 import { noHaptics, type Haptics } from '../haptics';
 import {
   type Appearance,
@@ -50,6 +51,7 @@ import {
   Row,
   Screen,
   Select,
+  type SpacingStep,
   Stack,
   Surface,
   Switch,
@@ -84,6 +86,13 @@ const VISION_KEYS: Readonly<Record<VisionMode, MessageKey>> = {
  * `preferences-vision.test`.
  */
 export const VISION_PILL_HEIGHT = 23;
+
+/**
+ * Section 2's card padding: `15` insets the pills 10–12 dp from the card's edge on every side (left
+ * 11.5, top 10, right 12, bottom 10.5 to the badge), whose median, 11, snaps to `sm` (R9 §2).
+ * Recomputed from `15`'s inventory by `preferences-vision.test`.
+ */
+export const VISION_CARD_PADDING: SpacingStep = 'sm';
 
 /** What this screen needs from the repository — nothing more, so a test can supply it. */
 export interface PreferenceStore {
@@ -347,32 +356,34 @@ export function Preferences({
         15'S SECTION 2: THE COLOUR-VISION PREVIEW (F-240, ADR-0131). Four pills in 15's order —
         Standard, Protanopia, Deuteranopia, Tritanopia — as one radio group. Choosing one repaints
         every token and sample through the engine's simulation, and the strip above the tab bar says
-        so on every screen; nothing is stored. Under its numbered heading, as F-239's section 3 is.
-        15's separation badge is F-262's, with the rest of 15's composition.
+        so on every screen; nothing is stored. 15's separation badge is F-262's, with the rest of 15's
+        composition.
+
+        AS 15 DRAWS IT (F-240's review, S2): the numbered heading in body at 500 ABOVE the card, its
+        line box meeting the card's edge (`15.section-2.heading` ends where `15.section-2` begins), and
+        the pills inset by the card's measured padding. F-239's section 3 still carries its heading
+        in the card's header; F-262 moves it, with the measurements in its notes.
 
         NO HAPTIC: choosing a preview is not a commit (F-206, ADR-0104).
       */}
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading numeric>
-            {t('settings.accessibility')}
-          </Text>
-        }
-      >
-        <ChoiceGroup
-          label={t('vision.label')}
-          value={vision}
-          options={VISION_MODES.map((mode) => ({ value: mode, label: t(VISION_KEYS[mode]) }))}
-          onChange={(mode) => {
-            if (mode !== null) onChooseVision?.(mode);
-          }}
-          pills={{ height: VISION_PILL_HEIGHT }}
-          script={script}
-          testID="vision.modes"
-        />
-      </Card>
+      <View>
+        <Text size="body" weight={500} color="foreground" script={script} heading numeric>
+          {t('settings.accessibility')}
+        </Text>
+        <Card level="1" padding={VISION_CARD_PADDING} testID="vision.card">
+          <ChoiceGroup
+            label={t('vision.label')}
+            value={vision}
+            options={VISION_MODES.map((mode) => ({ value: mode, label: t(VISION_KEYS[mode]) }))}
+            onChange={(mode) => {
+              if (mode !== null) onChooseVision?.(mode);
+            }}
+            pills={{ height: VISION_PILL_HEIGHT }}
+            script={script}
+            testID="vision.modes"
+          />
+        </Card>
+      </View>
 
       {/*
         WHAT THE PLATFORM OWNS, said rather than left absent (F-180).
@@ -393,9 +404,9 @@ export function Preferences({
 
       {/*
         THE ENGINE SECTION, WHICH IS THREE SWITCHES AND THE FIRST BOOLEANS THIS PRODUCT HAS
-        (F-239). `15` draws them under a heading numbered "3."; the ordinal is a position in that
-        mockup's section order and F-262 is the feature that puts the sections in it, so the
-        number is not printed over the second card on today's screen.
+        (F-239). `15` draws them under a heading numbered "3.", and the heading prints it: since
+        F-240 this is the third card, after appearance and the colour-vision preview, so the ordinal
+        and the screen's order agree. F-262 puts the sections in 15's full order.
 
         NO HAPTIC FIRES HERE, and the omission is deliberate rather than forgotten. F-206 names
         what a commit is — "a garment saved, a reading taken, a theme chosen" — and a preference

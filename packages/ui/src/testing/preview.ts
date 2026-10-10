@@ -24,8 +24,29 @@ import { colourValues, flattenStyle, type TestNode } from './tree.js';
  */
 const SKIPPED_PROPS = new Set(['fill', 'stroke', 'gradient', 'jestInlineStyle', 'xml']);
 
-/** A paint attribute inside an SVG document handed over as text. */
+/** A paint attribute inside an SVG document handed over as text, and a paint in its CSS. */
 const XML_PAINT = /\b(fill|stroke|stop-color)="([^"]*)"/gu;
+const XML_CSS_PAINT = /\b(fill|stroke|stop-color)(\s*:\s*)([^;"]+)/gu;
+
+/** Paint values that name no colour: nothing to simulate. */
+const unpainted = (value: string): boolean =>
+  value === 'none' ||
+  value === 'transparent' ||
+  value === 'currentColor' ||
+  value.startsWith('url(');
+
+/**
+ * An SVG document with every paint value passed through `map` — attributes and CSS alike — and
+ * everything else as written, so the rest of the document is compared exactly, case included.
+ */
+const withPaints = (xml: string, map: (value: string) => string): string =>
+  xml
+    .replace(XML_PAINT, (attribute: string, name: string, value: string) =>
+      unpainted(value) ? attribute : `${name}="${map(value)}"`,
+    )
+    .replace(XML_CSS_PAINT, (declaration: string, name: string, colon: string, value: string) =>
+      unpainted(value.trim()) ? declaration : `${name}${colon}${map(value.trim())}`,
+    );
 
 /** The colours `colourValues` reads from `style`; any other `…Color` key is compared here. */
 const READ_STYLE_COLOURS = new Set([
@@ -99,16 +120,34 @@ function shape(style: unknown): string {
 
 /**
  * The colours a node carries that `colourValues` does not read: `style`'s other `…Color` keys and
- * the props named for a colour (`placeholderTextColor`). Each is still paint, so each is simulated.
+ * the props named for a colour (`placeholderTextColor`, `trackColor`). Each is still paint, so each
+ * is simulated — whatever its form: a string, an object of strings, or a form that cannot be.
  */
-function otherColours(node: TestNode): readonly { readonly key: string; readonly value: string }[] {
-  const out: { key: string; value: string }[] = [];
+function otherColours(
+  node: TestNode,
+): readonly { readonly key: string; readonly value: unknown }[] {
+  const out: { key: string; value: unknown }[] = [];
   for (const [key, value] of Object.entries(flattenStyle(node.props['style'])))
-    if (isColourKey(key) && !READ_STYLE_COLOURS.has(key) && typeof value === 'string')
+    if (isColourKey(key) && !READ_STYLE_COLOURS.has(key) && value !== undefined && value !== null)
       out.push({ key: `style.${key}`, value });
   for (const [key, value] of Object.entries(node.props))
-    if (key !== 'style' && isColourKey(key) && typeof value === 'string') out.push({ key, value });
+    if (key !== 'style' && isColourKey(key) && value !== undefined && value !== null)
+      out.push({ key, value });
   return out;
+}
+
+/**
+ * A colour value as the engine would paint it: a string simulated, an object (`{ true, false }`)
+ * simulated leaf by leaf, and anything else `null` — a number or a boolean cannot be simulated, so
+ * it is named rather than compared.
+ */
+function simulatedValue(value: unknown, mode: PreviewMode): unknown {
+  if (typeof value === 'string') return simulatePaint(value, mode);
+  if (typeof value === 'object' && value !== null && !Array.isArray(value))
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, v === undefined ? v : simulatedValue(v, mode)]),
+    );
+  return null;
 }
 
 /**
@@ -170,27 +209,32 @@ export function previewMismatches(
           );
       });
 
-    // The other colours, the same way.
+    // The other colours, the same way — and a colour only the preview paints is named too.
     const oa = otherColours(a);
     const ob = otherColours(b);
     oa.forEach(({ key, value }) => {
       const other = ob.find((o) => o.key === key);
-      const expected = value === 'transparent' ? value : simulatePaint(value, mode);
-      if (other?.value.toLowerCase() !== expected.toLowerCase())
+      const expected = simulatedValue(value, mode);
+      if (expected === null) {
+        out.push(`${here}.${key}: a colour given as a ${typeof value} cannot be simulated`);
+        return;
+      }
+      if (comparable(other?.value).toLowerCase() !== comparable(expected).toLowerCase())
         out.push(
-          `${here}.${key}: ${other?.value ?? 'nothing'} where the engine gives ${expected} (Standard ${value})`,
+          `${here}.${key}: ${comparable(other?.value)} where the engine gives ${comparable(expected)} (Standard ${comparable(value)})`,
         );
     });
+    for (const { key } of ob)
+      if (!oa.some((o) => o.key === key)) out.push(`${here}.${key}: painted only in the preview`);
 
-    // An SVG document handed over as text (`SvgXml`'s `xml`): its paint attributes are simulated,
-    // everything else — the printed text included — must be as it was.
+    // An SVG document handed over as text (`SvgXml`'s `xml`): its paints — attributes and CSS —
+    // are simulated, and compared without case (react-native-svg lowercases hex); everything
+    // else, the printed text included, must be exactly as it was.
     const xa = a.props['xml'];
     const xb = b.props['xml'];
     if (typeof xa === 'string') {
-      const expected = xa.replace(XML_PAINT, (attribute: string, name: string, value: string) =>
-        value === 'none' ? attribute : `${name}="${simulatePaint(value, mode)}"`,
-      );
-      if (typeof xb !== 'string' || xb.toLowerCase() !== expected.toLowerCase())
+      const expected = withPaints(xa, (value) => simulatePaint(value, mode).toLowerCase());
+      if (typeof xb !== 'string' || withPaints(xb, (value) => value.toLowerCase()) !== expected)
         out.push(`${here}.xml: the document is not its Standard self with every paint simulated`);
     }
 

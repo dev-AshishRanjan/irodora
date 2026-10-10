@@ -8074,7 +8074,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-225"
       ],
@@ -8103,7 +8103,13 @@
       "attested": [
         {
           "criterion": "Standard, Protanopia, Deuteranopia and Tritanopia (15) re-render every token and every sample through @irodora/cvd-engine — one simulation, the engine’s, never a second implementation",
-          "verifiedBy": "THE TREE HALF IS GATED: preview.test holds simulatePaint to the engine for every token of every palette, with Chrome’s deuteranopia matrix as an oracle and the commutation property with a Viénot decoy; both preview sweeps (the ui conformance registry, and the app’s 82 subjects plus a palette seeded from a device accent) require every painted value in every mode to be the engine’s simulation of the Standard one and nothing else to change; verify-preview-boundary allows no second copy of the model. WHAT NEEDS A DEVICE: each mode run on a device in Sumi, Washi, Slate, Obsidian and a device palette, confirming that nothing on screen stays unsimulated beyond what the strip names (photographs and the camera) — native surfaces the test renderer does not draw (the status bar, the keyboard, system sheets, a native picker) are what only a device shows; the same run checks criterion 2’s strip at 200 % text and that a sheet covers it only while open. This workstation has no JDK, Android SDK or Xcode.",
+          "verifiedBy": "THE TREE HALF IS GATED: preview.test holds simulatePaint to the engine for every token of every palette, with Chrome’s deuteranopia matrix as an oracle and the commutation property with a Viénot decoy; both preview sweeps (the ui conformance registry, and the app’s 82 subjects plus a palette seeded from a device accent) require every painted value in every mode to be the engine’s simulation of the Standard one and nothing else to change; verify-preview-boundary allows no second copy of the model. WHAT NEEDS A DEVICE: each mode run on a device in Sumi, Washi, Slate, Obsidian and a device palette, confirming that every surface painted from a token or a sample is simulated and that what stays unsimulated is only what the strip names — photographs, the camera and anything the system draws (the status bar, the keyboard, alerts, the share sheet, the photo picker) — which the test renderer does not draw. This workstation has no JDK, Android SDK or Xcode.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The mode is labelled on screen while it is on, and it never changes a stored value or an exported file",
+          "verifiedBy": "NEVER STORED OR EXPORTED IS GATED: vision.test (choosing every mode writes nothing, with a display-setting decoy that writes one row; every launch starts in Standard), export-screen.test (every format’s bytes identical across modes, with a decoy), add-garment-offer.test (the stored row identical across modes), card.test (the document from the declared palette) and verify-preview-boundary in lint. THE LABEL’S TREE IS GATED: vision.test (the strip on the tab bar exactly while a mode is on, decoys in Standard; Tritanopia qualified; Japanese; the caption names everything outside the simulation). WHAT NEEDS A DEVICE: the strip at 200 % text, legible and unclipped on iOS and Android, and a sheet or dialog covering it only while open — layout and system text scaling the test renderer does not compute. This workstation has no JDK, Android SDK or Xcode.",
           "blocks": "release",
           "status": "outstanding"
         }
@@ -9110,7 +9116,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not an absolute CVD-safety claim); system appearance and device accent are added in 15’s own row components (E4, FR-70). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. FROM F-239's REVIEW (2026-09-21): TWO THINGS THIS FEATURE INHERITS. (1) OQ-41 — 15 draws an unbound 5 dp dot in the gutter of each engine switch row and draws all three switches ON, so the off state of that dot is drawn nowhere; F-239 renders it when on, on the evidence of 15's own selected-theme dot, and this feature draws the off state for the first time. (2) 15 draws each section heading OUTSIDE its card (15.section-3.heading has parent null at y=713; the card starts at y=752) and the screen renders them in Card's header slot, inside the surface — which matches the Appearance card F-153 built and is grouping, which this feature owns. F-239 also renders 15's leading ordinal (\"3. Professional Engine & Controls\") over what is currently the second card: the number reads correctly once the sections are in 15's order, which is this feature. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-225 (2026-09-25): the theme choice is ONE vocabulary: `APPEARANCES` in packages/ui/src/theme.tsx (Sumi, Slate, Obsidian, Washi, system, device). Preferences has an interim Select built from it. This feature replaces the Select with 15's four tiles, and each tile's swatch binds `static:themes.<id>.ground` to `nativeColors[palette].background`.\nSystem and device stay as E4 rows. 15 does not draw them, so they are built from 15's own components.\nThe four names stay Latin in both locales, because 15 prints Latin only (F-225 decision F).\nA stored pre-F-225 value (`fuka:dark`, …) reads as its mode's drawn theme. Keep that branch (E-150). FROM F-232 (2026-09-28): 15's switches are now drawn as 15 draws them: a 34.5 × 18 dp track (the inventory's 35.5 × 22.5 was a padded box, corrected), a 14 dp thumb, on = a white track under a surface.1 thumb, reaching the target through the hit area. The chosen CVD mode is re-recorded FILLED level2 with a foreground edge and a white 6.5 dp dot — Chip `selected selectedEdge` (15.cvd.standard). OQ-41 (the gutter dot) is unchanged. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 15's theme tiles are samples of each theme's ground: 70.5×61.5 sm, no keyline. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ; the route profile/preferences is still on the platform header, and its entry in PLATFORM_HEADER (apps/mobile/test/chrome.test.ts) is deleted in the same change that moves it — the test fails until it is. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-240 (ADR-0131): section 2 exists in `Preferences`: a level-1 card under `settings.accessibility`, one `ChoiceGroup` in the pill form at `VISION_PILL_HEIGHT` (23 dp), testID `vision.modes`, in 15’s order. Compose it in 15’s order; build `15.cvd.badge` with its split-disc mint; keep the `vision` and `onChooseVision` props (the route reads `useVision`). `preferences-vision.test` holds the height, the order and the presses. The strip (`VisionStrip`) sits above the tab bar while a mode is on (E-195, E-196).",
+      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not an absolute CVD-safety claim); system appearance and device accent are added in 15’s own row components (E4, FR-70). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. FROM F-239's REVIEW (2026-09-21): TWO THINGS THIS FEATURE INHERITS. (1) OQ-41 — 15 draws an unbound 5 dp dot in the gutter of each engine switch row and draws all three switches ON, so the off state of that dot is drawn nowhere; F-239 renders it when on, on the evidence of 15's own selected-theme dot, and this feature draws the off state for the first time. (2) 15 draws each section heading OUTSIDE its card (15.section-3.heading has parent null at y=713; the card starts at y=752) and the screen renders them in Card's header slot, inside the surface — which matches the Appearance card F-153 built and is grouping, which this feature owns. F-239 also renders 15's leading ordinal (\"3. Professional Engine & Controls\") over what is currently the second card: the number reads correctly once the sections are in 15's order, which is this feature. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-225 (2026-09-25): the theme choice is ONE vocabulary: `APPEARANCES` in packages/ui/src/theme.tsx (Sumi, Slate, Obsidian, Washi, system, device). Preferences has an interim Select built from it. This feature replaces the Select with 15's four tiles, and each tile's swatch binds `static:themes.<id>.ground` to `nativeColors[palette].background`.\nSystem and device stay as E4 rows. 15 does not draw them, so they are built from 15's own components.\nThe four names stay Latin in both locales, because 15 prints Latin only (F-225 decision F).\nA stored pre-F-225 value (`fuka:dark`, …) reads as its mode's drawn theme. Keep that branch (E-150). FROM F-232 (2026-09-28): 15's switches are now drawn as 15 draws them: a 34.5 × 18 dp track (the inventory's 35.5 × 22.5 was a padded box, corrected), a 14 dp thumb, on = a white track under a surface.1 thumb, reaching the target through the hit area. The chosen CVD mode is re-recorded FILLED level2 with a foreground edge and a white 6.5 dp dot — Chip `selected selectedEdge` (15.cvd.standard). OQ-41 (the gutter dot) is unchanged. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 15's theme tiles are samples of each theme's ground: 70.5×61.5 sm, no keyline. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ; the route profile/preferences is still on the platform header, and its entry in PLATFORM_HEADER (apps/mobile/test/chrome.test.ts) is deleted in the same change that moves it — the test fails until it is. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-240 (ADR-0131): section 2 exists in `Preferences`: a level-1 card under `settings.accessibility`, one `ChoiceGroup` in the pill form at `VISION_PILL_HEIGHT` (23 dp), testID `vision.modes`, in 15’s order. Compose it in 15’s order; build `15.cvd.badge` with its split-disc mint; keep the `vision` and `onChooseVision` props (the route reads `useVision`). `preferences-vision.test` holds the height, the order and the presses. The strip (`VisionStrip`) sits above the tab bar while a mode is on (E-195, E-196). FROM F-240’s REVIEW (S2, 2026-10-10): section 2 is built as 15 draws it — the heading above the card in body at 500, its line box meeting the card’s edge, the card padded `sm` (`VISION_CARD_PADDING`: 15’s insets 11.5, 10, 12 and 10.5 dp, median 11). F-239’s section 3 is not yet: its heading is in the card’s header at 400 (`15.section-3.heading` is drawn above the card, `parent: null`, weight 500) and its card is padded `md` where 15 insets the rows 12, 12 and 10.5 dp (left, top, right), which snaps to `sm`. Move it in 15’s composition, and recompute both from the inventory.",
       "openQuestions": [
         "OQ-41"
       ]
@@ -10943,6 +10949,80 @@
         "lint"
       ],
       "notes": "FOUND BY F-240 (increment 9), reading screens.test’s output while tracing a memory leak: React warns \"Each child in a list should have a unique key prop … passed a child from OutfitBuilder\". `OUTFIT_SLOTS.map((slot) => <Card …>)` in apps/mobile/src/screens/OutfitBuilder.tsx has no `key`. Pre-existing; out of F-240’s scope. Mockup 13 governs the screen (F-257 rebuilds it); the key is a defect of the code, not of the drawing."
+    },
+    {
+      "id": "F-329",
+      "title": "A hit area never reaches into a neighbour’s drawn control",
+      "requirements": [
+        "NFR-8",
+        "NFR-10"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "00",
+        "05",
+        "12",
+        "15"
+      ],
+      "acceptance": [
+        "In a row of pressables — ChoiceGroup’s pills and segments, chips, buttons — no control’s hit area covers a neighbour’s drawn box, so a tap on what a person sees chooses what they see; each still reaches the platform’s target where its drawn size and the space around it allow, and an ADR amending ADR-0114 says how the two are reconciled where they cannot both hold",
+        "A conformance rule reports overlapping sibling hit areas from declared sizes and measured widths, watched failing on today’s 15 CVD row first, with a decoy"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "lint"
+      ],
+      "notes": "FOUND BY F-240’s evaluator (minor 1, 2026-10-10). `hitArea(height, height)` (ADR-0114) sizes the horizontal slop from the declared minimum width — the height, because a JS render tree has no layout pass — so a 72–89 dp pill drawn 4 dp from its neighbour gets 10.5 dp (iOS) or 12.5 dp (Android) of slop each side, and neighbours’ hit rectangles overlap the outer 6.5–8.5 dp of each drawn pill. The later sibling wins the overlap, so a tap near a pill’s edge can choose the next one. The same call is in Chip, ChoiceGroup’s segments and Button. Unverified on a device (no toolchain here). Related: F-305 (a hit area clipped by its container). Out of F-240’s scope: systemic, and it amends ADR-0114."
+    },
+    {
+      "id": "F-330",
+      "title": "A stored colour is validated where it is read, so every mode draws it or refuses it alike",
+      "requirements": [
+        "FR-56",
+        "NFR-20"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A colour read from the store is checked against the formats the tokens use (#RRGGBB, #RRGGBBAA) at the store boundary, and a malformed one reaches the screen as the record’s error state rather than as a value, in Standard and in every preview mode alike",
+        "A test plants a malformed stored hex and shows the same refusal in Standard and in a preview mode, with a well-formed decoy"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "lint"
+      ],
+      "notes": "FOUND BY F-240’s evaluator (minor 10, 2026-10-10). In Standard, `paint` is the identity and never reads its input; in a preview mode `simulatePaint` refuses an unreadable format with a TypeError. A malformed hex in a stored row — the store has no format constraint — would therefore render in Standard and throw at render only under a preview. No producer of one is known: every stored colour today comes from the engine or the corpus. The parsing nits in the same finding (a channel past 255, an alpha past 1, the alpha suffix’s case) were fixed in F-240."
+    },
+    {
+      "id": "F-331",
+      "title": "verify-ci leaves no plant journal behind on win32",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "After `node scripts/verify-ci.mjs --all` finishes on win32, `.harness/state/.plant-journal.json` does not exist when every planted file was restored, and a `pnpm lint` run straight after it passes — shown by running the two in sequence",
+        "A journal entry whose file already matches its saved bytes is reported as stale and cleared by the proof that wrote it, never left for the next gate to refuse"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FOUND BY F-240’s close-out (2026-10-10). Tier 2’s `verify-ci --all` (exit 1 on its known reds only, and the tree clean after it) left `.harness/state/.plant-journal.json` at 15:10 naming `.github/workflows/ci.yml` and `release.yml`, owner “verify-gate-mirror --prove”, whose saved bytes equalled both HEAD and the files on disk. The next `pnpm lint` failed: verify-gate-mirror-proof’s decoy “an uninterrupted run on a clean tree still passes” is refused while a journal names a plant. `node scripts/plant.mjs --recover` (bytes identical, so nothing changed) cleared it, and lint passed. Which step leaves it is not determined; win32’s uncatchable SIGTERM, which the interruption proof documents, is the first suspect. Pre-existing; out of F-240’s scope."
     }
   ]
 }
