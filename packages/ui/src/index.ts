@@ -292,6 +292,7 @@ export {
   SEGMENTED_HEIGHT,
   type Choice,
   type ChoiceGroupProps,
+  type Pills,
   type Segmented,
 } from './ChoiceGroup.js';
 export {

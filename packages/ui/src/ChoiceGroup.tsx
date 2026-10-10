@@ -62,6 +62,7 @@
 import { View } from 'react-native';
 import { RadioGroup as HeroRadioGroup } from 'heroui-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { CHIP_HEIGHT } from './Chip.js';
 import { hitArea } from './hitArea.js';
 import { usePress } from './motion.js';
 import {
@@ -122,7 +123,34 @@ export interface Segmented {
   readonly dividers?: boolean;
 }
 
-export interface ChoiceGroupProps<V extends string> {
+/**
+ * `15`'s pills (F-240, ADR-0131 §6): each option a pill in a wrapping row — the chosen one filled in
+ * `surface.2` with a `foreground` edge and a leading dot, the rest outlined in `border`. It is
+ * F-232's choice pill (the one `Chip` draws for `12.form.*`, `15.cvd.*` and `17`'s options) as radio
+ * items, so the row announces as ONE radio group rather than as unrelated buttons. No caption: the
+ * screen places its own heading.
+ */
+export interface Pills {
+  /** The drawn height in dp: the screen's own reading. Defaults to {@link CHIP_HEIGHT}. */
+  readonly height?: number;
+}
+
+/** One layout or the other, never both: the type makes the choice a decision. */
+export type ChoiceGroupProps<V extends string> = ChoiceGroupBaseProps<V> &
+  (
+    | {
+        /** Lay the options out as one segmented row (F-232). Without it they wrap, as before. */
+        readonly segmented?: Segmented;
+        readonly pills?: never;
+      }
+    | {
+        /** Lay the options out as `15`'s pills (F-240). */
+        readonly pills: Pills;
+        readonly segmented?: never;
+      }
+  );
+
+interface ChoiceGroupBaseProps<V extends string> {
   /**
    * What is being chosen — the group's accessible name.
    *
@@ -159,8 +187,6 @@ export interface ChoiceGroupProps<V extends string> {
   readonly loading?: boolean;
   readonly script?: Script;
   readonly testID?: string;
-  /** Lay the options out as one segmented row (F-232). Without it they wrap, as before. */
-  readonly segmented?: Segmented;
   /**
    * The option focused by an external keyboard or Switch Control, drawn as a `ring` (E-151).
    * `null` is the no-constraint option; leaving it out means nothing is focused.
@@ -304,6 +330,67 @@ function Segment({
   );
 }
 
+/**
+ * One of `15`'s pills (F-240). Like {@link Option}, it IS the radio item: one control, one
+ * announcement. Drawn as `Chip` draws F-232's choice pill — one edge width in every state, so
+ * choosing a pill never shifts its outline; choosing it widens it by the leading dot.
+ */
+function Pill({
+  value,
+  label,
+  disabled,
+  chosen,
+  focused,
+  script,
+  numeric = false,
+  height,
+}: {
+  readonly value: string;
+  readonly label: string;
+  readonly disabled: boolean;
+  readonly chosen: boolean;
+  readonly focused: boolean;
+  readonly script: Script;
+  readonly numeric?: boolean;
+  readonly height: number;
+}): React.JSX.Element {
+  const { colors } = useTheme();
+  const press = usePress();
+  const tone = pillTone(chosen, 'surface.2', true, colors);
+  return (
+    <HeroRadioGroup.Item
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      value={value}
+      isDisabled={disabled}
+      accessibilityLabel={label}
+      accessibilityState={{ selected: chosen, disabled }}
+      // Drawn at the pill's height; the rest of the target is in the hit area (ADR-0114).
+      hitSlop={hitArea(height, height)}
+      style={{
+        height,
+        minWidth: height,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: nativeSpacing.xs,
+        paddingHorizontal: nativeSpacing.sm,
+        borderRadius: nativeRadius.pill,
+        backgroundColor: tone.background,
+        borderWidth: 1,
+        borderColor: tone.borderColor,
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
+      <Text size="label" color={tone.ink} script={script} numeric={numeric} numberOfLines={1}>
+        {label}
+      </Text>
+      <FocusRing visible={focused} radius={nativeRadius.pill} />
+    </HeroRadioGroup.Item>
+  );
+}
+
 /** A segment's corner: the container's, less the inset it sits in, so the two curves are parallel. */
 function segmentRadius(radius: NonNullable<Segmented['radius']>): number {
   return radius === 'pill' ? nativeRadius.pill : Math.max(0, nativeRadius[radius] - SEGMENT_INSET);
@@ -330,6 +417,7 @@ export function ChoiceGroup<V extends string>({
   script = 'latin',
   testID,
   segmented,
+  pills,
   focused,
 }: ChoiceGroupProps<V>): React.JSX.Element {
   const { colors } = useTheme();
@@ -415,6 +503,37 @@ export function ChoiceGroup<V extends string>({
               ) : null,
             ];
           })}
+        </HeroRadioGroup>
+      </View>
+    );
+  }
+
+  if (pills !== undefined) {
+    const height = pills.height ?? CHIP_HEIGHT;
+    return (
+      <View testID={testID}>
+        {/* No caption: `15` heads the row with its section's own heading. The name is the group's. */}
+        <HeroRadioGroup
+          value={value ?? NONE}
+          onValueChange={onValueChange}
+          accessibilityLabel={label}
+          isDisabled={inert}
+          accessibilityState={{ disabled: inert, busy: loading }}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: nativeSpacing.xs }}
+        >
+          {all.map((o) => (
+            <Pill
+              key={o.value}
+              value={o.value}
+              label={o.label}
+              disabled={o.disabled}
+              chosen={o.chosen}
+              focused={o.focused}
+              script={script}
+              numeric={o.numeric}
+              height={height}
+            />
+          ))}
         </HeroRadioGroup>
       </View>
     );

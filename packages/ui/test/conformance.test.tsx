@@ -699,6 +699,38 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   })),
   {
+    /*
+     * 15'S PILLS (F-240, ADR-0131 §6): the four CVD preview modes as one radio group, the chosen pill
+     * filled in surface.2 with a foreground edge and a leading dot, the rest outlined — F-232's choice
+     * pill as radio items. Drawn at 15's 23 dp.
+     */
+    name: 'ChoiceGroup (pills, 15)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['option', 'choice', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <ChoiceGroup
+          label="Colour-vision preview"
+          value={state === 'active' ? 'protanopia' : 'standard'}
+          options={[
+            { value: 'standard', label: 'Standard' },
+            { value: 'protanopia', label: 'Protanopia' },
+            { value: 'deuteranopia', label: 'Deuteranopia' },
+            { value: 'tritanopia', label: 'Tritanopia', disabled: state === 'disabled' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 23 }}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          focused={state === 'focus' ? 'deuteranopia' : undefined}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
     // 27's hanger, the one tinted drawing (F-236): its body in state.hanger, its lines foreground.
     name: 'Illustration (27’s hanger)',
     kind: 'static',

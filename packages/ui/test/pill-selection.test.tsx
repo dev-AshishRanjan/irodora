@@ -12,8 +12,15 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { Pressable, View } from 'react-native';
-import { nativeColors, type Theme } from '@irodora/design-tokens';
-import { Chip, CHIP_HEIGHT, SELECTION_DOT, SelectionDot, ThemeProvider } from '../src/index.js';
+import { nativeColors, nativeSpacing, type Theme } from '@irodora/design-tokens';
+import {
+  ChoiceGroup,
+  Chip,
+  CHIP_HEIGHT,
+  SELECTION_DOT,
+  SelectionDot,
+  ThemeProvider,
+} from '../src/index.js';
 import {
   checkSubject,
   drawsDot,
@@ -241,5 +248,78 @@ describe('selection-treatment holds a pill to its picture', () => {
 
   it('DECOY — still holds a subject that does not declare pill to the chooser picture', () => {
     expect(treatment({ ...pill(true), treatment: 'chooser' })).toBe(1);
+  });
+});
+
+/**
+ * `ChoiceGroup`'s pill form is `15`'s CVD row (F-240, ADR-0131 §6): its height and gap recomputed
+ * from `15`'s own boxes, and every pill drawn at one height and one edge width, chosen or not.
+ */
+describe('ChoiceGroup’s pill form is 15’s CVD row, recomputed (F-240)', () => {
+  interface Boxed {
+    readonly id: string;
+    readonly dp: { readonly x: number; readonly w: number; readonly h: number } | null;
+  }
+  const row = (elements as readonly Boxed[]).filter((e) =>
+    /^15\.cvd\.(standard|protanopia|deuteranopia|tritanopia)$/u.test(e.id),
+  );
+  const ordered = [...row].sort((a, b) => (a.dp?.x ?? 0) - (b.dp?.x ?? 0));
+  /** R9 §2's snap: the nearest spacing step, the smaller on a tie (ADR-0103). */
+  const snap = (v: number): number => {
+    const steps = Object.values(nativeSpacing);
+    return steps.reduce((best, s) =>
+      Math.abs(s - v) < Math.abs(best - v) || (Math.abs(s - v) === Math.abs(best - v) && s < best)
+        ? s
+        : best,
+    );
+  };
+
+  it('draws the three unchosen pills at 23 dp, the height the screen passes', () => {
+    expect(row).toHaveLength(4);
+    const unchosen = row.filter((e) => e.id !== '15.cvd.standard').map((e) => e.dp?.h ?? NaN);
+    expect(half(median(unchosen))).toBe(23);
+  });
+
+  it('DECOY — the chosen box is its edge’s extent, not another height', () => {
+    // 25.5 dp: the foreground edge drawn around the chosen pill, which one edge width in every
+    // state keeps from shifting its outline (F-232's chip rule).
+    expect(row.find((e) => e.id === '15.cvd.standard')?.dp?.h).not.toBe(23);
+  });
+
+  it('spaces the pills at xs: 5.5–6 dp between them, a tie between xs and sm, the smaller taken', () => {
+    const gaps = ordered
+      .slice(1)
+      .map((e, i) => (e.dp?.x ?? NaN) - ((ordered[i]?.dp?.x ?? NaN) + (ordered[i]?.dp?.w ?? NaN)));
+    expect(gaps).toHaveLength(3);
+    expect(snap(median(gaps))).toBe(nativeSpacing.xs);
+  });
+
+  it('draws every pill at one height and one edge width, chosen or not', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <ChoiceGroup
+          label="Colour-vision preview"
+          value="standard"
+          options={[
+            { value: 'standard', label: 'Standard' },
+            { value: 'protanopia', label: 'Protanopia' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 23 }}
+        />
+      </ThemeProvider>,
+    );
+    const pills = screen
+      .getAllByRole('radio')
+      .map((p) => flattenStyle((p.props as { style?: unknown }).style));
+    expect(pills).toHaveLength(2);
+    for (const style of pills) {
+      expect(style['height']).toBe(23);
+      expect(style['borderWidth']).toBe(1);
+    }
+    // The chosen one is the drawn pill: filled in surface.2, edged in foreground.
+    expect(pills[0]?.['backgroundColor']).toBe(dark['surface.2']);
+    expect(pills[0]?.['borderColor']).toBe(dark.foreground);
+    expect(pills[1]?.['borderColor']).toBe(dark.border);
   });
 });
