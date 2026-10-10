@@ -591,13 +591,38 @@ animated portal, worklet reach and the progress line.
    the dependency test lands as the guard.
 5. **One review, then fix or record** (AGENTS.md loop step 5); Tier 1 per increment and Tier 2 once
    per feature (ADR-0132).
+6. **D10 widened by increment 1's probe; no F-332.**
+   - **The probe confirmed the thumb's interpolation**, and found it also animates `start`, a layout
+     property `forbidden` names as `left`.
+   - **A second probe** gave HeroUI's root `state: 'disable-all'`, and the root and the thumb
+     `backgroundColor.value` pairs. Both jumped: one frame after the toggle, each read its final
+     colour and position. The colours read were the ones passed.
+   - **So increment 3's Switch passes both:** `disable-all`, and our painted `track` and `thumb`
+     tokens as the worklets' values.
+     - Under reanimated's precedence, those constant colours are what paints on a device. That
+       closes HeroUI's paint override on the element this feature already changes.
+     - It keeps the colour-vision preview's reach to the Switch true (ADR-0131).
+     - With every animation disabled, nothing distinguishes a pin from an interpolation. This was
+       the plan's reason to defer the pin.
+   - `motion-dependencies.test` reads the root's and the thumb's animated colours. They must be our
+     tokens in both states, and one frame after the toggle neither the colour nor `start` may be
+     between its two states.
+     - **Decoy:** HeroUI's own Switch with only `state: 'disabled'` shows the intermediate thumb
+       colour.
+   - ADR-0133 §10 records this. F-332 is not created, and the notes for F-262 lose its mention.
 
 ## Status (implementing session)
 
 | increment | commit | notes (Tier 1 commands and exit codes, per ADR-0132) |
 |---|---|---|
 | 0 | this commit | **Claim and plan.** F-266 `in_progress`; the planner's plan adopted with the amendments above; the `plan` field set. **Tier 1:** format, state. Nothing executable changed. |
-| 1 | | |
+| 1 | this commit | **Probe, read, decide.** The probes were throwaway jest files, deleted, with their results in ADR-0133's *Context*.
+- **(i)** `jestAnimatedProps` lands on react-native-svg's `Path` composite, not on the `RNSVGPath` host, which keeps its mount value. A 0.2 → 0.8 change read `strokeDashoffset` 80, then 79.49 one frame in, then 20. Advancing time on an arithmetic worklet is safe.
+- **(ii)** The sheet hands gorhom `{damping 28, stiffness 260, mass 1}`. gorhom's `animate.ts` routes a `duration` or `easing` to `withTiming`.
+- **(iii)** HeroUI's Switch thumb interpolates `backgroundColor` (`rgba(187,187,187,0.50)` three frames in) and slides by animating `start`. The rest of HeroUI we render animates no colour. Amendment 6 records a second probe: `disable-all` with pinned values jumps and paints the values given.
+- **(iv)** Read before quoting: reanimated's `useAnimatedStyle` page (precedence), WCAG 2.2 SC 2.2.2 and 2.3.3, Apple HIG *Motion*, Material 3 *Easing and duration* (read in the in-app browser; it says that system *"is no longer maintained"*), and gorhom's `animate.ts`.
+
+**ADR-0133** (D1–D10, with D10 widened) and its README row; ADR-0127 §3 and §6 point to it. No source changed. **Tier 1:** format, state. |
 | 2 | | |
 | 3 | | |
 | 4 | | |

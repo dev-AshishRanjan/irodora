@@ -65,7 +65,9 @@ The rise is about 69 dp at `14`'s frame; Android cannot draw the mark off-centre
 (69 + 81.7 dp would leave the 96 dp circle), so the movement has to happen in the overlay. Under
 reduced motion every step is zero: the composition is at rest at once and the overlay leaves on the
 next tick. The ambient motion — the wave's drift, the glow, the line moving between its steps — is
-F-266's; it may animate transforms and opacities only.
+F-266's; it may animate transforms and opacities only. **F-266 decided it in
+[ADR-0133](0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md) §2:** the glow blooms on the mark's arrival, the wave rises with the mark, and
+there is no drift.
 
 ### 4. The composition is laid out by its ink, and the rest snaps
 
@@ -106,7 +108,8 @@ its canvas. In Washi the same token makes it a soft dark halo — C17 is ⇄, an
 face loads behind the native splash, and the stored choices are read synchronously — so a loading
 percentage would be a number nobody computed. The line is `launchProgress`: how much of the rise and
 the hold has elapsed, at each step it reaches — 0 at the first frame, 0.5 on arrival, 1 as it leaves.
-`14`'s ~80 % is sample content (E1). F-266 moves it between the steps. Recorded in R9 §8.
+`14`'s ~80 % is sample content (E1). F-266 moves it between the steps (ADR-0133 §2: it reaches
+each step as the sequence does). Recorded in R9 §8.
 
 ### 7. Japanese text declaring its language is not decided here
 
