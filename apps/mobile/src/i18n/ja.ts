@@ -554,6 +554,14 @@ export const ja: Record<MessageKey, string> = {
    * meet.
    */
   'settings.engine': '3. プロ向けのエンジンと操作',
+  // F-240 — see en.ts. The modes are the ophthalmological terms (ADR-0131 §2).
+  'vision.mode.protanopia': '1型2色覚',
+  'vision.mode.deuteranopia': '2型2色覚',
+  'vision.mode.tritanopia': '3型2色覚',
+  'vision.strip.label': 'シミュレーション',
+  'vision.strip.model':
+    'Machado（2009）のモデルで、最大の重症度で表示しています。写真とカメラは対象外です。',
+  'vision.strip.tritan': '3型2色覚は近似です。このモデルは3型の人で検証されていません。',
   'settings.tabular': '数字を等幅で表示（ΔE / OKLCh）',
   'settings.haptics': '色見本を選んだときの触覚フィードバック',
   'settings.provenance': '色見本に出典バッジを表示',

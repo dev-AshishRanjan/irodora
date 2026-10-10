@@ -76,6 +76,7 @@ import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
 import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
 import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
 import { TargetBar } from '../src/TargetBar';
+import { VisionStrip } from '../src/VisionStrip';
 import type { PersonalProfile } from '@irodora/recommendation';
 import { combinationsFor } from '../src/combinations';
 import { allCombinations } from '../src/corpus';
@@ -1232,6 +1233,16 @@ const SCREENS: readonly ConformanceSubject[] = [
         />,
         theme,
       ),
+  },
+  {
+    /*
+     * THE COLOUR-VISION PREVIEW’S LABEL (F-240, ADR-0131 §5), in its longest form — Tritanopia, with
+     * its qualification — in the declared palette, so the rules read its tokens. The preview sweep
+     * renders it simulated, as the person sees it above the tab bar.
+     */
+    name: 'screens/VisionStrip',
+    kind: 'static',
+    render: (_state, theme) => draw(<VisionStrip mode="tritanopia" />, theme),
   },
   {
     name: 'screens/Compare',

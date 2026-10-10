@@ -8,6 +8,7 @@ import { DEVICE_APPEARANCE, durations, ThemeProvider, useTheme } from '@irodora/
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { DisplayProvider } from '../src/displaySettings';
+import { VisionProvider } from '../src/vision';
 import { deviceRepository } from '../src/store/repository';
 import { LaunchHost } from '../src/launch';
 import { TargetProvider, useTarget } from '../src/target';
@@ -226,7 +227,15 @@ export default function RootLayout(): React.JSX.Element {
           sat under the theme would leave the first frame of every screen reading the default.
         */}
           <DisplayProvider store={deviceRepository()}>
-            <Themed launch={launching ? <LaunchHost onShown={onShown} onDone={onDone} /> : null} />
+            {/*
+              THE COLOUR-VISION PREVIEW (F-240, ADR-0131 §5): in memory, never written, and OUTSIDE
+              the theme, so every theme below paints through it.
+            */}
+            <VisionProvider>
+              <Themed
+                launch={launching ? <LaunchHost onShown={onShown} onDone={onDone} /> : null}
+              />
+            </VisionProvider>
           </DisplayProvider>
         </AppearanceProvider>
       </SafeAreaProvider>

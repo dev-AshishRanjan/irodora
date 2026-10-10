@@ -626,6 +626,15 @@ export const en = {
    * is what makes the number read correctly.
    */
   'settings.engine': '3. Professional Engine & Controls',
+  // F-240 — the colour-vision preview's label (ADR-0131 §5). The modes are 15's words; the strip says
+  // what the screen is, by which model, and what it does not reach.
+  'vision.mode.protanopia': 'Protanopia',
+  'vision.mode.deuteranopia': 'Deuteranopia',
+  'vision.mode.tritanopia': 'Tritanopia',
+  'vision.strip.label': 'Simulated',
+  'vision.strip.model':
+    'Colours shown through the Machado (2009) model at full severity. Photographs and the camera are not simulated.',
+  'vision.strip.tritan': 'Tritanopia is approximate: the model was not validated with tritanopes.',
   'settings.tabular': 'Tabular Numeric Figures (ΔE / OKLCh)',
   'settings.haptics': 'Haptic Feedback on Swatch Selection',
   'settings.provenance': 'Show Provenance Badges on Swatches',

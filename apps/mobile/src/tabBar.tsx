@@ -20,7 +20,9 @@
  * still hears it. A long press emits `tabLongPress`. That is the documented custom-bar contract.
  */
 
-import { TabBar, type TabBarItem } from '@irodora/ui';
+import { View } from 'react-native';
+import { TabBar, useVisionPreview, type TabBarItem } from '@irodora/ui';
+import { VisionStrip } from './VisionStrip';
 import { useMessages } from './i18n/useMessages';
 import { TABS } from './tabs';
 
@@ -77,22 +79,31 @@ export function AppTabBar({ state, navigation, insets }: NavigatorTabBar): React
   const active = state.routes[state.index]?.key ?? '';
   const routeOf = (key: string): NavigatorRoute | undefined =>
     state.routes.find((r) => r.key === key);
+  /*
+   * THE PREVIEW'S LABEL RIDES ON THE TAB BAR (F-240, ADR-0131 §5), because the tab bar is on every
+   * route: the strip reaches every screen through an invariant F-145 already holds. In flow, above
+   * the bar, so it never covers content and the bar keeps the bottom inset.
+   */
+  const vision = useVisionPreview();
   return (
-    <TabBar
-      items={tabItems(state.routes, t)}
-      active={active}
-      script={script}
-      bottomInset={insets.bottom}
-      onSelect={(key) => {
-        const route = routeOf(key);
-        if (route === undefined) return;
-        const event = navigation.emit({ type: 'tabPress', target: key, canPreventDefault: true });
-        if (key !== active && event.defaultPrevented !== true)
-          navigation.navigate(route.name, route.params);
-      }}
-      onLongPress={(key) => {
-        navigation.emit({ type: 'tabLongPress', target: key });
-      }}
-    />
+    <View>
+      <VisionStrip mode={vision} />
+      <TabBar
+        items={tabItems(state.routes, t)}
+        active={active}
+        script={script}
+        bottomInset={insets.bottom}
+        onSelect={(key) => {
+          const route = routeOf(key);
+          if (route === undefined) return;
+          const event = navigation.emit({ type: 'tabPress', target: key, canPreventDefault: true });
+          if (key !== active && event.defaultPrevented !== true)
+            navigation.navigate(route.name, route.params);
+        }}
+        onLongPress={(key) => {
+          navigation.emit({ type: 'tabLongPress', target: key });
+        }}
+      />
+    </View>
   );
 }
