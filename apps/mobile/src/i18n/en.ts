@@ -628,6 +628,9 @@ export const en = {
   'settings.engine': '3. Professional Engine & Controls',
   // F-240 — the colour-vision preview's label (ADR-0131 §5). The modes are 15's words; the strip says
   // what the screen is, by which model, and what it does not reach.
+  'settings.accessibility': '2. Accessibility & Colour-Vision Deficiency (CVD) Mode',
+  'vision.label': 'Colour-vision preview',
+  'vision.mode.standard': 'Standard',
   'vision.mode.protanopia': 'Protanopia',
   'vision.mode.deuteranopia': 'Deuteranopia',
   'vision.mode.tritanopia': 'Tritanopia',

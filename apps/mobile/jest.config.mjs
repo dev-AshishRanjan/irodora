@@ -38,6 +38,23 @@ export default {
   passWithNoTests: false,
 
   /*
+   * EVERY MOCK'S RECORD IS CLEARED BEFORE EACH TEST, and this is memory, not hygiene (F-240).
+   *
+   * A `jest.fn` keeps every call it receives — arguments, result, `this` — until something clears
+   * it, and React Native's own jest setup mocks two things every render reaches: `performance.now`
+   * (about 550 calls a screen, each an array and a result object) and `AccessibilityInfo`'s
+   * listener, whose arguments are bound `setState`s, so each record holds a fiber and, through it,
+   * the whole unmounted tree with React's debug stacks. Nothing cleared them, so `screens.test`
+   * kept every render of the file alive: a heap snapshot after a full collection found 1.1 GB
+   * retained before the F-204 sweep began and 2.1 GB after it. F-240's preview sweep added the
+   * renders that took it past the worker's 2 GB heap, and `a11y` died out of memory.
+   *
+   * Clearing keeps every implementation and resets only the record, so no assertion that reads a
+   * mock within its own test moves.
+   */
+  clearMocks: true,
+
+  /*
    * THE THREE PIECES THAT LET A HeroUI TREE RENDER HERE (F-087, ADR-0062).
    *
    * Each was found by running it, and each has a distinct failure without which the suite

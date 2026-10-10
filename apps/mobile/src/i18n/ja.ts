@@ -555,6 +555,9 @@ export const ja: Record<MessageKey, string> = {
    */
   'settings.engine': '3. プロ向けのエンジンと操作',
   // F-240 — see en.ts. The modes are the ophthalmological terms (ADR-0131 §2).
+  'settings.accessibility': '2. アクセシビリティと色覚異常（CVD）モード',
+  'vision.label': '色覚シミュレーション',
+  'vision.mode.standard': '標準',
   'vision.mode.protanopia': '1型2色覚',
   'vision.mode.deuteranopia': '2型2色覚',
   'vision.mode.tritanopia': '3型2色覚',

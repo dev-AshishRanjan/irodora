@@ -35,12 +35,16 @@
 import { useMemo, useState } from 'react';
 import { noHaptics, type Haptics } from '../haptics';
 import {
+  type Appearance,
+  APPEARANCES,
   Button,
   Card,
-  APPEARANCES,
+  ChoiceGroup,
   DEFAULT_APPEARANCE,
   DEVICE_APPEARANCE,
   DISPLAY_SETTING_KEYS,
+  type DisplaySettingKey,
+  type DisplaySettings,
   DRAWN_DISPLAY_SETTINGS,
   EmptyState,
   Row,
@@ -50,9 +54,8 @@ import {
   Surface,
   Switch,
   Text,
-  type Appearance,
-  type DisplaySettingKey,
-  type DisplaySettings,
+  VISION_MODES,
+  type VisionMode,
 } from '@irodora/ui';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../corpus';
@@ -66,6 +69,21 @@ import type { ScreenStates } from '../states';
  * been learned yet.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
+
+/** Each preview mode's name, as `15` prints it (F-240). */
+const VISION_KEYS: Readonly<Record<VisionMode, MessageKey>> = {
+  standard: 'vision.mode.standard',
+  protanopia: 'vision.mode.protanopia',
+  deuteranopia: 'vision.mode.deuteranopia',
+  tritanopia: 'vision.mode.tritanopia',
+};
+
+/**
+ * The pills' drawn height in dp: `15`'s three unchosen CVD pills (`15.cvd.protanopia` …), their
+ * median. The chosen box is taller by its edge. Recomputed from `15`'s inventory by
+ * `preferences-vision.test`.
+ */
+export const VISION_PILL_HEIGHT = 23;
 
 /** What this screen needs from the repository — nothing more, so a test can supply it. */
 export interface PreferenceStore {
@@ -121,6 +139,14 @@ export interface PreferencesProps {
    */
   readonly display?: DisplaySettings;
   readonly onChangeDisplaySetting?: (key: DisplaySettingKey, value: boolean) => void;
+  /**
+   * The colour-vision preview in force, and how to choose another (F-240, ADR-0131).
+   *
+   * PROPS RATHER THAN THE HOOK, for `appearance`'s reason: `useVision()` throws outside its
+   * provider, and the conformance suite renders this screen without one. The route reads the hook.
+   */
+  readonly vision?: VisionMode;
+  readonly onChooseVision?: (mode: VisionMode) => void;
   /**
    * What came of asking the platform for its colour (F-154).
    *
@@ -211,6 +237,8 @@ export function Preferences({
   device = { kind: 'none', why: 'unsupported' },
   display = DRAWN_DISPLAY_SETTINGS,
   onChangeDisplaySetting,
+  vision = 'standard',
+  onChooseVision,
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
@@ -313,6 +341,37 @@ export function Preferences({
             {t('appearance.hint')}
           </Text>
         </Stack>
+      </Card>
+
+      {/*
+        15'S SECTION 2: THE COLOUR-VISION PREVIEW (F-240, ADR-0131). Four pills in 15's order —
+        Standard, Protanopia, Deuteranopia, Tritanopia — as one radio group. Choosing one repaints
+        every token and sample through the engine's simulation, and the strip above the tab bar says
+        so on every screen; nothing is stored. Under its numbered heading, as F-239's section 3 is.
+        15's separation badge is F-262's, with the rest of 15's composition.
+
+        NO HAPTIC: choosing a preview is not a commit (F-206, ADR-0104).
+      */}
+      <Card
+        level="1"
+        padding="md"
+        header={
+          <Text size="body" color="foreground" script={script} heading numeric>
+            {t('settings.accessibility')}
+          </Text>
+        }
+      >
+        <ChoiceGroup
+          label={t('vision.label')}
+          value={vision}
+          options={VISION_MODES.map((mode) => ({ value: mode, label: t(VISION_KEYS[mode]) }))}
+          onChange={(mode) => {
+            if (mode !== null) onChooseVision?.(mode);
+          }}
+          pills={{ height: VISION_PILL_HEIGHT }}
+          script={script}
+          testID="vision.modes"
+        />
       </Card>
 
       {/*

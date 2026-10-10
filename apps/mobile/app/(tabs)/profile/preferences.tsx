@@ -4,6 +4,7 @@ import { Preferences } from '../../../src/screens/Preferences';
 import { deviceRepository } from '../../../src/store/repository';
 import { useAppearance } from '../../../src/appearance';
 import { useDisplay } from '../../../src/displaySettings';
+import { useVision } from '../../../src/vision';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.
@@ -32,6 +33,11 @@ export default function PreferencesRoute(): React.JSX.Element {
    * value and the writer as props, and the conformance suite renders it with neither.
    */
   const { settings, change } = useDisplay();
+  /*
+   * AND FOR THE COLOUR-VISION PREVIEW (F-240): held in memory at the root, never written; the
+   * screen takes the mode and the chooser as props, for the same reason.
+   */
+  const vision = useVision();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
@@ -43,6 +49,8 @@ export default function PreferencesRoute(): React.JSX.Element {
         device={device}
         display={settings}
         onChangeDisplaySetting={change}
+        vision={vision.vision}
+        onChooseVision={vision.choose}
       />
     </>
   );
