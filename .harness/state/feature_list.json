@@ -9295,7 +9295,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-231",
         "F-234",
@@ -9319,7 +9319,8 @@
         "contrast",
         "cvd"
       ],
-      "notes": "FROM F-231 (2026-10-08, ADR-0127): the launch's hand-over — the native-size mark rising into 14's lockup while the composition fades in, the hold, the leave — is built; do not duplicate it. F-266 animates only the ambience: `LaunchGlow`'s opacity and scale (the glow is an Image of a mask, tinted `foreground` — never animate its tint), the silk wave's transform, and `ProgressBar`'s value between `launchProgress`'s steps (0, 0.5, 1 — a `scaleX`, never a width). Everything stops under reduced motion. FROM F-236 (ADR-0128, ADR-0129): the working ring's fill is an SVG arc whose length is the value, not a transform; animating it needs a decision against `motion.animatable`. The glow is concentric discs of `state.mark`. FROM F-240 (ADR-0131): a mode switch is instantaneous (the painted palette is memoised per palette and mode); never animate it, and it has no haptic."
+      "notes": "FROM F-231 (2026-10-08, ADR-0127): the launch's hand-over — the native-size mark rising into 14's lockup while the composition fades in, the hold, the leave — is built; do not duplicate it. F-266 animates only the ambience: `LaunchGlow`'s opacity and scale (the glow is an Image of a mask, tinted `foreground` — never animate its tint), the silk wave's transform, and `ProgressBar`'s value between `launchProgress`'s steps (0, 0.5, 1 — a `scaleX`, never a width). Everything stops under reduced motion. FROM F-236 (ADR-0128, ADR-0129): the working ring's fill is an SVG arc whose length is the value, not a transform; animating it needs a decision against `motion.animatable`. The glow is concentric discs of `state.mark`. FROM F-240 (ADR-0131): a mode switch is instantaneous (the painted palette is memoised per palette and mode); never animate it, and it has no haptic.",
+      "plan": "plans/F-266-the-motion-the-mockups-imply-and-never-on-a-colour.md"
     },
     {
       "id": "F-267",
