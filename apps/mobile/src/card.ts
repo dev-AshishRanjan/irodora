@@ -227,6 +227,24 @@ export function cardSvg(entry: PublishedEntry, options: CardOptions): string {
   );
 }
 
+/**
+ * The card as the screen DISPLAYS it under a colour-vision preview (F-240, ADR-0131 §3).
+ *
+ * Every `fill` and `stroke` attribute is painted through `paint`, and nothing else is touched.
+ * The hex the card prints is TEXT, and stays the colour's. A global replace of hex values would
+ * simulate the printed value too. `none` paints nothing and is left as written.
+ *
+ * The DOCUMENT — what `cardSvg` returns and what leaves the app — is built from the palette as
+ * declared and is never painted. In Standard `paint` is the identity, and so is this.
+ */
+export function paintedCard(svg: string, paint: (css: string) => string): string {
+  return svg.replace(
+    /\b(fill|stroke)="([^"]*)"/gu,
+    (attribute: string, name: string, value: string) =>
+      value === 'none' ? attribute : `${name}="${paint(value)}"`,
+  );
+}
+
 /** Every type size on the card, scaled to `THUMBNAIL_WIDTH`. For the legibility check. */
 export function thumbnailSizes(): Readonly<Record<keyof typeof TYPE, number>> {
   const scale = THUMBNAIL_WIDTH / CARD_WIDTH;

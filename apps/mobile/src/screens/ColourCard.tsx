@@ -20,7 +20,7 @@ import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { SvgXml } from 'react-native-svg';
 import { Card, EmptyState, Screen, Stack, Text, useTheme } from '@irodora/ui';
-import { cardSvg, CARD_HEIGHT, CARD_WIDTH, THUMBNAIL_WIDTH } from '../card';
+import { cardSvg, CARD_HEIGHT, CARD_WIDTH, paintedCard, THUMBNAIL_WIDTH } from '../card';
 import { CORPUS_LABEL, entryBySlug } from '../corpus';
 // The SAME map the detail screen uses. Two copies of the FR-23 vocabulary would drift, and the
 // one that drifts would be the one on the artefact that leaves the app.
@@ -42,7 +42,7 @@ export interface ColourCardProps {
 }
 
 export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, source, paint } = useTheme();
   const { t, script } = useMessages();
   const entry = entryBySlug(slug);
 
@@ -61,9 +61,13 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
    * The card is drawn in the ACTIVE theme, so the thing a person shares matches the thing they
    * were looking at. `useTheme` is the single source for that (F-017's defect was a screen
    * deciding its own theme, which made it uncheckable in the other one).
+   *
+   * THE DOCUMENT IS THE DECLARED PALETTE'S (F-240, ADR-0131 §3). It is built from `source`, so a
+   * colour-vision preview never reaches what a person shares or exports; only what this screen
+   * DISPLAYS is painted through the preview (`paintedCard`).
    */
   const svg = cardSvg(entry, {
-    colors,
+    colors: source,
     corpusVersion: CORPUS_LABEL,
     labels: {
       // The entry's OWN classification, never a word chosen here. FR-23 travels with the card
@@ -73,11 +77,12 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
     },
   });
 
+  const shown = paintedCard(svg, paint);
   const ratio = CARD_HEIGHT / CARD_WIDTH;
 
   return (
     <Screen title={t('card.title')} script={script}>
-      <SvgXml xml={svg} width={DISPLAY_WIDTH} height={DISPLAY_WIDTH * ratio} />
+      <SvgXml xml={shown} width={DISPLAY_WIDTH} height={DISPLAY_WIDTH * ratio} />
 
       <Card
         level="1"
@@ -93,7 +98,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
             THE SAME DOCUMENT, at the size a chat preview gives it. Shown rather than described,
             so a person can disagree with the arithmetic in card.test.ts instead of taking it.
           */}
-          <SvgXml xml={svg} width={THUMBNAIL_WIDTH} height={THUMBNAIL_WIDTH * ratio} />
+          <SvgXml xml={shown} width={THUMBNAIL_WIDTH} height={THUMBNAIL_WIDTH * ratio} />
         </Stack>
       </Card>
 

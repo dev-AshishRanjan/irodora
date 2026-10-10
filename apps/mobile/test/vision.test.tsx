@@ -10,6 +10,8 @@
  */
 
 import { Text as NativeText } from 'react-native';
+import { SvgXml } from 'react-native-svg';
+import { simulatePaint } from '@irodora/design-tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { ThemeProvider, VisionPreviewProvider, VISION_MODES, type VisionMode } from '@irodora/ui';
 import { DisplayProvider, useDisplay, type DisplaySettingsStore } from '../src/displaySettings';
@@ -17,6 +19,9 @@ import { useVision, VisionProvider } from '../src/vision';
 import { VisionStrip, VISION_STRIP_TEST_ID } from '../src/VisionStrip';
 import { AppTabBar, type NavigatorTabBar } from '../src/tabBar';
 import { TABS } from '../src/tabs';
+import { ColourCard } from '../src/screens/ColourCard';
+import { paintedCard } from '../src/card';
+import { allEntries } from '../src/corpus';
 import { en } from '../src/i18n/en';
 import { ja } from '../src/i18n/ja';
 
@@ -186,5 +191,38 @@ describe('the strip rides on the tab bar, on every route', () => {
   it('DECOY — and absent from the bar in Standard', () => {
     bar('standard');
     expect(screen.queryByTestId(VISION_STRIP_TEST_ID)).toBeNull();
+  });
+});
+
+describe('the colour card: its display is painted, its document is not (F-240, ADR-0131 §3)', () => {
+  /** The xml each SvgXml on the card screen is given, in one mode. */
+  const shownIn = (mode: VisionMode, slug: string): string[] => {
+    render(
+      <VisionPreviewProvider mode={mode}>
+        <ThemeProvider theme="dark">
+          <ColourCard slug={slug} />
+        </ThemeProvider>
+      </VisionPreviewProvider>,
+    );
+    return screen.UNSAFE_getAllByType(SvgXml).map((n) => String(n.props['xml']));
+  };
+  // A sample that moves under protanopia, so its own fill tells the two orders apart.
+  const entry = allEntries().find(
+    (e) => simulatePaint(e.derived.hex, 'protanopia') !== e.derived.hex,
+  );
+
+  it('shows the declared document in Standard, and that document painted in a mode', () => {
+    expect(entry).toBeDefined();
+    const slug = entry?.entry.slug ?? '';
+    const standard = shownIn('standard', slug);
+    const preview = shownIn('protanopia', slug);
+    expect(preview).toStrictEqual(
+      standard.map((svg) => paintedCard(svg, (css) => simulatePaint(css, 'protanopia'))),
+    );
+    // DECOY — a document built from the PAINTED palette would leave the sample's own fill raw:
+    // the preview shows it simulated.
+    const sample = entry?.derived.hex ?? '';
+    expect(preview[0]).toContain(`fill="${simulatePaint(sample, 'protanopia')}"`);
+    expect(preview[0]).not.toContain(`fill="${sample}"`);
   });
 });

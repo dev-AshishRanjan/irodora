@@ -8,11 +8,12 @@
  * is the rasterisation, which differs by platform and is not claimed.
  */
 
-import { nativeColors } from '@irodora/design-tokens';
+import { nativeColors, simulatePaint } from '@irodora/design-tokens';
 import {
   cardSvg,
   CARD_HEIGHT,
   CARD_WIDTH,
+  paintedCard,
   sampleAreaFraction,
   SAMPLE_AREA_FLOOR,
   thumbnailSizes,
@@ -200,5 +201,46 @@ describe('text is escaped', () => {
     });
     expect(svg).toContain('a &amp; b');
     expect(svg).not.toContain('<c>');
+  });
+});
+
+/**
+ * The card as the screen displays it under a colour-vision preview (F-240, ADR-0131 §3): every
+ * `fill` and `stroke` painted through the engine, the printed hex untouched, and nothing else moved.
+ * The document itself is built from the declared palette and never painted.
+ */
+describe('the card, displayed under a colour-vision preview (F-240)', () => {
+  const MODES = ['protanopia', 'deuteranopia', 'tritanopia'] as const;
+  const PAINT = /\b(?:fill|stroke)="([^"]*)"/gu;
+  const paints = (svg: string): string[] => [...svg.matchAll(PAINT)].map((m) => m[1] ?? '');
+  const withoutPaints = (svg: string): string => svg.replace(PAINT, '');
+  /** An entry whose sample moves under every mode, so its printed hex can be told from its paint. */
+  const chromatic: PublishedEntry =
+    allEntries().find((e) =>
+      MODES.every((m) => simulatePaint(e.derived.hex, m) !== e.derived.hex),
+    ) ?? ENTRY;
+  const svg = cardSvg(chromatic, OPTIONS);
+
+  it('is the document itself in Standard', () => {
+    expect(paintedCard(svg, (css) => css)).toBe(svg);
+  });
+
+  it.each(MODES)(
+    '%s: paints every fill and stroke through the engine, and nothing else',
+    (mode) => {
+      const shown = paintedCard(svg, (css) => simulatePaint(css, mode));
+      expect(paints(shown)).toStrictEqual(
+        paints(svg).map((v) => (v === 'none' ? v : simulatePaint(v, mode))),
+      );
+      expect(withoutPaints(shown)).toBe(withoutPaints(svg));
+      // The printed hex is text, and stays the colour's.
+      expect(shown).toContain(`>${chromatic.derived.hex}</text>`);
+    },
+  );
+
+  it('DECOY — a global replace of hex values would rewrite the printed hex too', () => {
+    expect(simulatePaint(chromatic.derived.hex, 'protanopia')).not.toBe(chromatic.derived.hex);
+    const naive = svg.replace(/#[0-9A-F]{6}\b/giu, (css) => simulatePaint(css, 'protanopia'));
+    expect(naive).not.toContain(`>${chromatic.derived.hex}</text>`);
   });
 });
