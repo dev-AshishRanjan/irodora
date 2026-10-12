@@ -44,6 +44,8 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { bannedIn, compileBanned } from './claims-patterns.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = join(ROOT, '.harness/verification/claims.json');
 
@@ -71,6 +73,9 @@ if (banned.length === 0) {
   );
   process.exit(1);
 }
+
+// Compiled once, the way every reader of claims.json compiles them (F-221).
+const compiled = compileBanned(banned);
 
 const policyPaths = new Set((allow.policySource ?? []).map((e) => e.path));
 const measured = allow.measured ?? [];
@@ -156,9 +161,7 @@ for (const file of files) {
       continue;
     }
 
-    for (const b of banned) {
-      const re = new RegExp(b.pattern, 'i');
-      if (!re.test(line)) continue;
+    for (const b of bannedIn(line, compiled)) {
       violations.push({
         file: rel,
         line: i + 1,

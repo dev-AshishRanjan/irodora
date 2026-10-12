@@ -315,7 +315,7 @@ F-091's journey criteria by an actual run.
 | increment | commit | notes |
 |---|---|---|
 | 0 | this commit | Claim, ADR-0134 (D1–D7; OQ-53 closed by D2), criterion 2 amended, and this plan. F-221's `blockedByAttestation` is removed on the person's direction, quoted in its notes. F-091's attestations stay outstanding, with the person's run noted. **Tier 1 run:** format, state, claims. |
-| 1 | | |
+| 1 | this commit | **The claims patterns, compiled once.** `scripts/claims-patterns.mjs` (`loadClaims`, `compileBanned` with the lint's case-insensitive flag, `bannedIn`). `verify-claims.mjs` imports it and compiles once instead of per line; its behaviour is unchanged (30 patterns, 0 violations; `verify-claims-proof`: all 41 cases discriminate). **Tier 1, each exit 0:** format, typecheck, lint, claims, the claims proof. |
 | 2 | | |
 | 3 | | |
 | 4 | | |
