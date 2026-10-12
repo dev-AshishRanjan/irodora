@@ -136,8 +136,11 @@ F-271, F-324, F-331, F-333 (each recorded).
 
 | increment | commit | notes |
 |---|---|---|
-| 0 | this commit | Claim and plan. |
-| 1 | | |
+| 0 | this commit | Claim and plan. **Tier 1 run:** state (exit 0). |
+| 1 | this commit | **Both fixes, in one increment.** Approach items 1 and 2 were planned as two increments. Landed apart, plant-proof's fix would turn CI red at the a11y proof's leftover, so they go together. *(Approach item 3, the import check, is in this increment too.)*
+- **The leak, watched first.** On the tree as it was, `node scripts/verify-a11y-proof.mjs` exited 1 (F-324) and left a journal, `packages/ui/src/Button.tsx`, owner `verify-a11y-proof`, with Button.tsx equal to HEAD. With the journal opened after the "cannot plant" check, the same run leaves none.
+- **The refusal, watched failing first, over that real leftover.** Saved first. The unfixed plant-proof (with the new case added) printed "OK baseline: no plant is outstanding" over it, deleted it, and failed the new case twice: the second run exited 0, and the journal was deleted. With the fix and the saved journal put back, plant-proof exited 1, named Button.tsx and its owner, and left the journal with the same SHA-256. Then `plant.mjs --recover` (Button.tsx unchanged), and plant-proof exited 0: every case OK, no journal and no scratch directory left.
+- **The import check, watched catching:** five decoy scripts, each caught (`JOURNAL`, `recover` renamed, `import * as`, `import()`, the file's name), and a `describeLeftovers`-only control that passes.
+- **Tier 1, each exit 0:** format, typecheck, state, lint (plant-proof included, no journal after). |
 | 2 | | |
-| 3 | | |
 | review | | |

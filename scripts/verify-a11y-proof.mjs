@@ -155,18 +155,23 @@ const failures = [];
 for (const c of CASES) {
   const original = readFileSync(c.file, 'utf8');
 
-  /*
-   * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
-   * — which is how seven plants reached the working tree — leaves a record of what it
-   * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
-   */
-  const journal = guardPlants('verify-a11y-proof', [c.file]);
   if (!original.includes(c.find)) {
     failures.push(`${c.name}: the source to mutate is not there any more — case UNRUNNABLE`);
     console.log(`  ${RED}✗${OFF} ${c.name} ${DIM}(cannot plant: source moved)${OFF}`);
     continue;
   }
 
+  /*
+   * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+   * — which is how seven plants reached the working tree — leaves a record of what it
+   * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+   *
+   * OPENED ONLY ONCE THE CASE CAN PLANT (F-296). It was opened above the check, so a case that
+   * cannot plant `continue`d past its `close()`. The tap-target case (F-324) is the last, so every
+   * run left an entry naming an unmodified Button.tsx — cleared only because the next CI step,
+   * plant-proof, used to delete the whole journal.
+   */
+  const journal = guardPlants('verify-a11y-proof', [c.file]);
   writeFileSync(c.file, original.replace(c.find, c.replace));
   try {
     const result = runGate();
