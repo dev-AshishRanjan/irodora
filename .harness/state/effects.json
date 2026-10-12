@@ -8465,6 +8465,40 @@
       "guard": "node scripts/verify-ci.mjs --prove, in the root lint chain: four synthetic steps go through runSteps and failureReport, the code a real run reports with, and the printed text is asserted. A step that prints 16 MiB and exits 0 reads passed; an exit 3 reads failed and its report shows the end of its log, whole lines only, behind 80 KiB of earlier output; a step that cannot start and a step the runner kills read not run, each naming why; the count keeps failed apart from not run. Watched failing first on the runner as it was, and seven mutants of the runner and the report each fail it.",
       "memory": "memory/effects/a-step-is-judged-by-its-exit-not-by-what-it-printed.md",
       "rationale": "Tier 2 (ADR-0132) reads verify-ci --all as evidence. A runner that buffers output kills a long-talking step and reports it failed, which taught every reader to discount three reds; a report that cannot tell a failed check from a step that never ran hides an environment failure as a test failure. Change how runSteps runs, classifies or prints a step, and what Tier 2 records changes with it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-296",
+      "id": "E-202",
+      "severity": "high",
+      "scope": [
+        "scripts",
+        ".harness"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "scripts/plant-proof.mjs"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "scripts/plant.mjs#recover"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/memory/effects/a-finally-is-a-hope-about-how-a-process-ends.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "node scripts/plant-proof.mjs, in the root lint chain and in ci.yml: (1) a killed child leaves a journal under another owner, plant-proof is run again, and the second run must exit 1, name the file, and leave the journal byte for byte — watched failing first, when it deleted the journal and exited 0; (2) no script but plant.mjs and plant-proof.mjs imports JOURNAL or recover from plant.mjs, by name, renamed, by namespace or dynamically, or names .plant-journal — five decoys, each caught, and a describeLeftovers-only control that passes.",
+      "memory": "memory/effects/a-proof-of-the-journal-never-clears-a-journal-it-did-not-write.md",
+      "rationale": "The journal (F-173, E-094) is worth exactly as long as it survives: it is the only record of a plant a killed proof left, and the bytes to undo it. plant-proof runs after other proofs in lint and in ci.yml. While it deleted the journal, any leftover before it was erased with its plant still in place (F-291), and a proof that leaked an entry on every run (the a11y proof, since F-232) was hidden. Change how plant-proof clears, or let another script reach the journal, and every recovery after it changes with it."
     }
   ]
 }

@@ -41,3 +41,12 @@ exit from the deliberate refuse-a-leftover branch, so each needs reading.
 `verify-claims-proof` now declares `let journal = null` before its `try`, opens the journal after
 every early exit and immediately before the first plant, and closes it with `journal?.close()`. That
 meets F-271's first criterion for this one script; the other four and the demonstrating case remain.
+
+## A `continue` is an early exit too (F-296)
+
+`verify-a11y-proof` opened its journal per case, then checked that the case could plant, and on
+"cannot plant" `continue`d past its `close()`. Since F-232 its last case cannot plant (F-324), so
+every run left an entry naming an unmodified Button.tsx. Nobody saw it, because `plant-proof`, the
+next CI step, deleted the journal. F-296 stopped that deletion, so it also moved this journal below
+the check. The crude scan above looks for `process.exit`; F-271's check must count `continue`,
+`return` and `break` too.

@@ -84,3 +84,9 @@ journal entry can now carry a note, and recovery prints it.
 Related: [[a-mechanism-nobody-used-is-a-mechanism-nobody-measured]] ·
 [[a-check-must-report-its-scope-not-only-its-verdict]] ·
 [[a-decoy-that-is-not-broken-proves-nothing]]
+
+## The proof of the journal deleted the journal (F-296)
+
+`plant-proof` made room for its own children with `rmSync(JOURNAL)`, so as the lint chain's and
+CI's later step it erased any record an earlier proof left. Since F-296 it refuses over a leftover
+and clears only its own children's entries, and nothing else can reach the journal (E-202).

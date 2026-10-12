@@ -27,3 +27,10 @@ someone has since edited destroys their work. A first comparison that guessed th
 flagged every entry as different; it stopped, which was the right failure.
 
 Links: [[a-memory-note-without-its-link-turns-gate-0-red-and-strands-a-plant]]
+
+## Addendum — 2026-10-12 (F-296): a skip is an early exit
+
+`continue` skips the rest of a loop body, `close()` included. `verify-a11y-proof` opened a journal
+per case and then skipped a case that could not plant. It left an entry on every run since F-232,
+hidden because the next CI step deleted the journal. Open the journal after the last `continue`,
+`return`, `break` or `process.exit` that can come before the plant.

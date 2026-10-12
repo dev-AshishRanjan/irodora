@@ -142,5 +142,5 @@ F-271, F-324, F-331, F-333 (each recorded).
 - **The refusal, watched failing first, over that real leftover.** Saved first. The unfixed plant-proof (with the new case added) printed "OK baseline: no plant is outstanding" over it, deleted it, and failed the new case twice: the second run exited 0, and the journal was deleted. With the fix and the saved journal put back, plant-proof exited 1, named Button.tsx and its owner, and left the journal with the same SHA-256. Then `plant.mjs --recover` (Button.tsx unchanged), and plant-proof exited 0: every case OK, no journal and no scratch directory left.
 - **The import check, watched catching:** five decoy scripts, each caught (`JOURNAL`, `recover` renamed, `import * as`, `import()`, the file's name), and a `describeLeftovers`-only control that passes.
 - **Tier 1, each exit 0:** format, typecheck, state, lint (plant-proof included, no journal after). |
-| 2 | | |
+| 2 | this commit | **Close-out.** E-202 (high) with its note and index line. E-127's and E-094's notes; the journal lesson's addendum (a `continue` is an early exit); a new lesson, *a proof of a safety net must not clear the net it proves*. Downstream notes on F-271, F-324, F-331 and F-333. **Tier 1, each exit 0:** format, state, claims. |
 | review | | |
