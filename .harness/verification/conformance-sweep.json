@@ -6,6 +6,35 @@
   "motionSettings": 2,
   "conditions": 8,
   "findings": 0,
+  "claims": {
+    "$comment": "F-221 (ADR-0134 D3): every tree rendered in every condition, read as paragraphs, visual lines (paragraphs side by side in a row) and accessible names, against the claims lint patterns. pnpm fidelity:capture reads a device capture the same way.",
+    "textsRead": {
+      "paragraph": 22876,
+      "line": 2570,
+      "name": 10136
+    },
+    "patterns": 30,
+    "findings": 0
+  },
+  "inventory": {
+    "$comment": "F-221 (ADR-0134 D1, D7): the surfaces enrolled, each rendered in both themes and both languages with every inventory element found by what it draws; the rest owed to the feature that builds each, or not a whole surface, with why.",
+    "enrolled": [
+      "14.splash",
+      "27.wardrobe-empty",
+      "27.lens-working",
+      "27.lens-refused",
+      "27.lens-permission"
+    ],
+    "elementsAsserted": 31,
+    "renders": 20,
+    "owed": 23,
+    "notWhole": {
+      "00.board": "The vocabulary board: it governs words, parts and type (P3), and draws no screen a route renders.",
+      "14.icon": "The launcher icon: an asset, held by generate-brand-assets --check and gate 16, not a screen.",
+      "25.screen": "The light palette over 01 (P2): its layout is 01's, built and enrolled by F-242.",
+      "26.screen": "Japanese over 06 (P2): its layout is 06's, built and enrolled by F-247."
+    }
+  },
   "cited": {
     "cvd": "NOT re-simulated here. Gate 9 (pnpm test:contrast) runs every declared pairing through WCAG, APCA and eleven CVD severities across every declared palette. A second simulation would be a second answer to one question (E-005).",
     "tokenReach": "NOT checked here. scripts/verify-token-reach.mjs (F-092) checks both directions — a token no component reads, and an exemption a component does read — and prints the whole exemption list on every run. 86 names: 67 read, 19 declared unreached with a reason."

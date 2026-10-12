@@ -325,9 +325,22 @@ export function drawsTablist(tree: TestNode): boolean {
  * Returns findings. An empty array means it conformed; it does **not** mean anything ran, so
  * `checkAll` refuses an empty subject list separately.
  */
+/**
+ * Called with every tree a check renders, so a caller can read it without rendering it again
+ * (F-221). The sweep reads its text for claims this way: a second render per subject, state, theme
+ * and condition is what F-240 found running `screens.test` out of memory. Optional and additive.
+ */
+export type Observer = (
+  subject: ConformanceSubject,
+  state: string,
+  theme: Theme,
+  tree: TestNode,
+) => void;
+
 export function checkSubject(
   subject: ConformanceSubject,
   themes: readonly Theme[],
+  observe?: Observer,
 ): readonly Finding[] {
   const findings: Finding[] = [];
   const states = REQUIRED_STATES[subject.kind];
@@ -348,6 +361,7 @@ export function checkSubject(
         continue;
       }
       rendered.set(state, tree);
+      observe?.(subject, state, theme, tree);
 
       // --- the gate must be able to SEE a colour at all --------------------------------
       //
@@ -783,6 +797,7 @@ function rgbOf(hex: string): readonly [number, number, number] {
 export function checkAll(
   subjects: readonly ConformanceSubject[],
   themes: readonly Theme[] = ['light', 'dark'],
+  observe?: Observer,
 ): readonly Finding[] {
   if (subjects.length === 0)
     return [
@@ -805,7 +820,7 @@ export function checkAll(
           'both themes are authored independently here, so one theme proves nothing about the other',
       },
     ];
-  return subjects.flatMap((s) => checkSubject(s, themes));
+  return subjects.flatMap((s) => checkSubject(s, themes, observe));
 }
 
 /** Human-readable, for a failing assertion's message. */

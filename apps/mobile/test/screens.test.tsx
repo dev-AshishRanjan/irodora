@@ -58,12 +58,15 @@ import {
   checkStatusAdjacency,
   formatFindings,
   raggedFigures,
+  renderedTexts,
   tabularNodes,
   previewMismatches,
   REQUIRED_STATES,
   type ConformanceSubject,
+  type Observer,
   type TestNode,
 } from '@irodora/ui/testing';
+import { bannedIn, loadBanned } from './claims';
 import {
   CONDITION_STATE,
   shownBy,
@@ -129,7 +132,17 @@ import {
   STATES as PROFILE_SETUP_STATES,
 } from '../src/screens/ProfileSetup';
 import { Lens, STATES as LENS_STATES } from '../src/screens/Lens';
-import { refusalText } from '../src/lens/refusal';
+import { refusalOf, refusalText } from '../src/lens/refusal';
+import { Launch } from '../src/launch';
+import { t as message } from '../src/i18n';
+import {
+  elementFindings,
+  loadInventories,
+  snapshot,
+  surfacesOf,
+  type LiveNodes,
+  type Locator,
+} from './inventory';
 import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
@@ -1833,13 +1846,25 @@ const SCREENS: readonly ConformanceSubject[] = [
      * THE EMPTY WARDROBE, WITH THE WAY OUT (F-139). Draws the empty state's action, which is
      * the control the whole feature exists to add — and an unrendered control is one whose
      * contrast and accessibility nothing has checked.
+     *
+     * WITH THE ROUTE'S OWN PROPS (F-221). The route passes `onScan` as well as `onAddGarment`, so
+     * an empty wardrobe shows 27's card: its body and Scan First Garment, which opens the Lens.
+     * Given `onAddGarment` alone, this drew the older add-a-garment branch, which the app never
+     * shows when it is empty, and 27's card went unswept. The inventory sweep found it.
      */
     name: 'screens/Wardrobe (nothing in it)',
     shows: showing(WARDROBE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<Wardrobe store={fakeBrowseStore([])} onAddGarment={() => undefined} />, theme),
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore([])}
+          onAddGarment={() => undefined}
+          onScan={() => undefined}
+        />,
+        theme,
+      ),
   },
   {
     /*
@@ -5128,6 +5153,222 @@ describe('every box keeps the inset it had (F-210)', () => {
     expect(total).toBeGreaterThan(SCREENS.length);
   });
 });
+/**
+ * EVERY ELEMENT AN ENROLLED SURFACE'S INVENTORY RECORDS IS DRAWN (F-221 criterion 4, ADR-0134 D1, D7).
+ *
+ * The sweep below measures how screens are drawn; this asks whether what the mockup draws is there
+ * at all. F-221 enrolls the surfaces whose features are done (14's splash, 27's four cards); every
+ * other surface is owed by the feature that builds it, and `verify-mockups` refuses the day that
+ * feature closes without enrolling it (it reads the feature list, which a cached test may not).
+ * The table both read is `.harness/verification/inventory-surfaces.json`. Presence only: order and
+ * proportion are each surface feature's first criterion.
+ */
+const INVENTORIES = loadInventories();
+const SURFACES = surfacesOf(INVENTORIES);
+/** Which surfaces are enrolled, and which are not whole, with why: shared with verify-mockups. */
+const TABLE = JSON.parse(
+  readFileSync(join(__dirname, '../../../.harness/verification/inventory-surfaces.json'), 'utf8'),
+) as { readonly enrolled: readonly string[]; readonly notWhole: Readonly<Record<string, string>> };
+
+/** Read in both locales: the catalogue's words, and the script the refusal is set in. */
+const SWEPT_LOCALES = [
+  { tag: 'en-GB', locale: 'en', script: 'latin' },
+  { tag: 'ja-JP', locale: 'ja', script: 'japanese' },
+] as const;
+
+const subjectNamed = (name: string): ConformanceSubject => {
+  const found = SCREENS.find((s) => s.name === name);
+  if (found === undefined) throw new Error(`no subject named ${name}`);
+  return found;
+};
+
+/** Render one subject's first state, keeping the live tree, which carries components. */
+const drawLive = (
+  renderIt: (theme: Theme) => TestNode | null,
+  theme: Theme,
+): { json: TestNode; live: LiveNodes } => {
+  // A box, because the hook fills it during the render, where the compiler cannot follow.
+  const box: { live: LiveNodes | null } = { live: null };
+  drawRoot = (root) => {
+    box.live = snapshot(root);
+  };
+  try {
+    const json = renderIt(theme);
+    if (json === null || box.live === null) throw new Error('rendered nothing');
+    return { json, live: box.live };
+  } finally {
+    drawRoot = null;
+  }
+};
+
+const fromSubject =
+  (name: string) =>
+  (theme: Theme): TestNode | null => {
+    const subject = subjectNamed(name);
+    return subject.render(REQUIRED_STATES[subject.kind][0] ?? 'default', theme);
+  };
+
+interface Enrolled {
+  readonly surface: string;
+  readonly render: (theme: Theme) => TestNode | null;
+  readonly locators: Readonly<Record<string, Locator>>;
+}
+
+const ENROLLED: readonly Enrolled[] = [
+  {
+    surface: '14.splash',
+    render: (theme) => draw(<Launch onShown={() => undefined} onDone={() => undefined} />, theme),
+    locators: {
+      // An app component (a masked image), found by the id it carries and by drawing a tint.
+      '14.splash.glow': { by: 'testID', id: 'launch.glow' },
+      // The product's name, which the Wordmark sets in Latin in both locales (ADR-0112).
+      '14.splash.wordmark': { by: 'value', text: () => 'Irodora' },
+    },
+  },
+  {
+    surface: '27.wardrobe-empty',
+    render: fromSubject('screens/Wardrobe (nothing in it)'),
+    locators: {},
+  },
+  {
+    surface: '27.lens-working',
+    render: fromSubject('screens/Lens (awaiting a capture)'),
+    locators: { '27.lens-working': { by: 'testID', id: STATE_TEST_IDS.working } },
+  },
+  {
+    surface: '27.lens-refused',
+    render: fromSubject('screens/Lens (a capture refused)'),
+    locators: {
+      '27.lens-refused': { by: 'testID', id: STATE_TEST_IDS.refused },
+      // ADR-0128: the title is 27's *Reading Refused* and the failed check's name, composed by
+      // the screen's own function from the same capture.
+      '27.lens-refused.title': {
+        by: 'value',
+        text: (locale) => {
+          const check = refusalOf(REFUSED_READING);
+          if (check === null) throw new Error('REFUSED_READING is not refused');
+          const script = locale === 'ja' ? 'japanese' : 'latin';
+          return refusalText(check, (key) => message(locale, key), script).title;
+        },
+      },
+      // The reason is the engine's: the refusal the screen computes from the same capture.
+      '27.lens-refused.body': {
+        by: 'value',
+        text: (locale) => {
+          const check = refusalOf(REFUSED_READING);
+          if (check === null) throw new Error('REFUSED_READING is not refused');
+          const script = locale === 'ja' ? 'japanese' : 'latin';
+          return refusalText(check, (key) => message(locale, key), script).body;
+        },
+      },
+    },
+  },
+  {
+    surface: '27.lens-permission',
+    render: fromSubject('screens/Lens (denied)'),
+    locators: { '27.lens-permission': { by: 'testID', id: STATE_TEST_IDS.denied } },
+  },
+];
+
+/** Counted for the sweep's evidence, below. */
+const inventorySwept = { surfaces: 0, elements: 0, renders: 0 };
+
+describe('every element an enrolled surface records is drawn (F-221)', () => {
+  // Each case reads the words in the locale it draws in; a case left in Japanese misreads the next.
+  beforeEach(() => {
+    mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+  });
+  afterAll(() => {
+    mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+  });
+
+  it('renders exactly the surfaces the table enrolls, and every row names a surface', () => {
+    // Both directions: an enrollment the table claims and nothing renders, or the other way round,
+    // would let verify-mockups count a surface as swept that is not (or miss one that is).
+    expect(ENROLLED.map((e) => e.surface).sort()).toStrictEqual([...TABLE.enrolled].sort());
+    const unknown = [...TABLE.enrolled, ...Object.keys(TABLE.notWhole)].filter(
+      (surface) => !SURFACES.has(surface),
+    );
+    expect(unknown).toStrictEqual([]);
+  });
+
+  it.each(ENROLLED.map((e) => [e.surface, e] as const))(
+    'draws every %s element, in both themes and both languages',
+    (_name, enrolled) => {
+      const elements = SURFACES.get(enrolled.surface)?.elements ?? [];
+      expect(elements.length).toBeGreaterThan(0);
+      const findings: string[] = [];
+      for (const { tag, locale } of SWEPT_LOCALES)
+        for (const theme of ['light', 'dark'] as const) {
+          mockLanguageTag = tag;
+          const { json, live } = drawLive(enrolled.render, theme);
+          for (const f of elementFindings(live, json, elements, enrolled.locators, locale))
+            findings.push(`[${locale}/${theme}] ${f}`);
+          inventorySwept.renders += 1;
+        }
+      inventorySwept.surfaces += 1;
+      inventorySwept.elements += elements.length;
+      expect(findings).toStrictEqual([]);
+    },
+  );
+
+  describe('DECOYS — each rule fires on what it is for', () => {
+    const splash = ENROLLED[0];
+    if (splash === undefined) throw new Error('14.splash is not enrolled');
+    const elements = SURFACES.get('14.splash')?.elements ?? [];
+
+    /** The tree with every node carrying one id taken out. */
+    const without = (node: TestNode, id: string): TestNode => ({
+      ...node,
+      children: (node.children ?? [])
+        .filter((c) => typeof c === 'string' || c.props['testID'] !== id)
+        .map((c) => (typeof c === 'string' ? c : without(c, id))),
+    });
+
+    it('names exactly the element whose node is gone', () => {
+      const { json, live } = drawLive(splash.render, 'dark');
+      const found = elementFindings(
+        live,
+        without(json, 'launch.glow'),
+        elements,
+        splash.locators,
+        'en',
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(/^14\.splash\.glow: not drawn/u);
+    });
+
+    it('names a node that carries the id and draws nothing', () => {
+      const { live } = drawLive(splash.render, 'dark');
+      const empty: TestNode = { type: 'View', props: { testID: 'launch.glow' }, children: null };
+      const found = elementFindings(live, empty, elements, splash.locators, 'en');
+      expect(found.some((f) => f.startsWith('14.splash.glow') && f.includes('draw nothing'))).toBe(
+        true,
+      );
+    });
+
+    it('names a locator for an element the inventory does not record, and an element with none', () => {
+      const { json, live } = drawLive(splash.render, 'dark');
+      const stray = { ...splash.locators, '14.splash.nothing': { by: 'testID', id: 'x' } as const };
+      const unlocated = [
+        ...elements,
+        {
+          id: '14.splash.extra',
+          component: 'app:Nothing',
+          icon: null,
+          illustration: null,
+          binding: null,
+        },
+      ];
+      const found = elementFindings(live, json, unlocated, stray, 'en');
+      expect(found.some((f) => f.startsWith('14.splash.nothing: a locator for an element'))).toBe(
+        true,
+      );
+      expect(found.some((f) => f.startsWith('14.splash.extra: no locator'))).toBe(true);
+    });
+  });
+});
+
 describe('the conformance sweep, with evidence (F-204)', () => {
   const SWEEP_THEMES: readonly Theme[] = ['light', 'dark'];
   const SWEEP_LOCALES = ['en-GB', 'ja-JP'] as const;
@@ -5135,6 +5376,26 @@ describe('the conformance sweep, with evidence (F-204)', () => {
 
   const problems: string[] = [];
   let conditions = 0;
+
+  /*
+   * THE CLAIMS, READ OFF WHAT RENDERS (F-221, ADR-0134 D3). The claims lint reads source lines, so a
+   * figure and a label written in two `Text`s are invisible to it until a screen sets them side by
+   * side. Every tree this sweep renders is read through `observe`, with no second render, as
+   * paragraphs, visual lines and accessible names, against the lint's own patterns.
+   */
+  const banned = loadBanned();
+  // By kind, so "no finding" cannot mean "no line was ever read": the registry must yield lines.
+  const textsRead = { paragraph: 0, line: 0, name: 0 };
+  let claimFindings = 0;
+  const claimsIn =
+    (out: string[]): Observer =>
+    (subject, state, theme, tree) => {
+      for (const t of renderedTexts(tree)) {
+        textsRead[t.kind] += 1;
+        for (const b of bannedIn(t.text, banned))
+          out.push(`  ${subject.name} [${theme}/${state}] claims ${b.id} (${t.kind}): "${t.text}"`);
+      }
+    };
 
   afterAll(() => {
     mockLanguageTag = DEFAULT_LANGUAGE_TAG;
@@ -5155,8 +5416,15 @@ describe('the conformance sweep, with evidence (F-204)', () => {
         mockLanguageTag = locale;
         jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(reduced);
 
-        const result = formatFindings(checkAll(SCREENS, SWEEP_THEMES));
+        const claims: string[] = [];
+        const result = [
+          formatFindings(checkAll(SCREENS, SWEEP_THEMES, claimsIn(claims))),
+          ...claims,
+        ]
+          .filter((part) => part !== '')
+          .join('\n');
         conditions += SWEEP_THEMES.length;
+        claimFindings += claims.length;
         if (result !== '') problems.push(`[${locale}, reduced=${String(reduced)}]\n${result}`);
       }
 
@@ -5174,6 +5442,30 @@ describe('the conformance sweep, with evidence (F-204)', () => {
     await expect(AccessibilityInfo.isReduceMotionEnabled()).resolves.toBe(true);
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
     await expect(AccessibilityInfo.isReduceMotionEnabled()).resolves.toBe(false);
+  });
+
+  it('DECOY — a claim composed from two paragraphs side by side fails the sweep', () => {
+    // The real subjects passing proves nothing unless the same reading refuses the shape it is for.
+    // The figure and the label are held apart here as a screen holds them, so the claims lint,
+    // which reads source lines, never reads the claim this decoy plants.
+    const figure = '97%';
+    const label = 'Match';
+    const composed: ConformanceSubject = {
+      name: 'a figure and a label, side by side',
+      kind: 'static',
+      render: () => ({
+        type: 'View',
+        props: { style: { flexDirection: 'row' } },
+        children: [
+          { type: 'Text', props: {}, children: [figure] },
+          { type: 'Text', props: {}, children: [label] },
+        ],
+      }),
+    };
+    const found: string[] = [];
+    checkAll([composed], SWEEP_THEMES, claimsIn(found));
+    expect(found).toHaveLength(SWEEP_THEMES.length);
+    expect(found[0]).toContain(`"${figure} ${label}"`);
   });
 
   it('DECOY — and so does the locale, which the Japanese suite depends on too', () => {
@@ -5194,6 +5486,26 @@ describe('the conformance sweep, with evidence (F-204)', () => {
       motionSettings: SWEEP_MOTION.length,
       conditions,
       findings: problems.length,
+      claims: {
+        $comment:
+          'F-221 (ADR-0134 D3): every tree rendered in every condition, read as paragraphs, visual ' +
+          'lines (paragraphs side by side in a row) and accessible names, against the claims lint ' +
+          'patterns. pnpm fidelity:capture reads a device capture the same way.',
+        textsRead,
+        patterns: banned.length,
+        findings: claimFindings,
+      },
+      inventory: {
+        $comment:
+          'F-221 (ADR-0134 D1, D7): the surfaces enrolled, each rendered in both themes and both ' +
+          'languages with every inventory element found by what it draws; the rest owed to the ' +
+          'feature that builds each, or not a whole surface, with why.',
+        enrolled: ENROLLED.map((e) => e.surface),
+        elementsAsserted: inventorySwept.elements,
+        renders: inventorySwept.renders,
+        owed: SURFACES.size - TABLE.enrolled.length - Object.keys(TABLE.notWhole).length,
+        notWhole: TABLE.notWhole,
+      },
       cited: {
         cvd:
           'NOT re-simulated here. Gate 9 (pnpm test:contrast) runs every declared pairing ' +
@@ -5223,6 +5535,9 @@ describe('the conformance sweep, with evidence (F-204)', () => {
       SWEEP_THEMES.length * SWEEP_LOCALES.length * SWEEP_MOTION.length,
     );
     expect(evidence.subjects).toBe(SCREENS.length);
+    // Every kind was actually read off real screens, so zero findings is about screens.
+    for (const kind of ['paragraph', 'line', 'name'] as const)
+      expect({ [kind]: evidence.claims.textsRead[kind] > 0 }).toStrictEqual({ [kind]: true });
   });
 });
 

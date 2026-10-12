@@ -316,8 +316,37 @@ F-091's journey criteria by an actual run.
 |---|---|---|
 | 0 | this commit | Claim, ADR-0134 (D1–D7; OQ-53 closed by D2), criterion 2 amended, and this plan. F-221's `blockedByAttestation` is removed on the person's direction, quoted in its notes. F-091's attestations stay outstanding, with the person's run noted. **Tier 1 run:** format, state, claims. |
 | 1 | this commit | **The claims patterns, compiled once.** `scripts/claims-patterns.mjs` (`loadClaims`, `compileBanned` with the lint's case-insensitive flag, `bannedIn`). `verify-claims.mjs` imports it and compiles once instead of per line; its behaviour is unchanged (30 patterns, 0 violations; `verify-claims-proof`: all 41 cases discriminate). **Tier 1, each exit 0:** format, typecheck, lint, claims, the claims proof. |
-| 2 | | |
-| 3 | | |
+| 2–3 | this commit | **The two halves of the sweep, in one commit.** The test run for increment 2 alone overlapped edits for increment 3, so its result could not be credited to either tree; the two are verified, and land, together.
+- **Rendered text (criterion 5, jest).**
+  - `renderedTexts(root)` reads paragraphs (outermost `Text`), visual lines and accessible names (label, hint, value text). A visual line is a run of two or more children of a `row` host that each hold one paragraph, joined, read in visual order for `row-reverse`. `drawsSomething(node)` is text, a name, a picture or any paint.
+  - Both are proven in `packages/ui/test/rendered-texts.test.tsx`, ten cases with decoys: a column is never a line, a column inside a row ends the run, and an empty `View` with an id is not drawn.
+  - `checkAll` and `checkSubject` take an optional `observe` hook, which sees every tree once and changes no finding. The F-204 sweep reads every tree through it against the claims patterns: 22,876 paragraphs, 2,570 lines and 10,136 names, over 82 subjects in 8 conditions, 30 patterns, 0 findings. A composed claim (a figure and a word side by side) fails the sweep, as a decoy shows.
+  - `conformance-sweep.json` gains a `claims` block, and asserts each kind was read.
+  - `apps/mobile/test/claims.ts` reads `claims.json` the lint's way. `claims.test.ts` holds it to the lint's own fixtures: every `drawn.md` and `variants.md` item is refused, and every `near-misses.md` item passes. Every drawn claim, split at each space into two paragraphs side by side, is read back as one line and refused.
+  - The planted claims are held apart in the tests' source, so the claims lint never reads them.
+- **The inventory sweep (criterion 4).**
+  - `apps/mobile/test/inventory.ts` holds the locators (ADR-0134 D1: derived from the record, or given), `elementFindings` over the JSON tree and a live snapshot (components, glyphs, illustrations), and `surfacesOf`.
+  - Five surfaces are enrolled and rendered in both themes and both languages: `14.splash` (the Launch), and 27's four cards. 31 elements are asserted.
+  - Decoys:
+    - a node removed is named;
+    - an id on an empty `View` is "draws nothing";
+    - a locator for no element is named;
+    - an element with no locator is named.
+- **What enrolling 27 found.**
+  - The registry's empty-wardrobe subject passed only `onAddGarment`, so it drew a branch the route never shows when the wardrobe is empty. The route passes `onScan`, and 27's card, with its body and Scan First Garment, had never been swept. The subject now passes the route's own props.
+  - The refused card's title is ADR-0128's composition, *Reading Refused* plus the check's name. Its locator is the screen's own `refusalText`.
+- **The owner rule, in `verify-mockups` (ADR-0134 D7).** `.harness/verification/inventory-surfaces.json` is the table both sides read: the enrolled surfaces, and four not whole, with why.
+  - `verify-mockups` refuses:
+    - a surface whose builders, the features naming its mockup and waiting on F-221, are all done, while it is not enrolled;
+    - a surface no feature builds;
+    - a row naming no surface;
+    - a not-whole row with no reason.
+
+    Four new proof cases show each one. It lives there, not in the test, because it reads the feature list, and a cached test keyed on that would re-run on every state edit (`verify-cache-scope` refused the first draft).
+  - The jest side asserts its renders equal the table's enrolled list, in both directions.
+- **`launch.test`** keeps the tokens each 14.splash element is drawn in. Presence is the sweep's (F-231's note).
+- **`turbo.json`** declares the claims fixtures and the surface table: the cache-scope check found both reads.
+- **Tier 1, each exit 0:** format, typecheck, lint, state, `verify-mockups` and its proof, then `turbo run test --filter='...[HEAD]'`, a11y and contrast — 35/35 tasks; the sweep: 82 subjects, 8 conditions, 0 findings, 0 claims; 31 elements asserted in 20 renders, 23 surfaces owed. |
 | 4 | | |
 | 5 | | |
 | 6 | | |

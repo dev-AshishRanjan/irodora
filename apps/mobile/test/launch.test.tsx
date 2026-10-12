@@ -244,9 +244,8 @@ describe("then it is 14's composition, every element in its token", () => {
       expect(style('launch')['backgroundColor']).toBe(palette.background);
       // The glow: the mark's own ink, as a tint over the mask.
       expect(style('launch.glow')['tintColor']).toBe(palette.foreground);
-      // The lockup: the name and the tagline.
-      expect(tree.getByText('Irodora', hidden)).toBeTruthy();
-      expect(tree.getByText('彩り・色の知性', hidden)).toBeTruthy();
+      // That every 14.splash element is THERE is the inventory sweep's to assert (F-221, in
+      // screens.test, both themes and both languages); this keeps the tokens each is drawn in.
       // The subline, in text.secondary.
       const subline = tree.getByText(t('en', 'brand.splashSubline'), hidden);
       expect(flattenStyle(subline.props['style'])['color']).toBe(palette['foreground.2']);

@@ -102,6 +102,82 @@ function openQuestions() {
   return new Set([...table.matchAll(/^\| (OQ-\d+) \|/gmu)].map((m) => m[1]));
 }
 
+/** Which surfaces the conformance sweep enrolls, and which are not whole screens (F-221). */
+const SURFACE_TABLE = join(ROOT, '.harness', 'verification', 'inventory-surfaces.json');
+
+/**
+ * The surface an inventory element belongs to. A framed inventory's screen; on board 27, which
+ * draws four separate cards, the card (its first two id segments); anywhere else, the one screen.
+ *
+ * THE SAME RULE AS `surfaceOf` in `apps/mobile/test/inventory.ts`, which the sweep renders by. A
+ * test cannot import this script, so the two are held together by the table: each side refuses a
+ * table row naming a surface its rule does not produce.
+ */
+function surfaceOf(inventory, element) {
+  if (inventory.kind === 'board' && inventory.governs === 'state')
+    return element.id.split('.').slice(0, 2).join('.');
+  if (typeof element.screen === 'string') return element.screen;
+  return inventory.frame?.screens?.[0]?.id ?? inventory.mockup;
+}
+
+/**
+ * EVERY SURFACE IS SWEPT, OWED, OR NOT WHOLE (F-221, ADR-0134 D7).
+ *
+ * The conformance sweep asserts each enrolled surface's elements are drawn. A surface it does not
+ * enroll is owed by the features that build it: those whose `mockups` names its mockup and that wait
+ * on F-221. When every one of them is done, the surface must be enrolled, so a feature cannot close
+ * with its surface unswept. A surface no feature builds is refused too, and so is a table row that
+ * names no surface. Here rather than in the test, because it reads the feature list, and a cached
+ * test keyed on it would re-run on every state edit (`verify-cache-scope`).
+ */
+function sweptSurfaces(inventories, add) {
+  let table;
+  try {
+    table = JSON.parse(readFileSync(SURFACE_TABLE, 'utf8'));
+  } catch (error) {
+    add('the inventory surface table cannot be read', String(error.message));
+    return;
+  }
+  const surfaces = new Map();
+  for (const [id, inventory] of inventories)
+    for (const element of inventory.elements ?? []) surfaces.set(surfaceOf(inventory, element), id);
+
+  const enrolled = new Set(table.enrolled ?? []);
+  const notWhole = table.notWhole ?? {};
+  // A row whose mockup carries no inventory cannot be judged here: whether that is allowed is the
+  // inventory check's question, above (F-220's status), and reporting it twice would say less.
+  for (const surface of [...enrolled, ...Object.keys(notWhole)])
+    if (inventories.has(surface.split('.')[0]) && !surfaces.has(surface))
+      add(
+        `${surface} is in the inventory surface table, and no inventory records it`,
+        'A row for a surface that does not exist hides nothing and proves nothing; remove it, or correct the id.',
+      );
+  for (const [surface, why] of Object.entries(notWhole))
+    if (typeof why !== 'string' || why.trim().length < 12)
+      add(
+        `${surface} is not whole, and says no reason why`,
+        'A surface the sweep never enrolls carries the reason it is not a screen a feature builds.',
+      );
+
+  const features = JSON.parse(readFileSync(FEATURES, 'utf8')).features;
+  for (const [surface, mockup] of surfaces) {
+    if (enrolled.has(surface) || surface in notWhole) continue;
+    const builders = features.filter(
+      (f) => (f.mockups ?? []).includes(mockup) && (f.blockedBy ?? []).includes('F-221'),
+    );
+    if (builders.length === 0)
+      add(
+        `${surface}: no feature builds it, so nothing will ever enroll it`,
+        'Name its mockup in the feature that builds it, or record why it is not a whole surface.',
+      );
+    else if (builders.every((f) => f.status === 'done'))
+      add(
+        `${surface}: built by ${builders.map((f) => f.id).join(', ')} (done), and not enrolled`,
+        'Enroll it in the inventory sweep (apps/mobile/test/screens.test.tsx and inventory-surfaces.json) in the feature that builds it.',
+      );
+  }
+}
+
 /** Whether the inventory owner is done, read from its status. */
 function inventoriesRequired() {
   const features = JSON.parse(readFileSync(FEATURES, 'utf8')).features;
@@ -113,6 +189,8 @@ const idsIn = (text) => new Set([...(text ?? '').matchAll(/`(\d{2})`/gu)].map((m
 
 export function findProblems() {
   const problems = [];
+  /** Each mockup's inventory, as read below, for the surface check at the end (F-221). */
+  const inventories = new Map();
   const add = (what, detail) => problems.push({ what, detail });
 
   let index;
@@ -204,6 +282,7 @@ export function findProblems() {
         } catch (error) {
           add(`mockup ${id}’s inventory cannot be read`, String(error.message));
         }
+        if (inventory) inventories.set(id, inventory);
         if (inventory && inventory.mockupSha256 !== actual)
           add(
             `the inventory for mockup ${id} was written against a different image`,
@@ -308,6 +387,10 @@ export function findProblems() {
         );
   }
 
+  /* ---- every surface is swept, owed to a feature that builds it, or not whole (F-221) ---- */
+
+  sweptSurfaces(inventories, add);
+
   const withoutInventory = entries.filter(([, e]) => !e.inventory).length;
   return {
     problems,
@@ -330,7 +413,7 @@ if (process.argv.includes('--prove')) {
   const probeRoute = join(APP, '(tabs)', 'atlas', '__mockup_probe__.tsx');
   const probeInventory = join(MOCKUPS, '__probe_inventory__.json');
   const created = [probeImage, probeRoute, probeInventory];
-  const tracked = [INDEX, FEATURES, SPEC, PRD, MOCKUP_MANUAL];
+  const tracked = [INDEX, FEATURES, SPEC, PRD, MOCKUP_MANUAL, SURFACE_TABLE];
 
   const original = Object.fromEntries(tracked.map((f) => [f, readFileSync(f, 'utf8')]));
   // Windows can refuse to reopen a file the proof has just rewritten — twice in F-220's runs the ~1 MB
@@ -452,6 +535,42 @@ if (process.argv.includes('--prove')) {
 
   try {
     const cases = [
+      /* ---- every surface is swept, owed, or not whole (F-221) ---- */
+      {
+        name: 'a surface feature done, with its surface not enrolled',
+        plant: () =>
+          withFeatures((f) => {
+            f['F-242'].status = 'done';
+          }),
+        expect: '01.screen: built by F-242 (done), and not enrolled',
+      },
+      {
+        name: 'a surface no feature builds',
+        // 01's builders are F-242 alone among the features waiting on F-221; without it, nobody.
+        plant: () =>
+          withFeatures((f) => {
+            f['F-242'].mockups = (f['F-242'].mockups ?? []).filter((m) => m !== '01');
+          }),
+        expect: '01.screen: no feature builds it',
+      },
+      {
+        name: 'a surface table row naming no surface',
+        plant: () => {
+          const table = JSON.parse(original[SURFACE_TABLE]);
+          table.enrolled.push('27.nowhere');
+          settle(SURFACE_TABLE, `${JSON.stringify(table, null, 2)}\n`);
+        },
+        expect: '27.nowhere is in the inventory surface table, and no inventory records it',
+      },
+      {
+        name: 'a surface not whole, with no reason',
+        plant: () => {
+          const table = JSON.parse(original[SURFACE_TABLE]);
+          table.notWhole['00.board'] = '';
+          settle(SURFACE_TABLE, `${JSON.stringify(table, null, 2)}\n`);
+        },
+        expect: '00.board is not whole, and says no reason why',
+      },
       /* ---- the images and their rows ---- */
       {
         name: 'an image nobody indexed',

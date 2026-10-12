@@ -1,0 +1,16 @@
+{
+  "$comment": "F-221 (ADR-0134 D7). Which inventory surfaces the conformance sweep enrolls — each rendered in both themes and both languages, every element found by what it draws (apps/mobile/test/screens.test.tsx, which must render exactly these) — and which are not whole screens a feature builds, with why. Every other surface is owed to the features that build it: those whose `mockups` names its mockup and that wait on F-221. scripts/verify-mockups.mjs refuses a surface whose builders are all done and that is not enrolled, a surface no feature builds, and a row naming a surface no inventory records.",
+  "enrolled": [
+    "14.splash",
+    "27.wardrobe-empty",
+    "27.lens-working",
+    "27.lens-refused",
+    "27.lens-permission"
+  ],
+  "notWhole": {
+    "00.board": "The vocabulary board: it governs words, parts and type (P3), and draws no screen a route renders.",
+    "14.icon": "The launcher icon: an asset, held by generate-brand-assets --check and gate 16, not a screen.",
+    "25.screen": "The light palette over 01 (P2): its layout is 01's, built and enrolled by F-242.",
+    "26.screen": "Japanese over 06 (P2): its layout is 06's, built and enrolled by F-247."
+  }
+}

@@ -934,3 +934,99 @@ export function bareZeros(root: TestNode): readonly string[] {
   walk(root);
   return out;
 }
+
+/** One piece of text a person reads on a rendered tree (F-221). */
+export interface RenderedText {
+  /**
+   * `paragraph`: an outermost `Text`, nested text included. `line`: two or more paragraphs set side
+   * by side in a row, joined with a space. `name`: an accessible name, hint or value.
+   */
+  readonly kind: 'paragraph' | 'line' | 'name';
+  readonly text: string;
+  readonly path: readonly string[];
+}
+
+const ACCESSIBLE_TEXT_PROPS = ['accessibilityLabel', 'aria-label', 'accessibilityHint'] as const;
+
+/** Every paragraph in a subtree, outermost `Text`s only, in order. */
+function paragraphsOf(node: TestNode): string[] {
+  if (node.type === 'Text') {
+    const text = paragraph(node).replace(/\s+/gu, ' ').trim();
+    return text === '' ? [] : [text];
+  }
+  return (node.children ?? []).flatMap((c) => (isNode(c) ? paragraphsOf(c) : []));
+}
+
+/**
+ * Every text a person reads on a rendered tree, in the three forms a claim can take (F-221,
+ * ADR-0134 D3).
+ *
+ * **A claim is composed on the screen, not in the source.** A figure and its label are written in
+ * two `Text`s, so a lint that reads source lines sees the figure and the word apart, while a person
+ * reads the two as one claim. A LINE is how they meet here. Under a host laid out in a row, each run of two or more
+ * consecutive children that hold exactly one paragraph each is one line, read in visual order (a
+ * `row-reverse` reads backwards). A child holding several paragraphs is a column of its own: it ends
+ * the run, and its paragraphs stay apart.
+ *
+ * WHAT IT CANNOT SEE: wrapping. jest has no layout, so a row too narrow for its line, which a device
+ * would wrap, is still read as one line here, and two paragraphs a device sets side by side through
+ * absolute positioning are not. The fidelity run reads the device's own text for that (D3).
+ */
+export function renderedTexts(root: TestNode): readonly RenderedText[] {
+  const out: RenderedText[] = [];
+  const walk = (node: TestNode, path: readonly string[]): void => {
+    const here = path.concat(node.type);
+
+    for (const prop of ACCESSIBLE_TEXT_PROPS) {
+      const value = node.props[prop];
+      if (typeof value === 'string' && value.trim() !== '')
+        out.push({ kind: 'name', text: value.trim(), path: here });
+    }
+    const value = node.props['accessibilityValue'];
+    if (typeof value === 'object' && value !== null) {
+      const text = (value as Record<string, unknown>)['text'];
+      if (typeof text === 'string' && text.trim() !== '')
+        out.push({ kind: 'name', text: text.trim(), path: here });
+    }
+
+    if (node.type === 'Text') {
+      for (const text of paragraphsOf(node)) out.push({ kind: 'paragraph', text, path: here });
+      return;
+    }
+
+    const direction = flattenStyle(node.props['style'])['flexDirection'];
+    if (direction === 'row' || direction === 'row-reverse') {
+      const children = (node.children ?? []).filter(isNode);
+      const ordered = direction === 'row-reverse' ? [...children].reverse() : children;
+      let run: string[] = [];
+      const close = (): void => {
+        if (run.length >= 2) out.push({ kind: 'line', text: run.join(' '), path: here });
+        run = [];
+      };
+      for (const child of ordered) {
+        const held = paragraphsOf(child);
+        if (held.length === 1 && held[0] !== undefined) run.push(held[0]);
+        else if (held.length > 1) close();
+      }
+      close();
+    }
+
+    for (const child of node.children ?? []) if (isNode(child)) walk(child, here);
+  };
+  walk(root, []);
+  return out;
+}
+
+/**
+ * Whether a subtree draws something a person can see: text, an accessible name, a picture, a field,
+ * or any paint (F-221, ADR-0134 D1). A `testID` proves only that a node claims to be an element;
+ * this is what the inventory sweep asks of the node it lands on, so an empty `View` with the right
+ * id is still "not drawn".
+ */
+export function drawsSomething(node: TestNode): boolean {
+  if (perceivable(node)) return true;
+  const paints = (n: TestNode): boolean =>
+    n.type !== 'RNSVGClipPath' &&
+    (colourValues(n).length > 0 || (n.children ?? []).some((c) => isNode(c) && paints(c)));
+  return paints(node);
+}
