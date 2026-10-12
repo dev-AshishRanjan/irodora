@@ -15,13 +15,16 @@
  * - **The value is the caller's, and a real one** (ADR-0128 D4): the Lens passes the share of its
  *   pipeline's steps done. `27`'s 61 % is sample content (E1), and nothing here draws a value nobody
  *   computed.
- * - **Static.** F-266 owns any motion. The arc is drawn by its geometry, not a transform, so animating
- *   it needs a decision against `motion.animatable` (F-266's note).
+ * - **It moves when the value changes, never when it mounts** (F-266, ADR-0133 §3, §4). The fill is
+ *   an `ArcFill`: the whole circle drawn once from 12 o'clock, its dash showing the share and moving
+ *   over `view`. The spoken value changes at once. On today's Lens the value is 0 for the card's
+ *   whole life (ADR-0128 D4), so the ring is still there: no spinner is drawn for a value nobody
+ *   computed (ADR-0133 §5).
  */
 
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
-import { dialArc } from './CoverageDial.js';
+import Svg, { Circle } from 'react-native-svg';
+import { ArcFill } from './ArcFill.js';
 import { STATE_RING } from './stateBoard.js';
 import { useTheme } from './theme.js';
 
@@ -68,27 +71,18 @@ export function ProgressRing({
       {/* No default fill on the root: react-native-svg would inject black (FabricSwatch notes). */}
       <Svg width={size} height={size} fill="none" accessible={false}>
         <Circle cx={c} cy={c} r={r} fill="none" stroke={colors['surface.3']} strokeWidth={stroke} />
-        {value === 1 ? (
-          // A full sweep starts and ends at one point, which an SVG arc does not draw.
-          <Circle
-            {...(testID === undefined ? {} : { testID: `${testID}.fill` })}
-            cx={c}
-            cy={c}
-            r={r}
-            fill="none"
-            stroke={colors.foreground}
-            strokeWidth={stroke}
-          />
-        ) : value > 0 ? (
-          <Path
-            {...(testID === undefined ? {} : { testID: `${testID}.fill` })}
-            d={dialArc(c, c, r, 0, value * 360)}
-            fill="none"
-            stroke={colors.foreground}
-            strokeWidth={stroke}
-            strokeLinecap="round"
-          />
-        ) : null}
+        {/* The fill, always mounted so a change from 0 can move; at 0 it is not drawn (no dot). */}
+        <ArcFill
+          {...(testID === undefined ? {} : { testID: `${testID}.fill` })}
+          cx={c}
+          cy={c}
+          r={r}
+          from={0}
+          sweep={360}
+          value={value}
+          color={colors.foreground}
+          strokeWidth={stroke}
+        />
       </Svg>
       {children === undefined ? null : (
         <View

@@ -682,7 +682,14 @@ animated portal, worklet reach and the progress line.
   - the wave is at `RISE`, then between, then 0, animating only `transform`;
   - under reduced motion both are at rest after one frame (the spy is restored in `afterEach`).
 - **Tier 1, each exit 0:** format, typecheck, lint (`generate-brand-assets --check` and `verify-app-glyphs` included), affected tests (18 tasks; ui 1301, mobile 1321). |
-| 6 | | |
+| 6 | this commit | **An arc's length moves.**
+- **`arcPath.ts` (new).** It holds the arc geometry: `dialArc` (moved, and re-exported from `CoverageDial` so the dial's API is unchanged), `sweepPath`, and `sweepLength(r, sweep) = 2πr·sweep/360`. `sweepPath` is one subpath split at 180°, valid to 360° inclusive. Its own module rather than `CoverageDial` (a deviation from the plan) because `CoverageDial` renders `ArcFill`, which needs the path: one way would have been an import cycle.
+- **`ArcFill` (new).** A module-scope `AnimatedPath` draws the whole span with `strokeDasharray [L, L]`. Its `useAnimatedProps` returns `{ strokeDashoffset: L·(1 − v), opacity: v > 0 ? 1 : 0 }` through `useValueMotion`, capturing a shared value and a number.
+- **`ProgressRing` and `CoverageDial`** draw their fill through it, always mounted, so a change from 0 can move. Their headers say how they move.
+- **Tests:**
+  - **`progress-ring.test`:** the whole circle from 12 o'clock with `[L, L]` and offset `L·(1−v)` for six values. DECOY: `27`'s 218° is not 0.606's. Full is no offset (react-native-svg writes a zero offset as `null`). Empty has opacity 0, and the decoy 0.01 has 1. The dash is held to `L·(1−v)` for 200 seeded values. Nothing but the dash moves with the value. Movement: between mid-move while the spoken value is already 80 (DECOY: the dash not yet at its end); only `opacity` and `strokeDashoffset` animate, ink still `foreground`; it moves from 0; reduced lands.
+  - **`charts.test`:** the dial's path, dash and offset. DECOY: `11`'s 249°. For eight shares, offset and printed percent; no dot at zero. A change moves the arc while the figure and the name are already 84 %, with only those two keys animated.
+- **Tier 1, each exit 0:** format, typecheck, lint, `verify-motion --prove` (its baseline now scans a real `useAnimatedProps`), `a11y-scope` (87 components, all reached), affected tests (18 tasks; ui 1307, mobile 1321). |
 | 7 | | |
 | 8 | | |
 | 9 | | |

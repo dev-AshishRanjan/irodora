@@ -10,15 +10,16 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render, screen } from '@testing-library/react-native';
-import { nativeColors, nativeNumericFeature } from '@irodora/design-tokens';
+import { act, render, screen } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
+import { nativeColors, nativeMotion, nativeNumericFeature } from '@irodora/design-tokens';
 import {
   CoverageDial,
+  type CoverageDialProps,
   DIAL_RADIUS,
   DIAL_STROKE,
   DIAL_SWEEP,
   DIAL_TEXT_DROP,
-  dialArc,
   dialSize,
   Radar,
   RADAR_EDGE,
@@ -30,13 +31,14 @@ import {
   RADAR_RINGS,
   RADAR_SIZE,
   RADAR_SPOKE,
-  radarName,
-  ThemeProvider,
-  type CoverageDialProps,
   type RadarAxis,
+  radarName,
   type RadarProps,
+  sweepLength,
+  sweepPath,
+  ThemeProvider,
 } from '../src/index.js';
-import { raggedFigures, type TestNode } from '../src/testing/index.js';
+import { animatedPropsOf, raggedFigures, type TestNode } from '../src/testing/index.js';
 
 interface Box {
   readonly x: number;
@@ -145,32 +147,85 @@ describe('the dial draws its arc and its figure from one fraction', () => {
     expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
   });
 
+  /*
+   * THE FILL IS THE WHOLE SWEEP, DRAWN ONCE, AND ITS DASH SHOWS THE SHARE (F-266, ADR-0133 §4):
+   * `strokeDasharray [L, L]`, `strokeDashoffset L·(1 − f)`, from the left end clockwise. So a change
+   * of share moves one number, and the path never moves. (react-native-svg writes a zero offset as
+   * null, which is the same dash: the whole path.)
+   */
+  const c = DIAL_RADIUS + DIAL_STROKE / 2;
+  const start = 180 + (360 - DIAL_SWEEP) / 2;
+  const L = sweepLength(DIAL_RADIUS, DIAL_SWEEP);
+  const offset = (fill: TestNode | undefined): number =>
+    (fill?.props['strokeDashoffset'] as number | null | undefined) ?? 0;
+
   it('fills the share of the sweep from the left end, over the track', () => {
     const [track, fill] = paths(draw({ fraction: 0.84, label: 'Wardrobe Coverage' }));
     expect(paint(track?.props['stroke'])).toBe(nativeColors.dark['border.strong']);
     expect(paint(fill?.props['stroke'])).toBe(nativeColors.dark.foreground);
-    const c = DIAL_RADIUS + DIAL_STROKE / 2;
-    const start = 180 + (360 - DIAL_SWEEP) / 2;
-    expect(fill?.props['d']).toBe(dialArc(c, c, DIAL_RADIUS, start, 0.84 * DIAL_SWEEP));
+    expect(fill?.props['d']).toBe(sweepPath(c, c, DIAL_RADIUS, start, DIAL_SWEEP));
+    expect(fill?.props['strokeDasharray']).toStrictEqual([L, L]);
+    expect(offset(fill)).toBeCloseTo(L * (1 - 0.84), 9);
     // DECOY: 11's own sample arc, 249°, which disagrees with its printed 84 %.
-    expect(fill?.props['d']).not.toBe(dialArc(c, c, DIAL_RADIUS, start, 249));
+    expect(offset(fill)).not.toBeCloseTo(L * (1 - 249 / DIAL_SWEEP), 3);
   });
 
-  it('for any share, fills that share of the sweep and prints it as a whole percent', () => {
-    const c = DIAL_RADIUS + DIAL_STROKE / 2;
-    const start = 180 + (360 - DIAL_SWEEP) / 2;
+  it('for any share, shows that share of the sweep and prints it as a whole percent', () => {
     for (const fraction of [0.01, 0.1, 0.25, 0.5, 0.666, 0.84, 0.995, 1]) {
       const tree = draw({ fraction, label: 'Wardrobe Coverage' });
       const fill = paths(tree)[1];
-      expect(fill?.props['d']).toBe(dialArc(c, c, DIAL_RADIUS, start, fraction * DIAL_SWEEP));
+      expect(fill?.props['d']).toBe(sweepPath(c, c, DIAL_RADIUS, start, DIAL_SWEEP));
+      expect(offset(fill)).toBeCloseTo(L * (1 - fraction), 9);
+      expect(fill?.props['opacity']).toBe(1);
       expect(screen.getByText(`${String(Math.round(fraction * 100))}%`)).toBeTruthy();
       screen.unmount();
     }
   });
 
-  it('draws the track alone at zero, and refuses a share outside 0 to 1', () => {
-    expect(paths(draw({ fraction: 0, label: 'Wardrobe Coverage' }))).toHaveLength(1);
+  it('draws no fill at zero — no dot — and refuses a share outside 0 to 1', () => {
+    // A zero-length dash with round caps would paint a dot: a value nobody computed.
+    expect(paths(draw({ fraction: 0, label: 'Wardrobe Coverage' }))[1]?.props['opacity']).toBe(0);
+    screen.unmount();
     expect(() => draw({ fraction: 1.2, label: 'Wardrobe Coverage' })).toThrow(RangeError);
+  });
+
+  it('moves its arc on a change of share while the figure and the name are already the new ones', () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+    jest.useFakeTimers();
+    try {
+      const dial = (fraction: number) => (
+        <ThemeProvider theme="dark">
+          <CoverageDial fraction={fraction} label="Wardrobe Coverage" testID="dial" />
+        </ThemeProvider>
+      );
+      const tree = render(dial(0.2));
+      tree.rerender(dial(0.84));
+      act(() => {
+        jest.advanceTimersByTime(34);
+      });
+      const fill = tree.UNSAFE_root.findAll(
+        (n) => n.props['testID'] === 'dial.fill' && 'jestAnimatedProps' in n.props,
+      )[0];
+      if (fill === undefined) throw new Error('no animated fill');
+      const mid = animatedPropsOf(fill)['strokeDashoffset'] as number;
+      // The arc is still on its way …
+      expect(mid).toBeLessThan(L * (1 - 0.2));
+      expect(mid).toBeGreaterThan(L * (1 - 0.84));
+      // … and the figure and the spoken name are not: a figure is replaced, never counted.
+      expect(screen.getByText('84%')).toBeTruthy();
+      expect(tree.getByTestId('dial').props['accessibilityLabel']).toBe('Wardrobe Coverage 84%');
+      expect(Object.keys(animatedPropsOf(fill)).sort()).toStrictEqual([
+        'opacity',
+        'strokeDashoffset',
+      ]);
+      act(() => {
+        jest.advanceTimersByTime(nativeMotion.durations.view);
+      });
+      expect(animatedPropsOf(fill)['strokeDashoffset']).toBeCloseTo(L * (1 - 0.84), 9);
+    } finally {
+      jest.useRealTimers();
+      jest.restoreAllMocks();
+    }
   });
 
   it('has no figure to disagree with its arc, by type', () => {

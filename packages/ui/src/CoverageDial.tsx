@@ -14,10 +14,15 @@
  *   nothing of its own.
  * - **The track is decorative** (R9 §4 E3): the figure states the share, so the track's 1.85:1 on the
  *   card is the drawn ink, kept.
+ * - **A change of share moves the arc, and replaces the figure** (F-266, ADR-0133 §3, §4): the fill
+ *   is an `ArcFill` whose dash moves over `view`; the printed figure and the spoken name change at
+ *   once. A figure is never counted.
  */
 
 import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { ArcFill } from './ArcFill.js';
+import { dialArc } from './arcPath.js';
 import { figureName, figureText, type ShareFigure } from './figures.js';
 import type { Script } from './layout.js';
 import { Text } from './Text.js';
@@ -41,18 +46,9 @@ export interface CoverageDialProps {
   readonly testID?: string;
 }
 
-/** A point on a circle, `degrees` clockwise from the top. */
-function at(cx: number, cy: number, r: number, degrees: number): string {
-  const a = (degrees * Math.PI) / 180;
-  const round = (v: number): string => String(Math.round(v * 1000) / 1000);
-  return `${round(cx + r * Math.sin(a))} ${round(cy - r * Math.cos(a))}`;
-}
-
-/** An arc's path, clockwise from `from` through `sweep` degrees. */
-export function dialArc(cx: number, cy: number, r: number, from: number, sweep: number): string {
-  const large = sweep > 180 ? 1 : 0;
-  return `M${at(cx, cy, r, from)}A${String(r)} ${String(r)} 0 ${String(large)} 1 ${at(cx, cy, r, from + sweep)}`;
-}
+// The arc's geometry lives in `arcPath.ts` (F-266), shared with the ring and the moving fill; it is
+// re-exported here so the dial's public API is unchanged.
+export { dialArc } from './arcPath.js';
 
 /** The dial's box, in dp: the full circle's width, and its height down to the caps' lowest point. */
 export function dialSize(): { readonly width: number; readonly height: number } {
@@ -77,7 +73,6 @@ export function CoverageDial({
   const { width, height } = dialSize();
   const c = DIAL_RADIUS + DIAL_STROKE / 2;
   const start = 180 + (360 - DIAL_SWEEP) / 2;
-  const fill = fraction * DIAL_SWEEP;
   // Padding the stack's box from the top by this centres it DIAL_TEXT_DROP below the circle's centre,
   // whatever the stack's height: the box's centre is then halfway between this and the bottom.
   const lift = (c + DIAL_TEXT_DROP) * 2 - height;
@@ -98,15 +93,17 @@ export function CoverageDial({
           strokeWidth={DIAL_STROKE}
           strokeLinecap="round"
         />
-        {fill > 0 ? (
-          <Path
-            d={dialArc(c, c, DIAL_RADIUS, start, fill)}
-            fill="none"
-            stroke={colors.foreground}
-            strokeWidth={DIAL_STROKE}
-            strokeLinecap="round"
-          />
-        ) : null}
+        <ArcFill
+          {...(testID === undefined ? {} : { testID: `${testID}.fill` })}
+          cx={c}
+          cy={c}
+          r={DIAL_RADIUS}
+          from={start}
+          sweep={DIAL_SWEEP}
+          value={fraction}
+          color={colors.foreground}
+          strokeWidth={DIAL_STROKE}
+        />
       </Svg>
       <View
         pointerEvents="none"

@@ -129,6 +129,8 @@ export {
   dialSize,
   type CoverageDialProps,
 } from './CoverageDial.js';
+export { ArcFill, type ArcFillProps } from './ArcFill.js';
+export { sweepLength, sweepPath } from './arcPath.js';
 export {
   Radar,
   RADAR_EDGE,
