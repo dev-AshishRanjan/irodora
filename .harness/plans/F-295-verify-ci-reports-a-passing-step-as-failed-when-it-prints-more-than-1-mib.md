@@ -111,5 +111,10 @@ Live streaming; a per-step timeout; the restore retry of the mutation proofs (F-
 | increment | commit | notes |
 |---|---|---|
 | 0 | this commit | Claim and plan. |
-| 1 | | |
+| 1 | this commit | **The runner reports what each step did.**
+- `runStep` extracted. The child writes stdout and stderr to a log in the OS temp directory (`stdio: ['ignore', fd, fd]`), so nothing is buffered here. A failed or not-run step's last 30 lines are read from the log's end. The temp directory is removed best effort: on Windows a killed shell's own child can hold the log a moment.
+- Three outcomes: `passed`, `failed` (`exit N`) and `not run`, which is a spawn error or a signal without a status, named by its code and message. The run's report marks `not run` with `!` and its reason, apart from `✗`.
+- **`--prove`** runs four synthetic steps through `runStep`: a 2 MiB writer that exits 0; an exit 3 whose tail is kept; an unstartable step (a missing working directory, ENOENT); a step the runner kills (a 500 ms timeout, ETIMEDOUT). It is in the root `lint` chain and documented in the usage block.
+- **Watched failing first:** on the runner as it was, the proof failed on the 2 MiB case (`failed`) and on both not-run cases (`failed`); the exit-3 decoy passed. On the fixed runner all four pass.
+- **Tier 1, each exit 0:** format, typecheck, lint (the proof included), state. |
 | review | | |

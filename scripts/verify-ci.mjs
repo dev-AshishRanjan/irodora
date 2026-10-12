@@ -43,10 +43,21 @@
  * node scripts/verify-ci.mjs           run every step, stop at the first failure
  * node scripts/verify-ci.mjs --list    print the steps without running them
  * node scripts/verify-ci.mjs --all     keep going after a failure, and report every one
+ * node scripts/verify-ci.mjs --prove   prove the step runner on synthetic steps (in `pnpm lint`, F-295)
  * ```
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import {
+  closeSync,
+  mkdtempSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  readSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -295,6 +306,123 @@ ${DIM}  Put them back:${OFF}  node scripts/plant.mjs --recover
   process.exit(1);
 }
 
+/**
+ * Run one step, and say what it did (F-295). `options` exist for the proof: a working directory
+ * and a timeout.
+ *
+ * THE OUTPUT GOES TO A FILE, NOT A BUFFER. `spawnSync`'s default `maxBuffer` is 1 MiB. A step that
+ * printed more was killed with SIGTERM, its status became null, and `status ?? 1` called it failed:
+ * test, a11y and contrast print 7–12 MB uncached and pass. The child writes to a log in the OS temp
+ * directory. Nothing is held here, so no size can kill a step, and the tail is read only for a step
+ * that did not pass.
+ *
+ * THREE OUTCOMES, NEVER TWO:
+ * - `passed`: status 0;
+ * - `failed`: any other status;
+ * - `not run`: a spawn error, or a signal with no status — it could not start, or the runner killed
+ *   it. Named by its error, and still counted against the run, because a step that did not run
+ *   proved nothing.
+ */
+function runStep(step, { cwd = ROOT, timeout } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'verify-ci-'));
+  const log = join(dir, 'step.log');
+  const fd = openSync(log, 'w');
+  let result;
+  try {
+    result = spawnSync(step.command, {
+      cwd,
+      shell: true,
+      stdio: ['ignore', fd, fd],
+      env: { ...process.env, FORCE_COLOR: '0' },
+      ...(timeout === undefined ? {} : { timeout }),
+    });
+  } finally {
+    closeSync(fd);
+  }
+  try {
+    if (result.error !== undefined || result.status === null) {
+      const error = result.error;
+      const detail =
+        error === undefined
+          ? `killed by ${result.signal ?? 'an unknown signal'}`
+          : `${String(error.code ?? error.name)}: ${error.message}`;
+      return { outcome: 'not run', detail, tail: tailOf(log) };
+    }
+    return result.status === 0
+      ? { outcome: 'passed', detail: '', tail: '' }
+      : { outcome: 'failed', detail: `exit ${String(result.status)}`, tail: tailOf(log) };
+  } finally {
+    // Best effort: on Windows a killed shell's own child can still hold the log for a moment.
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      /* the OS cleans its temp directory */
+    }
+  }
+}
+
+/** A log's last lines, read from its end, so a log of many megabytes is not read whole. */
+function tailOf(path, lines = 30) {
+  const size = statSync(path).size;
+  const take = Math.min(size, 64 * 1024);
+  const fd = openSync(path, 'r');
+  try {
+    const buffer = Buffer.alloc(take);
+    readSync(fd, buffer, 0, take, size - take);
+    return buffer.toString('utf8').split('\n').slice(-lines).join('\n');
+  } finally {
+    closeSync(fd);
+  }
+}
+
+/*
+ * THE PROOF (F-295). Synthetic steps through the same `runStep`: what a step prints must never
+ * decide whether it passed, and a step that did not run must say so.
+ */
+if (process.argv.includes('--prove')) {
+  console.log(`\n${BOLD}verify-ci — proving the step runner${OFF}\n`);
+  const node = JSON.stringify(process.execPath);
+  const cases = [
+    {
+      name: 'a step that prints 2 MiB and exits 0 is passed',
+      step: { name: 'big', command: `${node} -e "process.stdout.write('x'.repeat(2*1024*1024))"` },
+      expect: (r) => r.outcome === 'passed',
+    },
+    {
+      name: 'a step that exits 3 is failed, and its tail is kept',
+      step: { name: 'red', command: `${node} -e "console.log('the reason'); process.exit(3)"` },
+      expect: (r) => r.outcome === 'failed' && r.tail.includes('the reason'),
+    },
+    {
+      name: 'a step that cannot start is not run, and names its error',
+      step: { name: 'nowhere', command: `${node} -e "0"` },
+      options: { cwd: join(ROOT, '__no_such_directory__') },
+      expect: (r) => r.outcome === 'not run' && /ENOENT/u.test(r.detail),
+    },
+    {
+      name: 'a step the runner killed is not run, and names why',
+      step: { name: 'slow', command: `${node} -e "setTimeout(() => {}, 3000)"` },
+      options: { timeout: 500 },
+      expect: (r) => r.outcome === 'not run' && /ETIMEDOUT|SIG/u.test(r.detail),
+    },
+  ];
+  let bad = 0;
+  for (const c of cases) {
+    const r = runStep(c.step, c.options);
+    const ok = c.expect(r);
+    if (!ok) bad += 1;
+    console.log(
+      `  ${ok ? `${GREEN}✓` : `${RED}✗`}${OFF} ${c.name} ${DIM}(${r.outcome}${r.detail ? `: ${r.detail}` : ''})${OFF}`,
+    );
+  }
+  if (bad > 0) {
+    console.log(`\n${RED}${BOLD}The runner does not report what the steps did.${OFF}\n`);
+    process.exit(1);
+  }
+  console.log(`\n${GREEN}${BOLD}Runner proven.${OFF}\n`);
+  process.exit(0);
+}
+
 const steps = stepsFrom(readFileSync(WORKFLOW, 'utf8'));
 if (steps.length === 0) {
   console.log(`\n${RED}${BOLD}No steps were read from ci.yml.${OFF} Refusing to report success.\n`);
@@ -406,23 +534,22 @@ for (const step of steps) {
   }
 
   process.stdout.write(`  …  ${step.name}`);
-  const result = spawnSync(step.command, {
-    cwd: ROOT,
-    shell: true,
-    encoding: 'utf8',
-    env: { ...process.env, FORCE_COLOR: '0' },
-  });
+  const result = runStep(step);
   ran += 1;
-  const code = result.status ?? 1;
   process.stdout.write('\r');
 
-  if (code === 0) {
+  if (result.outcome === 'passed') {
     console.log(`  ${GREEN}✓${OFF}  ${step.name}${' '.repeat(8)}`);
     continue;
   }
 
-  console.log(`  ${RED}✗${OFF}  ${step.name}${' '.repeat(8)}`);
-  failures.push({ step, output: `${result.stdout ?? ''}${result.stderr ?? ''}` });
+  // A step that did not run is marked apart from one that failed, and says why (F-295).
+  console.log(
+    result.outcome === 'not run'
+      ? `  ${YELLOW}!${OFF}  ${step.name} ${DIM}(not run — ${result.detail})${OFF}`
+      : `  ${RED}✗${OFF}  ${step.name}${' '.repeat(8)}`,
+  );
+  failures.push({ step, output: result.tail, outcome: result.outcome, detail: result.detail });
   if (!keepGoing) break;
 }
 
@@ -457,8 +584,12 @@ if (failures.length === 0) {
   process.exit(0);
 }
 
-for (const { step, output } of failures) {
-  console.log(`${RED}${BOLD}${step.name}${OFF} ${DIM}${step.command}${OFF}\n`);
+for (const { step, output, outcome, detail } of failures) {
+  console.log(
+    `${RED}${BOLD}${step.name}${OFF} ${DIM}${step.command}${OFF}` +
+      (outcome === 'not run' ? `\n    ${YELLOW}NOT RUN${OFF} — ${detail}` : '') +
+      '\n',
+  );
   console.log(
     output
       .split('\n')
