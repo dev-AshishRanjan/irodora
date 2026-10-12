@@ -8,6 +8,94 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-12 — F-266 The motion the mockups imply, and never on a colour
+
+**Done.** Everything the drawings imply moves on the motion system's own steps and easings and ends
+on the drawn rest state, and nothing animates a colour. It shipped in twelve commits, `e173c08`
+through this one
+([ADR-0133](../../docs/adr/0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md)).
+
+- **Criterion 1: what moves.**
+  - **The launch (14).** The line heads for each next step, so it is half-way as the mark arrives
+    and full before the app appears. The glow is dark while the mark travels and blooms from the
+    mark's grid on arrival. The wave rises with the mark.
+  - **The sheet (03, 04)** settles on `view` with `out`; F-177's spring is retired.
+  - **The coverage dial and the working ring (11, 27)** move a dash (`ArcFill`): the manifest admits
+    `strokeDashoffset` as a length (`motion.animatableLength`). The figure is replaced, never
+    counted.
+  - **The six list surfaces** each arrive once (`Arrival`): rows stagger within 540 ms of the first
+    row and below row 20, and a row scrolled or re-keyed in later is simply there.
+  - **One hook** (`useValueMotion`) moves every length-drawn reading when it changes, never when it
+    mounts.
+- **Criterion 2: nothing animates a colour; reduced motion lands every motion.**
+  - **`verify-motion`** reads:
+    - animated props, against the wider list;
+    - worklet bodies by matching braces, strings skipped and quoted keys read;
+    - worklets it cannot read, reported rather than skipped;
+    - `interpolateColor` in any form;
+    - a second engine.
+
+    Its plants are journalled.
+  - **HeroUI's Switch tweened its thumb's colour** and sprang its position. It now jumps, and paints
+    our tokens through HeroUI's own worklets. `motion-dependencies.test` pins the audited version.
+  - Every new motion is asserted under reduced motion, mid-session too.
+- **Two harness lessons on the way.**
+  - **F-240's B1 recurred.** RNTL awaits an unmount per render after each test, so the ui file's
+    whole-registry tests now run per subject.
+  - **One act() over a whole step** holds a state change until its end, so the launch tests step a
+    frame per act().
+- **Record.**
+  - Effects E-197 to E-200, and seven updated.
+  - R9 §8; DESIGN-SYSTEM.md *Motion*; the motion rule and skill.
+  - Both criteria attested for their device halves.
+  - Downstream notes on fifteen features.
+  - Backlog: F-332 (`screens.test`'s whole-registry tests) and F-333 (a proof's restore under a
+    transient Windows file error).
+
+**Review (once, cut off by a usage limit and resumed): FAIL as delivered**, with no blocking finding,
+4 significant and 15 minor. Every one is fixed or recorded; the plan's `review` row lists each.
+
+- **S1, fixed:** `verify-motion`'s lazy regex skipped keys after an inner `}))`.
+- **S2, fixed:** the 20-item rule and the code disagreed; the reading is stated.
+- **S3, fixed:** the arc had no independent test; `arc-path.test` parses the path against the circle.
+- **S4, fixed:** the Switch's thumb positions are now asserted.
+
+**Gates run on the final tree, each exit 0:**
+
+- `node scripts/verify-state.mjs`
+- `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force` (35/35 uncached: ui 1332, mobile 1332)
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd`
+- `node scripts/verify-motion.mjs --prove`
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories; F-266 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: 28 of 38 green.
+  - **The recorded reds:** F-295's buffer (test, a11y and contrast, each exit 0 alone), the iOS half
+    on win32, F-324 and F-322.
+  - **Four new reds:**
+    - the contrast mutation proof's restore threw a transient Windows file error on the manifest and
+      left its plant;
+    - the content proof, the bench proof and the no-inference proof then refused to run.
+
+    The journal's bytes equalled HEAD, `plant.mjs --recover` restored them, and each of the four
+    exited 0 on its own. F-333 records the missing retry.
+
+**Not run:** `e2e` and `artifact` (no JDK). Nothing ran on a device. The 60 fps feel, the dash on
+iOS and Android, the sheet's settle and a flick, the bloom in both palettes, and the OS
+reduced-motion setting toggled mid-session are F-266's attestations, which block the release.
+
+### Lessons
+
+[[a-mock-records-every-call-until-something-clears-it]] (its F-266 section)
+
+### Next
+
+The next eligible R9 feature by id, under the loop.
+
+---
+
 ## 2026-10-10 — F-240 The whole app can be previewed as a CVD user sees it
 
 **Done.** `15`'s section 2 offers Standard, Protanopia, Deuteranopia and Tritanopia. A mode repaints

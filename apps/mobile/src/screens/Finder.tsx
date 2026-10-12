@@ -190,8 +190,9 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
                 </Text>
                 {/*
-                  A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the first answer's rows stagger in; a
-                  row a later keystroke brings is simply there, so typing does not replay it.
+                  A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the first answer's rows stagger in, and
+                  a row a later keystroke brings is simply there while the results stay on screen.
+                  An answer that empties and comes back is a new list, and arrives again.
                 */}
                 <Arrival>
                   {shown.map((entry, i) => (

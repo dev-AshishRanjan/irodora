@@ -99,7 +99,8 @@ That is the list. Motion is not used to decorate, to demonstrate craft, or to fi
 | Anything longer | Needs a reason |
 
 Ease-out for entering, ease-in for exiting. Springs only where a physical metaphor is real
-(a drag), never for a fade.
+(a drag), never for a fade. **One stated exception:** the sheet opens, snaps and closes on one
+config, `view` with `out`, because gorhom takes one for all three (ADR-0133 §6).
 
 ---
 
@@ -108,7 +109,8 @@ Ease-out for entering, ease-in for exiting. Springs only where a physical metaph
 - **Compositor properties only:** `transform` and `opacity`. Animating `width`, `height`,
   `top` or `left` forces layout on every frame. The one admitted exception is a stroke's dash
   offset (F-266): it lays nothing out, but it re-paints its SVG each frame.
-- No animation on a list of more than ~20 items.
+- No list animates more than its first ~20 rows: a row at index 20 or beyond is present, and a
+  long list (the Atlas's hundreds of entries) arrives by its first rows (`Arrival`, ADR-0133 §7).
 - No `requestAnimationFrame` loop that is not cancelled on unmount.
 - No parallax. No scroll-jacking.
 

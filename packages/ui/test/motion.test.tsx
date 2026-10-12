@@ -540,6 +540,12 @@ describe('Arrival — a list arrives once (F-266)', () => {
     for (const key of ['0', '1', '2']) expect(opacity(tree, key)).toBe(1);
   });
 
+  /*
+   * A REGRESSION GUARD, NOT A DISCRIMINATING CASE (F-266's review, M8): the code before F-266
+   * passes it too. It holds what F-240 and ADR-0133 §7 rely on — a re-render (a theme change, a
+   * colour-vision mode) never re-decides an entrance — against a future `Appear` that decides per
+   * render.
+   */
   it('moves nothing when the theme changes after the list has arrived', () => {
     const tree = render(
       <ThemeProvider theme="dark">

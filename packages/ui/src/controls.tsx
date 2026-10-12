@@ -35,8 +35,14 @@
  * HeroUI's `Switch` interpolates its track `backgroundColor` over 175 ms by default. For most
  * products that is a nicety. Here the intermediate frames are **plausible colours the engine
  * never produced**, which is why `motion.animatable` is `opacity` and `transform` and nothing
- * else. `animation={{ state: 'disabled' }}` gives the instant value instead of the transition —
- * the switch still changes colour, it just does not travel through colours on the way.
+ * else.
+ *
+ * `state: 'disabled'` on the root was believed to give the instant value, and it did, for the
+ * root alone. F-266's probe found the thumb still tweening its colour and springing its position,
+ * because that state does not reach a compound part. So the root takes `state: 'disable-all'`, and
+ * the root and the thumb each take our painted tokens as their colour values: the switch jumps,
+ * changes colour without travelling through colours, and paints our tokens rather than HeroUI's
+ * (ADR-0133 §10). `motion-dependencies.test` holds it at the audited HeroUI version.
  *
  * `scripts/verify-motion.mjs` learned this prop in the same feature: its table named
  * `highlightAnimation` and `rippleAnimation`, and a third way in was a third way in

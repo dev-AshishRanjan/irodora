@@ -610,6 +610,14 @@ animated portal, worklet reach and the progress line.
      - **Decoy:** HeroUI's own Switch with only `state: 'disabled'` shows the intermediate thumb
        colour.
    - ADR-0133 §10 records this. F-332 is not created, and the notes for F-262 lose its mention.
+7. **As built, where it differs from the lists above** (F-266's review, M4). The arrival registry
+   is in `apps/mobile/test/screens.test.tsx` (reusing its fixtures through `drawRoot`), not a
+   `list-arrival.test.tsx`. `animatedStyleOf` and `animatedPropsOf` live in
+   `packages/ui/src/testing/animated.ts`, not `tree.ts`. `sweepPath`, `sweepLength` and `dialArc`
+   live in `packages/ui/src/arcPath.ts`, to avoid an import cycle between `CoverageDial` and
+   `ArcFill`. The ui conformance file's derived themes run per subject (F-240's B1, recurring).
+   `packages/ui/test/arc-path.test.ts` is added by the review. F-332 is used for the backlog record
+   of `screens.test`'s whole-registry tests, not for the Switch.
 
 ## Status (implementing session)
 
@@ -761,4 +769,46 @@ The scopes draw no view, so no flex chain or inset moved; the inset census held 
 - **Attestations:** both criteria verbatim, `blocks: release`, `outstanding`. The tree half is gated; a device run is what remains.
 - **Downstream notes** on F-243, F-244, F-245, F-246, F-250, F-251, F-252, F-254, F-255, F-259, F-262, F-264, F-265, F-267 and F-268. No F-332 (Amendment 6).
 - **Tier 1, each exit 0:** format, typecheck, lint (claims included), state. Code changed only in comments, so tests are not re-run here; Tier 2 runs all of them next. |
-| review | | |
+| review | this commit | **The one review** (the evaluator subagent, 2026-10-12). A usage limit cut it off and it was resumed, so it is still one review. **FAIL as delivered**: no blocking finding, 4 significant, 15 minor; acceptance met under ADR-0133's readings; every red gate already recorded. Every finding is fixed or recorded.
+
+**Significant, fixed:**
+- **S1.** `verify-motion` read worklet bodies with a lazy regex that stopped at the first inner `}))`.
+  - Now `workletBody` matches braces and requires the call's two closing parentheses.
+  - `topLevelKeys` and `topLevelSpread` skip strings, and a quoted key is read.
+  - Any mention of `interpolateColor` in code is named, which catches an aliased import.
+  - `Animated` is named when reached by namespace or `require`.
+  - 8 plants: the review's two counterexamples; a nested-clamp decoy; a brace inside a string; a quoted colour key; the alias; a namespace with its decoy.
+- **S2.** The 20-item rule and the code disagreed. ADR-0133 §7 now states the reading (at most the first 20 rows of any list animate), and the rule, the skill and `motion.tsx` say the same. The ADR also states, for M5, why a state initialiser reading time is accepted, now from `performance.now()`.
+- **S3.** The arc had no independent test. `arc-path.test` (7) parses the path and holds it to the circle: start, flags, endpoints on the circle, every arc under 180°, the angle swept summed for the ring and the dial (DECOY: `11`'s 249°), any radius closing, the RangeErrors, and `sweepLength` against 2πr written out. `sweepPath` now cuts a sweep into arcs of at most 120° (M14: the half-arc ambiguity).
+- **S4.** The Switch's thumb positions are asserted: the leading inset off, the far side one frame after a toggle, both computed from `SWITCH_TRACK` and `SWITCH_THUMB`. E-198's guard now says so.
+
+**Minor:**
+- **M1:** `Appear`'s doc is back on `Appear`.
+- **M2:** `controls.tsx`'s header is rewritten.
+- **M3:** `verify-motion`'s header and printed limits are corrected.
+- **M4:** the ADR's `list-arrival.test` is corrected, and Amendment 7 records what was built differently.
+- **M6:** the self-disabling allowance's trust in HeroUI's convention is printed.
+- **M7:** the sheet's easing is sampled against `out` (DECOY: `inOut`), and reduced motion is checked mid-session.
+- **M8:** the theme-change case is labelled a regression guard.
+- **M9:** `rowsBefore` is keyed by family.
+- **M10:** Finder's comment says what is true.
+- **M11:** the sheet's ease-out exit is stated in the ADR and pointed to from the rule and the skill.
+- **M12:** the device texts say what a person can see, and E-068 says duration 0.
+- **M13:** the index's stray punctuation is fixed, and **F-332** records `screens.test`'s whole-registry shape.
+- **M14:** `ArcFill` clamps.
+- **M15:** decoys for the registry's other findings, and E-199's limits.
+
+**Tier 2 on the final tree:**
+- **Each exit 0:**
+  - `state`, `typecheck`, `lint`, `format:check`, `build`;
+  - `turbo run test --force` (35/35 uncached; ui 1332, mobile 1332);
+  - `test:a11y`, `test:contrast`, `test:cvd`;
+  - `verify-motion --prove`.
+- **`security`** exits 1 on F-322's nine.
+- **`verify-ci --all`:** 28 of 38 green.
+  - **Six reds were the recorded ones:** F-295's buffer (test, a11y, contrast), the iOS half, F-324 and F-322.
+  - **Four were new:**
+    - the contrast mutation proof's `finally` restore threw `UNKNOWN: unknown error, open` on the manifest, a transient Windows file error, which left its plant;
+    - the content proof, the bench discrimination proof and the no-inference proof then refused to run, as they should.
+
+  The journal's saved bytes equalled HEAD; `plant.mjs --recover` restored them; each of the four then exited 0 on its own. **F-333** records the restore's missing retry. The tree held only this feature's changes after that. |

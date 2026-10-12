@@ -56,8 +56,10 @@ export function ArcFill({
 }: ArcFillProps): React.JSX.Element {
   const length = sweepLength(r, sweep);
   const shown = useValueMotion(value, step);
+  // CLAMPED (F-266's review, M14): an easing that overshot would put the offset past `L` and draw a
+  // dash at the arc's far end. Today's beziers do not overshoot; the arithmetic does not rely on it.
   const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: length * (1 - shown.value),
+    strokeDashoffset: length * (1 - Math.min(1, Math.max(0, shown.value))),
     opacity: shown.value > 0 ? 1 : 0,
   }));
   return (

@@ -531,6 +531,7 @@ export function Wardrobe({
         for (let i = 0; i < group.garments.length; i += COLUMNS)
           rows.push([...group.garments.slice(i, i + COLUMNS)]);
         return {
+          family: group.family,
           title:
             group.family === UNGROUPED ? t('browse.ungrouped') : familyLabel(group.family, locale),
           count: group.garments.length,
@@ -541,14 +542,15 @@ export function Wardrobe({
   );
   /**
    * How many rows come before each section: a row's place in the list's reading order, which is
-   * the index its arrival staggers by (F-266). Keyed by the section's title, which `SectionList`
-   * hands back with every row and which names one family once.
+   * the index its arrival staggers by (F-266). Keyed by the section's family — `SectionList` hands
+   * the section back with every row — not by its title, which is a translation two families could
+   * share in some locale (F-266's review, M9).
    */
   const rowsBefore = useMemo(() => {
     const before = new Map<string, number>();
     let rows = 0;
     for (const section of sections) {
-      before.set(section.title, rows);
+      before.set(section.family, rows);
       rows += section.data.length;
     }
     return before;
@@ -1037,7 +1039,7 @@ export function Wardrobe({
                 </Stack>
               )}
               renderItem={({ item: row, index, section }) => (
-                <Appear index={(rowsBefore.get(section.title) ?? 0) + index}>
+                <Appear index={(rowsBefore.get(section.family) ?? 0) + index}>
                   <Row gap="sm" align="start">
                     {row.map((garment) => (
                       <GarmentCell

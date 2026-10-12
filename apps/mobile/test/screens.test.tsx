@@ -5404,6 +5404,19 @@ describe('every list surface arrives once (F-266)', () => {
     expect(findings(arrived)).toContain('0 Arrival scopes where a list has one');
   });
 
+  it('DECOY — names two scopes, a single row, and a row out of order', () => {
+    expect(findings({ scopes: 2, indices: [0, 1] })).toContain(
+      '2 Arrival scopes where a list has one',
+    );
+    expect(findings({ scopes: 1, indices: [0] })).toContain('fewer than two rows arrive');
+    expect(findings({ scopes: 1, indices: [0, 2, 1] })).toStrictEqual([
+      'row 1 is indexed 2',
+      'row 2 is indexed 1',
+    ]);
+    // And a list that arrives in order is not named.
+    expect(findings({ scopes: 1, indices: [0, 1, 2] })).toHaveLength(0);
+  });
+
   it('cites records its governing mockup draws', () => {
     for (const surface of [
       ...LIST_SURFACES,

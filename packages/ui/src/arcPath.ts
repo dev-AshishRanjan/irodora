@@ -17,22 +17,28 @@ export function dialArc(cx: number, cy: number, r: number, from: number, sweep: 
   return `M${at(cx, cy, r, from)}A${String(r)} ${String(r)} 0 ${String(large)} 1 ${at(cx, cy, r, from + sweep)}`;
 }
 
+/** The widest one arc command of a sweep may span: well short of 180°, where an arc is ambiguous. */
+const SEGMENT = 120;
+
 /**
  * An arc's path as ONE subpath, clockwise from `from` through `sweep` degrees, valid up to a full
  * 360° (F-266, ADR-0133 §4).
  *
- * An SVG arc command cannot draw a whole circle, because its start and end coincide. So a sweep
- * past 180° is two arcs end to end, and the first never passes 180°. A dash that shows a fraction
- * of the span runs from `from` along this one path, which is what `ArcFill` moves.
+ * An SVG arc command cannot draw a whole circle, because its start and end coincide. So the sweep is
+ * cut into equal arcs of at most {@link SEGMENT}°, end to end. Not at 180°: there the two possible
+ * arcs between the endpoints are the same size, and an endpoint rounded to 3 dp can flip the choice
+ * or shorten the half, so the drawn arc fell short of its length (F-266's review, M14). A dash that
+ * shows a fraction of the span runs from `from` along this one path, which is what `ArcFill` moves.
  */
 export function sweepPath(cx: number, cy: number, r: number, from: number, sweep: number): string {
   if (!(sweep > 0 && sweep <= 360))
     throw new RangeError(`sweepPath: a sweep of ${String(sweep)}° is not in (0, 360]`);
-  const first = Math.min(sweep, 180);
-  const head = `M${at(cx, cy, r, from)}A${String(r)} ${String(r)} 0 0 1 ${at(cx, cy, r, from + first)}`;
-  return sweep <= 180
-    ? head
-    : `${head}A${String(r)} ${String(r)} 0 0 1 ${at(cx, cy, r, from + sweep)}`;
+  const segments = Math.ceil(sweep / SEGMENT);
+  const radius = `${String(r)} ${String(r)}`;
+  let d = `M${at(cx, cy, r, from)}`;
+  for (let i = 1; i <= segments; i += 1)
+    d += `A${radius} 0 0 1 ${at(cx, cy, r, from + (sweep * i) / segments)}`;
+  return d;
 }
 
 /** The length of an arc of `sweep` degrees on a circle of radius `r`: what a value of 1 fills. */

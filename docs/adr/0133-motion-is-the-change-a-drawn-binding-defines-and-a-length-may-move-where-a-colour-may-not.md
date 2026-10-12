@@ -149,6 +149,8 @@ at `view`.
 - A flick's velocity is no longer carried into the settle.
 - Exits are not shorter than entrances, against Material 3's guidance, because gorhom applies one
   config to opening, snapping and closing.
+- Exits are not eased in, either: the sheet leaves on `out`, against `rules/frontend/motion.md`'s
+  "ease-in for exiting", for the same reason. The rule and the motion skill point here.
 - Material 3 itself now prefers springs. The criterion asks for the motion system's durations and
   easings, and a physics spring has no step on the scale.
 
@@ -166,8 +168,22 @@ Some rows are present at once:
 
 - rows that mount after the window: scrolled in, re-mounted by virtualisation, refiltered or
   re-keyed;
-- rows at an index of 20 or more, so no list of more than about 20 items animates
-  (`rules/frontend/motion.md`).
+- rows at an index of 20 or more.
+
+**How the rule's ~20 items is read** (F-266's review, S2). `rules/frontend/motion.md` said "no
+animation on a list of more than ~20 items". The rule exists for frame time and restraint, and a
+long list — the Atlas holds hundreds of entries — that animates its first rows and draws the rest at
+rest serves both. So at most 20 rows of ANY list animate: the first 20, and of those only the ones
+the first frames draw, which the stagger's cap of 6 already brings together. The rule's bullet now
+says this, rather than a list of more than 20 never animating.
+
+**Read at mount, from a monotonic clock** (F-266's review, M5). `Appear` decides in a state
+initialiser, which runs during render: it reads `performance.now()` and may write the scope's
+opening time. That is the impurity the alternatives below reject for a stagger by mount ORDER, and
+it is accepted here because what it reads is time, not position. StrictMode's second call reads the
+same window and decides the same way. A render that concurrent React discards can open the window
+early, by at most the discarded render's lead, which can only make a later row present rather than
+make an early row re-enter.
 
 ### 8. Reduced motion lands every motion on its end state (D8)
 
@@ -222,8 +238,8 @@ disabled, there is nothing to tell a pin from an interpolation.
 - **The sheet loses a flick's momentum**, and its exits are as long as its entrances (D6).
 - **An arc's dash re-paints an SVG node each frame** (D4); F-268 measures it.
 - **The Switch's thumb jumps.**
-- **A new list surface added without `Arrival` is not detected.** The registry in
-  `list-arrival.test` and the downstream notes carry the requirement.
+- **A new list surface added without `Arrival` is not detected.** The arrival registry in
+  `apps/mobile/test/screens.test.tsx` and the downstream notes carry the requirement.
 - **What jest cannot show:**
   - the dash on a device: where it starts, its caps, no dot at 0, no gap at full;
   - gorhom's and HeroUI's own reduced-motion branches, which read reanimated's module flag;

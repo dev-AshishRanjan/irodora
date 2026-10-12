@@ -235,6 +235,37 @@ export interface AppearProps {
 }
 
 /**
+ * How a list arrives (F-266, ADR-0133 §7): once.
+ *
+ * - **`window`** — how long after the list's first row mounts a row may still enter: the stagger's
+ *   last delay (`STAGGER_CAP × STAGGER_STEP`) plus one entrance (`local`), 540 ms. A row that mounts
+ *   after it — scrolled in, re-mounted by a virtualised list, refiltered, re-keyed — is simply
+ *   present. Opened by the first row, so a list whose data arrives late still arrives.
+ * - **`limit`** — rows at this index or beyond never animate: at most 20 rows of any list move. A
+ *   long list arrives by its first rows; that is how ADR-0133 §7 reads the rule's ~20 items.
+ */
+export const ARRIVAL = {
+  window: STAGGER_CAP * STAGGER_STEP + nativeMotion.durations.local,
+  limit: 20,
+} as const;
+
+/** When the list's first row mounted, in `performance.now()` milliseconds; null until one has. */
+const ArrivalContext = createContext<{ current: number | null } | null>(null);
+
+/**
+ * The scope a list arrives in (F-266, ADR-0133 §7). Every `Appear` inside it enters only within
+ * {@link ARRIVAL}'s window of the first row's mount and below its limit; after that, a row is just
+ * there. Today every row a virtualised list scrolls into view waits its stagger and fades, and a row
+ * the list unmounted re-enters on return — a list arriving again on every scroll.
+ *
+ * Draws nothing of its own: a context, around the list.
+ */
+export function Arrival({ children }: { readonly children: ReactNode }): React.JSX.Element {
+  const opened = useRef<number | null>(null);
+  return <ArrivalContext.Provider value={opened}>{children}</ArrivalContext.Provider>;
+}
+
+/**
  * An element that fades and rises into place.
  *
  * ## Why there is no `style` prop, and no way to say what it animates
@@ -259,37 +290,6 @@ export interface AppearProps {
  * always `false`, so seeding from it would add a line no test could observe. An unverified
  * line that removes 16ms is a worse trade than a verified one that does not.
  */
-/**
- * How a list arrives (F-266, ADR-0133 §7): once.
- *
- * - **`window`** — how long after the list's first row mounts a row may still enter: the stagger's
- *   last delay (`STAGGER_CAP × STAGGER_STEP`) plus one entrance (`local`), 540 ms. A row that mounts
- *   after it — scrolled in, re-mounted by a virtualised list, refiltered, re-keyed — is simply
- *   present. Opened by the first row, so a list whose data arrives late still arrives.
- * - **`limit`** — rows at this index or beyond never animate: no list of more than about 20 items
- *   moves (`rules/frontend/motion.md`).
- */
-export const ARRIVAL = {
-  window: STAGGER_CAP * STAGGER_STEP + nativeMotion.durations.local,
-  limit: 20,
-} as const;
-
-/** When the list's first row mounted, in `Date.now()` milliseconds; null until one has. */
-const ArrivalContext = createContext<{ current: number | null } | null>(null);
-
-/**
- * The scope a list arrives in (F-266, ADR-0133 §7). Every `Appear` inside it enters only within
- * {@link ARRIVAL}'s window of the first row's mount and below its limit; after that, a row is just
- * there. Today every row a virtualised list scrolls into view waits its stagger and fades, and a row
- * the list unmounted re-enters on return — a list arriving again on every scroll.
- *
- * Draws nothing of its own: a context, around the list.
- */
-export function Arrival({ children }: { readonly children: ReactNode }): React.JSX.Element {
-  const opened = useRef<number | null>(null);
-  return <ArrivalContext.Provider value={opened}>{children}</ArrivalContext.Provider>;
-}
-
 export function Appear({
   children,
   index = 0,
@@ -307,7 +307,8 @@ export function Appear({
   const [enters] = useState(() => {
     if (scope === null) return true;
     if (index >= ARRIVAL.limit) return false;
-    const now = Date.now();
+    // Monotonic, unlike Date.now(): a clock set back cannot reopen the window (ADR-0133 §7).
+    const now = performance.now();
     scope.current ??= now;
     return now - scope.current <= ARRIVAL.window;
   });

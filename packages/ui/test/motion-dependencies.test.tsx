@@ -29,7 +29,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 import { Switch as HeroSwitch } from 'heroui-native';
 import { nativeColors } from '@irodora/design-tokens';
-import { Switch, ThemeProvider } from '../src/index.js';
+import { Switch, SWITCH_THUMB, SWITCH_TRACK, ThemeProvider } from '../src/index.js';
 import { animatedStyleOf } from '../src/testing/index.js';
 
 /** The version the audit above was made against. An upgrade fails here until it is re-audited. */
@@ -102,27 +102,39 @@ describe('our Switch jumps, and paints our tokens through HeroUI’s worklets', 
   }
   const dark = nativeColors.dark;
 
-  it('paints the off state in our tokens: track surface.3, thumb inverse', () => {
+  /*
+   * WHERE THE THUMB SITS IS THE SWITCH'S CHANNEL THAT IS NOT COLOUR (golden rule 13), so it is read
+   * as positions, not only as "did not move later" (F-266's review, S4): inset from the leading end
+   * when off, inset from the trailing end when on — from the track and the thumb the Switch draws.
+   */
+  const inset = (SWITCH_TRACK.height - SWITCH_THUMB) / 2;
+  const off = inset;
+  const on = SWITCH_TRACK.width - SWITCH_THUMB - inset;
+
+  it('paints the off state in our tokens: track surface.3, thumb inverse, at the leading end', () => {
     const tree = render(<Ours />);
     laidOut(tree.UNSAFE_root);
     const [track, thumb] = animated(tree.UNSAFE_root);
     expect(track?.['backgroundColor']).toBe(dark['surface.3']);
     expect(thumb?.['backgroundColor']).toBe(dark.inverse);
+    expect(thumb?.['start']).toBe(off);
   });
 
-  it('is at its end state one frame after a toggle: our on colours, the thumb already there', () => {
+  it('is at its end state one frame after a toggle: our on colours, the thumb on the far side', () => {
     const tree = render(<Ours />);
     laidOut(tree.UNSAFE_root);
     toggle(tree.UNSAFE_root, 'ours');
     const [track, thumb] = animated(tree.UNSAFE_root);
     expect(track?.['backgroundColor']).toBe(dark.inverse);
     expect(thumb?.['backgroundColor']).toBe(dark['surface.1']);
-    const oneFrameIn = thumb?.['start'];
+    // DECOY for a thumb that never moves: it is not where it started.
+    expect(thumb?.['start']).toBe(on);
+    expect(on).not.toBe(off);
     act(() => {
       jest.advanceTimersByTime(400);
     });
     // A jump: nothing left to travel after the first frame.
-    expect(animated(tree.UNSAFE_root)[1]?.['start']).toBe(oneFrameIn);
+    expect(animated(tree.UNSAFE_root)[1]?.['start']).toBe(on);
   });
 });
 

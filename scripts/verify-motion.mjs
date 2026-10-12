@@ -19,7 +19,12 @@
  * ```
  *
  * A concrete resolved value, indistinguishable from a static colour. The conformance suite,
- * which sees everything else in this product, is structurally blind here.
+ * which reads rendered values, is structurally blind here.
+ *
+ * **A test can still see WHICH KEYS a worklet animates** (F-266, ADR-0133 §9): reanimated mirrors a
+ * worklet's return into `jestAnimatedStyle`, and `animatedStyleOf` reads it alone. Each component
+ * test reads its own worklet that way. This script is still what covers the source a test never
+ * renders.
  *
  * ## Why the allowlist comes from `animatable`, not `forbidden`
  *
@@ -283,9 +288,11 @@ function reanimatedStyleKeys(source) {
   const findings = [];
 
   // `useAnimatedStyle(() => ({ … }))` — the arrow-returning-object form, which is the only one
-  // this codebase uses and the only one worth claiming to read.
-  for (const m of source.matchAll(/useAnimatedStyle\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/gu)) {
-    for (const key of topLevelKeys(m[1] ?? ''))
+  // this codebase uses and the only one worth claiming to read. Read by `workletBody`, which
+  // matches braces rather than stopping at the first `}))` (F-266's review, S1).
+  for (const m of source.matchAll(/useAnimatedStyle\(/gu)) {
+    const body = workletBody(source, m.index + m[0].length);
+    for (const key of topLevelKeys(body ?? ''))
       findings.push({ component: 'useAnimatedStyle', property: key });
   }
 
@@ -299,8 +306,41 @@ function reanimatedStyleKeys(source) {
   return findings;
 }
 
-/** The arrow-returning-object form of a worklet hook: the only one this file claims to read. */
-const READABLE_WORKLET = /useAnimated(Style|Props)\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/uy;
+/**
+ * The body of a worklet hook written as `() => ({ … })`, read from just after the hook's `(` — or
+ * `null` when the call is not in that form, or its object does not close where the call does.
+ *
+ * BRACE-MATCHED, NOT A LAZY REGEX (F-266's review, S1). `\(\{([\s\S]*?)\}\)\s*\)` stopped at the
+ * first `}))` inside the body — `opacity: (h({ a: 1 })), stroke: c.value` read as `opacity: (h({ a:
+ * 1` — so every key after an inner call that closed that way went unread, and the unreadable-worklet
+ * check called the cut-off body readable. Here the object's braces are matched (strings skipped;
+ * comments are already stripped), and the two closing parentheses must follow it.
+ */
+function workletBody(source, from) {
+  const head = /^\s*\(\s*\)\s*=>\s*\(\s*\{/u.exec(source.slice(from));
+  if (head === null) return null;
+  const open = from + head[0].length - 1;
+  let depth = 0;
+  let quote = null;
+  for (let i = open; i < source.length; i += 1) {
+    const ch = source[i];
+    if (quote !== null) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+    else if (ch === '{' || ch === '(' || ch === '[') depth += 1;
+    else if (ch === '}' || ch === ')' || ch === ']') {
+      depth -= 1;
+      if (depth === 0) {
+        if (ch !== '}') return null;
+        return /^\s*\)\s*\)/u.test(source.slice(i + 1)) ? source.slice(open + 1, i) : null;
+      }
+    }
+  }
+  return null;
+}
 
 /**
  * The keys of a reanimated ANIMATED PROPS worklet (F-266, ADR-0133 §4).
@@ -311,9 +351,11 @@ const READABLE_WORKLET = /useAnimated(Style|Props)\(\s*\(\)\s*=>\s*\(\{([\s\S]*?
  */
 function reanimatedPropsKeys(source) {
   const findings = [];
-  for (const m of source.matchAll(/useAnimatedProps\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/gu))
-    for (const key of topLevelKeys(m[1] ?? ''))
+  for (const m of source.matchAll(/useAnimatedProps\(/gu)) {
+    const body = workletBody(source, m.index + m[0].length);
+    for (const key of topLevelKeys(body ?? ''))
       findings.push({ component: 'useAnimatedProps', property: key });
+  }
   return findings;
 }
 
@@ -329,15 +371,14 @@ function reanimatedPropsKeys(source) {
 function unreadableWorklets(source) {
   const findings = [];
   for (const m of source.matchAll(/useAnimated(Style|Props)\(/gu)) {
-    READABLE_WORKLET.lastIndex = m.index;
-    const readable = READABLE_WORKLET.exec(source);
+    const body = workletBody(source, m.index + m[0].length);
     const hook = `useAnimated${m[1] ?? ''}`;
-    if (readable === null)
+    if (body === null)
       findings.push({
         component: hook,
         property: '(a worklet this check cannot read: write it as () => ({ … }))',
       });
-    else if (topLevelSpread(readable[2] ?? ''))
+    else if (topLevelSpread(body))
       findings.push({
         component: hook,
         property: '(a spread at the top of the returned object: its keys cannot be read)',
@@ -346,11 +387,25 @@ function unreadableWorklets(source) {
   return findings;
 }
 
+/** The index of the quote that closes the string literal opening at `start`. */
+function stringEnd(text, start) {
+  const quote = text[start];
+  for (let i = start + 1; i < text.length; i += 1) {
+    if (text[i] === '\\') i += 1;
+    else if (text[i] === quote) return i;
+  }
+  return text.length;
+}
+
 /** Whether an object literal spreads something at its top level. */
 function topLevelSpread(body) {
   let depth = 0;
   for (let i = 0; i < body.length; i += 1) {
     const ch = body[i];
+    if (ch === "'" || ch === '"' || ch === '`') {
+      i = stringEnd(body, i);
+      continue;
+    }
     if (ch === '{' || ch === '[' || ch === '(') depth += 1;
     else if (ch === '}' || ch === ']' || ch === ')') depth -= 1;
     else if (depth === 0 && body.startsWith('...', i)) return true;
@@ -367,21 +422,27 @@ function topLevelSpread(body) {
  *   above read (`motion.tsx` says why reanimated is the one engine).
  */
 function colourInterpolation(source) {
-  return [...source.matchAll(/\binterpolateColor\s*\(/gu)].map(() => ({
+  // ANY MENTION IN CODE, not only a call (F-266's review, S1): an aliased import —
+  // `import { interpolateColor as tint }` — would otherwise call it under another name. Comments
+  // are stripped first, so explaining the rule does not trip it.
+  return [...source.matchAll(/\binterpolateColor\b/gu)].map(() => ({
     component: 'interpolateColor',
     property: '(a colour between two colours)',
   }));
 }
 
 function legacyAnimated(source) {
-  return /import\s*\{[^}]*\bAnimated\b[^}]*\}\s*from\s*['"]react-native['"]/u.test(source)
-    ? [
-        {
-          component: 'Animated (react-native)',
-          property: '(a second animation engine nothing reads)',
-        },
-      ]
-    : [];
+  const finding = {
+    component: 'Animated (react-native)',
+    property: '(a second animation engine nothing reads)',
+  };
+  // The named import, a namespace import's `.Animated`, and a `require` (F-266's review, S1).
+  if (/import\s*\{[^}]*\bAnimated\b[^}]*\}\s*from\s*['"]react-native['"]/u.test(source))
+    return [finding];
+  if (/require\(\s*['"]react-native['"]\s*\)\s*\.\s*Animated\b/u.test(source)) return [finding];
+  for (const m of source.matchAll(/import\s+\*\s+as\s+(\w+)\s+from\s*['"]react-native['"]/gu))
+    if (new RegExp(`\\b${m[1] ?? ''}\\s*\\.\\s*Animated\\b`, 'u').test(source)) return [finding];
+  return [];
 }
 
 /**
@@ -398,6 +459,21 @@ function topLevelKeys(body) {
   let atKeyPosition = true;
   for (let i = 0; i < body.length; i += 1) {
     const ch = body[i];
+    /*
+     * A STRING IS SKIPPED, and a quoted KEY is read (F-266's review, S1). Brackets inside a
+     * string literal — `f('}))')` — had moved the depth, so every key after it went unread; and
+     * a key written in quotes — `'backgroundColor': c` — was never read at all.
+     */
+    if (ch === "'" || ch === '"' || ch === '`') {
+      const quoted =
+        depth === 0 && atKeyPosition ? /^(['"])([\w$-]+)\1\s*:/u.exec(body.slice(i)) : null;
+      if (quoted !== null) {
+        keys.push(quoted[2]);
+        atKeyPosition = false;
+      }
+      i = stringEnd(body, i);
+      continue;
+    }
     if (ch === '{' || ch === '[' || ch === '(') depth += 1;
     else if (ch === '}' || ch === ']' || ch === ')') depth -= 1;
     else if (ch === ',' && depth === 0) atKeyPosition = true;
@@ -823,6 +899,65 @@ if (process.argv.includes('--prove')) {
         "import { Animated } from 'react-native';\n" + 'export const v = new Animated.Value(0);\n',
       shouldFail: true,
     },
+    /*
+     * F-266's review (S1): a body with an inner call that closes `}))` is read to its end, and an
+     * aliased colour tween or a second engine reached another way is still named.
+     */
+    {
+      name: 'a stroke after an inner call that closes with }))',
+      body:
+        "import { useAnimatedProps } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedProps(() => ({ opacity: (h({ a: 1 })), stroke: c.value }));\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a backgroundColor after a nested clamp({ … })',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () =>\n' +
+        '  useAnimatedStyle(() => ({ opacity: Math.max(0, clamp({ v: p.value })), backgroundColor: c.value }));\n',
+      shouldFail: true,
+    },
+    {
+      name: 'the same nested clamp with a transform after it',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () =>\n' +
+        '  useAnimatedStyle(() => ({ opacity: Math.max(0, clamp({ v: p.value })), transform: [] }));\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a closing brace inside a string, which is not the body’s end',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        "export const s = () => useAnimatedStyle(() => ({ opacity: f('}))'), backgroundColor: c.value }));\n",
+      shouldFail: true,
+    },
+    {
+      name: 'a colour key written in quotes',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        "export const s = () => useAnimatedStyle(() => ({ opacity: o.value, 'backgroundColor': c.value }));\n",
+      shouldFail: true,
+    },
+    {
+      name: 'interpolateColor imported under another name',
+      body:
+        "import { interpolateColor as tint } from 'react-native-reanimated';\n" +
+        "export const c = (p: number) => tint(p, [0, 1], ['#000000', '#FFFFFF']);\n",
+      shouldFail: true,
+    },
+    {
+      name: 'Animated reached through a namespace import of react-native',
+      body:
+        "import * as RN from 'react-native';\n" + 'export const v = new RN.Animated.Value(0);\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a namespace import of react-native that never reaches Animated',
+      body: "import * as RN from 'react-native';\n" + 'export const os = RN.Platform.OS;\n',
+      shouldFail: false,
+    },
     {
       name: 'Animated imported from reanimated, the one engine',
       body:
@@ -917,12 +1052,13 @@ console.log(
     `${DIM}(from the manifest, not a copy).${OFF}`,
 );
 console.log(
-  `${DIM}  F-266 ADDED: useAnimatedProps bodies, read against the wider list (a dash offset is a length; a stroke or fill is not); a worklet this file cannot read — a block body, a reference, a top-level spread — reported rather than skipped; interpolateColor; and Animated imported from react-native. NOT CHECKED HERE: what a dependency's own worklets return (motion-dependencies.test pins that, ADR-0133 §9), and styles in test files.${OFF}`,
+  `${DIM}  F-266 ADDED: useAnimatedProps bodies, read against the wider list (a dash offset is a length; a stroke or fill is not); worklet bodies read by matching braces, strings skipped and quoted keys read; a worklet this file cannot read — a block body, a reference, a top-level spread — reported rather than skipped; interpolateColor, aliased or not; and Animated from react-native, by name, by namespace or by require. A colour in an animation={{…}} config is allowed when that config's OWN top-level state is 'disabled' or 'disable-all': that trusts HeroUI's convention that such a worklet returns its end state, which motion-dependencies.test proves for the Switch at the audited version only. NOT CHECKED HERE: what a dependency's own worklets return (motion-dependencies.test pins that, ADR-0133 §9), and styles in test files.${OFF}`,
 );
 console.log(
   `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062); a colour named inside an animation={{…}} config, which is the third way in and is how the Switch interpolates its track by default (F-156); reanimated's useAnimatedStyle and Keyframe bodies, which are worklets rather than JSX and which the literal scan above is structurally blind to; duration literals, which is how a scale stops being a scale; and layout or shared-element transitions on a Swatch, which is 'cross-fade between samples' stated mechanically. NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
-    `by a helper. This is source analysis, and the rendered tree CANNOT see an animated ` +
-    `colour — it resolves to a concrete value indistinguishable from a static one.${OFF}`,
+    `by a helper. This is source analysis: a RENDERED value cannot show an animated colour (it ` +
+    `resolves to a concrete value), though a test that renders a worklet can read which keys it ` +
+    `returns (animatedStyleOf, F-266).${OFF}`,
 );
 
 if (violations.length > 0) {

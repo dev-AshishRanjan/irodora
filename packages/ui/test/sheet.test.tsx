@@ -24,6 +24,7 @@ import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
 import { AccessibilityInfo, Text } from 'react-native';
 import { BottomSheetHandle } from '@gorhom/bottom-sheet';
+import { Easing } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeColors, nativeMotion } from '@irodora/design-tokens';
 import {
@@ -494,10 +495,25 @@ describe('the sheet settles on the motion system’s step (F-266)', () => {
     expect(SHEET_MOTION).toStrictEqual({ step: 'view', easing: 'out' });
     const config = configOf(open());
     expect(config['duration']).toBe(nativeMotion.durations.view);
-    // The out bezier (reanimated 4 hands it over as a factory): gorhom sends a config with a
-    // duration or an easing to withTiming.
-    expect(config['easing']).toBeDefined();
     expect(config['reduceMotion']).toBe('system');
+  });
+
+  /*
+   * THE CURVE, NOT ONLY ITS PRESENCE (F-266's review, M7). Reanimated 4 hands a bezier over as a
+   * factory; the sheet's is evaluated against the manifest's `out` at sample points, and `inOut`
+   * — the other easing on the scale — is the decoy that would have passed a presence check.
+   */
+  it('eases out, the manifest’s curve, sampled along the settle', () => {
+    interface Factory {
+      readonly factory: () => (t: number) => number;
+    }
+    const curve = (factory: unknown) => (factory as Factory).factory();
+    const sheet = curve(configOf(open())['easing']);
+    const out = curve(Easing.bezier(...nativeMotion.easing.out));
+    const inOut = curve(Easing.bezier(...nativeMotion.easing.inOut));
+    for (const t of [0.1, 0.25, 0.5, 0.75]) expect(sheet(t)).toBeCloseTo(out(t), 6);
+    // DECOY: the in-out curve is a different settle at the start of it.
+    expect(sheet(0.25)).not.toBeCloseTo(inOut(0.25), 2);
   });
 
   it('DECOY — is neither F-177’s spring nor gorhom’s own 250 ms', () => {
@@ -518,6 +534,28 @@ describe('the sheet settles on the motion system’s step (F-266)', () => {
     const root = open();
     await act(async () => {
       await Promise.resolve();
+    });
+    expect(configOf(root)['duration']).toBe(0);
+  });
+
+  it('takes no time once reduced motion is switched on mid-session', async () => {
+    const listeners: ((on: boolean) => void)[] = [];
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+    jest.spyOn(AccessibilityInfo, 'addEventListener').mockImplementation(((
+      event: string,
+      handler: (on: boolean) => void,
+    ) => {
+      if (event === 'reduceMotionChanged') listeners.push(handler);
+      return { remove: () => undefined };
+    }) as unknown as typeof AccessibilityInfo.addEventListener);
+    const root = open();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    // DECOY: before the switch, the settle still has its step.
+    expect(configOf(root)['duration']).toBe(nativeMotion.durations.view);
+    act(() => {
+      for (const l of listeners) l(true);
     });
     expect(configOf(root)['duration']).toBe(0);
   });

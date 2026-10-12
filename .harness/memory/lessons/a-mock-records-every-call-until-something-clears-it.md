@@ -49,4 +49,4 @@ hook with a 5 s limit. Under turbo's parallel load, that hook ran past the limit
 - **Look for a duplicate before splitting one.** The ui file's `checkAll(SUBJECTS)` test was the
   per-subject check flat-mapped, run again beside the per-subject tests. It is gone.
 - **The same shape remains in `apps/mobile/test/screens.test.tsx`:** its whole-registry tests and
-  the F-204 evidence sweep. None has timed out. Split them if one does.
+  the F-204 evidence sweep. None has timed out; F-332 records the work.
