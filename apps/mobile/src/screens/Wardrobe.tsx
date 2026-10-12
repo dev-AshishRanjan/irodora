@@ -42,6 +42,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { Image, Pressable, SectionList, ScrollView, useWindowDimensions, View } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import {
+  Appear,
+  Arrival,
   Bands,
   Button,
   Card,
@@ -49,13 +51,13 @@ import {
   EmptyState,
   Row,
   Screen,
+  type Script,
   Stack,
   Surface,
   Swatch,
   swatchAccessibleName,
   Text,
   TextField,
-  type Script,
 } from '@irodora/ui';
 import { GARMENT_SEASONS, type GarmentEnrichment, type StoredGarment } from '@irodora/store';
 import type { Coverage, Gap } from '@irodora/optimization';
@@ -537,6 +539,20 @@ export function Wardrobe({
       }),
     [groups, locale, t],
   );
+  /**
+   * How many rows come before each section: a row's place in the list's reading order, which is
+   * the index its arrival staggers by (F-266). Keyed by the section's title, which `SectionList`
+   * hands back with every row and which names one family once.
+   */
+  const rowsBefore = useMemo(() => {
+    const before = new Map<string, number>();
+    let rows = 0;
+    for (const section of sections) {
+      before.set(section.title, rows);
+      rows += section.data.length;
+    }
+    return before;
+  }, [sections]);
 
   /*
    * The options come from the WHOLE wardrobe, not from what is currently shown.
@@ -1001,54 +1017,63 @@ export function Wardrobe({
             and a flat grid with the family word repeated on every cell would keep the word while
             losing the navigation.
           */}
-          <SectionList
-            sections={sections}
-            keyExtractor={(row) => row.map((g) => g.id).join('|')}
-            renderSectionHeader={({ section }) => (
-              <Stack gap="xs" padding="sm">
-                <Text size="body" color="foreground" script={script} heading>
-                  {section.title}
-                </Text>
-                <Text size="label" color="foreground.2" script={script} numeric>
-                  {`${t('browse.count')}: ${String(section.count)}`}
-                </Text>
-              </Stack>
-            )}
-            renderItem={({ item: row }) => (
-              <Row gap="sm" align="start">
-                {row.map((garment) => (
-                  <GarmentCell
-                    key={garment.id}
-                    garment={garment}
-                    photoSize={photoSize}
-                    uri={images.uri(garment.id)}
-                    label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
-                      garment.color.name,
-                      garment.color.hex,
-                      colorOf(garment.color),
-                    )}`}
-                    script={script}
-                    onPress={() => {
-                      open(garment);
-                    }}
-                  />
-                ))}
-                {/*
-                  A ROW OF ONE STILL OCCUPIES TWO COLUMNS. Without this the last cell of an odd
-                  section stretches to full width and reads as a different, larger kind of thing
-                  — which is the single-garment state (criterion 4) arriving by accident in the
-                  middle of a large wardrobe.
-                */}
-                {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
-              </Row>
-            )}
-            ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
-            SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
-            scrollEnabled={false}
-            initialNumToRender={4}
-            windowSize={5}
-            removeClippedSubviews
-          />
+          {/*
+            A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the rows the first frame draws stagger in,
+            in reading order across the sections — each row's index counts the rows above it —
+            and a row the list windows in later is simply there.
+          */}
+          <Arrival>
+            <SectionList
+              sections={sections}
+              keyExtractor={(row) => row.map((g) => g.id).join('|')}
+              renderSectionHeader={({ section }) => (
+                <Stack gap="xs" padding="sm">
+                  <Text size="body" color="foreground" script={script} heading>
+                    {section.title}
+                  </Text>
+                  <Text size="label" color="foreground.2" script={script} numeric>
+                    {`${t('browse.count')}: ${String(section.count)}`}
+                  </Text>
+                </Stack>
+              )}
+              renderItem={({ item: row, index, section }) => (
+                <Appear index={(rowsBefore.get(section.title) ?? 0) + index}>
+                  <Row gap="sm" align="start">
+                    {row.map((garment) => (
+                      <GarmentCell
+                        key={garment.id}
+                        garment={garment}
+                        photoSize={photoSize}
+                        uri={images.uri(garment.id)}
+                        label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
+                          garment.color.name,
+                          garment.color.hex,
+                          colorOf(garment.color),
+                        )}`}
+                        script={script}
+                        onPress={() => {
+                          open(garment);
+                        }}
+                      />
+                    ))}
+                    {/*
+                      A ROW OF ONE STILL OCCUPIES TWO COLUMNS. Without this the last cell of an odd
+                      section stretches to full width and reads as a different, larger kind of thing
+                      — which is the single-garment state (criterion 4) arriving by accident in the
+                      middle of a large wardrobe.
+                    */}
+                    {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
+                  </Row>
+                </Appear>
+              )}
+              ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+              SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+              scrollEnabled={false}
+              initialNumToRender={4}
+              windowSize={5}
+              removeClippedSubviews
+            />
+          </Arrival>
         </>
       )}
     </Screen>

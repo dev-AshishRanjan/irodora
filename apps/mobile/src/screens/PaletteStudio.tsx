@@ -44,6 +44,8 @@ import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
+  Appear,
+  Arrival,
   Button,
   Card,
   Chip,
@@ -554,47 +556,53 @@ export function PaletteStudio({
               {t('studio.none')}
             </Text>
           ) : (
-            stored.map((p) => (
-              <View key={p.id} style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-                <Text size="label" color="foreground" script={script}>
-                  {p.nameEn}
-                </Text>
-                <Row gap="sm" wrap>
-                  <Button
-                    label={`${t('studio.open')} — ${p.nameEn}`}
-                    variant="secondary"
-                    onPress={() => {
-                      setId(p.id);
-                      setDraft(draftFrom(p.members, p.nameEn));
-                      setSaved(false);
-                    }}
-                    script={script}
-                  />
-                </Row>
-                {/*
-                  Deletable, because the alternative is a record the person cannot get rid of
-                  on a device they own — and with no server there is no other way to. On its
-                  own line for the reason the member's Remove is: a delete beside an open, both
-                  secondary and both the same size, is a difference only the label carries.
-                */}
-                <Row gap="sm" wrap>
-                  <Button
-                    label={`${t('studio.delete')} — ${p.nameEn}`}
-                    variant="secondary"
-                    onPress={() => {
-                      store.deletePalette(p.id, Date.now());
-                      setStored(store.listPalettes());
-                      if (p.id === id) {
-                        setId(uuidv7());
-                        setDraft(EMPTY_DRAFT);
-                      }
-                      setSaved(false);
-                    }}
-                    script={script}
-                  />
-                </Row>
-              </View>
-            ))
+            /* A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the saved palettes, in order. */
+            <Arrival>
+              {stored.map((p, i) => (
+                <Appear key={p.id} index={i}>
+                  <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
+                    <Text size="label" color="foreground" script={script}>
+                      {p.nameEn}
+                    </Text>
+                    <Row gap="sm" wrap>
+                      <Button
+                        label={`${t('studio.open')} — ${p.nameEn}`}
+                        variant="secondary"
+                        onPress={() => {
+                          setId(p.id);
+                          setDraft(draftFrom(p.members, p.nameEn));
+                          setSaved(false);
+                        }}
+                        script={script}
+                      />
+                    </Row>
+                    {/*
+                      Deletable, because the alternative is a record the person cannot get rid of
+                      on a device they own — and with no server there is no other way to. On its
+                      own line for the reason the member's Remove is: a delete beside an open,
+                      both secondary and both the same size, is a difference only the label
+                      carries.
+                    */}
+                    <Row gap="sm" wrap>
+                      <Button
+                        label={`${t('studio.delete')} — ${p.nameEn}`}
+                        variant="secondary"
+                        onPress={() => {
+                          store.deletePalette(p.id, Date.now());
+                          setStored(store.listPalettes());
+                          if (p.id === id) {
+                            setId(uuidv7());
+                            setDraft(EMPTY_DRAFT);
+                          }
+                          setSaved(false);
+                        }}
+                        script={script}
+                      />
+                    </Row>
+                  </View>
+                </Appear>
+              ))}
+            </Arrival>
           )}
           <Button
             label={t('studio.new')}

@@ -22,7 +22,19 @@
  * by a test that never renders anything. This file formats and labels.
  */
 
-import { Card, EmptyState, Pair, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import {
+  Appear,
+  Arrival,
+  Card,
+  EmptyState,
+  Pair,
+  Row,
+  Screen,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+} from '@irodora/ui';
 import { View } from 'react-native';
 
 import {
@@ -280,39 +292,51 @@ export function Contemporary({
         </Card>
       )}
 
-      {editorial.map((item, i) => (
-        <Editorial key={`editorial-${String(i)}`} item={item} />
-      ))}
+      {/*
+        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the editorial equivalents, then the computed
+        ones, one sequence of records in reading order.
+      */}
+      <Arrival>
+        {editorial.map((item, i) => (
+          <Appear key={`editorial-${String(i)}`} index={i}>
+            <Editorial item={item} />
+          </Appear>
+        ))}
 
-      {nothingNear ? (
-        /*
-          NOTHING WITHIN THE CEILING IS AN ANSWER. The reference set is 28 colours wide, so a
-          colour can genuinely have no near neighbour in it — and offering the least distant
-          thing with a number beside it is how a product ends up asserting a correspondence it
-          cannot stand behind.
-        */
-        <Surface
-          /* surface-not-card: a refusal and the threshold it was measured against; a heading would name a section that is one sentence long. */
-          level="1"
-          padding="md"
-        >
-          <Stack gap="xs">
-            <Text size="body" color="foreground" script={script}>
-              {t('contemporary.none')}
-            </Text>
-            <Row gap="sm" align="baseline">
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('contemporary.noneHint')}
+        {nothingNear ? (
+          /*
+            NOTHING WITHIN THE CEILING IS AN ANSWER. The reference set is 28 colours wide, so a
+            colour can genuinely have no near neighbour in it — and offering the least distant
+            thing with a number beside it is how a product ends up asserting a correspondence it
+            cannot stand behind.
+          */
+          <Surface
+            /* surface-not-card: a refusal and the threshold it was measured against; a heading would name a section that is one sentence long. */
+            level="1"
+            padding="md"
+          >
+            <Stack gap="xs">
+              <Text size="body" color="foreground" script={script}>
+                {t('contemporary.none')}
               </Text>
-              <Text size="caption" color="foreground.2" numeric>
-                {EQUIVALENT_CEILING.toFixed(2)}
-              </Text>
-            </Row>
-          </Stack>
-        </Surface>
-      ) : (
-        computed.map((item, i) => <Computed key={`computed-${String(i)}`} item={item} />)
-      )}
+              <Row gap="sm" align="baseline">
+                <Text size="caption" color="foreground.2" script={script}>
+                  {t('contemporary.noneHint')}
+                </Text>
+                <Text size="caption" color="foreground.2" numeric>
+                  {EQUIVALENT_CEILING.toFixed(2)}
+                </Text>
+              </Row>
+            </Stack>
+          </Surface>
+        ) : (
+          computed.map((item, i) => (
+            <Appear key={`computed-${String(i)}`} index={editorial.length + i}>
+              <Computed item={item} />
+            </Appear>
+          ))
+        )}
+      </Arrival>
     </Screen>
   );
 }

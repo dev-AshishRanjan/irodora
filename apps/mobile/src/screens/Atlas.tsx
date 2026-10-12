@@ -43,9 +43,10 @@ import { FlatList, Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Appear,
+  Arrival,
   Button,
-  EmptyState,
   ChoiceGroup,
+  EmptyState,
   Row,
   Screen,
   SearchField,
@@ -498,57 +499,64 @@ export function Atlas({
       scroll in, which is why the list carries `flex: 1` rather than inheriting a size.
     */
     <Screen title={t('atlas.title')} script={script} scroll={false} gap="md">
-      <FlatList
-        data={shown}
-        keyExtractor={(item) => item.entry.slug}
-        ListHeaderComponent={header}
-        /*
-          THE EDITORIAL RHYTHM, and the two steps whose exemption named this feature.
-
-          IT WAS TWO INTERVALS AND IS NOW ONE. `xl5` (96) separated the CONTROLS from the WORK
-          — a break rather than a gap — and `xl4` (56) separated one entry from the next. F-227
-          replaced the scale with the mockups' own (ADR-0103), whose top step is 48, and both
-          snapped onto it: the break and the gap are the same size until `05` is built to its
-          mockup (F-246), which is where this screen's rhythm comes from.
-        */
-        ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xxl }}
-        ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xxl }} />}
-        renderItem={({ item, index }) => (
+      {/*
+        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the entries the first frame draws stagger in;
+        an entry scrolled into view, or re-mounted by the list's windowing, is simply there.
+        The scope draws no view, so the list's `flex: 1` chain is untouched.
+      */}
+      <Arrival>
+        <FlatList
+          data={shown}
+          keyExtractor={(item) => item.entry.slug}
+          ListHeaderComponent={header}
           /*
-            THE ENTRANCE (F-144). Each entry fades and rises, staggered behind the one above it
-            for the first few rows and then together — 120 rows staggered individually would
-            take seven seconds, which is a loading screen rather than an entrance.
+            THE EDITORIAL RHYTHM, and the two steps whose exemption named this feature.
 
-            `Appear` WRAPS the entry rather than animating it. The colour itself is never
-            interpolated: the wrapper's opacity moves and the sample underneath is either drawn
-            or not. A transition applied to the `Swatch` would cross two colours the engine
-            never produced, and `verify-motion` rejects exactly that shape.
+            IT WAS TWO INTERVALS AND IS NOW ONE. `xl5` (96) separated the CONTROLS from the WORK
+            — a break rather than a gap — and `xl4` (56) separated one entry from the next. F-227
+            replaced the scale with the mockups' own (ADR-0103), whose top step is 48, and both
+            snapped onto it: the break and the gap are the same size until `05` is built to its
+            mockup (F-246), which is where this screen's rhythm comes from.
           */
-          <Appear index={index}>
-            <AtlasEntry
-              item={item}
-              locale={locale}
-              script={script}
-              t={t}
-              onSelect={() => {
-                onSelect?.(item.entry.slug);
-              }}
-            />
-          </Appear>
-        )}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: nativeSpacing.xl }}
-        showsVerticalScrollIndicator={false}
-        /*
-          Tuned for the device criterion 4 names rather than left at the defaults. A full-width
-          entry is ~260px tall, so a 640px viewport holds between two and three: rendering ten
-          ahead is roughly four screens of runway, which is what keeps a fast flick from hitting
-          blank cells on a four-year-old mid-range phone.
-        */
-        initialNumToRender={6}
-        windowSize={10}
-        removeClippedSubviews
-      />
+          ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xxl }}
+          ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xxl }} />}
+          renderItem={({ item, index }) => (
+            /*
+              THE ENTRANCE (F-144). Each entry fades and rises, staggered behind the one above it
+              for the first few rows and then together — 120 rows staggered individually would
+              take seven seconds, which is a loading screen rather than an entrance.
+
+              `Appear` WRAPS the entry rather than animating it. The colour itself is never
+              interpolated: the wrapper's opacity moves and the sample underneath is either drawn
+              or not. A transition applied to the `Swatch` would cross two colours the engine
+              never produced, and `verify-motion` rejects exactly that shape.
+            */
+            <Appear index={index}>
+              <AtlasEntry
+                item={item}
+                locale={locale}
+                script={script}
+                t={t}
+                onSelect={() => {
+                  onSelect?.(item.entry.slug);
+                }}
+              />
+            </Appear>
+          )}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: nativeSpacing.xl }}
+          showsVerticalScrollIndicator={false}
+          /*
+            Tuned for the device criterion 4 names rather than left at the defaults. A full-width
+            entry is ~260px tall, so a 640px viewport holds between two and three: rendering ten
+            ahead is roughly four screens of runway, which is what keeps a fast flick from hitting
+            blank cells on a four-year-old mid-range phone.
+          */
+          initialNumToRender={6}
+          windowSize={10}
+          removeClippedSubviews
+        />
+      </Arrival>
     </Screen>
   );
 }

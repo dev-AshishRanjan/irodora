@@ -15,7 +15,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fireEvent, render } from '@testing-library/react-native';
 import { writeFileSync } from 'node:fs';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, SectionList, View } from 'react-native';
 
 /*
  * THE LOCALE THE SUITE RENDERS IN (F-152).
@@ -37,6 +37,8 @@ jest.mock('expo-localization', () => ({
 }));
 
 import {
+  Appear,
+  Arrival,
   EmptyState,
   STATE_TEST_IDS,
   Text,
@@ -100,6 +102,7 @@ import { Shopping, STATES as SHOPPING_STATES } from '../src/screens/Shopping';
 import { Measure, type ReferenceLibrary, STATES as MEASURE_STATES } from '../src/screens/Measure';
 import { parseMeasurement } from '../src/measure';
 import { colorOf } from '../src/wardrobe';
+import { groupByColour } from '../src/wardrobe/browse';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
 import { engineProfile } from '../src/outfit/builder';
@@ -190,6 +193,12 @@ let drawPalette: {
   readonly colors: ThemeColors;
 } | null = null;
 
+/**
+ * A reader of the LIVE tree, called before `draw` unmounts it (F-266): the arrival registry reads
+ * components — `Arrival` and `Appear` — which the JSON tree does not carry. Null everywhere else.
+ */
+let drawRoot: ((root: ReturnType<typeof render>['UNSAFE_root']) => void) | null = null;
+
 function draw(node: React.JSX.Element, theme: Theme): TestNode {
   const rendered = render(
     <VisionPreviewProvider mode={drawVision}>
@@ -201,6 +210,7 @@ function draw(node: React.JSX.Element, theme: Theme): TestNode {
     </VisionPreviewProvider>,
   );
   const json = rendered.toJSON();
+  drawRoot?.(rendered.UNSAFE_root);
   /*
    * UNMOUNTED BEFORE THE NEXT SUBJECT, and this is not tidiness.
    *
@@ -5213,5 +5223,210 @@ describe('the conformance sweep, with evidence (F-204)', () => {
       SWEEP_THEMES.length * SWEEP_LOCALES.length * SWEEP_MOTION.length,
     );
     expect(evidence.subjects).toBe(SCREENS.length);
+  });
+});
+
+/**
+ * EVERY LIST SURFACE ARRIVES ONCE (F-266, ADR-0133 §7, E-199).
+ *
+ * A route whose governing mockup's main content is a sequence of numbered records draws those
+ * records inside ONE `Arrival`, each in an `Appear` indexed in reading order, 0…n−1: the rows the
+ * first frame draws stagger in, and a row scrolled, windowed or re-keyed in later is simply there.
+ * Read off the live tree each subject renders — components, which the JSON tree does not carry —
+ * through `drawRoot`; time is never advanced. A rebuilt surface (F-246 onward) keeps its entry here.
+ * **The limit, stated:** a NEW list surface added without one is not detected.
+ */
+describe('every list surface arrives once (F-266)', () => {
+  type Root = ReturnType<typeof render>['UNSAFE_root'];
+  interface Arrived {
+    readonly scopes: number;
+    readonly indices: readonly number[];
+  }
+  /** Each surface: the subject that draws it with records, its mockup, and the records it draws. */
+  const LIST_SURFACES = [
+    { subject: 'screens/Atlas', mockup: '05', records: ['05.card-1', '05.card-4'] },
+    {
+      subject: 'screens/Finder (with a phrase answer)',
+      mockup: '09',
+      records: ['09.results.result-1', '09.results.result-4'],
+    },
+    { subject: 'screens/Combinations', mockup: '19', records: ['19.rows.row-1', '19.rows.row-5'] },
+    {
+      subject: 'screens/Combinations (a colour, not an entry)',
+      mockup: '24',
+      records: ['24.rows.row-1', '24.rows.row-4'],
+    },
+  ] as const;
+
+  const arrivalOf = (root: Root): Arrived => {
+    const scopes = root.findAllByType(Arrival);
+    return {
+      scopes: scopes.length,
+      indices: scopes.flatMap((scope) =>
+        scope.findAllByType(Appear).map((row) => row.props['index'] as number),
+      ),
+    };
+  };
+  /** Everything wrong with how a tree's list arrives; empty when it arrives once, in order. */
+  const findings = (arrived: Arrived): string[] => [
+    ...(arrived.scopes === 1
+      ? []
+      : [`${String(arrived.scopes)} Arrival scopes where a list has one`]),
+    ...(arrived.indices.length >= 2 ? [] : ['fewer than two rows arrive']),
+    ...arrived.indices.flatMap((index, i) =>
+      index === i ? [] : [`row ${String(i)} is indexed ${String(index)}`],
+    ),
+  ];
+  const capture = (drawIt: () => unknown): Arrived => {
+    const read: { arrived: Arrived | null } = { arrived: null };
+    drawRoot = (root) => {
+      read.arrived = arrivalOf(root);
+    };
+    try {
+      drawIt();
+    } finally {
+      drawRoot = null;
+    }
+    if (read.arrived === null) throw new Error('nothing was drawn');
+    return read.arrived;
+  };
+
+  it.each(LIST_SURFACES.map((s) => [s.subject, s] as const))(
+    '%s arrives once, its records in reading order',
+    (_name, surface) => {
+      const subject = SCREENS.find((s) => s.name === surface.subject);
+      if (subject === undefined) throw new Error(`${surface.subject} is not registered`);
+      const state = REQUIRED_STATES[subject.kind][0];
+      if (state === undefined) throw new Error(`${subject.kind} has no states`);
+      expect(findings(capture(() => subject.render(state, 'dark')))).toStrictEqual([]);
+    },
+  );
+
+  /*
+   * TWO SURFACES WHOSE REGISTRY SUBJECTS DRAW ONE RECORD: a wardrobe of three garments makes one
+   * row, and the near colour has one equivalent. So each is drawn here with several, or the reading
+   * order this checks would be one index long.
+   *
+   * THE WARDROBE TWICE. Under jest its `SectionList` renders its first four items, and a section's
+   * header is one of them, so a second section's rows are never drawn here. Its order is read
+   * within one family of several garments. Its offset across sections — a row counts the rows of
+   * the sections above it — is read off the list's own `renderItem`, called for the second
+   * section's first row: the code that runs on a device, without relying on what jest windows in.
+   */
+  const corpusWardrobe = allEntries().map((e, i) =>
+    outfitGarment(`arrive-${String(i)}`, 'jumper', e.entry.slug),
+  );
+  const wardrobe = (garments: readonly StoredGarment[]) => (
+    <Wardrobe
+      store={fakeBrowseStore(garments)}
+      onAddGarment={() => undefined}
+      onOpenOutfit={() => undefined}
+      onOpenShopping={() => undefined}
+    />
+  );
+
+  it('the Wardrobe’s rows arrive once, in reading order (11)', () => {
+    const family = groupByColour(corpusWardrobe).find((g) => g.garments.length >= 4);
+    expect(family).toBeDefined();
+    if (family === undefined) return;
+    const arrived = capture(() => draw(wardrobe(family.garments.slice(0, 4)), 'dark'));
+    expect(findings(arrived)).toStrictEqual([]);
+  });
+
+  it('counts the rows of the sections above a Wardrobe row, so its order runs across them (11)', () => {
+    const read: { first: number; index: unknown } = { first: NaN, index: undefined };
+    drawRoot = (root) => {
+      const list = root.findByType(SectionList);
+      const sections = list.props['sections'] as readonly {
+        readonly title: string;
+        readonly data: readonly unknown[];
+      }[];
+      const [first, second] = sections;
+      if (first === undefined || second === undefined) return;
+      const renderItem = list.props['renderItem'] as (info: unknown) => React.ReactElement<{
+        readonly index?: number;
+      }>;
+      read.first = first.data.length;
+      read.index = renderItem({ item: second.data[0], index: 0, section: second }).props.index;
+    };
+    try {
+      draw(wardrobe(corpusWardrobe.slice(0, 12)), 'dark');
+    } finally {
+      drawRoot = null;
+    }
+    expect(read.first).toBeGreaterThan(0);
+    expect(read.index).toBe(read.first);
+    // DECOY: the row's index within its own section is 0, which is not its place in the list.
+    expect(read.index).not.toBe(0);
+  });
+
+  it('Contemporary’s equivalents arrive once, in reading order (21)', () => {
+    const several = allEntries().find(
+      (e) => equivalentsFor(e).membership.length === 0 && equivalentsFor(e).computed.length >= 2,
+    );
+    expect(several).toBeDefined();
+    if (several === undefined) return;
+    const arrived = capture(() => draw(<Contemporary slug={several.entry.slug} />, 'dark'));
+    expect(findings(arrived)).toStrictEqual([]);
+  });
+
+  it('Palette Studio’s saved palettes arrive once, in order', () => {
+    const store = fakeStore();
+    let n = 0;
+    for (const id of [
+      '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4e',
+      '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4f',
+    ])
+      store.savePalette(
+        toStoreWrite(DRAFT, { id, today: '2026-10-12' }, () => `color-${String(n++)}`),
+        1000,
+      );
+    expect(findings(capture(() => draw(<PaletteStudio store={store} />, 'dark')))).toStrictEqual(
+      [],
+    );
+  });
+
+  it('DECOY — a list whose rows enter without an Arrival is named', () => {
+    const arrived = capture(() =>
+      draw(
+        <View>
+          {['one', 'two'].map((row, index) => (
+            <Appear key={row} index={index}>
+              <Text size="body" color="foreground">
+                {row}
+              </Text>
+            </Appear>
+          ))}
+        </View>,
+        'dark',
+      ),
+    );
+    expect(findings(arrived)).toContain('0 Arrival scopes where a list has one');
+  });
+
+  it('cites records its governing mockup draws', () => {
+    for (const surface of [
+      ...LIST_SURFACES,
+      {
+        subject: 'screens/Wardrobe',
+        mockup: '11',
+        records: ['11.grid.garment-1', '11.grid.garment-6'],
+      },
+      {
+        subject: 'screens/Contemporary',
+        mockup: '21',
+        records: ['21.results.row-1', '21.results.row-5'],
+      },
+      { subject: 'screens/PaletteStudio', mockup: '10', records: ['10.palette-1', '10.palette-2'] },
+    ]) {
+      const inventory = JSON.parse(
+        readFileSync(
+          join(__dirname, '..', '..', '..', 'mockups', 'inventory', `${surface.mockup}.json`),
+          'utf8',
+        ),
+      ) as { readonly elements: readonly { readonly id: string }[] };
+      const ids = new Set(inventory.elements.map((e) => e.id));
+      for (const record of surface.records) expect(ids.has(record)).toBe(true);
+    }
   });
 });

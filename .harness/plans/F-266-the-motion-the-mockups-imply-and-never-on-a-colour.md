@@ -721,6 +721,27 @@ animated portal, worklet reach and the progress line.
   - a theme change after arrival moves nothing.
 - **The ui registry** gains `Arrival (a list arriving)`: three `Appear` rows in the scope, and the rules pass on it in every sweep.
 - **Tier 1, each exit 0:** format, typecheck, lint, `a11y-scope` (88 components, all reached), affected tests (18 tasks; ui 1323, mobile 1321). |
-| 9 | | |
+| 9 | this commit | **Every list surface arrives once.** Each list wraps its records in one `Arrival`, each record in an `Appear` indexed in reading order:
+- the Atlas's `FlatList` (05);
+- Finder's results (09);
+- the Wardrobe's `SectionList` rows (11), whose index counts the rows of the sections above, through a memoised `rowsBefore` keyed by section title;
+- Combinations' curated cards, then the leading combinations, then the rest (19, 24);
+- Contemporary's editorial, then computed equivalents (21);
+- Palette Studio's saved palettes (10).
+
+The scopes draw no view, so no flex chain or inset moved; the inset census held unchanged. Comment blocks Prettier left at a stale indentation after the re-nesting were realigned (a check against HEAD named the nine that the edit had moved).
+
+**The registry, in `screens.test`, reusing its fixtures.** `draw` gains `drawRoot`, a reader of the live tree before unmount, because the JSON tree carries no components. `findings` names a list with other than one `Arrival`, fewer than two rows, or a row out of order.
+- Per surface: Atlas, Finder (phrase answer), Combinations as an entry (19) and as a colour (24).
+- Contemporary with ≥ 2 computed equivalents, chosen from the corpus, and Palette Studio with two saved palettes, written through `toStoreWrite`.
+- **The Wardrobe twice:**
+  - its order within one family of four garments;
+  - its cross-section offset, read by calling the list's own `renderItem` for the second section's first row (DECOY: the in-section index, 0).
+
+  Under jest its `SectionList` renders four items with headers among them, so a second section's rows never draw. Two throwaway probes found this and the one-row registry fixtures; both probes were removed.
+- DECOY: rows entering without an `Arrival` are named.
+- The cited records exist in `05`, `09`, `10`, `11`, `19`, `21` and `24`.
+
+**Tier 1, each exit 0:** format, typecheck, lint, affected tests (17 tasks; mobile 1331). |
 | 10 | | |
 | review | | |

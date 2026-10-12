@@ -33,7 +33,18 @@
  * checked".
  */
 
-import { Button, Card, EmptyState, Row, Screen, Stack, Swatch, Text } from '@irodora/ui';
+import {
+  Appear,
+  Arrival,
+  Button,
+  Card,
+  EmptyState,
+  Row,
+  Screen,
+  Stack,
+  Swatch,
+  Text,
+} from '@irodora/ui';
 import type { HarmonyColor } from '@irodora/color-harmony';
 import { displayFromOklch } from '../engine';
 import { COMBINATIONS_SHOWN, combinationsFor, type Combination } from '../combinations';
@@ -434,112 +445,124 @@ export function Combinations({
         </Text>
       ) : null}
 
-      {curated.length === 0 ? null : (
-        <Stack gap="sm">
-          <Text size="label" color="foreground.2" script={script}>
-            {t('combos.curatedWhat')}
-          </Text>
-          {curated.map(({ combination, role }) => (
-            <Card
-              key={combination.slug}
-              level="1"
-              header={
-                <Stack gap="xs">
-                  <Text size="body" color="foreground" script={script} heading>
-                    {`${combination.name.ja} ${combination.name.en}`}
-                  </Text>
-                  <Row gap="sm">
-                    {/*
-                      CURATED, NEVER MERELY UNLABELLED. The generated cards below say
-                      "Generated"; a curated one that said nothing would be told apart only by
-                      where it sits on the screen, which is not a distinction a person can rely
-                      on (F-194's note, one release on).
-                    */}
-                    <Text size="caption" color="foreground.2" script={script}>
-                      {t('combos.curated')}
-                    </Text>
-                    <Text size="caption" color="foreground.2" script={script}>
-                      {t(`combos.intent.${combination.intent}` as MessageKey)}
-                    </Text>
-                    {/*
-                      WHICH PART THIS COLOUR PLAYS. A person arrived here holding one colour,
-                      and "this is the lead" and "this is one of the companions" are different
-                      things to know before looking at the rest.
-                    */}
-                    {role === 'lead' ? (
-                      <Text size="caption" color="foreground.2" script={script}>
-                        {t('combos.lead')}
+      {/*
+        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the curated cards, then the leading
+        combinations, then the rest, one sequence of records counted in reading order. The scope
+        draws no view, so the screen's gaps between them are untouched.
+      */}
+      <Arrival>
+        {curated.length === 0 ? null : (
+          <Stack gap="sm">
+            <Text size="label" color="foreground.2" script={script}>
+              {t('combos.curatedWhat')}
+            </Text>
+            {curated.map(({ combination, role }, i) => (
+              <Appear key={combination.slug} index={i}>
+                <Card
+                  level="1"
+                  header={
+                    <Stack gap="xs">
+                      <Text size="body" color="foreground" script={script} heading>
+                        {`${combination.name.ja} ${combination.name.en}`}
                       </Text>
-                    ) : null}
+                      <Row gap="sm">
+                        {/*
+                          CURATED, NEVER MERELY UNLABELLED. The generated cards below say
+                          "Generated"; a curated one that said nothing would be told apart only by
+                          where it sits on the screen, which is not a distinction a person can rely
+                          on (F-194's note, one release on).
+                        */}
+                        <Text size="caption" color="foreground.2" script={script}>
+                          {t('combos.curated')}
+                        </Text>
+                        <Text size="caption" color="foreground.2" script={script}>
+                          {t(`combos.intent.${combination.intent}` as MessageKey)}
+                        </Text>
+                        {/*
+                          WHICH PART THIS COLOUR PLAYS. A person arrived here holding one colour,
+                          and "this is the lead" and "this is one of the companions" are different
+                          things to know before looking at the rest.
+                        */}
+                        {role === 'lead' ? (
+                          <Text size="caption" color="foreground.2" script={script}>
+                            {t('combos.lead')}
+                          </Text>
+                        ) : null}
+                      </Row>
+                    </Stack>
+                  }
+                >
+                  <Row gap="sm" wrap>
+                    {combination.colors.map((m) => {
+                      const member = entryBySlug(m.slug);
+                      return member === null ? null : (
+                        <Swatch
+                          caption="name"
+                          key={m.slug}
+                          name={member.entry.name.en}
+                          hex={member.derived.hex}
+                          color={colorFor(member.entry)}
+                          size={COMPANION}
+                          script={script}
+                          {...(onOpenColour === undefined
+                            ? {}
+                            : {
+                                onPress: () => {
+                                  onOpenColour(m.slug);
+                                },
+                              })}
+                        />
+                      );
+                    })}
                   </Row>
-                </Stack>
-              }
-            >
-              <Row gap="sm" wrap>
-                {combination.colors.map((m) => {
-                  const member = entryBySlug(m.slug);
-                  return member === null ? null : (
-                    <Swatch
-                      caption="name"
-                      key={m.slug}
-                      name={member.entry.name.en}
-                      hex={member.derived.hex}
-                      color={colorFor(member.entry)}
-                      size={COMPANION}
-                      script={script}
-                      {...(onOpenColour === undefined
-                        ? {}
-                        : {
-                            onPress: () => {
-                              onOpenColour(m.slug);
-                            },
-                          })}
-                    />
-                  );
-                })}
-              </Row>
-            </Card>
-          ))}
-        </Stack>
-      )}
+                </Card>
+              </Appear>
+            ))}
+          </Stack>
+        )}
 
-      {/*
-        FROM RELATIONSHIPS TO GARMENTS (F-195). Placed above the list rather than under it: a
-        person who came here holding a shirt is asking the garment question, and making them
-        scroll past twelve relationships to find it would answer a question they did not ask
-        first.
-      */}
-      {onWearIt === undefined || entry === null ? null : (
-        <Button
-          label={t('wear.open')}
-          variant="secondary"
-          onPress={() => {
-            // Non-null inside this branch — the guard above is what makes "wear it" a corpus
-            // question: `Wear` ranks the corpus for a SLUG, and a free colour has none.
-            onWearIt(entry.entry.slug);
-          }}
-          script={script}
-        />
-      )}
+        {/*
+          FROM RELATIONSHIPS TO GARMENTS (F-195). Placed above the list rather than under it: a
+          person who came here holding a shirt is asking the garment question, and making them
+          scroll past twelve relationships to find it would answer a question they did not ask
+          first.
+        */}
+        {onWearIt === undefined || entry === null ? null : (
+          <Button
+            label={t('wear.open')}
+            variant="secondary"
+            onPress={() => {
+              // Non-null inside this branch — the guard above is what makes "wear it" a corpus
+              // question: `Wear` ranks the corpus for a SLUG, and a free colour has none.
+              onWearIt(entry.entry.slug);
+            }}
+            script={script}
+          />
+        )}
 
-      {leading.map((c) => (
-        <One key={c.kind} combination={c} />
-      ))}
+        {leading.map((c, i) => (
+          <Appear key={c.kind} index={curated.length + i}>
+            <One combination={c} />
+          </Appear>
+        ))}
 
-      {/*
-        THE REST, UNDER A HEADING RATHER THAN BEHIND ONE. These change lightness or chroma
-        rather than hue, so they are variations on the colour rather than companions to it —
-        which is why they come second, and is not a reason to withhold them. A tonal ramp is
-        genuinely what somebody wants for a second garment in the same family.
-      */}
-      {rest.length === 0 ? null : (
-        <Text size="label" color="foreground.2" script={script} heading>
-          {t('combos.more')}
-        </Text>
-      )}
-      {rest.map((c) => (
-        <One key={c.kind} combination={c} />
-      ))}
+        {/*
+          THE REST, UNDER A HEADING RATHER THAN BEHIND ONE. These change lightness or chroma
+          rather than hue, so they are variations on the colour rather than companions to it —
+          which is why they come second, and is not a reason to withhold them. A tonal ramp is
+          genuinely what somebody wants for a second garment in the same family.
+        */}
+        {rest.length === 0 ? null : (
+          <Text size="label" color="foreground.2" script={script} heading>
+            {t('combos.more')}
+          </Text>
+        )}
+        {rest.map((c, i) => (
+          <Appear key={c.kind} index={curated.length + leading.length + i}>
+            <One combination={c} />
+          </Appear>
+        ))}
+      </Arrival>
     </Screen>
   );
 }

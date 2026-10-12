@@ -34,6 +34,8 @@ import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
+  Appear,
+  Arrival,
   Card,
   EmptyState,
   Row,
@@ -187,15 +189,22 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                 <Text size="caption" color="foreground.2" script={script} numeric>
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
                 </Text>
-                {shown.map((entry, i) => (
-                  <ResultRow
-                    key={entry.entry.slug}
-                    entry={entry}
-                    {...(result.distances === undefined
-                      ? {}
-                      : { distance: result.distances[i] ?? 0 })}
-                  />
-                ))}
+                {/*
+                  A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the first answer's rows stagger in; a
+                  row a later keystroke brings is simply there, so typing does not replay it.
+                */}
+                <Arrival>
+                  {shown.map((entry, i) => (
+                    <Appear key={entry.entry.slug} index={i}>
+                      <ResultRow
+                        entry={entry}
+                        {...(result.distances === undefined
+                          ? {}
+                          : { distance: result.distances[i] ?? 0 })}
+                      />
+                    </Appear>
+                  ))}
+                </Arrival>
               </View>
             </Surface>
           )}
