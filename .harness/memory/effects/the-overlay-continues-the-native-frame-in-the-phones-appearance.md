@@ -28,3 +28,8 @@ image there, or this one anywhere else, is refused.
 ## F-231's review (2026-10-08)
 
 The sequence first ran in an effect keyed on `timing`, which `useMotion` rebuilds every render: each of the sequence's own phase changes re-ran it, and its cleanup cancelled the step due next. The overlay faded out and then looped between its last two steps forever, never calling `onDone`. One `act()` that held every update until all the timers had fired hid it. The sequence is now scheduled in one run keyed on `shown` and `reduced`, and the test steps each timer in its own `act()`. Under reduced motion the composition is held still for the beat, never flashed. Which image the overlay imports is `verify-app-glyphs`' to hold: under jest every image import is the same stub.
+
+## F-266: the ambience
+
+The glow is dark while the mark travels and blooms from the mark's grid as it arrives; the wave
+rises with the mark; the line heads for each next step. No drift and no loop (ADR-0133 §2).

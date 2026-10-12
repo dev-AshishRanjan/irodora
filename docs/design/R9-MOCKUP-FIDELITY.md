@@ -639,7 +639,7 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `12` | duplicate check with ΔE00 | `findDuplicates` | exists |
 | `13` | overall and five components; capsule *"5 → 12"* | `scoreOutfit` (FR-32, [ADR-0073](../adr/0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md)); `solveCapsule` | exists |
 | `13` | *"Master Harmony"* | `countsAsOutfit(overall)` — whether the outfit counts toward the valid outfits, with the threshold (FR-42, ADR-0124) | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
-| `14` | the splash's progress line | `launchProgress` — how much of the launch's rise and hold has elapsed, at each step it reaches: 0, 0.5, 1. Nothing loads after the first frame, so a loading percentage would be a number nobody computed; `14`'s ~80 % fill is sample content (E1) ([ADR-0127](../adr/0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md)) | `F-231`; `F-266` interpolates |
+| `14` | the splash's progress line | `launchProgress` — how much of the launch's rise and hold has elapsed, at each step it reaches: 0, 0.5, 1. Nothing loads after the first frame, so a loading percentage would be a number nobody computed; `14`'s ~80 % fill is sample content (E1) ([ADR-0127](../adr/0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md)) | `F-231`; `F-266` ✓ interpolates ([ADR-0133](../adr/0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md) §2) |
 | `15` | learned weights | preference weights | exists |
 | `17` `23` | four dimensions, radar, trials per dimension | the profile's ranges and agreement ([ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md)) | exists |
 | `23` | seasonal label — a season and a modifier | `summariseSeason` over the published seasonal-summary rule ([ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)) | `F-223` |
@@ -650,7 +650,7 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `22` | *"Gaps Addressed"* | `gapsAddressedBy` — the regions `gaps()` reports before the candidate and not after, by region (ADR-0124) | `F-222` |
 | `22` | *"Wardrobe Pairings"* | `wardrobePairings` — the owned garments forming a valid outfit with the candidate (ADR-0124) | `F-222` |
 | `27` | the refusal reason and its threshold | `refusalText(refusalOf(capture))`: the engine's first failed check in its fix-first order (`QUALITY_CHECKS`), that check's threshold read from `QUALITY_THRESHOLDS` through `QUALITY_CHECK_RULES`, and its instruction. A capture is refused only when the engine calls it poor (ADR-0128 D1), and no confidence is printed (D10) | `F-236` ✓ |
-| `27` | the working ring's fill | `pipelineProgress`: the share of the capture's steps done. The capture is read in one synchronous pass, so the ring shows 0 while the first step runs; `27`'s ~60 % is sample content (E1, as `14`'s line) | `F-236` ✓; `F-266` animates |
+| `27` | the working ring's fill | `pipelineProgress`: the share of the capture's steps done. The capture is read in one synchronous pass, so the ring shows 0 while the first step runs; `27`'s ~60 % is sample content (E1, as `14`'s line) | `F-236` ✓; `F-266` ✓ moves it on a change of value (ADR-0133 §5) |
 
 ---
 

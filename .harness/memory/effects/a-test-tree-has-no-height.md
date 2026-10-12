@@ -46,3 +46,8 @@ height. F-204's sweep already said *"it cannot see a layout that is cramped or u
 was righter than it knew, one feature before this was found by a person opening the app.
 
 [[evidence-needs-a-count-or-it-is-just-a-word]]
+
+## F-266: `Appear` inside an `Arrival`
+
+`Appear` decides once, at mount, whether it enters when it sits in an `Arrival` scope. The scope
+is a context and draws no view, so wrapping a `FlatList` in it leaves the flex chain whole.

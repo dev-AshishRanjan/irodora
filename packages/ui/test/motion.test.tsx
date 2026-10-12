@@ -11,10 +11,10 @@
  * and a test that does that is flaky by construction. The end state and the reduced state are
  * deterministic; those are the two that get assertions.
  *
- * **What no test can see at all:** whether an animated style animates a COLOUR. An
- * `Animated.View` with an interpolated `backgroundColor` renders to a concrete resolved value,
- * indistinguishable from a static one. That is `scripts/verify-motion.mjs`'s job, and the reason
- * it is a source scan rather than a rendered check.
+ * **What a test can see after all (F-266):** which keys a worklet animates. The rendered value of
+ * an interpolated colour looks like a static one, but reanimated mirrors the worklet's return into
+ * `jestAnimatedStyle`, and `animatedStyleOf` reads it alone — so a test can name a colour among the
+ * keys. `scripts/verify-motion.mjs` still scans the source, which a test only reaches where it renders.
  */
 
 import { act, render } from '@testing-library/react-native';

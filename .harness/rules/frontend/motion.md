@@ -47,6 +47,21 @@ quantity. The number itself is the reading, and a reading is either taken or it 
 
 ---
 
+## A value moves when it changes; a list arrives once (F-266, ADR-0133)
+
+- **A value moves when it changes, never when it mounts.** `useValueMotion` mounts at the value and
+  moves to each new one over a step with `inOut`. A reading grown from 0 on every visit draws
+  values nobody computed.
+- **A length may move.** A stroke whose length is the reading moves its `strokeDashoffset`
+  (`motion.animatableLength`) — as an animated prop, never a style, and never its colour.
+- **A list arrives once.** Wrap a list's records in one `Arrival`: rows stagger within its window
+  and below row 20, and a row scrolled or re-keyed in later is simply there. Register the surface
+  in `screens.test`'s arrival registry.
+- **A dependency can animate a colour for you.** Read what its worklets return, and pin the audit
+  to the version (`motion-dependencies.test`).
+
+---
+
 ## `prefers-reduced-motion` is honoured completely
 
 ```css
@@ -91,7 +106,8 @@ Ease-out for entering, ease-in for exiting. Springs only where a physical metaph
 ## Performance
 
 - **Compositor properties only:** `transform` and `opacity`. Animating `width`, `height`,
-  `top` or `left` forces layout on every frame.
+  `top` or `left` forces layout on every frame. The one admitted exception is a stroke's dash
+  offset (F-266): it lays nothing out, but it re-paints its SVG each frame.
 - No animation on a list of more than ~20 items.
 - No `requestAnimationFrame` loop that is not cancelled on unmount.
 - No parallax. No scroll-jacking.

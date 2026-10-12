@@ -59,3 +59,10 @@ no enforcement at all.
 
 Related: [[a-mock-that-supplies-a-missing-export-hides-that-it-is-missing]],
 [[an-unreached-token-is-unfinished-work]]
+
+## F-266: what the gate learned to read
+
+Animated props (against `animatable ∪ animatableLength`), a worklet it cannot read — reported, never
+skipped — `interpolateColor`, and `Animated` from `react-native`. A colour in an animation config is
+allowed only when that config disables itself. The plants are journalled. What a dependency's worklet
+returns is `motion-dependencies.test`'s (E-198).

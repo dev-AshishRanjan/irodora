@@ -50,3 +50,9 @@ which third of it has a test behind it.
 
 Related: [[the-page-inset-is-what-stops-a-colour-bleeding]],
 [[a-new-engine-can-make-an-old-gate-blind]]
+
+## F-266: every new motion asserted under the setting
+
+`useValueMotion`, `Arrival`, the launch's glow and wave, and the sheet's config are each asserted
+under reduced motion, and a move already running lands when the setting switches mid-session.
+gorhom's and HeroUI's own reduced paths remain device-only.

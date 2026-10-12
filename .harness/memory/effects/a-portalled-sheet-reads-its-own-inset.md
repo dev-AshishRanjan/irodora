@@ -27,3 +27,8 @@ The sheet is portalled, and while two renders are mounted the portal holds both:
 one test finds the first sheet before its own. `sheet.test` opens one sheet per test.
 
 Related: [[turning-off-a-header-turned-off-the-only-thing-insetting-anything]]
+
+## F-266: the sheet settles on the scale
+
+`SHEET_MOTION` (`view`, `out`) replaces F-177's spring: gorhom routes a timing config to
+`withTiming`. A flick's velocity is no longer carried, and the exit is as long as the entrance.

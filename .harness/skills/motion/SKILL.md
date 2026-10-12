@@ -105,7 +105,10 @@ right.
 ## Before you finish
 
 - [ ] Nothing animates a colour
-- [ ] `transform` and `opacity` only
+- [ ] `transform` and `opacity` only — or a stroke's `strokeDashoffset` as an animated prop,
+      where the length is the reading (ADR-0133 §4)
+- [ ] A value moves when it changes (`useValueMotion`), never on mount; a figure is replaced
+- [ ] A list's records sit in one `Arrival`, and the surface is in the arrival registry
 - [ ] Duration matches the interaction class; exits are faster
 - [ ] `transform-origin` set to the source where an element expands from a control
 - [ ] `prefers-reduced-motion` collapses it to nothing

@@ -19,3 +19,8 @@ this product may. The value is length — never colour — so the line is also n
 
 `launchProgress`: how much of the launch's rise and hold has elapsed, at each step (0, 0.5, 1). Nothing
 loads after the first frame, so a loading percentage would be invented (ADR-0127 §6, R9 §8).
+
+## F-266: and it moves
+
+The `scaleX` moves through `useValueMotion`; its static parts stay in a style array, so the
+worklet returns the transform alone.

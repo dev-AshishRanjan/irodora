@@ -20,11 +20,11 @@
  * ## Then it becomes 14 (criterion 3, ADR-0127)
  *
  * Over the motion system's `view` step the mark rises — a translation and a scale, never a colour —
- * to where 14's lockup puts it, while 14's composition fades in around it: the glow, "Irodora" and
- * 彩り・色の知性, the subline, the silk wave and the progress line. When it arrives the lockup's own
- * mark is shown and the travelling one goes: the same component, ink and size in the same place, so
- * the swap cannot be seen. A beat later the overlay fades into the app. F-266 adds the ambient
- * motion — the wave's drift, the glow, the line's progress between its steps; the hand-over is here.
+ * to where 14's lockup puts it, while 14's composition fades in around it: "Irodora" and
+ * 彩り・色の知性, the subline, the silk wave (rising into its place) and the progress line (heading
+ * for each next step). When it arrives the lockup's own mark is shown and the travelling one goes:
+ * the same component, ink and size in the same place, so the swap cannot be seen, and the glow blooms
+ * from the mark's grid over the hold. A beat later the overlay fades into the app (F-266, ADR-0133 §2).
  *
  * ## In the phone's appearance, as the native splash is
  *

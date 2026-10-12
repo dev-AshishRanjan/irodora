@@ -743,5 +743,22 @@ The scopes draw no view, so no flex chain or inset moved; the inset census held 
 - The cited records exist in `05`, `09`, `10`, `11`, `19`, `21` and `24`.
 
 **Tier 1, each exit 0:** format, typecheck, lint, affected tests (17 tasks; mobile 1331). |
-| 10 | | |
+| 10 | this commit | **Close-out.**
+- **Effects.** E-197 to E-200, each with its note and index line:
+  - E-197: a length may move where a colour may not;
+  - E-198: a dependency can animate a colour on your behalf;
+  - E-199: a list arrives once;
+  - E-200: a value moves when it changes.
+
+  E-067, E-068, E-113, E-166, E-181, E-182 and E-190 are updated, each with a section in its note; E-113 gains a `to` on `Arrival`.
+- **Documents:**
+  - R9 §8: `14`'s line and `27`'s ring ✓;
+  - DESIGN-SYSTEM.md: *Motion (F-266)*;
+  - `rules/frontend/motion.md`: the value, length, list and dependency rules, and the one compositor exception;
+  - the motion skill's checklist;
+  - `motion.test`'s docblock (a test CAN read which keys a worklet animates);
+  - `launch.tsx`'s header (the glow blooms on arrival; no drift).
+- **Attestations:** both criteria verbatim, `blocks: release`, `outstanding`. The tree half is gated; a device run is what remains.
+- **Downstream notes** on F-243, F-244, F-245, F-246, F-250, F-251, F-252, F-254, F-255, F-259, F-262, F-264, F-265, F-267 and F-268. No F-332 (Amendment 6).
+- **Tier 1, each exit 0:** format, typecheck, lint (claims included), state. Code changed only in comments, so tests are not re-run here; Tier 2 runs all of them next. |
 | review | | |

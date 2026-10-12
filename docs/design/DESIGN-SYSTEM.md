@@ -406,6 +406,25 @@ palette is painting, the device palette included
   mode, and every painted value must be the engine's simulation of the Standard one, with nothing
   else changed.
 
+### Motion (F-266)
+
+Motion is the change a drawn binding defines, on the motion system's own steps and easings, ending
+on the drawn rest state ([ADR-0133](../adr/0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md)).
+
+- **A value moves when it changes, never when it mounts** (`useValueMotion`, `view`, `inOut`). The
+  progress line moves its `scaleX`; the working ring and the coverage dial move a dash (`ArcFill`).
+  A printed figure is replaced at once and never counted.
+- **A length may move where a colour may not.** The manifest admits `strokeDashoffset` as an
+  animated prop (`motion.animatableLength`) beside `opacity` and `transform`, and nothing else.
+- **A list arrives once.** Each list surface wraps its records in one `Arrival`; rows stagger
+  within its window and below row 20, and a row that mounts later is simply there.
+- **The sheet settles** on `view` with `out` (`SHEET_MOTION`); the launch's glow blooms as the mark
+  arrives and its wave rises with it.
+- **Nothing animates a colour**: not our source (`verify-motion`), not what a worklet returns as a
+  test reads it (`animatedStyleOf`), and not a dependency (`motion-dependencies.test`), which is why
+  the Switch jumps.
+- **Reduced motion lands every motion**, asserted per motion.
+
 ---
 
 ## Verification

@@ -21,3 +21,8 @@ The card showed while the photo picker was open, announcing *Analysing Fabric Co
 So the card is the camera's alone, the photo step is gone, and the Open-photo button's loading
 state covers the picker, as it did before F-236. The conversion's separator is each script's own:
 a full-width colon in Japanese (M5).
+
+## F-266: the ring moves only when its value does
+
+Its fill is an `ArcFill`. On the camera path the value is 0 for the card's whole life, and no
+spinner is drawn for a value nobody computed (ADR-0133 §5).
