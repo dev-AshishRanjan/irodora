@@ -63,8 +63,27 @@ process.on('warning', (warning) => {
   if (warning.code !== 'MODULE_TYPELESS_PACKAGE_JSON') console.warn(warning);
 });
 
-/** The steps a journey may take. Deliberately small — see ADR-0086's stated cost. */
-const STEPS = ['launch', 'assertVisible', 'tap', 'inputText', 'back'];
+/**
+ * The steps a journey may take. Deliberately small — see ADR-0086's stated cost.
+ *
+ * F-221 added three, for the fidelity run's captures (ADR-0134): `openRoute` (a route file and its
+ * parameters, as a deep link), `settle` (wait for motion to end) and `screenshot` (one capture,
+ * named `capture`). Still no raw passthrough: each is resolved against the app's own sources.
+ */
+const STEPS = [
+  'launch',
+  'assertVisible',
+  'tap',
+  'inputText',
+  'back',
+  'openRoute',
+  'settle',
+  'screenshot',
+];
+
+/** The catalogues a spec may select in. A spec says which; a journey without one is English. */
+const LOCALES = ['en', 'ja'];
+const JA_CATALOGUE = join(ROOT, 'apps', 'mobile', 'src', 'i18n', 'ja.ts');
 
 /** The name fields a colour selector may draw its text from. */
 const FIELDS = ['en', 'romaji', 'kanji', 'kana'];
@@ -78,6 +97,7 @@ const FIELDS = ['en', 'romaji', 'kanji', 'kana'];
  */
 async function loadSources() {
   const { en } = await import(pathToFileURL(CATALOGUE).href);
+  const { ja } = await import(pathToFileURL(JA_CATALOGUE).href);
   const { CORPUS_BUNDLE_TEXT, CORPUS_LABEL } = await import(pathToFileURL(BUNDLE).href);
   const config = await import(pathToFileURL(APP_CONFIG).href);
 
@@ -94,11 +114,18 @@ async function loadSources() {
         'script cannot answer — fix the config.',
     );
 
+  // The scheme a deep link opens the app by (F-221's `openRoute`). Read, never assumed.
+  const scheme = config.default?.scheme;
+  if (typeof scheme !== 'string' || !/^[a-z][a-z0-9+.-]*$/u.test(scheme))
+    throw new Error(`app.config.ts declares no usable scheme (got ${String(scheme)})`);
+
   return {
     messages: en,
+    catalogues: { en, ja },
     entries,
     routes: routeFiles(),
     appId: android,
+    scheme,
     corpus: CORPUS_LABEL,
     testIDs: declaredTestIDs(),
   };
@@ -297,6 +324,57 @@ function selector(step, sources) {
   return { text };
 }
 
+/**
+ * The deep link a route file opens at, or why it has none (F-221).
+ *
+ * expo-router's own rule: `(group)` folders are not in the URL, `index` is its folder, and a
+ * `[name]` segment is a parameter. A parameter is filled only by a PUBLISHED COLOUR's slug: an id
+ * the app creates at run time (a garment, a reading) cannot be known when the flow is generated,
+ * so a route that needs one is reached through the steps that create it. The root is reached by
+ * launching. Layouts and special files are not screens.
+ */
+function routeLink(step, sources) {
+  const route = step.route;
+  if (typeof route !== 'string' || !sources.routes.has(route))
+    return { problem: `route "${String(route)}" is not a file under apps/mobile/app` };
+  const file = route.split('/').at(-1) ?? '';
+  if (file.startsWith('_') || file.startsWith('+'))
+    return { problem: `route "${route}" is a layout or special file, not a screen to open` };
+
+  const params = step.params ?? {};
+  const used = new Set();
+  const segments = [];
+  for (const segment of route.replace(/\.tsx?$/u, '').split('/')) {
+    if (/^\(.*\)$/u.test(segment) || segment === 'index') continue;
+    const param = /^\[(\w+)\]$/u.exec(segment)?.[1];
+    if (param === undefined) {
+      segments.push(segment);
+      continue;
+    }
+    used.add(param);
+    const value = params[param];
+    if (value === undefined)
+      return { problem: `route "${route}" needs "${param}", and none is given` };
+    if (typeof value?.colour !== 'string')
+      return {
+        problem:
+          `"${param}" must name a published colour ({ "colour": "<slug>" }). An id the app ` +
+          'creates at run time is reached through the steps that create it, not a link.',
+      };
+    if (!sources.entries.has(value.colour))
+      return { problem: `colour "${value.colour}" is not in corpus ${sources.corpus}` };
+    segments.push(value.colour);
+  }
+  const extra = Object.keys(params).filter((p) => !used.has(p));
+  if (extra.length > 0)
+    return {
+      problem: `route "${route}" has no parameter ${extra.map((p) => `"${p}"`).join(', ')}`,
+    };
+  if (segments.length === 0)
+    return { problem: `route "${route}" is the root, which a flow reaches by launching` };
+  return { url: `${sources.scheme}://${segments.join('/')}` };
+}
+
 /** Render one step, or report why it cannot be rendered. */
 function renderStep(step, index, sources) {
   const where = `step ${String(index + 1)}`;
@@ -314,13 +392,36 @@ function renderStep(step, index, sources) {
     problems.push(`${where}: route "${String(step.route)}" is not a file under apps/mobile/app`);
 
   if (step.do === 'launch') {
+    // `clearState` is the spec's to say (F-221: the fidelity runner clears the app itself, once
+    // per route, under consent). Absent, a journey starts clean, as it always has.
+    if (step.clearState !== undefined && typeof step.clearState !== 'boolean')
+      problems.push(`${where}: "clearState" must be true or false`);
     if (problems.length > 0) return { problems };
-    return { lines: ['- launchApp:', '    clearState: true'] };
+    return { lines: ['- launchApp:', `    clearState: ${String(step.clearState !== false)}`] };
   }
 
   if (step.do === 'back') {
     if (problems.length > 0) return { problems };
     return { lines: ['- back'] };
+  }
+
+  if (step.do === 'openRoute') {
+    const link = routeLink(step, sources);
+    if (link.problem !== undefined) problems.push(`${where}: ${link.problem}`);
+    if (problems.length > 0) return { problems };
+    return { lines: [`- openLink: ${scalar(link.url)}`] };
+  }
+
+  if (step.do === 'settle') {
+    if (problems.length > 0) return { problems };
+    return { lines: ['- waitForAnimationToEnd'] };
+  }
+
+  // One capture per flow, always named `capture`: Maestro writes it as `capture.png` in the run's
+  // `takeScreenshot/` folder, which is the one file the fidelity runner looks for.
+  if (step.do === 'screenshot') {
+    if (problems.length > 0) return { problems };
+    return { lines: ['- takeScreenshot: capture'] };
   }
 
   const resolved = selector(step, sources);
@@ -357,10 +458,30 @@ function renderStep(step, index, sources) {
  * with mutated inputs directly, so nothing is ever planted on disk
  * [[a-plant-that-outlives-its-run-is-a-disabled-gate]].
  */
-export function renderFlow(spec, sources) {
+export function renderFlow(
+  spec,
+  sources,
+  { origin = `apps/mobile/e2e/journeys/${String(spec.name)}.journey.json` } = {},
+) {
   const problems = [];
   if (typeof spec.name !== 'string' || spec.name === '') problems.push('spec has no "name"');
   if (!Array.isArray(spec.steps) || spec.steps.length === 0) problems.push('spec has no "steps"');
+
+  /*
+   * THE CATALOGUE A SPEC SELECTS IN (F-221). A Japanese capture must find the Japanese words, so
+   * every key resolves in the spec's locale, the tap-ambiguity rule included. Absent, English.
+   */
+  const locale = spec.locale ?? 'en';
+  if (!LOCALES.includes(locale))
+    problems.push(`"locale" must be one of ${LOCALES.join(', ')} — got "${String(locale)}"`);
+  // `messages` IS the English catalogue, so an English spec reads it as before; only another
+  // locale swaps it.
+  const local =
+    locale === 'en' ? sources : { ...sources, messages: sources.catalogues?.[locale] ?? {} };
+
+  // The fidelity runner reads exactly one capture per flow, so a second would be one it ignores.
+  if ((spec.steps ?? []).filter((step) => step.do === 'screenshot').length > 1)
+    problems.push('a flow takes at most one "screenshot": the fidelity runner reads exactly one');
 
   /*
    * AT LEAST ONE STEP MUST DECLARE ITS `route`, and this is the weakest of the rules here.
@@ -382,7 +503,7 @@ export function renderFlow(spec, sources) {
 
   const lines = [];
   for (const [index, step] of (spec.steps ?? []).entries()) {
-    const rendered = renderStep(step, index, sources);
+    const rendered = renderStep(step, index, local);
     if (rendered.problems !== undefined) problems.push(...rendered.problems);
     else lines.push(...rendered.lines);
   }
@@ -390,7 +511,7 @@ export function renderFlow(spec, sources) {
   if (problems.length > 0) return { problems };
 
   const header = [
-    `# GENERATED from apps/mobile/e2e/journeys/${spec.name}.journey.json —`,
+    `# GENERATED from ${origin} —`,
     '# do not edit. Run `node scripts/generate-e2e-flows.mjs` after changing the spec.',
     '#',
     `# ${spec.title}`,
@@ -401,7 +522,7 @@ export function renderFlow(spec, sources) {
       // generated one differed by one invisible character and `--check` reported DRIFTED.
       .map((line) => (line === '' ? '#' : `# ${line}`)),
     '#',
-    `# Selectors resolved against corpus ${sources.corpus} and the English catalogue.`,
+    `# Selectors resolved against corpus ${sources.corpus} and the ${locale === 'ja' ? 'Japanese' : 'English'} catalogue.`,
   ];
 
   return { text: `${[...header, `appId: ${sources.appId}`, '---', ...lines].join('\n')}\n` };

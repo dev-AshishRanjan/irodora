@@ -240,6 +240,145 @@ async function prove() {
     );
   }
 
+  /*
+   * THE CAPTURE VOCABULARY (F-221, ADR-0134). A capture flow, as the fidelity run writes one: it
+   * must render each step to what the runner expects, and refuse each way a capture goes wrong.
+   */
+  {
+    const slug = spec.steps[colourStep].colour;
+    const capture = {
+      name: 'capture-probe',
+      title: 'A capture, as the fidelity run writes one',
+      why: 'F-221',
+      locale: 'ja',
+      steps: [
+        { do: 'launch', clearState: false },
+        { do: 'openRoute', route: '(tabs)/atlas/[slug].tsx', params: { slug: { colour: slug } } },
+        { do: 'assertVisible', key: 'detail.provenance' },
+        { do: 'settle' },
+        { do: 'screenshot' },
+      ],
+    };
+    const origin = { origin: 'apps/mobile/e2e/capture/routes.json' };
+    const rendered = renderFlow(capture, sources, origin);
+    const text = rendered.text ?? '';
+    // The Japanese words, escaped as the generator escapes any selector (Maestro reads a regex).
+    const ja = sources.catalogues.ja['detail.provenance'].replace(
+      /[\\^$.|?*+()[\]{}]/g,
+      (character) => `\\${character}`,
+    );
+    check('a capture flow renders', rendered.problems === undefined, rendered.problems?.join('; '));
+    check(
+      'it launches without clearing: the runner has cleared the app, under consent',
+      text.includes('- launchApp:\n    clearState: false'),
+    );
+    check(
+      'it opens the route as a deep link, the parameter filled by the published colour',
+      text.includes(`- openLink: '${sources.scheme}://atlas/${slug}'`),
+    );
+    check(
+      'it selects in the Japanese catalogue, not the English one',
+      text.includes(`- assertVisible: '${ja}'`) && text.includes('the Japanese catalogue'),
+    );
+    check(
+      'it settles, then takes its one capture',
+      text.includes('- waitForAnimationToEnd\n- takeScreenshot: capture'),
+    );
+    check(
+      'its header names the spec it came from',
+      text.includes('# GENERATED from apps/mobile/e2e/capture/routes.json'),
+    );
+
+    const refusesCapture = (label, mutate, expect, usedSources = sources) => {
+      const mutated = clone(capture);
+      mutate(mutated);
+      const problems = renderFlow(mutated, usedSources, origin).problems ?? [];
+      check(
+        label,
+        problems.some((problem) => problem.includes(expect)),
+        problems.length === 0
+          ? 'RENDERED ANYWAY — the mutation was not caught'
+          : problems.join('; '),
+      );
+    };
+    const open = (mutated) => mutated.steps[1];
+    refusesCapture(
+      'a link whose parameter names an unpublished colour',
+      (m) => {
+        open(m).params.slug.colour = `${slug}-nowhere`;
+      },
+      'is not in corpus',
+    );
+    refusesCapture(
+      'a link to a route whose parameter is not given',
+      (m) => {
+        open(m).params = {};
+      },
+      'needs "slug"',
+    );
+    refusesCapture(
+      'a link filled by an id, which only the running app can know',
+      (m) => {
+        open(m).params.slug = { id: 'g-1' };
+      },
+      'must name a published colour',
+    );
+    refusesCapture(
+      'a link carrying a parameter the route does not have',
+      (m) => {
+        open(m).params.colourway = { colour: slug };
+      },
+      'has no parameter "colourway"',
+    );
+    refusesCapture(
+      'a link to the root, which a flow reaches by launching',
+      (m) => {
+        open(m).route = '(tabs)/index.tsx';
+        delete open(m).params;
+      },
+      'is the root',
+    );
+    refusesCapture(
+      'a link to a layout, which is not a screen',
+      (m) => {
+        open(m).route = '(tabs)/_layout.tsx';
+        delete open(m).params;
+      },
+      'is a layout or special file',
+    );
+    refusesCapture(
+      'a locale with no catalogue',
+      (m) => {
+        m.locale = 'fr';
+      },
+      '"locale" must be one of',
+    );
+    refusesCapture(
+      'a second capture in one flow',
+      (m) => {
+        m.steps.push({ do: 'screenshot' });
+      },
+      'at most one "screenshot"',
+    );
+    refusesCapture(
+      'a clearState that is neither true nor false',
+      (m) => {
+        m.steps[0].clearState = 'no';
+      },
+      'must be true or false',
+    );
+    // The Japanese catalogue, not the English one, is what a ja spec resolves in: a key missing
+    // from it alone is refused, though English still has it.
+    const withoutJa = { ...sources.catalogues.ja };
+    delete withoutJa['detail.provenance'];
+    refusesCapture(
+      'a key the Japanese catalogue lacks, in a Japanese flow',
+      () => undefined,
+      'is not in the catalogue',
+      { ...sources, catalogues: { ...sources.catalogues, ja: withoutJa } },
+    );
+  }
+
   // The drift half, through `drift()` — the function the `--check` mode itself calls. A proof
   // that compared two strings of its own would be asserting that `!==` works.
   {
