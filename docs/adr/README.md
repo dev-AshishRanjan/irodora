@@ -149,6 +149,7 @@ Two rules that matter more than the format:
 | [0131](0131-the-cvd-preview-is-machado-at-full-severity-on-every-token-and-sample-and-is-never-stored.md) | The CVD preview is Machado at full severity on every token and sample, and is never stored | Accepted |
 | [0132](0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md) | Verification is tiered: scoped checks per increment, the full gate set once per feature | Accepted |
 | [0133](0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md) | Motion is the change a drawn binding defines, and a length may move where a colour may not | Accepted |
+| [0134](0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md) | Fidelity is captured from the running app beside its mockup, and the device run is a person's | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

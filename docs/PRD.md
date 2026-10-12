@@ -467,6 +467,8 @@ two people and it is labelled as such rather than hidden.
 
 **OQ-52 is closed by [ADR-0120](adr/0120-the-current-page-is-a-capsule-and-a-carousel-rests-where-it-is-drawn.md)** (2026-10-06, decided on the person's delegation; it arose in F-235 and was decided there rather than raised). Mockup 25 marks its current page dot by ink alone and draws a smaller fourth dot with no stated meaning. The current page is a capsule in the drawn ink, a shape as the second channel; the other dots take `foreground.3`, since the drawn grey is 1.69:1 on its ground; at most four dots show, and a dot at the window's edge with pages beyond it is drawn small.
 
+**OQ-53 is closed by [ADR-0134](adr/0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md)** (2026-10-12, decided on the person's delegation; it arose in F-221 and was decided there rather than raised). F-221's criterion 2 asked for captures *"on an Android emulator"*; the person will run them on their own device. What the criterion protects is that a capture comes from the running app, not a re-implementation, and a physical device meets that exactly as an emulator does. It now reads *"an Android device or emulator"*, F-091 criterion 2's wording, and every run records the device model, its API level and whether it is an emulator.
+
 **Closed, not answered.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which
 vendor to choose for capabilities the product no longer has. **OQ-4 is settled at ~120
 entries** — depth over breadth.
