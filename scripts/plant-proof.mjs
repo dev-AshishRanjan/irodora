@@ -30,12 +30,16 @@
  * and in `ci.yml`, after other proofs — so in F-291 it deleted the record of two real plants,
  * and the plants stayed with nothing saying why. Now:
  *
- * - it REFUSES to start while any journal exists, naming the files, as every other proof does;
+ * - it REFUSES to start while a journal FILE exists, readable or not. That is stricter than every
+ *   other proof, which refuses only another run's readable entries: `plant.mjs` reads a journal it
+ *   cannot parse as empty, and a proof killed while rewriting one can leave it truncated with a
+ *   plant still in place;
  * - it clears only entries its own children wrote, through `recover()`;
- * - a case runs it again over a journal it did not write, and the journal must survive byte for
- *   byte;
- * - and no other script may import `JOURNAL` or `recover`, or name the file — so a leftover
- *   survives every proof until a person runs `node scripts/plant.mjs --recover`.
+ * - cases run it again over a journal it did not write and over one it cannot read, and each must
+ *   survive byte for byte; a third case has its own clean-up meet another owner's entry;
+ * - and no other script may import `JOURNAL` or `recover`, run `plant.mjs --recover`, or name the
+ *   file — checked over the scripts, `package.json` and the workflows, within the limits written
+ *   beside the check.
  */
 
 import { spawn } from 'node:child_process';
@@ -59,13 +63,19 @@ const ORIGINAL = 'the original bytes\n';
 const PLANTED = 'BROKEN\n';
 
 /*
- * WHO WROTE AN ENTRY (F-296). The child journals as `CHILD_OWNER`; with `--foreign` it stands in
- * for some other proof that was killed earlier. These two are the only entries this proof may ever
- * clear — the journal exists for leftovers it did not write, and those it must leave alone.
+ * WHO WROTE AN ENTRY (F-296). The child journals as `CHILD_OWNER`, or as the owner `--owner=`
+ * names. `FOREIGN_OWNER` stands in for a proof killed before this run, and `THIRD_OWNER` for one
+ * whose entry arrives while this run is cleaning up. `OWN` is what the clean-up may clear: its own
+ * child's entries, and the foreign one if the refusal case fails part-way. The third is outside it
+ * on purpose — it is what the clean-up must leave alone.
  */
 const CHILD_OWNER = 'plant-proof child';
 const FOREIGN_OWNER = 'a proof killed before this run';
+const THIRD_OWNER = 'a proof running beside this one';
 const OWN = new Set([CHILD_OWNER, FOREIGN_OWNER]);
+
+/** `--nested`: this run was started by a refusal case, which must not start again inside it. */
+const NESTED = process.argv.includes('--nested');
 
 let failures = 0;
 const say = (ok, name, detail) => {
@@ -86,7 +96,8 @@ import { plantJournal } from ${JSON.stringify(pathToFileURL(join(ROOT, 'scripts'
 
 const SUBJECT = ${JSON.stringify(SUBJECT.replace(/\\/gu, '/'))};
 const journal = plantJournal(
-  process.argv.includes('--foreign') ? ${JSON.stringify(FOREIGN_OWNER)} : ${JSON.stringify(CHILD_OWNER)},
+  process.argv.find((arg) => arg.startsWith('--owner='))?.slice('--owner='.length) ??
+    ${JSON.stringify(CHILD_OWNER)},
 );
 
 try {
@@ -149,6 +160,42 @@ function reset() {
   writeFileSync(CHILD, CHILD_SOURCE, 'utf8');
 }
 
+/**
+ * ONLY ITS OWN (F-296), what the `finally` runs. A case that failed part-way can leave its own
+ * child's entry, and `recover()` clears it by restoring the scratch file about to be removed. If
+ * any entry has an owner outside `OWN`, nothing is cleared — not even this run's own — and the
+ * owners are returned for the run to report. Returns `null` when nothing is left.
+ */
+function cleanUp() {
+  const left = describeLeftovers();
+  if (left === null) return null;
+  if (left.owners.every((owner) => OWN.has(owner))) {
+    recover();
+    return null;
+  }
+  return left.owners;
+}
+
+/** This file's colours, removed, so a line can be read for what it says. */
+const plain = (text) =>
+  [GREEN, RED, BOLD, DIM, OFF].reduce((t, code) => t.replaceAll(code, ''), text);
+
+/** Run this proof again, nested, and collect everything it says. */
+async function runNested() {
+  const again = spawn(process.execPath, [fileURLToPath(import.meta.url), '--nested'], {
+    cwd: ROOT,
+  });
+  let said = '';
+  again.stdout.on('data', (chunk) => {
+    said += String(chunk);
+  });
+  again.stderr.on('data', (chunk) => {
+    said += String(chunk);
+  });
+  const code = await new Promise((r) => again.on('exit', r));
+  return { code, said: plain(said) };
+}
+
 console.log(`\n${BOLD}Irodora — the plant journal, proven by a killed run${OFF}\n`);
 
 /*
@@ -156,23 +203,39 @@ console.log(`\n${BOLD}Irodora — the plant journal, proven by a killed run${OFF
  * written. This replaces a baseline that asserted "no plant is outstanding" AFTER `reset()` had
  * deleted the journal, so it could not fail. A leftover is the record of a plant somebody still has
  * to undo; every case below would also be meaningless beside it.
+ *
+ * ANY JOURNAL FILE, READABLE OR NOT. `describeLeftovers()` reads one it cannot parse as empty, and
+ * this proof's first child would then overwrite it and `recover()` delete it. A proof that records
+ * as it goes, killed while rewriting the journal, can leave exactly that with a plant in place. This
+ * run always ends with the file removed, so any file present now is somebody else's.
  */
-{
+if (existsSync(JOURNAL)) {
   const inherited = describeLeftovers();
+  console.error(
+    `${RED}${BOLD}A plant journal is already in place, and this proof did not write it.${OFF}\n`,
+  );
   if (inherited !== null) {
     console.error(
-      `${RED}${BOLD}A plant journal is already in place, and this proof did not write it.${OFF}\n` +
-        `${DIM}  ${String(inherited.paths.length)} file(s) still hold a planted defect, left by: ` +
+      `${DIM}  ${String(inherited.paths.length)} file(s) still hold a planted defect, left by: ` +
         `${inherited.owners.join(', ')}.${OFF}\n`,
     );
     for (const path of inherited.paths) console.error(`  ${RED}!${OFF} ${path}`);
+    console.error(`\n${DIM}  Put them back:${OFF}  node scripts/plant.mjs --recover`);
+  } else {
     console.error(
-      `\n${DIM}  Put them back:${OFF}  node scripts/plant.mjs --recover\n` +
-        `${DIM}  Refusing to run: this proof clears only what its own children plant.${OFF}\n`,
+      `${DIM}  It cannot be read, so it names no file, and \`plant.mjs --recover\` cannot use it. A\n` +
+        `  proof may have died while rewriting it with a plant still in place: compare the tree\n` +
+        `  with git, then remove it by hand —${OFF} .harness/state/.plant-journal.json`,
     );
-    process.exit(1);
   }
+  console.error(
+    `${DIM}  Refusing to run: this proof clears only what its own children plant.${OFF}\n`,
+  );
+  process.exit(1);
 }
+
+/** Bytes this run wrote into the journal itself, for the unreadable case: its own, to remove. */
+let unreadableWritten = null;
 
 try {
   reset();
@@ -252,63 +315,133 @@ try {
     recover();
   }
 
-  /* ------------------------- and THIS proof refuses a journal it did not write (F-296) */
-  if (!process.argv.includes('--nested')) {
-    /*
-     * In F-291 this proof deleted the real journal of two real plants: it runs in `lint` and in
-     * `ci.yml`, after other proofs, and `reset()` began with `rmSync(JOURNAL)`. So: a killed child
-     * leaves a journal under another owner, plant-proof is run AGAIN, and the second run must refuse,
-     * name the file, and leave the journal byte for byte.
-     *
-     * `--nested` keeps the second run from starting this case itself. A plant-proof that refuses
-     * never reaches it; one that does not would otherwise recurse.
-     */
-    reset();
-    const { child } = await startChild(['--foreign']);
-    child.kill('SIGKILL');
-    await settled(child);
-    const before = readFileSync(JOURNAL, 'utf8');
-
-    const again = spawn(process.execPath, [fileURLToPath(import.meta.url), '--nested'], {
-      cwd: ROOT,
-    });
-    let said = '';
-    again.stdout.on('data', (chunk) => {
-      said += String(chunk);
-    });
-    again.stderr.on('data', (chunk) => {
-      said += String(chunk);
-    });
-    const code = await new Promise((r) => again.on('exit', r));
-    const after = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : null;
-
-    say(
-      code === 1 && said.includes('subject.txt'),
-      'a second plant-proof REFUSES over a journal it did not write, and names the file',
-      `exit ${String(code)}`,
+  /*
+   * THE F-296 CASES. `--nested` keeps a run started by one of them from starting them again. A
+   * plant-proof that refuses never gets here; one that does not would otherwise recurse. A run
+   * given `--nested` by hand says it skipped them, rather than passing on fewer cases.
+   */
+  if (NESTED) {
+    console.log(
+      `${DIM}—   the refusal cases: skipped, because this run is nested inside one${OFF}`,
     );
-    say(
-      after === before,
-      'and leaves that journal byte for byte',
-      after === null ? 'it was deleted' : after === before ? undefined : 'it was rewritten',
-    );
+  } else {
+    /* ------------------------- THIS proof refuses a journal it did not write */
+    {
+      /*
+       * In F-291 this proof deleted the real journal of two real plants: it runs in `lint` and in
+       * `ci.yml`, after other proofs, and `reset()` began with `rmSync(JOURNAL)`. So: a killed
+       * child leaves a journal under another owner, plant-proof is run AGAIN, and the second run
+       * must refuse — in its own words, running none of its cases — and leave the journal and the
+       * planted file exactly as they were. Exit 1 alone is not enough: a second run that started
+       * and then crashed exits 1 too, after doing the damage (F-296's review, S1).
+       */
+      reset();
+      const { child } = await startChild([`--owner=${FOREIGN_OWNER}`]);
+      child.kill('SIGKILL');
+      await settled(child);
+      const before = readFileSync(JOURNAL, 'utf8');
 
-    recover();
+      const { code, said } = await runNested();
+      const after = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : null;
+
+      say(
+        code === 1 && said.includes('this proof did not write it') && said.includes('subject.txt'),
+        'a second plant-proof REFUSES over a journal it did not write, and names the file',
+        `exit ${String(code)}`,
+      );
+      say(
+        !/^(OK |BAD)/mu.test(said) && readFileSync(SUBJECT, 'utf8') === PLANTED,
+        'and runs none of its cases: the planted file is still as the journal says',
+      );
+      say(
+        after === before,
+        'and leaves that journal byte for byte',
+        after === null ? 'it was deleted' : after === before ? undefined : 'it was rewritten',
+      );
+
+      recover();
+    }
+
+    /* ------------------------------ and a journal it cannot read (F-296's review, B1) */
+    {
+      /*
+       * A journal cut off part-way: what a proof killed while rewriting it leaves. `plant.mjs`
+       * reads it as empty, so a check that asks `describeLeftovers()` sees nothing to refuse.
+       */
+      reset();
+      unreadableWritten =
+        '{\n  "entries": {\n    "tests/__plant_proof__/subject.txt": {\n      "owner": "a proof k';
+      writeFileSync(JOURNAL, unreadableWritten, 'utf8');
+      say(
+        existsSync(JOURNAL) && describeLeftovers() === null,
+        'the unreadable journal reads as empty, so the check below is about the FILE',
+      );
+
+      const { code, said } = await runNested();
+      const after = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : null;
+
+      say(
+        code === 1 &&
+          said.includes('this proof did not write it') &&
+          said.includes('cannot be read'),
+        'a second plant-proof REFUSES over a journal it cannot read, and says so',
+        `exit ${String(code)}`,
+      );
+      say(!/^(OK |BAD)/mu.test(said), 'and runs none of its cases');
+      say(
+        after === unreadableWritten,
+        'and leaves those bytes as they were',
+        after === null ? 'it was deleted' : after === unreadableWritten ? undefined : 'rewritten',
+      );
+
+      // This run wrote these bytes, so it removes them — and only if they are still its own.
+      if (after === unreadableWritten) rmSync(JOURNAL, { force: true });
+      unreadableWritten = null;
+    }
+
+    /* --------------- and its own clean-up leaves another owner's entry (F-296's review, M1) */
+    {
+      /*
+       * What each case starts with (`reset()`) and what the `finally` runs (`cleanUp()`), met by
+       * an entry this proof may not clear. Either one deleting or recovering the journal again is
+       * the F-291 deletion back; neither case above would notice, because no other owner's entry
+       * is ever present when they run.
+       */
+      reset();
+      const { child } = await startChild([`--owner=${THIRD_OWNER}`]);
+      child.kill('SIGKILL');
+      await settled(child);
+      const before = readFileSync(JOURNAL, 'utf8');
+
+      reset();
+      const kept = cleanUp();
+      const after = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : null;
+
+      say(
+        after === before && kept !== null && kept.includes(THIRD_OWNER),
+        "its own reset and clean-up leave another owner's entry byte for byte, and report it",
+        after === null ? 'it was deleted' : after === before ? undefined : 'it was rewritten',
+      );
+
+      // This case's child planted it, so this case puts it back.
+      recover();
+    }
   }
 } finally {
-  /*
-   * ONLY ITS OWN (F-296). A case that failed part-way can leave a child's entry, and `recover()`
-   * clears it by restoring the scratch file about to be removed. An entry under any other owner
-   * arrived from somewhere else during this run, and is left for a person.
-   */
-  const left = describeLeftovers();
-  if (left !== null && left.owners.every((owner) => OWN.has(owner))) recover();
-  else if (left !== null)
+  const kept = cleanUp();
+  if (kept !== null)
     say(
       false,
       'the journal holds entries this proof did not write; left in place',
-      left.owners.join(', '),
+      kept.join(', '),
     );
+  // The unreadable case's own bytes, if it failed before removing them, and only those.
+  if (
+    unreadableWritten !== null &&
+    existsSync(JOURNAL) &&
+    readFileSync(JOURNAL, 'utf8') === unreadableWritten
+  )
+    rmSync(JOURNAL, { force: true });
   rmSync(dirname(SUBJECT), { recursive: true, force: true });
 }
 
@@ -420,12 +553,95 @@ const NO_JOURNAL_NEEDED = {
  * A leftover journal must survive every proof in `lint` and in `ci.yml` until a person runs
  * `node scripts/plant.mjs --recover`. Every proof reads the journal through `plantJournal` and
  * `describeLeftovers`, which only ever add or drop that proof's own entries. To delete a leftover, a
- * script needs the path (`JOURNAL`, or the file's name) or `recover`. Only `plant.mjs` and this
- * file may have either. A namespace or dynamic import of `plant.mjs` counts, because it reaches
- * both.
+ * script needs the path (`JOURNAL`, or the file's name), `recover`, or the recovery command. Only
+ * `plant.mjs` and this file may have any of them.
+ *
+ * WHAT IT READS: every `.mjs` directly in `scripts/` and `tests/bench/src/`, every script in the
+ * root `package.json`, and every workflow in `.github/workflows/`.
+ *
+ * WHAT IT CANNOT SEE, and does not claim to (F-296's review, M2): a path assembled from parts, an
+ * import through a variable or a `new URL(…)`, an `rmSync` of `.harness/state` or a `git clean -X`,
+ * an import whose braces hold a `}` inside a comment, and `--recover` run from a command built
+ * elsewhere and passed in a variable. None exists today, and each would be a deliberate act
+ * rather than the accident this check is for.
+ *
+ * @returns {string[]} how a source reaches the journal; empty when it does not.
+ */
+function reachesJournal(source, { command = false } = {}) {
+  const from = String.raw`\s*from\s*['"][^'"]*plant\.mjs['"]`;
+  /*
+   * RUNNING THE RECOVERY, NOT NAMING IT. Proofs print `node scripts/plant.mjs --recover` as the
+   * instruction to a person, which is the point of a refusal. In a script, only a call that runs it
+   * counts: an exec or spawn naming `plant.mjs` and then `--recover`. In a `package.json` script or
+   * a workflow, the text is itself a command (`command: true`).
+   */
+  const runsRecover = command
+    ? /plant\.mjs\s+--recover/u
+    : /\b(?:exec|execSync|execFile|execFileSync|spawn|spawnSync)\([^;]*plant\.mjs[^;]*--recover/u;
+  return [
+    ...[...source.matchAll(new RegExp(String.raw`import\s*\{([^}]*)\}` + from, 'gu'))]
+      .flatMap((m) => m[1].split(','))
+      .map((name) => name.trim().split(/\s+as\s+/u)[0])
+      .filter((name) => name === 'JOURNAL' || name === 'recover'),
+    ...(new RegExp(String.raw`import\s*\*\s*as\s+\w+` + from, 'u').test(source)
+      ? ['import * as']
+      : []),
+    ...(new RegExp(String.raw`export\s*(?:\*|\{[^}]*\})` + from, 'u').test(source)
+      ? ['re-export']
+      : []),
+    ...(/(?:import|require)\(\s*['"`][^'"`]*plant\.mjs['"`]\s*\)/u.test(source)
+      ? ['import() or require()']
+      : []),
+    ...(runsRecover.test(source) ? ['runs --recover'] : []),
+    ...(source.includes('.plant-journal') ? ['.plant-journal'] : []),
+  ];
+}
+
+/*
+ * ITS OWN DECOYS, IN THE FILE (F-296's review, M3), so a typo in a pattern cannot leave the check
+ * green for good: each shape must be caught, and each control — what a proof legitimately imports
+ * — must not.
  */
 {
+  const caught = [
+    "import { JOURNAL } from './plant.mjs';",
+    "import { describeLeftovers, recover as undo } from './plant.mjs';",
+    'import {\n  plantJournal,\n  recover,\n} from "./plant.mjs";',
+    "import * as plant from './plant.mjs';",
+    "export { recover } from './plant.mjs';",
+    "export * from './plant.mjs';",
+    "const plant = await import('./plant.mjs');",
+    "const plant = require('./plant.mjs');",
+    "execSync('node scripts/plant.mjs --recover');",
+    "spawnSync(process.execPath, ['scripts/plant.mjs', '--recover'], { cwd: ROOT });",
+    "rmSync('.harness/state/.plant-journal.json');",
+  ];
+  const caughtAsCommand = ['node scripts/plant.mjs --recover && pnpm lint'];
+  const clean = [
+    "import { describeLeftovers } from './plant.mjs';",
+    "import { guardPlants, plantJournal } from './plant.mjs';",
+    '// the journal is written before the mutation',
+    // A refusal telling the person what to run is the point of a refusal, not a recovery.
+    'console.error(`  Put them back:  node scripts/plant.mjs --recover`);',
+  ];
+  const missed = [
+    ...caught.filter((source) => reachesJournal(source).length === 0),
+    ...caughtAsCommand.filter((source) => reachesJournal(source, { command: true }).length === 0),
+  ];
+  const flagged = clean.filter((source) => reachesJournal(source).length > 0);
+  say(
+    missed.length === 0 && flagged.length === 0,
+    'the journal check catches each shape it looks for, and passes what a proof may import',
+    `${String(caught.length + caughtAsCommand.length)} decoys, ${String(clean.length)} controls` +
+      (missed.length + flagged.length === 0
+        ? ''
+        : `; missed ${missed.join(' | ')}; flagged ${flagged.join(' | ')}`),
+  );
+}
+
+{
   const acting = [];
+  let read = 0;
   for (const dir of ['scripts', 'tests/bench/src']) {
     let entries;
     try {
@@ -435,25 +651,29 @@ const NO_JOURNAL_NEEDED = {
     }
     for (const entry of entries.filter((e) => e.endsWith('.mjs'))) {
       if (dir === 'scripts' && (entry === 'plant.mjs' || entry === 'plant-proof.mjs')) continue;
-      const source = readFileSync(join(ROOT, dir, entry), 'utf8');
-      const reaches = [
-        ...[...source.matchAll(/import\s*\{([^}]*)\}\s*from\s*'[^']*plant\.mjs'/gu)]
-          .flatMap((m) => m[1].split(','))
-          .map((name) => name.trim().split(/\s+as\s+/u)[0])
-          .filter((name) => name === 'JOURNAL' || name === 'recover'),
-        ...(/import\s*\*\s*as\s+\w+\s+from\s*'[^']*plant\.mjs'/u.test(source)
-          ? ['import * as']
-          : []),
-        ...(/import\(\s*['`][^'`]*plant\.mjs['`]\s*\)/u.test(source) ? ['import()'] : []),
-        ...(source.includes('.plant-journal') ? ['.plant-journal'] : []),
-      ];
+      read += 1;
+      const reaches = reachesJournal(readFileSync(join(ROOT, dir, entry), 'utf8'));
       if (reaches.length > 0) acting.push(`${dir}/${entry} (${reaches.join(', ')})`);
     }
   }
+  const { scripts = {} } = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+  for (const [name, command] of Object.entries(scripts)) {
+    read += 1;
+    const reaches = reachesJournal(command, { command: true });
+    if (reaches.length > 0) acting.push(`package.json "${name}" (${reaches.join(', ')})`);
+  }
+  const workflows = join(ROOT, '.github', 'workflows');
+  for (const entry of readdirSync(workflows).filter((e) => /\.ya?ml$/u.test(e))) {
+    read += 1;
+    const reaches = reachesJournal(readFileSync(join(workflows, entry), 'utf8'), { command: true });
+    if (reaches.length > 0) acting.push(`.github/workflows/${entry} (${reaches.join(', ')})`);
+  }
   say(
     acting.length === 0,
-    'no other script can delete the journal: none imports JOURNAL or recover, or names the file',
-    acting.length === 0 ? undefined : acting.join('; '),
+    'no other script can delete the journal: none imports JOURNAL or recover, runs --recover, or names the file',
+    acting.length === 0
+      ? `${String(read)} read: the scripts, package.json's scripts and the workflows`
+      : acting.join('; '),
   );
 }
 

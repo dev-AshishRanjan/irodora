@@ -2,7 +2,8 @@
 
 **Link:** `scripts/plant-proof.mjs` → every leftover journal, and so `plant.mjs#recover` (E-094)
 **Guard:** `plant-proof` in `lint` and `ci.yml`: a second run refuses over a journal it did not
-write and leaves it byte for byte; no other script imports `JOURNAL` or `recover` or names the file
+write, and over one it cannot read, and leaves each byte for byte; its own clean-up leaves another
+owner's entry; no other script imports `JOURNAL` or `recover`, runs `--recover`, or names the file
 **Severity:** high **Feature:** F-296
 
 ---
@@ -24,15 +25,21 @@ Its baseline, "no plant is outstanding", was asserted after that deletion, so it
 
 ## What holds it now
 
-- `plant-proof` refuses to start while any journal exists, and names the files and owners.
-- It clears only entries its own two child owners wrote, through `recover()`.
-- A case runs it again over a foreign leftover; the journal must survive byte for byte.
-- No other script can reach the journal's path or `recover` — a person acts, through
-  `node scripts/plant.mjs --recover`.
+- `plant-proof` refuses to start while a journal file exists, readable or not, and names the files
+  and owners it can read. `plant.mjs` reads an unparseable journal as empty, so a check that only
+  asked it would start over a truncated journal and delete it (F-296's review, B1).
+- It clears only entries its own child owners wrote, through `recover()`, and a case proves its
+  reset and clean-up leave a third owner's entry alone.
+- Cases run it again over a foreign leftover and over an unreadable journal. Each must refuse in its
+  own words, run none of its cases, and leave the bytes as they were.
+- No script in `scripts/` or `tests/bench/src/`, no `package.json` script and no workflow imports
+  `JOURNAL` or `recover`, runs `plant.mjs --recover`, or names the file. Twelve decoys and four
+  controls prove the check in the file. It cannot see a path assembled from parts, an import
+  through a variable, an `rmSync` of the state directory or a `git clean -X`, and says so.
 - The a11y proof opens its journal only once a case can plant.
 
 ## What it does not do
 
-It does not stop a proof opening its journal before an early exit (F-271, E-127), and it does not
-retry a restore (F-333). Both still leave a leftover — now one that survives until a person acts,
+It does not stop a proof opening its journal before an early exit (F-271, E-127), it does not
+retry a restore (F-333), and every other proof still overwrites a journal it cannot read (F-334). Both still leave a leftover — now one that survives until a person acts,
 which is the point.

@@ -143,4 +143,26 @@ F-271, F-324, F-331, F-333 (each recorded).
 - **The import check, watched catching:** five decoy scripts, each caught (`JOURNAL`, `recover` renamed, `import * as`, `import()`, the file's name), and a `describeLeftovers`-only control that passes.
 - **Tier 1, each exit 0:** format, typecheck, state, lint (plant-proof included, no journal after). |
 | 2 | this commit | **Close-out.** E-202 (high) with its note and index line. E-127's and E-094's notes; the journal lesson's addendum (a `continue` is an early exit); a new lesson, *a proof of a safety net must not clear the net it proves*. Downstream notes on F-271, F-324, F-331 and F-333. **Tier 1, each exit 0:** format, state, claims. |
-| review | | |
+| review | this commit | **The one review (evaluator, cut off by a usage limit and resumed): FAIL as delivered.** One blocking, one significant and seven minor findings. Its Tier 2 on 2046121: state, typecheck, lint, format and build each exited 0; security exited 1 on F-322's nine advisories; `verify-ci --all` was 35 passed and 3 failed, exactly the known reds (the iOS half, F-324, F-322), with the plant journal proof green straight after the a11y proof and no F-333 event. Both criteria were demonstrated over the saved real leftover: plant-proof exited 1 with the SHA-256 unchanged, and `pnpm lint` stopped at `verify-guards` with the SHA-256 unchanged. Each finding fixed or recorded:
+- **B1, fixed: plant-proof started over a journal it could not read, and deleted it.** `plant.mjs` reads an unparseable journal as empty, so the start check saw nothing to refuse. It now refuses on the file's existence, and says when the file cannot be read. A new case writes a truncated journal (after asserting it reads as empty) and runs plant-proof again: exit 1, the refusal's words, none of its cases, the bytes unchanged. The same fail-open read in every other proof is recorded as **F-334** (backlog).
+- **S1, fixed: the refusal case passed on a second run that crashed.** It now asserts the refusal's own words, that the nested run printed no case lines, and that the planted file is still planted.
+- **M1, fixed: the owner-scoped clean-up had no case.** The `finally`'s body is `cleanUp()`. A case meets `reset()` and `cleanUp()` with a third owner's entry, which must survive byte for byte and be reported.
+- **M2, fixed:** the import check also catches a re-export, `import()` or `require()`, double quotes, and a call that runs `plant.mjs --recover`. It reads `package.json`'s scripts and the workflows, where the command text itself counts. It prints how many sources it read, and its blind spots are written beside it. A printed instruction to run `--recover`, which `verify-ci` and `verify-motion` carry, is not a recovery and is not flagged.
+- **M3, fixed:** twelve decoys and four controls run inside the proof, so a typo in a pattern turns it BAD.
+- **M4, fixed:** a run given `--nested` says it skipped the refusal cases.
+- **M5, recorded:** `verify-contrast-proof.mjs:261-266` (a `continue` past `close()`) and `verify-contract-pin.mjs:60/85` (one module-level journal over three probes), both on F-271.
+- **M6:** F-333's note, "F-296 IS DONE", becomes true with the done commit, which follows this one.
+- **M7, fixed:** the header now says the refusal is stricter than other proofs', and why.
+- **Seven mutants**, run from the scratchpad, one at a time, each fail the proof and the identity copy passes:
+  - the start refusal removed;
+  - the old readable-only check;
+  - no refusal with `OWN` narrowed, which passed every case before;
+  - the clean-up deleting the journal;
+  - the clean-up recovering whatever the owner;
+  - `reset()` deleting the journal;
+  - a pattern typo.
+
+  No journal and no scratch directory were left.
+- **Records:** E-202's guard and note now describe what was built, with the blind spots. The lesson gains rule 4: refuse on the state's existence, not on what a forgiving reader makes of it.
+
+**Tier 1 on the fixes:** see the commit. Tier 2 on the final tree: see `progress.md`. |

@@ -23,7 +23,10 @@ start each case clean it deleted the journal, and it deleted it again in its `fi
 2. **It clears only what it can show it wrote**: by owner, not by deleting the file.
 3. **A baseline taken after your own reset tests the reset.** Assert the precondition before you
    touch anything, or do not call it a baseline.
-4. **When the clearing stops, look for what it was hiding.** Here, the a11y proof's leak would have
+4. **Refuse on the state's existence, not on what a forgiving reader makes of it.** `plant.mjs`
+   reads a journal it cannot parse as empty. A refusal that asked it would start over a truncated
+   journal and delete it (F-296's review).
+5. **When the clearing stops, look for what it was hiding.** Here, the a11y proof's leak would have
    turned CI red from the next step on, so it had to be fixed in the same change.
 
 ## How to apply
