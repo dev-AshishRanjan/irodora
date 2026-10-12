@@ -23,6 +23,8 @@ import Animated, { getAnimatedStyle, useAnimatedStyle } from 'react-native-reani
 import { nativeMotion } from '@irodora/design-tokens';
 import {
   Appear,
+  Arrival,
+  ARRIVAL,
   durations,
   overlayKeyframes,
   useMotion,
@@ -422,5 +424,135 @@ describe('useValueMotion (F-266)', () => {
     });
     advance(FRAME);
     expect(scale(tree)).toBe(0.9);
+  });
+});
+
+/**
+ * A LIST ARRIVES ONCE (F-266, ADR-0133 §7).
+ *
+ * Rows inside an `Arrival` stagger only within its window of the first row's mount and below its
+ * limit; a row that mounts later — scrolled in, re-mounted, re-keyed — is simply there. Read with
+ * fake timers, which move `Date.now()` as well; every worklet captures a shared value (E-069).
+ */
+describe('Arrival — a list arrives once (F-266)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  interface Row {
+    readonly key: string;
+    readonly index: number;
+  }
+  function List({
+    rows,
+    scoped = true,
+  }: {
+    readonly rows: readonly Row[];
+    readonly scoped?: boolean;
+  }): React.JSX.Element {
+    const items = rows.map((r) => (
+      <Appear key={r.key} index={r.index} testID={`row-${r.key}`}>
+        <RNText>{r.key}</RNText>
+      </Appear>
+    ));
+    return scoped ? <Arrival>{items}</Arrival> : <>{items}</>;
+  }
+  const rowsOf = (n: number, from = 0): Row[] =>
+    Array.from({ length: n }, (_, i) => ({ key: String(from + i), index: from + i }));
+  const opacity = (tree: ReturnType<typeof render>, key: string): number =>
+    animatedStyleOf(tree.getByTestId(`row-${key}`))['opacity'] as number;
+  const advance = (ms: number): void => {
+    act(() => {
+      jest.advanceTimersByTime(ms);
+    });
+  };
+  const LOCAL = nativeMotion.durations.local;
+
+  it('opens a window of the stagger’s last delay plus one entrance, read from the scale', () => {
+    expect(ARRIVAL.window).toBe(6 * (nativeMotion.durations.micro / 2) + LOCAL);
+    expect(ARRIVAL.limit).toBe(20);
+  });
+
+  it('staggers the rows that arrive together, and caps the stagger', () => {
+    const tree = render(<List rows={rowsOf(9)} />);
+    advance(LOCAL);
+    expect(opacity(tree, '0')).toBeGreaterThan(opacity(tree, '4'));
+    for (let t = 0; t < 600; t += 60) {
+      expect(opacity(tree, '6')).toBe(opacity(tree, '8'));
+      advance(60);
+    }
+    expect(opacity(tree, '8')).toBe(1);
+  });
+
+  it('shows a row that mounts after the window at once', () => {
+    const tree = render(<List rows={rowsOf(3)} />);
+    advance(ARRIVAL.window + 20);
+    tree.rerender(<List rows={rowsOf(4)} />);
+    expect(opacity(tree, '3')).toBe(1);
+  });
+
+  it('DECOY — the same late row outside an Arrival still enters', () => {
+    const tree = render(<List rows={rowsOf(3)} scoped={false} />);
+    advance(ARRIVAL.window + 20);
+    tree.rerender(<List rows={rowsOf(4)} scoped={false} />);
+    expect(opacity(tree, '3')).toBe(0);
+  });
+
+  it('still enters a row that mounts inside the window', () => {
+    const tree = render(<List rows={rowsOf(2)} />);
+    advance(ARRIVAL.window - 20);
+    tree.rerender(<List rows={rowsOf(3)} />);
+    expect(opacity(tree, '2')).toBe(0);
+    advance(LOCAL * 2);
+    expect(opacity(tree, '2')).toBe(1);
+  });
+
+  it('animates nothing at the limit: row 19 enters, row 20 is there', () => {
+    const tree = render(
+      <List
+        rows={[
+          { key: '19', index: 19 },
+          { key: '20', index: 20 },
+        ]}
+      />,
+    );
+    expect(opacity(tree, '19')).toBe(0);
+    expect(opacity(tree, '20')).toBe(1);
+  });
+
+  it('does not re-enter a row re-mounted after the window', () => {
+    const tree = render(<List rows={rowsOf(2)} />);
+    advance(ARRIVAL.window + 20);
+    tree.rerender(<List rows={[{ key: '0-again', index: 0 }, ...rowsOf(1, 1)]} />);
+    expect(opacity(tree, '0-again')).toBe(1);
+  });
+
+  it('is simply present under reduced motion', async () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const tree = render(<List rows={rowsOf(3)} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    advance(FRAME);
+    for (const key of ['0', '1', '2']) expect(opacity(tree, key)).toBe(1);
+  });
+
+  it('moves nothing when the theme changes after the list has arrived', () => {
+    const tree = render(
+      <ThemeProvider theme="dark">
+        <List rows={rowsOf(3)} />
+      </ThemeProvider>,
+    );
+    advance(ARRIVAL.window + LOCAL);
+    tree.rerender(
+      <ThemeProvider theme="light">
+        <List rows={rowsOf(3)} />
+      </ThemeProvider>,
+    );
+    advance(FRAME);
+    for (const key of ['0', '1', '2']) expect(opacity(tree, key)).toBe(1);
   });
 });

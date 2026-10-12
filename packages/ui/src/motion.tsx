@@ -29,7 +29,7 @@
  * in depth, and the hook below is the part that is checked.
  */
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import Animated, {
   Easing,
@@ -259,6 +259,37 @@ export interface AppearProps {
  * always `false`, so seeding from it would add a line no test could observe. An unverified
  * line that removes 16ms is a worse trade than a verified one that does not.
  */
+/**
+ * How a list arrives (F-266, ADR-0133 §7): once.
+ *
+ * - **`window`** — how long after the list's first row mounts a row may still enter: the stagger's
+ *   last delay (`STAGGER_CAP × STAGGER_STEP`) plus one entrance (`local`), 540 ms. A row that mounts
+ *   after it — scrolled in, re-mounted by a virtualised list, refiltered, re-keyed — is simply
+ *   present. Opened by the first row, so a list whose data arrives late still arrives.
+ * - **`limit`** — rows at this index or beyond never animate: no list of more than about 20 items
+ *   moves (`rules/frontend/motion.md`).
+ */
+export const ARRIVAL = {
+  window: STAGGER_CAP * STAGGER_STEP + nativeMotion.durations.local,
+  limit: 20,
+} as const;
+
+/** When the list's first row mounted, in `Date.now()` milliseconds; null until one has. */
+const ArrivalContext = createContext<{ current: number | null } | null>(null);
+
+/**
+ * The scope a list arrives in (F-266, ADR-0133 §7). Every `Appear` inside it enters only within
+ * {@link ARRIVAL}'s window of the first row's mount and below its limit; after that, a row is just
+ * there. Today every row a virtualised list scrolls into view waits its stagger and fades, and a row
+ * the list unmounted re-enters on return — a list arriving again on every scroll.
+ *
+ * Draws nothing of its own: a context, around the list.
+ */
+export function Arrival({ children }: { readonly children: ReactNode }): React.JSX.Element {
+  const opened = useRef<number | null>(null);
+  return <ArrivalContext.Provider value={opened}>{children}</ArrivalContext.Provider>;
+}
+
 export function Appear({
   children,
   index = 0,
@@ -266,7 +297,22 @@ export function Appear({
   testID,
 }: AppearProps): React.JSX.Element {
   const { reduced, timing } = useMotion();
-  const progress = useSharedValue(reduced ? 1 : 0);
+  const scope = useContext(ArrivalContext);
+  /*
+   * DECIDED ONCE, AT MOUNT (F-266). Outside an `Arrival` a row enters as it always has. Inside one,
+   * it enters only if the list is still arriving — its first row mounted within the window — and it
+   * is below the limit. The first row opens the window. A state initialiser runs once per mount, so
+   * a re-render (a theme change, a mode switch) never re-decides, and a remount decides afresh.
+   */
+  const [enters] = useState(() => {
+    if (scope === null) return true;
+    if (index >= ARRIVAL.limit) return false;
+    const now = Date.now();
+    scope.current ??= now;
+    return now - scope.current <= ARRIVAL.window;
+  });
+  const present = reduced || !enters;
+  const progress = useSharedValue(present ? 1 : 0);
 
   // BUILT OUTSIDE THE EFFECT so the effect's dependencies can be honest. `timing` is rebuilt
   // on every render, so listing it would re-run the animation on every render; omitting it
@@ -277,14 +323,14 @@ export function Appear({
   const entranceDuration = entrance.duration;
 
   useEffect(() => {
-    if (reduced) {
+    if (present) {
       progress.value = 1;
       return;
     }
     progress.value = withDelay(delay, withTiming(1, entrance));
     // `entrance` itself is a fresh object each render; `entranceDuration` is the value that
     // actually changes when anything about it changes, and it is what the effect keys on.
-  }, [reduced, delay, entranceDuration, progress]);
+  }, [present, delay, entranceDuration, progress]);
 
   const style = useAnimatedStyle(() => ({
     opacity: progress.value,

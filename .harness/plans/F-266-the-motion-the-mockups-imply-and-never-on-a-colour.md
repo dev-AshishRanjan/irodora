@@ -703,7 +703,24 @@ animated portal, worklet reach and the progress line.
 
   Time is never advanced (E-069).
 - **Tier 1, each exit 0:** format, typecheck, lint, affected tests (18 tasks; ui 1311, mobile 1321). |
-| 8 | | |
+| 8 | this commit | **A list arrives once.**
+- **`motion.tsx`:**
+  - `ARRIVAL = { window: STAGGER_CAP × STAGGER_STEP + local (540 ms), limit: 20 }`;
+  - `Arrival`, a context holding the first row's mount time; it draws nothing.
+  - `Appear` decides once, in a state initialiser, whether it enters. Outside a scope it always does. Inside, it enters below the limit and within the window of the first row's mount, and the first row opens the window. A re-render never re-decides, and a remount decides afresh.
+  - `present = reduced || !enters` drives the start value and the effect.
+- **Exported:** `Arrival` and `ARRIVAL`.
+- **`motion.test`, 9 new:**
+  - the window recomputed from the scale;
+  - the stagger and its cap (rows 6 and 8 equal at every sample);
+  - a late row present at once (DECOY: the same row outside an `Arrival` enters);
+  - a row inside the window still enters;
+  - the limit (19 enters, 20 is there);
+  - a re-mount after the window does not re-enter;
+  - reduced motion;
+  - a theme change after arrival moves nothing.
+- **The ui registry** gains `Arrival (a list arriving)`: three `Appear` rows in the scope, and the rules pass on it in every sweep.
+- **Tier 1, each exit 0:** format, typecheck, lint, `a11y-scope` (88 components, all reached), affected tests (18 tasks; ui 1323, mobile 1321). |
 | 9 | | |
 | 10 | | |
 | review | | |

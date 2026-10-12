@@ -24,6 +24,7 @@ import {
   ActionBar,
   AppBar,
   Appear,
+  Arrival,
   Avatar,
   Bands,
   Button,
@@ -848,6 +849,28 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             A grey with indigo in it.
           </Text>
         </Card>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * A LIST ARRIVING (F-266, ADR-0133 §7). `Arrival` draws nothing of its own — a scope around a
+     * list's rows — so its subject is three `Appear` rows inside it, read in their first frame:
+     * whatever the stagger does, the tree the rules read is the rows, named and in their tokens.
+     */
+    name: 'Arrival (a list arriving)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Arrival>
+          {['Ai', 'Kon', 'Shu'].map((name, index) => (
+            <Appear key={name} index={index}>
+              <Text size="body" color="foreground">
+                {name}
+              </Text>
+            </Appear>
+          ))}
+        </Arrival>,
         theme,
       ),
   },

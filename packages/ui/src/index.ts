@@ -451,6 +451,8 @@ export {
 } from './controls.js';
 export {
   Appear,
+  Arrival,
+  ARRIVAL,
   durations,
   overlayKeyframes,
   RISE,
