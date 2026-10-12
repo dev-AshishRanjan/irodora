@@ -49,6 +49,7 @@ import {
 } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -79,7 +80,19 @@ async function allowedProperties() {
         'manifest beside the manifest is what this check exists to avoid.',
     );
   const { nativeMotion } = await import(pathToFileURL(dist).href);
-  return new Set(nativeMotion.animatable);
+  /*
+   * TWO LISTS, BOTH FROM THE MANIFEST (F-266, ADR-0133 §4). A style may animate `animatable`
+   * alone. An animated PROP — a worklet's return for an SVG path — may also animate
+   * `animatableLength`: a stroke's dash offset, where the stroke's length is the reading. A build
+   * from before that field existed is refused, never filled in with a list typed here.
+   */
+  if (!Array.isArray(nativeMotion.animatableLength))
+    throw new Error(
+      '@irodora/design-tokens carries no nativeMotion.animatableLength — the build predates ' +
+        'ADR-0133. Run `pnpm build` first. Refusing to fall back to a list typed here.',
+    );
+  const style = new Set(nativeMotion.animatable);
+  return { style, props: new Set([...style, ...nativeMotion.animatableLength]) };
 }
 
 function sourceFiles(dir, out = []) {
@@ -256,6 +269,91 @@ function reanimatedStyleKeys(source) {
   return findings;
 }
 
+/** The arrow-returning-object form of a worklet hook: the only one this file claims to read. */
+const READABLE_WORKLET = /useAnimated(Style|Props)\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/uy;
+
+/**
+ * The keys of a reanimated ANIMATED PROPS worklet (F-266, ADR-0133 §4).
+ *
+ * `useAnimatedProps(() => ({ … }))` animates props of someone else's element — a react-native-svg
+ * path's stroke. Its keys are read against `animatable ∪ animatableLength`: a dash offset is a
+ * length and may move; a `stroke`, a `fill` or a path's `d` may not.
+ */
+function reanimatedPropsKeys(source) {
+  const findings = [];
+  for (const m of source.matchAll(/useAnimatedProps\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/gu))
+    for (const key of topLevelKeys(m[1] ?? ''))
+      findings.push({ component: 'useAnimatedProps', property: key });
+  return findings;
+}
+
+/**
+ * A worklet hook this file cannot read, REPORTED rather than skipped (F-266, ADR-0133 §9).
+ *
+ * The scans above read `useAnimatedStyle(() => ({ … }))` and `useAnimatedProps(() => ({ … }))`.
+ * A block body (`() => { return … }`), a function passed by reference (`useAnimatedStyle(styleFor)`)
+ * or a spread at the top of the returned object (`({ ...paint(p.value) })`) returns keys this file
+ * cannot see — so each was a silent pass for whatever it animated. Now each is a finding: the code
+ * is written in the form the gate can read, or the gate is taught the new form.
+ */
+function unreadableWorklets(source) {
+  const findings = [];
+  for (const m of source.matchAll(/useAnimated(Style|Props)\(/gu)) {
+    READABLE_WORKLET.lastIndex = m.index;
+    const readable = READABLE_WORKLET.exec(source);
+    const hook = `useAnimated${m[1] ?? ''}`;
+    if (readable === null)
+      findings.push({
+        component: hook,
+        property: '(a worklet this check cannot read: write it as () => ({ … }))',
+      });
+    else if (topLevelSpread(readable[2] ?? ''))
+      findings.push({
+        component: hook,
+        property: '(a spread at the top of the returned object: its keys cannot be read)',
+      });
+  }
+  return findings;
+}
+
+/** Whether an object literal spreads something at its top level. */
+function topLevelSpread(body) {
+  let depth = 0;
+  for (let i = 0; i < body.length; i += 1) {
+    const ch = body[i];
+    if (ch === '{' || ch === '[' || ch === '(') depth += 1;
+    else if (ch === '}' || ch === ']' || ch === ')') depth -= 1;
+    else if (depth === 0 && body.startsWith('...', i)) return true;
+  }
+  return false;
+}
+
+/**
+ * Two ways to move a colour that no key list sees (F-266, ADR-0133 §9).
+ *
+ * - `interpolateColor(…)` is reanimated's colour tween. Wherever it is called, its result is a
+ *   colour between two colours — the exact frame this product refuses to draw.
+ * - `Animated` from `react-native` is a second animation engine whose styles none of the scans
+ *   above read (`motion.tsx` says why reanimated is the one engine).
+ */
+function colourInterpolation(source) {
+  return [...source.matchAll(/\binterpolateColor\s*\(/gu)].map(() => ({
+    component: 'interpolateColor',
+    property: '(a colour between two colours)',
+  }));
+}
+
+function legacyAnimated(source) {
+  return /import\s*\{[^}]*\bAnimated\b[^}]*\}\s*from\s*['"]react-native['"]/u.test(source)
+    ? [
+        {
+          component: 'Animated (react-native)',
+          property: '(a second animation engine nothing reads)',
+        },
+      ]
+    : [];
+}
+
 /**
  * The keys of an object literal, ignoring anything nested inside braces or brackets.
  *
@@ -377,7 +475,7 @@ function run(allowed) {
       const keys = animatedStyleKeys(source);
       if (keys.length > 0) animatedElements += 1;
       for (const { component, property } of keys)
-        if (!allowed.has(property))
+        if (!allowed.style.has(property))
           violations.push({ file: relative(ROOT, file), component, property });
 
       // The half the style scan structurally cannot reach: a dependency's own colour
@@ -402,8 +500,22 @@ function run(allowed) {
       const reanimated = reanimatedStyleKeys(source);
       if (reanimated.length > 0) animatedElements += 1;
       for (const { component, property } of reanimated)
-        if (!allowed.has(property))
+        if (!allowed.style.has(property))
           violations.push({ file: relative(ROOT, file), component, property });
+
+      // F-266 (ADR-0133 §4, §9): animated props against the wider list, a worklet the scans
+      // cannot read, a colour tween, and a second engine.
+      const props = reanimatedPropsKeys(source);
+      if (props.length > 0) animatedElements += 1;
+      for (const { component, property } of props)
+        if (!allowed.props.has(property))
+          violations.push({ file: relative(ROOT, file), component, property });
+      for (const f of [
+        ...unreadableWorklets(source),
+        ...colourInterpolation(source),
+        ...legacyAnimated(source),
+      ])
+        violations.push({ file: relative(ROOT, file), ...f });
 
       for (const f of durationLiterals(source))
         violations.push({ file: relative(ROOT, file), ...f });
@@ -580,6 +692,81 @@ if (process.argv.includes('--prove')) {
         ');\n',
       shouldFail: false,
     },
+    /*
+     * F-266 (ADR-0133 §4, §9). Animated PROPS take the wider list — a dash offset is a length —
+     * and nothing else: a stroke's colour, a fill, a width or a path stays still. The admission is
+     * for props only, so the same offset in a STYLE is refused.
+     */
+    ...['stroke: c.value', 'fill: c.value', 'strokeWidth: w.value', 'd: path(p.value)'].map(
+      (prop) => ({
+        name: `an animated SVG prop: ${prop.split(':')[0] ?? prop}`,
+        body:
+          "import { useAnimatedProps } from 'react-native-reanimated';\n" +
+          `export const s = () => useAnimatedProps(() => ({ ${prop} }));\n`,
+        shouldFail: true,
+      }),
+    ),
+    {
+      name: 'an animated SVG dash offset and opacity — a length, not a colour',
+      body:
+        "import { useAnimatedProps } from 'react-native-reanimated';\n" +
+        'export const s = () =>\n' +
+        '  useAnimatedProps(() => ({ strokeDashoffset: l * (1 - v.value), opacity: v.value > 0 ? 1 : 0 }));\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a dash offset in an animated STYLE — the admission is for props only',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedStyle(() => ({ strokeDashoffset: o.value }));\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a worklet with a block body, which the scan cannot read',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedStyle(() => {\n  return { opacity: o.value };\n});\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a worklet passed by reference',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedStyle(styleFor);\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a spread at the top of a worklet’s object',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedStyle(() => ({ ...paint(p.value), opacity: 1 }));\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a colour tween, called',
+      body:
+        "import { interpolateColor } from 'react-native-reanimated';\n" +
+        "export const c = (p: number) => interpolateColor(p, [0, 1], ['#000000', '#FFFFFF']);\n",
+      shouldFail: true,
+    },
+    {
+      name: 'the word interpolateColor inside a comment',
+      body: '// interpolateColor(p, [0, 1], [a, b]) is what this file never does.\nexport const x = 1;\n',
+      shouldFail: false,
+    },
+    {
+      name: 'Animated imported from react-native, a second engine',
+      body:
+        "import { Animated } from 'react-native';\n" + 'export const v = new Animated.Value(0);\n',
+      shouldFail: true,
+    },
+    {
+      name: 'Animated imported from reanimated, the one engine',
+      body:
+        "import Animated from 'react-native-reanimated';\n" +
+        'export const V = () => <Animated.View />;\n',
+      shouldFail: false,
+    },
   ];
 
   let bad = 0;
@@ -592,50 +779,60 @@ if (process.argv.includes('--prove')) {
     `  ${GREEN}✓${OFF} baseline clean ${DIM}(asserted first, or a plant proves nothing)${OFF}`,
   );
 
-  for (const c of cases) {
-    writeFileSync(
-      planted,
-      `import { Animated } from 'react-native';\n` +
-        `export function Probe({ fade, grow, shift }: never): React.JSX.Element {\n` +
-        `  return <Animated.View style={{ ${c.style} }} />;\n}\n`,
-    );
-    const found = run(allowed).violations.length > 0;
-    unlinkSync(planted);
-    const ok = found === c.shouldFail;
-    if (!ok) bad += 1;
-    console.log(
-      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
-    );
-  }
+  /*
+   * THE PLANT IS JOURNALLED (F-266). It is written inside the tree — `packages/ui/src` — so a run
+   * killed between a write and its unlink left a file every later scan would read, and recovery
+   * knew nothing of it. The journal records it as absent before the first write, so
+   * `plant.mjs --recover` removes it.
+   */
+  const journal = guardPlants('verify-motion --prove', [planted]);
+  try {
+    for (const c of cases) {
+      writeFileSync(
+        planted,
+        `import Animated from 'react-native-reanimated';\n` +
+          `export function Probe({ fade, grow, shift }: never): React.JSX.Element {\n` +
+          `  return <Animated.View style={{ ${c.style} }} />;\n}\n`,
+      );
+      const found = run(allowed).violations.length > 0;
+      unlinkSync(planted);
+      const ok = found === c.shouldFail;
+      if (!ok) bad += 1;
+      console.log(
+        `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
+      );
+    }
 
-  for (const c of propCases) {
-    writeFileSync(
-      planted,
-      `import { Button } from 'heroui-native';\n` +
-        `export function Probe(): React.JSX.Element {\n` +
-        `  return <Button ${c.attr} />;\n}\n`,
-    );
-    const found = run(allowed).violations.length > 0;
-    unlinkSync(planted);
-    const ok = found === c.shouldFail;
-    if (!ok) bad += 1;
-    console.log(
-      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
-    );
-  }
+    for (const c of propCases) {
+      writeFileSync(
+        planted,
+        `import { Button } from 'heroui-native';\n` +
+          `export function Probe(): React.JSX.Element {\n` +
+          `  return <Button ${c.attr} />;\n}\n`,
+      );
+      const found = run(allowed).violations.length > 0;
+      unlinkSync(planted);
+      const ok = found === c.shouldFail;
+      if (!ok) bad += 1;
+      console.log(
+        `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
+      );
+    }
 
-  for (const c of sourceCases) {
-    writeFileSync(planted, c.body);
-    const found = run(allowed).violations.length > 0;
-    unlinkSync(planted);
-    const ok = found === c.shouldFail;
-    if (!ok) bad += 1;
-    console.log(
-      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
-    );
+    for (const c of sourceCases) {
+      writeFileSync(planted, c.body);
+      const found = run(allowed).violations.length > 0;
+      unlinkSync(planted);
+      const ok = found === c.shouldFail;
+      if (!ok) bad += 1;
+      console.log(
+        `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
+      );
+    }
+  } finally {
+    if (existsSync(planted)) unlinkSync(planted);
+    journal.close();
   }
-
-  if (existsSync(planted)) unlinkSync(planted);
   if (bad > 0) {
     console.log(`\n${RED}${BOLD}The check does not discriminate.${OFF}\n`);
     process.exit(1);
@@ -652,8 +849,12 @@ console.log(`\n${BOLD}Motion${OFF}\n`);
 const { violations, scanned, animatedElements } = run(allowed);
 console.log(
   `${DIM}  ${String(scanned)} source file(s) scanned; ${String(animatedElements)} with an ` +
-    `Animated style literal. Allowed: ${[...allowed].join(', ')} ${DIM}(from the manifest, ` +
-    `not a copy).${OFF}`,
+    `Animated style literal. Allowed: ${[...allowed.style].join(', ')}; as an animated prop, ` +
+    `also ${[...allowed.props].filter((p) => !allowed.style.has(p)).join(', ')} ` +
+    `${DIM}(from the manifest, not a copy).${OFF}`,
+);
+console.log(
+  `${DIM}  F-266 ADDED: useAnimatedProps bodies, read against the wider list (a dash offset is a length; a stroke or fill is not); a worklet this file cannot read — a block body, a reference, a top-level spread — reported rather than skipped; interpolateColor; and Animated imported from react-native. NOT CHECKED HERE: what a dependency's own worklets return (motion-dependencies.test pins that, ADR-0133 §9), and styles in test files.${OFF}`,
 );
 console.log(
   `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062); a colour named inside an animation={{…}} config, which is the third way in and is how the Switch interpolates its track by default (F-156); reanimated's useAnimatedStyle and Keyframe bodies, which are worklets rather than JSX and which the literal scan above is structurally blind to; duration literals, which is how a scale stops being a scale; and layout or shared-element transitions on a Swatch, which is 'cross-fade between samples' stated mechanically. NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +

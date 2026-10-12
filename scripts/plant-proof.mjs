@@ -248,7 +248,6 @@ const NO_JOURNAL_NEEDED = {
     'plants only inside a scratch directory it makes and removes — nothing it touches is in ' +
     'the tree, so there is nothing a killed run could leave behind',
   'verify-apk.mjs': 'writes into a build output directory, never into source',
-  'verify-motion.mjs': 'plants into a temporary file under the OS temp directory',
   'verify-app-imports.mjs': 'plants into a temporary file under the OS temp directory',
   'verify-engine-purity.mjs': 'plants into a temporary file under the OS temp directory',
   'verify-cache-scope.mjs':

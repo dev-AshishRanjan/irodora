@@ -365,6 +365,7 @@ export const nativeMotion = {
     inOut: [0.65, 0, 0.35, 1],
   },
   animatable: ['opacity', 'transform'],
+  animatableLength: ['strokeDashoffset'],
   forbidden: ['background-color on a swatch', 'cross-fade between samples', 'width', 'height', 'top', 'left'],
 } as const;
 

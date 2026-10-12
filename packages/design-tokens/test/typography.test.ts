@@ -234,6 +234,17 @@ describe('elevation, motion and the default theme reach the target', () => {
     expect(nativeMotion.animatable).toEqual(['opacity', 'transform']);
   });
 
+  /*
+   * ONE CHANNEL MORE, AND ONLY ONE (F-266, ADR-0133 §4). A stroke whose length is the reading may
+   * move its dash offset. The first assertion above is the decoy: admitting a length widened
+   * nothing in `animatable`, which is still opacity and transform alone.
+   */
+  it('admits a stroke’s dash offset as a length, and nothing else', () => {
+    expect(nativeMotion.animatableLength).toEqual(['strokeDashoffset']);
+    expect(nativeMotion.animatable).not.toContain('strokeDashoffset');
+    expect(nativeMotion.forbidden).toContain('width');
+  });
+
   it('names the manifest default theme rather than a hard-coded light', () => {
     expect(nativeDefaultTheme).toBe(manifest.defaultTheme);
     expect(nativeDefaultTheme).toBe('dark');

@@ -321,6 +321,8 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   // The forbidden list travels with the tokens deliberately: a component author reaching for
   // an animated background-color should find the prohibition next to the value, not in a doc.
   out.push(`  animatable: [${manifest.motion.animatable.map(quote).join(', ')}],`);
+  // A length beside them (ADR-0133 §4): verify-motion reads it from here, never from a copy.
+  out.push(`  animatableLength: [${manifest.motion.animatableLength.map(quote).join(', ')}],`);
   out.push(`  forbidden: [${manifest.motion.forbidden.map(quote).join(', ')}],`);
   out.push('} as const;');
   out.push('');

@@ -1738,7 +1738,7 @@
     }
   },
   "motion": {
-    "_note": "Motion must NEVER alter a colour mid-transition — the intermediate frames are plausible, so a user reads a colour that never existed. Every duration collapses to 0 under prefers-reduced-motion.",
+    "_note": "Motion must NEVER alter a colour mid-transition — the intermediate frames are plausible, so a user reads a colour that never existed. Every duration collapses to 0 under prefers-reduced-motion. `animatableLength` admits one more channel, for animated PROPS only: the dash offset of a stroke whose length IS the reading (a progress ring, a coverage dial). Its intermediate frames are lengths, never colours, and it lays nothing out — but it is not compositor-only: the SVG re-paints each frame (ADR-0133 §4).",
     "durations": {
       "micro": 120,
       "local": 180,
@@ -1751,6 +1751,9 @@
     "animatable": [
       "opacity",
       "transform"
+    ],
+    "animatableLength": [
+      "strokeDashoffset"
     ],
     "forbidden": [
       "background-color on a swatch",

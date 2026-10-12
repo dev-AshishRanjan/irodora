@@ -384,6 +384,11 @@ export interface Motion {
   readonly durations: Readonly<Record<string, number>>;
   readonly easing: Readonly<Record<string, string>>;
   readonly animatable: readonly string[];
+  /**
+   * The one channel admitted beside `animatable`, for animated props only: a stroke's dash offset,
+   * where the stroke's length is the reading (ADR-0133 §4). Never a colour, never a layout.
+   */
+  readonly animatableLength: readonly string[];
   readonly forbidden: readonly string[];
 }
 
@@ -1303,9 +1308,12 @@ export function parseManifest(input: unknown): Manifest {
     easing[name] = requireString(value, `motion.easing.${name}`);
   }
   const animatable = motionRaw['animatable'];
+  const animatableLength = motionRaw['animatableLength'];
   const forbidden = motionRaw['forbidden'];
   if (!Array.isArray(animatable) || animatable.some((a) => typeof a !== 'string'))
     throw new ManifestError('motion.animatable', 'expected an array of strings');
+  if (!Array.isArray(animatableLength) || animatableLength.some((a) => typeof a !== 'string'))
+    throw new ManifestError('motion.animatableLength', 'expected an array of strings');
   if (!Array.isArray(forbidden) || forbidden.some((f) => typeof f !== 'string'))
     throw new ManifestError('motion.forbidden', 'expected an array of strings');
 
@@ -1345,6 +1353,7 @@ export function parseManifest(input: unknown): Manifest {
       durations,
       easing,
       animatable: animatable as string[],
+      animatableLength: animatableLength as string[],
       forbidden: forbidden as string[],
     },
     exceptions,

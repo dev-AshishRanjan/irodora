@@ -623,7 +623,21 @@ animated portal, worklet reach and the progress line.
 - **(iv)** Read before quoting: reanimated's `useAnimatedStyle` page (precedence), WCAG 2.2 SC 2.2.2 and 2.3.3, Apple HIG *Motion*, Material 3 *Easing and duration* (read in the in-app browser; it says that system *"is no longer maintained"*), and gorhom's `animate.ts`.
 
 **ADR-0133** (D1–D10, with D10 widened) and its README row; ADR-0127 §3 and §6 point to it. No source changed. **Tier 1:** format, state. |
-| 2 | | |
+| 2 | this commit | **The manifest admits a length, and the gate reads it.**
+- **Tokens:** `motion.animatableLength: ["strokeDashoffset"]` and a sentence in `_note`. `Motion` gains the field and the parser requires it. `emit/react-native.ts` emits it, and `generated/native.ts` is regenerated (build, generate, build; `--check` 0). `typography.test` pins it exactly, and pins that `animatable` is still opacity and transform (the decoy).
+- **`verify-motion`:**
+  - reads the two lists from the build and refuses a build without the new field;
+  - `reanimatedPropsKeys` reads `useAnimatedProps` bodies against the wider list;
+  - `unreadableWorklets` reports a block body, a reference or a top-level spread;
+  - `colourInterpolation` reports `interpolateColor(`, and `legacyAnimated` reports `Animated` imported from `react-native`;
+  - the summary names the new checks and their limits.
+- **The proof:** 14 new cases, each paired with a passing decoy (stroke, fill, strokeWidth and `d` refused; dash offset with opacity allowed; a dash offset in a style refused; the three unreadable forms; `interpolateColor` called, and in a comment; the two `Animated` imports). The style plants now import reanimated's `Animated`. **The plant is journalled** (`guardPlants('verify-motion --prove')`, recorded as absent and removed in a `finally`), so `plant-proof.mjs`'s exemption for `verify-motion`, which said it plants under the OS temp directory, is removed.
+- **Tier 1, each exit 0:**
+  - format, typecheck, lint (`verify-motion` and `plant-proof` included);
+  - affected tests: 35 tasks (design-tokens 443, ui 1137, mobile 1313);
+  - `verify-motion --prove` (every case);
+  - `test:contrast` (`generate-design-tokens --check`).
+  - No journal is left behind. |
 | 3 | | |
 | 4 | | |
 | 5 | | |
