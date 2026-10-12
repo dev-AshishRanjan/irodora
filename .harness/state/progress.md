@@ -8,6 +8,94 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-12 — F-296 plant-proof deletes a plant journal it did not write
+
+**Done.** A leftover plant journal now survives every proof in `lint` and in `ci.yml` until a person
+recovers it. Before, `plant-proof` deleted it: `reset()` and its `finally` both ran
+`rmSync(JOURNAL)`, and it runs after other proofs. That is how F-291 lost the record of two real
+plants. It shipped in five commits, `a8d8a4e` through this one
+([E-202](../memory/effects/a-proof-of-the-journal-never-clears-a-journal-it-did-not-write.md)).
+
+- **What clearing the journal had hidden.** The a11y mutation proof opened its journal before
+  checking that a case could plant. On "cannot plant" it `continue`d past `close()`, so every run
+  since F-232 left an entry for an unmodified Button.tsx. The next CI step, plant-proof, wiped it
+  each time. That leak was watched on the tree as it was, then fixed by opening the journal after
+  the check. Without the fix, stopping the deletion would have turned CI red from plant-proof on.
+- **Criterion 1: plant-proof refuses, names, and never deletes.**
+  - It refuses while a journal file exists, readable or not, and names the files and owners it can
+    read.
+  - It clears only entries its own children wrote.
+  - **Watched failing first over a real leftover**, the a11y proof's. The old plant-proof printed
+    "baseline: no plant is outstanding" over it, deleted it, and failed the new case. The new one
+    exits 1 and names Button.tsx, and the journal's SHA-256 is unchanged.
+- **Criterion 2: a leftover survives the chain.**
+  - With that leftover in place, `pnpm lint` stops at `verify-guards`, the first proof that opens a
+    journal, and the SHA-256 is unchanged.
+  - No script, `package.json` script or workflow imports `JOURNAL` or `recover`, runs
+    `plant.mjs --recover`, or names the file. That check runs in plant-proof, which carries twelve
+    decoys and four controls, and its blind spots are written beside it.
+- **Cases in plant-proof.** It is run again over a foreign leftover and over a truncated journal.
+  Each time it must refuse in its own words, run none of its cases, and leave the bytes as they
+  were. Its own clean-up must leave a third owner's entry alone. Seven mutants each fail it.
+- **Record.**
+  - E-202 (high), with its note.
+  - E-127's and E-094's notes.
+  - The journal lesson's addendum: a `continue` is an early exit.
+  - A new lesson: a proof of a safety net must not clear the net it proves.
+  - Downstream notes on F-271, F-324, F-331 and F-333.
+
+**Review (once, cut off by a usage limit and resumed): FAIL as delivered**, with 1 blocking,
+1 significant and 7 minor findings. Every one is fixed or recorded; the plan's `review` row lists
+each.
+
+- **B1, fixed:** `plant.mjs` reads an unparseable journal as empty, so plant-proof started over a
+  truncated one and deleted it. It now refuses on the file's existence.
+- **F-334, recorded (backlog):** every other proof reads an unreadable journal as empty in the same
+  way.
+- **S1, fixed:** the refusal case passed on a second run that crashed after doing the damage.
+- **M5, recorded on F-271:** two sibling journal leaks, in `verify-contrast-proof` and
+  `verify-contract-pin`.
+
+**Gates run on the final tree:**
+
+Each exit 0:
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm format:check` · `pnpm build`
+- `node scripts/verify-claims.mjs`
+- `pnpm lint`, plant-proof included: every case OK, and no journal afterwards
+- both criteria again over the saved real leftover: plant-proof exits 1 and `pnpm lint` exits 1
+  at `verify-guards`, with the journal's SHA-256 unchanged through both; then `--recover`
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories; F-296 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **31 of 38 green, none not run** (one shell block skipped).
+  - **The plant journal proof is green straight after the a11y proof**, so the leak is gone in the
+    real chain.
+  - **Three recorded reds:** the iOS config half on win32, F-324 and F-322.
+  - **An F-333 event, its third today, and three refusals behind it.** The contrast mutation proof
+    hit win32's transient `UNKNOWN` opening the manifest (`verify-contrast-proof.mjs:297`). Its
+    journal entry stayed, with the file equal to HEAD. The content, bench and no-inference proofs
+    then refused, as they should.
+  - **Recovery.** The journal's bytes equalled HEAD, and `plant.mjs --recover` cleared it. Each of
+    the four proofs then exited 0 alone.
+
+**Not run:** `e2e` (no Maestro or JDK here; gate 7 is pending). Nothing in this feature runs on a
+device.
+
+### Lessons
+
+[[a-proof-of-a-safety-net-must-not-clear-the-net-it-proves]] (new), and
+[[a-journal-opened-before-an-early-exit-claims-plants-that-never-happened]] (its F-296 addendum).
+
+### Next
+
+F-221. On 2026-10-12 the person ran the app on their own mobile device and directed that F-221's
+prerequisite device run be treated as done; that is recorded with F-221's claim.
+
+---
+
+
 ## 2026-10-12 — F-295 verify-ci reports a passing step as failed when it prints more than 1 MiB
 
 **Done.** `verify-ci` now reports each step by its exit code. Before this, every uncached run showed
