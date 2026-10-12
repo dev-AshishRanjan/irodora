@@ -49,6 +49,10 @@ Until **F-295** is done, `verify-ci` reports test, a11y and contrast red on a cl
 run uncached: each prints about 7 MB, and its `spawnSync` stops reading at 1 MiB. Read those three
 by their own exit codes.
 
+**F-295 is done (2026-10-12):** each step writes to a log, so its exit code decides, and a step
+that could not run is marked `!` and named apart from a failed check. Read every step from
+`verify-ci --all` as it reports.
+
 ## Addendum — 2026-10-10 (ADR-0132): "always" is every feature, not every commit
 
 Rule 1 above read `requiredFor: ["always"]` as *before every commit*. In `gates.json` it names the

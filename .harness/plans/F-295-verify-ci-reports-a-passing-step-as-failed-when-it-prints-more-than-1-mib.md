@@ -117,4 +117,5 @@ Live streaming; a per-step timeout; the restore retry of the mutation proofs (F-
 - **`--prove`** runs four synthetic steps through `runStep`: a 2 MiB writer that exits 0; an exit 3 whose tail is kept; an unstartable step (a missing working directory, ENOENT); a step the runner kills (a 500 ms timeout, ETIMEDOUT). It is in the root `lint` chain and documented in the usage block.
 - **Watched failing first:** on the runner as it was, the proof failed on the 2 MiB case (`failed`) and on both not-run cases (`failed`); the exit-3 decoy passed. On the fixed runner all four pass.
 - **Tier 1, each exit 0:** format, typecheck, lint (the proof included), state. |
+| 2 | this commit | **Close-out.** E-201 with its note and index line. The two lessons and ADR-0132, which told a reader to discount three verify-ci reds, now say F-295 is done and what verify-ci reports. **Tier 1, each exit 0:** format, lint, state. |
 | review | | |

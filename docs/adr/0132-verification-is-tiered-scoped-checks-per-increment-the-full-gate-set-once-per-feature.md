@@ -76,7 +76,9 @@ Before the single review, and again on the final tree after the review's finding
 
 - every gate in the feature's `verification` list;
 - the always-gates, `state` and `security`;
-- `node scripts/verify-ci.mjs --all`, read with F-295 in mind.
+- `node scripts/verify-ci.mjs --all`. (Until F-295, read test, a11y and contrast by their own exit
+  codes; since 2026-10-12 verify-ci reports them by their exit codes, and marks a step that could
+  not run apart from a failed one.)
 
 Each exit code is recorded in the plan and in `progress.md`. A red always-gate the feature did not
 cause is recorded as a feature at once, never fixed inside this one (rule 2) and never left

@@ -8427,6 +8427,44 @@
       "guard": "motion.test (useValueMotion): at rest on mount, between then there on a change, lands under reduced motion, and lands a running move when the setting switches mid-session. progress-bar.test: at rest on mount (DECOY: a value grown from 0 is visible to the same reading), between then there, only `transform` animates and the ink stays foreground mid-move (DECOY: the reader names a colour worklet), reduced lands. progress-ring.test and charts.test: the dash mid-move while the spoken value and the printed figure are already final, only the dash and its opacity animate, reduced lands. launch.test: the line heads for the next step, never runs backwards, is full before the app. sheet.test samples the sheet's easing against the manifest's out (DECOY: inOut).",
       "memory": "memory/effects/a-value-moves-when-it-changes.md",
       "rationale": "ADR-0133 §3: a value mounts at itself and moves to each new value over a step with inOut; a figure is replaced, never counted. Every reading drawn as a length (the line, the ring, the dial) moves through this one hook, so its easing, its step and its reduced-motion behaviour are one decision."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-295",
+      "id": "E-201",
+      "severity": "medium",
+      "scope": [
+        "scripts",
+        ".harness"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "scripts/verify-ci.mjs#runStep"
+      },
+      "to": [
+        {
+          "kind": "doc",
+          "ref": "docs/adr/0132-verification-is-tiered-scoped-checks-per-increment-the-full-gate-set-once-per-feature.md"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/memory/lessons/an-always-gate-nobody-runs-is-red-without-anyone-knowing.md"
+        },
+        {
+          "kind": "doc",
+          "ref": ".harness/memory/lessons/an-increments-gate-list-is-a-floor-not-the-set.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "node scripts/verify-ci.mjs --prove, in the root lint chain: a step that prints 2 MiB and exits 0 is passed; an exit 3 is failed and its tail is kept (the decoy); a step that cannot start (a missing working directory) and a step the runner kills (a timeout) are not run, each naming its error. Watched failing first on the runner as it was.",
+      "memory": "memory/effects/a-step-is-judged-by-its-exit-not-by-what-it-printed.md",
+      "rationale": "Tier 2 (ADR-0132) reads verify-ci --all as evidence. A runner that buffers output kills a long-talking step and reports it failed, which taught every reader to discount three reds; a runner that cannot tell a failed check from a step that never ran hides an environment failure as a test failure. Change how runStep spawns or classifies, and what Tier 2 records changes with it."
     }
   ]
 }

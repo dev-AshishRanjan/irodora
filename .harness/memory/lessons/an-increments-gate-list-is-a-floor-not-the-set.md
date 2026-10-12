@@ -37,7 +37,8 @@ Links: [[a-package-gate-is-not-the-repository-gate]]
 `pnpm verify:ci` stops at its first red step, and F-295 makes Gate 4 (test) red on every uncached
 run. So a plain run never reaches the steps after test. At F-236's close-out, `--all` found the a11y
 mutation proof red since F-232 (F-324). Read test, a11y and contrast by their own exit codes, as the
-lesson above says, and every other step from `--all`.
+lesson above says, and every other step from `--all`. **Since F-295 (2026-10-12)** those three are
+reported by their exit codes too; `--all` is still the way to see every step past the first red.
 
 ## Addendum — 2026-10-10 (ADR-0132): the floor is per feature
 
