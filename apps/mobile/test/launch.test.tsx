@@ -39,10 +39,12 @@ import {
   Mark,
   markInkBox,
   PROGRESS_TRACK,
+  RISE,
   ThemeProvider,
 } from '@irodora/ui';
 import { animatedStyleOf, flattenStyle } from '@irodora/ui/testing';
 import {
+  GLOW_BLOOM_FROM,
   Launch,
   LAUNCH_GLOW,
   LAUNCH_HOLD,
@@ -443,6 +445,87 @@ describe('the hand-over', () => {
       expect(now).toBeLessThanOrEqual(1);
       last = now;
     }
+  });
+});
+
+/**
+ * THE AMBIENCE (F-266, ADR-0133 §2): the glow blooms on the mark's arrival, from the mark's grid, and
+ * the wave rises into place with the mark. Read live with `animatedStyleOf`, a frame per act().
+ */
+describe('the glow blooms on arrival and the wave rises with the mark (F-266)', () => {
+  const RISE_MS = nativeMotion.durations[LAUNCH_RISE];
+  const HOLD_MS = nativeMotion.durations[LAUNCH_HOLD];
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  const run = (ms: number): void => {
+    for (let left = ms; left > 0; left -= 20)
+      act(() => {
+        jest.advanceTimersByTime(Math.min(20, left));
+      });
+  };
+  const live = (tree: ReturnType<typeof render>, id: string) =>
+    animatedStyleOf(tree.getByTestId(id, hidden));
+  const scaleOf = (style: Readonly<Record<string, unknown>>): number =>
+    (style['transform'] as { scale?: number; translateY?: number }[])[0]?.scale ?? NaN;
+  const riseOf = (style: Readonly<Record<string, unknown>>): number =>
+    (style['transform'] as { translateY?: number }[])[0]?.translateY ?? NaN;
+
+  it("starts the bloom at the mark's own grid within the glow, read from the drawings table", () => {
+    expect(GLOW_BLOOM_FROM).toBe(brandAssets.glow.grid / brandAssets.glow.canvas);
+    expect(GLOW_BLOOM_FROM).toBeGreaterThan(0);
+    expect(GLOW_BLOOM_FROM).toBeLessThan(1);
+  });
+
+  it('keeps the glow dark while the mark travels', () => {
+    const tree = draw();
+    run(RISE_MS / 2);
+    expect(live(tree, 'launch.glow.bloom')['opacity']).toBe(0);
+    expect(scaleOf(live(tree, 'launch.glow.bloom'))).toBe(GLOW_BLOOM_FROM);
+    // DECOY: the composition it sits in is already fading in, so a glow tied to it would show.
+    expect(live(tree, 'launch.composition')['opacity']).toBeGreaterThan(0);
+  });
+
+  it('blooms over the hold, from the grid to its drawn spread, and rests there', () => {
+    const tree = draw();
+    run(RISE_MS + HOLD_MS / 2);
+    const mid = live(tree, 'launch.glow.bloom');
+    expect(mid['opacity']).toBeGreaterThan(0);
+    expect(mid['opacity']).toBeLessThan(1);
+    expect(scaleOf(mid)).toBeGreaterThan(GLOW_BLOOM_FROM);
+    expect(scaleOf(mid)).toBeLessThan(1);
+    // Mid-bloom it animates opacity and a transform, nothing else, and its tint has not moved.
+    expect(Object.keys(mid).sort()).toStrictEqual(['opacity', 'transform']);
+    expect(flattenStyle(tree.getByTestId('launch.glow', hidden).props['style'])['tintColor']).toBe(
+      nativeColors.dark.foreground,
+    );
+    run(HOLD_MS);
+    const rest = live(tree, 'launch.glow.bloom');
+    expect(rest['opacity']).toBe(1);
+    expect(scaleOf(rest)).toBe(1);
+  });
+
+  it('rises the wave by one step of the scale into its drawn place, with the mark', () => {
+    const tree = draw();
+    expect(riseOf(live(tree, 'launch.wave'))).toBe(RISE);
+    run(RISE_MS / 2);
+    expect(riseOf(live(tree, 'launch.wave'))).toBeGreaterThan(0);
+    expect(riseOf(live(tree, 'launch.wave'))).toBeLessThan(RISE);
+    run(RISE_MS);
+    expect(riseOf(live(tree, 'launch.wave'))).toBe(0);
+    expect(Object.keys(live(tree, 'launch.wave'))).toStrictEqual(['transform']);
+  });
+
+  it('under reduced motion, the glow is bloomed and the wave in place at once', async () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const tree = draw();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    run(20);
+    expect(live(tree, 'launch.glow.bloom')['opacity']).toBe(1);
+    expect(scaleOf(live(tree, 'launch.glow.bloom'))).toBe(1);
+    expect(riseOf(live(tree, 'launch.wave'))).toBe(0);
   });
 });
 

@@ -74,8 +74,11 @@ function bezier(name: EasingName): ReturnType<typeof Easing.bezier> {
 const STAGGER_STEP = nativeMotion.durations.micro / 2;
 const STAGGER_CAP = 6;
 
-/** How far an entering element rises, in pixels — one step of the spacing scale, not a number. */
-const RISE = nativeSpacing.sm;
+/**
+ * How far an entering element rises, in pixels — one step of the spacing scale, not a number.
+ * Exported so a composition that enters outside `Appear` (the launch's wave, F-266) rises as far.
+ */
+export const RISE = nativeSpacing.sm;
 
 export interface MotionValues {
   /** Whether the platform is asking for reduced motion right now. */

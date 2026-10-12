@@ -670,7 +670,18 @@ animated portal, worklet reach and the progress line.
   - **F-240's B1 recurred** (the ui conformance file's cleanup hook past 5 s, on the same test). The cause was RNTL awaiting an async unmount per render after each test. The derived themes now run one test per subject, and the duplicate `checkAll(SUBJECTS)` test is removed. The lesson [[a-mock-records-every-call-until-something-clears-it]] gains the half `clearMocks` did not touch.
 - **`toEqual([])`** became `toHaveLength(0)` (verify-empty-assertions).
 - **Tier 1, each exit 0:** format, typecheck, lint, affected tests (18 tasks; ui 1301, mobile 1316). |
-| 5 | | |
+| 5 | this commit | **The launch's ambience.**
+- **`GLOW_BLOOM_FROM = LAUNCH_GLOW.grid / LAUNCH_GLOW.canvas`**, read from the drawings table (240 / 544).
+- **The glow:** a `bloom` shared value is set to 1 on the reduced path; otherwise it blooms over the hold (`LAUNCH_HOLD`, `out`), started by the arrival timer inside the existing one-run effect. The glow's `Image` sits inside an `Animated.View` (`launch.glow.bloom`) placed at the glow's box, so its scale is about the glow's own centre. The worklet is opacity plus a scale, `GLOW_BLOOM_FROM → 1`; the tint stays on the Image.
+- **The wave:** `Animated.View` (`launch.wave`), `translateY = (1 − arrive)·RISE`, on the mark's own `arrive` value.
+- **`RISE`** is exported from `@irodora/ui`.
+- **`launch.test`, 5 new:**
+  - the bloom's start recomputed from `brand-assets.json`;
+  - the glow is dark at half the rise (DECOY: the composition around it is already above 0);
+  - mid-hold it is between on opacity and scale, animates only opacity and a transform, and its tint is still `foreground`; at rest it reads 1 and 1;
+  - the wave is at `RISE`, then between, then 0, animating only `transform`;
+  - under reduced motion both are at rest after one frame (the spy is restored in `afterEach`).
+- **Tier 1, each exit 0:** format, typecheck, lint (`generate-brand-assets --check` and `verify-app-glyphs` included), affected tests (18 tasks; ui 1301, mobile 1321). |
 | 6 | | |
 | 7 | | |
 | 8 | | |

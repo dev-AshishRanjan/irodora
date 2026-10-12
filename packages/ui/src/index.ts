@@ -450,6 +450,7 @@ export {
   Appear,
   durations,
   overlayKeyframes,
+  RISE,
   useMotion,
   usePress,
   useValueMotion,

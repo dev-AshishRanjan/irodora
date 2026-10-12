@@ -50,16 +50,17 @@ import {
   Illustration,
   illustrationBox,
   lockupGeometry,
+  type LockupGeometry,
   Mark,
   PROGRESS_TRACK,
   ProgressBar,
+  RISE,
   SYSTEM_APPEARANCE,
   Text,
   ThemeProvider,
   useMotion,
   useTheme,
   Wordmark,
-  type LockupGeometry,
 } from '@irodora/ui';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
 import brandAssets from '../assets/brand/brand-assets.json' with { type: 'json' };
@@ -85,6 +86,13 @@ export const SPLASH_MARK_DY = (SPLASH_IMAGE_WIDTH * SPLASH_DRAWING.dy) / SPLASH_
  * is how much larger than the mark's grid the image is drawn (ADR-0127).
  */
 export const LAUNCH_GLOW = brandAssets.glow;
+
+/**
+ * Where the glow's bloom starts, as a scale of its drawn size (F-266, ADR-0133 §2): the mark's own
+ * grid within the glow's canvas. The glow is the mark's ink, blurred (ADR-0127 §5), so it grows out
+ * of the mark's cuts to its drawn spread — read from the drawings table, never typed.
+ */
+export const GLOW_BLOOM_FROM = LAUNCH_GLOW.grid / LAUNCH_GLOW.canvas;
 
 /**
  * Where 14 puts the rest, in the R9 scale (§2). Read off 14 at 1.3521 dp/px and snapped:
@@ -300,6 +308,8 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
   const [shown, setShown] = useState(false);
   const arrive = useSharedValue(0);
   const leaving = useSharedValue(0);
+  // The glow's bloom (F-266): 0 while the mark travels, 1 once it has bloomed on arrival.
+  const bloom = useSharedValue(0);
   const layout = launchLayout(box, geometry, sublineHeight);
   /*
    * WHAT THE SEQUENCE READS, KEPT CURRENT WITHOUT RESTARTING IT (F-231's review, B1). `timing` is
@@ -331,6 +341,7 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
        * the beat, so it is seen rather than flashed, and then the app is there, cut again.
        */
       arrive.value = 1;
+      bloom.value = 1;
       setPhase('arrived');
       timers.push(
         setTimeout(() => {
@@ -348,6 +359,8 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
       timers.push(
         setTimeout(() => {
           setPhase('arrived');
+          // The mark is in its place: its glow blooms over the hold (F-266, ADR-0133 §2).
+          bloom.value = withTiming(1, live.current.timing(LAUNCH_HOLD));
         }, step),
         setTimeout(() => {
           setPhase('leaving');
@@ -366,7 +379,7 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
     };
     // `shown` and `reduced` are the only inputs that change the sequence; the shared values are
     // stable, and everything else is read through `live`.
-  }, [shown, reduced, arrive, leaving]);
+  }, [shown, reduced, arrive, leaving, bloom]);
 
   // Where the travelling mark starts (the native frame: centred, SPLASH_MARK_DY below) and where it
   // arrives (the lockup's mark), as an offset of its centre from the overlay's and a scale of its grid.
@@ -382,6 +395,19 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
     ],
   }));
   const composition = useAnimatedStyle(() => ({ opacity: arrive.value }));
+  /*
+   * THE AMBIENCE (F-266, ADR-0133 §2). The glow is hidden while the mark travels and blooms from the
+   * mark's grid as it arrives: it is the mark's light, and lit before the mark is there it would
+   * light an empty place. The wave rises into its drawn place with the mark. Opacity and transforms
+   * only; the glow's tint is static, on the Image.
+   */
+  const glowBloom = useAnimatedStyle(() => ({
+    opacity: bloom.value,
+    transform: [{ scale: GLOW_BLOOM_FROM + (1 - GLOW_BLOOM_FROM) * bloom.value }],
+  }));
+  const waveRise = useAnimatedStyle(() => ({
+    transform: [{ translateY: (1 - arrive.value) * RISE }],
+  }));
   const leave = useAnimatedStyle(() => ({ opacity: 1 - leaving.value }));
   const onGeometry = useCallback((next: LockupGeometry) => {
     setGeometry(next);
@@ -404,11 +430,16 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
     >
       <Animated.View testID="launch.composition" style={[StyleSheet.absoluteFill, composition]}>
         {/* The glow, behind the lockup, so the mark's cuts show it (ADR-0122 §3). */}
-        <Image
-          testID="launch.glow"
-          source={launchGlow}
-          style={[placed(layout.glow), { tintColor: colors.foreground }]}
-        />
+        <Animated.View testID="launch.glow.bloom" style={[placed(layout.glow), glowBloom]}>
+          <Image
+            testID="launch.glow"
+            source={launchGlow}
+            style={[
+              { width: layout.glow.width, height: layout.glow.height },
+              { tintColor: colors.foreground },
+            ]}
+          />
+        </Animated.View>
         <View style={placed(layout.lockup)}>
           <Wordmark
             form="splash"
@@ -432,9 +463,9 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
             {t('brand.splashSubline')}
           </Text>
         </View>
-        <View style={placed(layout.wave)}>
+        <Animated.View testID="launch.wave" style={[placed(layout.wave), waveRise]}>
           <Illustration name="silk-wave" width={layout.wave.width} color="foreground.3" />
-        </View>
+        </Animated.View>
         <View style={placed(layout.line)}>
           {/*
             THE LINE KEEPS PACE WITH THE SEQUENCE (F-266): it heads for the next step's value over
