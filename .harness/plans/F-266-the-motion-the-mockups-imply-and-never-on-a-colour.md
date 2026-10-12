@@ -638,7 +638,21 @@ animated portal, worklet reach and the progress line.
   - `verify-motion --prove` (every case);
   - `test:contrast` (`generate-design-tokens --check`).
   - No journal is left behind. |
-| 3 | | |
+| 3 | this commit | **No dependency animates a colour; the Switch jumps and paints our tokens** (D10, Amendment 6).
+- **`controls.tsx`:**
+  - `HeroSwitch` takes `{ state: 'disable-all', backgroundColor: { value: [surface.3, inverse] } }`;
+  - the thumb takes `{ state: 'disabled', left, backgroundColor: { value: [inverse, surface.1] } }`, all painted tokens.
+- **`verify-motion`:** a colour in an `animation` config is allowed only when that config's own top-level `state` is `disabled` or `disable-all`. Four new proof cases: the two pins are allowed; a `state` nested inside the colour's config, and `state: 'enabled'`, are refused.
+- **`motion-dependencies.test` (4):**
+  - `heroui-native` is the audited 1.0.8;
+  - after a supplied layout, our Switch's animated colours are our tokens in both states, and one frame after a toggle it is at its end state, `start` included;
+  - DECOY: HeroUI's Switch configured as before shows a thumb colour and a `start` between their two values one frame in.
+
+  **Watched failing first:** with `controls.tsx` reverted to HEAD, the two Switch tests failed and the two others passed.
+- **The full test run caught one more thing.** F-240's ui preview sweep named the Switch: its animated colours, now ours, were correctly simulated in each mode, but `previewMismatches` compared `jestAnimatedStyle` as an unchanged prop.
+  - The guard now reads `jestAnimatedStyle` and `jestAnimatedProps`: colour keys are simulated, every other key is unchanged, and the keys must match.
+  - Two decoys in the sweep: a worklet returning a raw hex is named in every mode; one returning the painted colour passes.
+- **Tier 1, each exit 0:** format, typecheck, lint (one `no-unnecessary-type-assertion` fixed, type-only, then re-run), `verify-motion --prove`, affected tests (18 tasks; ui 1143, mobile 1313). No journal left. |
 | 4 | | |
 | 5 | | |
 | 6 | | |

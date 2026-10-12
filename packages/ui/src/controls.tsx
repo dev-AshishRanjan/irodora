@@ -255,11 +255,26 @@ export function Switch({
         */
         accessibilityState={{ checked, disabled: inert, busy: loading }}
         /*
-          THE COLOUR TRANSITION, OFF. See the header: the intermediate frames of a colour
-          interpolation are colours the engine never produced. `state: 'disabled'` makes
-          HeroUI return the value instead of a `withTiming` toward it.
+          EVERY ANIMATION OFF, AND OUR COLOURS AS HEROUI'S VALUES (F-266, ADR-0133 §10).
+
+          `state: 'disabled'` turned off the root's own colour tween, and nothing else: it does not
+          reach the thumb, which kept a `withTiming` on its `backgroundColor` and a spring on its
+          `start` — a colour between two colours, and a layout property the manifest forbids
+          (F-266's probe read both, three frames into a toggle). `'disable-all'` sets the context
+          the thumb reads, so both of its worklets return their end state at once: the thumb jumps,
+          and no mockup draws a slide. Its position still says the state (golden rule 13).
+
+          THE VALUES ARE OURS because an animated style takes precedence over a static one
+          (reanimated's own rule). HeroUI's worklets return a colour even when disabled — the
+          end state — and left to its defaults that colour is HeroUI's theme, painting over
+          `track` and `thumb` on a device and outside the colour-vision preview. Given ours, the
+          constant it returns is the painted token the static style below already declares.
+          Off, then on: HeroUI reads `[unselected, selected]`.
         */
-        animation={{ state: 'disabled' }}
+        animation={{
+          state: 'disable-all',
+          backgroundColor: { value: [colors['surface.3'], colors.inverse] },
+        }}
         // `null` removes the theme-decided layer. One of the theme's choices is a blur.
         background={null}
         // The drawn track; the rest of the target is in the hit area (ADR-0114).
@@ -282,7 +297,13 @@ export function Switch({
         */}
         <FocusRing visible={focused} radius={nativeRadius.pill} />
         <HeroSwitch.Thumb
-          animation={{ left: { value: SWITCH_THUMB_INSET } }}
+          // Disabled in its own config too, so the config says what it does on its own — and our
+          // thumb colours, off then on, are the constant its worklet returns (see the root).
+          animation={{
+            state: 'disabled',
+            left: { value: SWITCH_THUMB_INSET },
+            backgroundColor: { value: [colors.inverse, colors['surface.1']] },
+          }}
           style={{
             width: SWITCH_THUMB,
             height: SWITCH_THUMB,

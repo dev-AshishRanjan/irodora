@@ -192,11 +192,41 @@ function colourAnimationConfigs(source) {
       continue;
     }
     const block = source.slice(from, end + 1);
+    /*
+     * A COLOUR IN A CONFIG THAT DISABLES ITSELF IS A CONSTANT, NOT A TWEEN (F-266, ADR-0133 §10).
+     * HeroUI's worklets return the end state at once when the config's own `state` is
+     * `'disabled'` or `'disable-all'`, so a colour given there is the value painted, never a frame
+     * between two. The `state` has to be at the config's TOP level: one nested inside the colour's
+     * own config disables nothing, and the proof plants exactly that. `motion-dependencies.test`
+     * holds HeroUI to it at runtime, pinned to the audited version.
+     */
+    if (selfDisabled(block)) continue;
     for (const key of COLOUR_KEYS)
       if (new RegExp(`(?:^|[\\s{(,])${key}\\s*:`, 'u').test(block))
         findings.push({ key, detail: `${key} inside an animation config` });
   }
   return findings;
+}
+
+/** Whether an `animation={{ … }}` block's own top-level `state` turns its animation off. */
+function selfDisabled(block) {
+  // `block` is the JSX expression `{ { … } }`: the object literal is one level further in.
+  const expression = block.slice(1, -1).trim();
+  if (!expression.startsWith('{') || !expression.endsWith('}')) return false;
+  const body = expression.slice(1, -1);
+  let depth = 0;
+  for (let i = 0; i < body.length; i += 1) {
+    const ch = body[i];
+    if (ch === '{' || ch === '[' || ch === '(') depth += 1;
+    else if (ch === '}' || ch === ']' || ch === ')') depth -= 1;
+    else if (
+      depth === 0 &&
+      (i === 0 || /[\s,{]/u.test(body[i - 1] ?? ' ')) &&
+      /^state\s*:\s*['"](?:disabled|disable-all)['"]/u.test(body.slice(i))
+    )
+      return true;
+  }
+  return false;
 }
 
 function colourAnimationOptIns(source) {
@@ -657,6 +687,39 @@ if (process.argv.includes('--prove')) {
         "import { Switch } from 'heroui-native';\n" +
         "export const V = () => <Switch animation={{ state: 'disabled' }} />;\n",
       shouldFail: false,
+    },
+    /*
+     * F-266 (ADR-0133 §10): a colour given to a config that disables its own animation is the
+     * constant HeroUI paints, never a frame between two. The decoy that matters: the same
+     * `state` nested inside the colour's config disables nothing, and is refused.
+     */
+    {
+      name: 'a Switch giving our colours to a config with every animation disabled',
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        "export const V = () => <Switch animation={{ state: 'disable-all', backgroundColor: { value: [a, b] } }} />;\n",
+      shouldFail: false,
+    },
+    {
+      name: 'a thumb giving our colours to a config with its own animation disabled',
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        "export const V = () => <Switch.Thumb animation={{ state: 'disabled', left: { value: 2 }, backgroundColor: { value: [a, b] } }} />;\n",
+      shouldFail: false,
+    },
+    {
+      name: 'a state nested inside the colour’s own config, which disables nothing',
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        "export const V = () => <Switch animation={{ backgroundColor: { state: 'disabled', value: [a, b] } }} />;\n",
+      shouldFail: true,
+    },
+    {
+      name: 'a colour beside a state that leaves the animation on',
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        "export const V = () => <Switch animation={{ state: 'enabled', backgroundColor: { value: [a, b] } }} />;\n",
+      shouldFail: true,
     },
     {
       name: 'an animation config moving the thumb, which is a position and not a colour',

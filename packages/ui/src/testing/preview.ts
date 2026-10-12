@@ -20,9 +20,37 @@ import { colourValues, flattenStyle, type TestNode } from './tree.js';
  * Props that are not compared as written:
  * - `fill`, `stroke` and `gradient` carry colour, and are read through `colourValues`;
  * - `jestInlineStyle` is the test renderer's mirror of `style`, which is compared;
- * - `xml` (`SvgXml`'s document) carries paint as attributes, compared through `XML_PAINT`.
+ * - `xml` (`SvgXml`'s document) carries paint as attributes, compared through `XML_PAINT`;
+ * - `jestAnimatedStyle` and `jestAnimatedProps` are what a worklet returned, compared through
+ *   {@link ANIMATED_PROPS}: a colour there is paint, simulated like any other (F-266).
  */
-const SKIPPED_PROPS = new Set(['fill', 'stroke', 'gradient', 'jestInlineStyle', 'xml']);
+const SKIPPED_PROPS = new Set([
+  'fill',
+  'stroke',
+  'gradient',
+  'jestInlineStyle',
+  'xml',
+  'jestAnimatedStyle',
+  'jestAnimatedProps',
+]);
+
+/**
+ * WHAT A WORKLET RETURNED IS PAINT TOO (F-266, ADR-0133 §10).
+ *
+ * Reanimated mirrors an animated style or animated props into these two props under jest, as
+ * `{ value: {…} }`, and an animated style takes precedence over a static one on a device. HeroUI's
+ * Switch returns its colours this way, and since F-266 they are our painted tokens: so in a
+ * preview mode each colour key in them must be the engine's simulation of the Standard one, and
+ * every other key — a position, an opacity — exactly as it was.
+ */
+const ANIMATED_PROPS = ['jestAnimatedStyle', 'jestAnimatedProps'] as const;
+
+/** A worklet's mirrored return, or nothing. */
+const animatedValue = (prop: unknown): Readonly<Record<string, unknown>> | null => {
+  if (typeof prop !== 'object' || prop === null || !('value' in prop)) return null;
+  const { value } = prop;
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+};
 
 /** A paint attribute inside an SVG document handed over as text, and a paint in its CSS. */
 const XML_PAINT = /\b(fill|stroke|stop-color)="([^"]*)"/gu;
@@ -236,6 +264,34 @@ export function previewMismatches(
       const expected = withPaints(xa, (value) => simulatePaint(value, mode).toLowerCase());
       if (typeof xb !== 'string' || withPaints(xb, (value) => value.toLowerCase()) !== expected)
         out.push(`${here}.xml: the document is not its Standard self with every paint simulated`);
+    }
+
+    // What a worklet returned: its colours simulated, everything else unchanged (F-266).
+    for (const prop of ANIMATED_PROPS) {
+      const va = animatedValue(a.props[prop]);
+      const vb = animatedValue(b.props[prop]);
+      if (va === null && vb === null) continue;
+      const keysA = Object.keys(va ?? {}).sort();
+      const keysB = Object.keys(vb ?? {}).sort();
+      if (comparable(keysA) !== comparable(keysB)) {
+        out.push(
+          `${here}.${prop}: returns ${keysB.join(', ')} where Standard returns ${keysA.join(', ')}`,
+        );
+        continue;
+      }
+      for (const key of keysA) {
+        const standard = va?.[key];
+        const shown = vb?.[key];
+        const colour = isColourKey(key) || key === 'fill' || key === 'stroke';
+        const expected =
+          colour && typeof standard === 'string' && standard !== 'transparent'
+            ? simulatePaint(standard, mode)
+            : standard;
+        if (comparable(shown).toLowerCase() !== comparable(expected).toLowerCase())
+          out.push(
+            `${here}.${prop}.${key}: ${comparable(shown)} where the engine gives ${comparable(expected)} (Standard ${comparable(standard)})`,
+          );
+      }
     }
 
     // A shadow is paint too: the colours inside `boxShadow` are simulated, the geometry is not.

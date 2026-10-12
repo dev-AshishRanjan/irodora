@@ -8,6 +8,7 @@
  */
 
 import { Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { fireEvent, render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import {
@@ -3087,6 +3088,41 @@ describe('the CVD preview paints every subject through the engine, and changes n
         'dark',
       );
       expect(found.some((f) => f.includes('where Standard has'))).toBe(true);
+    });
+
+    /*
+     * F-266 (ADR-0133 §10): a colour a worklet returns is paint, and an animated style beats a
+     * static one on a device. HeroUI's Switch returns ours this way, so the sweep reads it — and
+     * names one left as a raw hex in every mode. The worklets capture a string and nothing else,
+     * so the mapper walk above has no object to reach.
+     */
+    it('a colour a worklet returns, left unsimulated', () => {
+      function RawWorklet(): React.JSX.Element {
+        const style = useAnimatedStyle(() => ({ backgroundColor: DECOY_HEX }));
+        return <Animated.View style={[{ width: 48, height: 48 }, style]} />;
+      }
+      const found = mismatches(
+        subject('raw worklet', () => <RawWorklet />),
+        'dark',
+      );
+      expect(found.filter((f) => f.includes('jestAnimatedStyle.backgroundColor'))).toHaveLength(
+        MODES.length,
+      );
+    });
+
+    it('and passes a worklet that returns the painted colour', () => {
+      function PaintedWorklet(): React.JSX.Element {
+        const { paint } = useTheme();
+        const hex = paint(DECOY_HEX);
+        const style = useAnimatedStyle(() => ({ backgroundColor: hex }));
+        return <Animated.View style={[{ width: 48, height: 48 }, style]} />;
+      }
+      expect(
+        mismatches(
+          subject('painted worklet', () => <PaintedWorklet />),
+          'dark',
+        ),
+      ).toStrictEqual([]);
     });
 
     it('and the sweep passes a component that does it right', () => {
