@@ -10134,7 +10134,7 @@
       "service": "root",
       "release": "R9",
       "priority": "should",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [],
       "acceptance": [
         "A step that exits 0 is reported as passing whatever the size of its output, watched failing first on a step that prints more than 1 MiB",
@@ -10144,7 +10144,8 @@
         "state",
         "lint"
       ],
-      "notes": "FOUND BY F-291’s FINAL RUN (2026-09-24). `node scripts/verify-ci.mjs --all` with TURBO_FORCE=true reported Gate 4 (test), Gate 8 (a11y) and Gate 9 (contrast) red on a tree where all three pass. verify-ci runs each step with spawnSync and no maxBuffer, and spawnSync’s default is 1 MiB. Uncached, those three steps print 6.7–7.0 MB, mostly console stack traces from @irodora/mobile’s suites, so the child is killed with SIGTERM, result.error is ENOBUFS, status is null, and `result.status ?? 1` reports a failure. The output it shows ends mid-word, at the cut. Demonstrated with a 2 MiB writer (status null, SIGTERM, ENOBUFS, 1114112 bytes captured). Run directly, uncached, all three exit 0: test 35/35 tasks (mobile 1038, ui 357), a11y 21/21 (mobile 222, ui 104), contrast 22/22 (mobile 222, ui 80). GitHub CI streams step output and is not affected. It matters because the tool exists so that “what would CI say?” has an answer without a push, and a tool that cries wolf on three steps teaches people to skip it: the always-gate lesson now recommends it."
+      "notes": "FOUND BY F-291’s FINAL RUN (2026-09-24). `node scripts/verify-ci.mjs --all` with TURBO_FORCE=true reported Gate 4 (test), Gate 8 (a11y) and Gate 9 (contrast) red on a tree where all three pass. verify-ci runs each step with spawnSync and no maxBuffer, and spawnSync’s default is 1 MiB. Uncached, those three steps print 6.7–7.0 MB, mostly console stack traces from @irodora/mobile’s suites, so the child is killed with SIGTERM, result.error is ENOBUFS, status is null, and `result.status ?? 1` reports a failure. The output it shows ends mid-word, at the cut. Demonstrated with a 2 MiB writer (status null, SIGTERM, ENOBUFS, 1114112 bytes captured). Run directly, uncached, all three exit 0: test 35/35 tasks (mobile 1038, ui 357), a11y 21/21 (mobile 222, ui 104), contrast 22/22 (mobile 222, ui 80). GitHub CI streams step output and is not affected. It matters because the tool exists so that “what would CI say?” has an answer without a push, and a tool that cries wolf on three steps teaches people to skip it: the always-gate lesson now recommends it.",
+      "plan": "plans/F-295-verify-ci-reports-a-passing-step-as-failed-when-it-prints-more-than-1-mib.md"
     },
     {
       "id": "F-296",
