@@ -8,6 +8,85 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-12 — F-295 verify-ci reports a passing step as failed when it prints more than 1 MiB
+
+**Done.** `verify-ci` now reports each step by its exit code. Before this, every uncached run showed
+test, a11y and contrast red, so every Tier 2 record since F-240 had to explain those three away. It
+shipped in five commits, `05568eb` through this one.
+
+- **The cause.** `spawnSync` held each step's output in a buffer and killed the step past its default
+  1 MiB. Those three steps print 7–12 MB. A null status then read as 1.
+- **Criterion 1: a step that exits 0 passes, whatever it prints.** Each step writes to a log in the
+  OS temp directory, so nothing is buffered. A step that did not pass shows the last 30 lines of its
+  log, read from the end. The proof's big step was watched failing first on the runner as it was (at
+  2 MiB). It now prints 16 MiB, and a mutant that buffers the output again fails it.
+- **Criterion 2: a step that did not run says so.**
+  - The run reports three outcomes. A step that did not run is marked `!` and says why: killed after
+    a timeout, could not start in a directory, or killed by a signal.
+  - The count keeps these apart from failures: `F step(s) failed, N not run`.
+  - What the outcomes cannot tell apart is written down: a missing command, a signal through a shell,
+    and a win32 termination all read as failed.
+- **The proof** (`verify-ci --prove`) is in the root `lint` chain.
+  - It drives four synthetic steps through `runSteps` and `failureReport`, the same code the real run
+    reports with, and asserts the printed text.
+  - Seven mutants of the runner and the report each make it fail.
+- **Record.**
+  - E-201, with its note.
+  - The two lessons and ADR-0132 no longer tell a reader to discount those three reds.
+
+**Review (once): FAIL as delivered**, with no blocking finding, 2 significant and 11 minor. Every one
+is fixed or recorded; the plan's `review` row lists each.
+
+- **S1, fixed:** the proof checked the runner, not the report a person reads. Both now go through
+  the same functions, and the proof reads their text.
+- **S2, fixed:** steps that did not run were counted and headed as failures.
+- **M10, recorded:** the a11y mutation proof's "cannot plant" path leaves a journal entry naming an
+  unmodified Button.tsx. Only plant-proof's deletion clears it, and that deletion is F-296's bug. It
+  is recorded on F-324 and F-296, so F-296's fix must also close that path. F-333's note now says
+  that F-296 is what keeps a failed restore recoverable.
+
+**Gates run on the final tree:**
+
+Each exit 0:
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm format:check` · `pnpm build`
+- `pnpm lint`, `verify-ci --prove` included ("Runner and report proven")
+- the seven mutants of the runner and the report, each failing the proof
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories; F-295 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **31 of 38 green, none not run** (one shell block skipped).
+  - **Test, a11y and contrast are green**, which is this feature's fix, read on the real tree.
+  - **Three recorded reds:** the iOS config half on win32, F-324 and F-322.
+  - **An F-333 event, and three refusals behind it.** The contrast mutation proof hit win32's
+    transient `UNKNOWN` opening the manifest. Its journal stayed, with the file equal to HEAD, so the
+    write failed before it changed anything. The content, bench and no-inference proofs then refused
+    to start, as they should.
+  - **Recovery.** The journal's bytes equalled HEAD, and `plant.mjs --recover` cleared it. Then each
+    proof ran alone:
+    - contrast and content exited 0;
+    - bench's first run exited 1 and left its `budgets.json` plant journalled. Its output was not
+      kept, so the cause is not recorded. The journal again equalled HEAD, and after
+      `--recover` bench exited 0;
+    - no-inference exited 0.
+    - F-333's note records both.
+
+**Not run:** `e2e` and `artifact` (no JDK). Nothing in this feature runs on a device.
+
+### Lessons
+
+[[an-always-gate-nobody-runs-is-red-without-anyone-knowing]] and
+[[an-increments-gate-list-is-a-floor-not-the-set]], updated: verify-ci's three reds are gone.
+
+### Next
+
+F-296, the last eligible R9 feature: plant-proof deletes a journal it did not write. It must close
+the a11y proof's skip path in the same change.
+
+---
+
+
 ## 2026-10-12 — F-266 The motion the mockups imply, and never on a colour
 
 **Done.** Everything the drawings imply moves on the motion system's own steps and easings and ends
