@@ -420,6 +420,11 @@ export function AddGarment({
         disabled={problem !== null}
         onPress={save}
         script={script}
+        // ADDRESSED BY ID, because its words are not unique (F-221): "Add to wardrobe" is also the
+        // Wear screen's control, and in Japanese a prefix of the saved notice. A generated flow
+        // may tap by text only when no other message contains it (ADR-0086), so the capture of
+        // a garment's combinations reaches this button by its id.
+        testID="wardrobe.save"
       />
       {/*
        * A disabled control with no stated reason is the accessibility failure that looks like

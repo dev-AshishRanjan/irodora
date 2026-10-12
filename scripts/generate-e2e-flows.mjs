@@ -39,7 +39,14 @@
  * await that never settled.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -528,6 +535,130 @@ export function renderFlow(
   return { text: `${[...header, `appId: ${sources.appId}`, '---', ...lines].join('\n')}\n` };
 }
 
+// --- the fidelity run's captures (F-221) --------------------------------------------------
+
+const CAPTURE_DIR = join(FLOW_DIR, 'capture');
+const CAPTURE_SPEC = join(CAPTURE_DIR, 'routes.json');
+const CAPTURE_ORIGIN = 'apps/mobile/e2e/capture/routes.json';
+const MOCKUP_INDEX = join(ROOT, 'mockups', 'index.json');
+
+/**
+ * The URL pattern a route file serves, by expo-router's rule: `(group)` folders are not in it,
+ * `index` is its folder, and a `[name]` segment stays a parameter. `(tabs)/atlas/[slug].tsx` is
+ * `/atlas/[slug]`, the form `mockups/index.json` writes.
+ */
+export function routeUrlOf(file) {
+  const segments = file
+    .replace(/\.tsx?$/u, '')
+    .split('/')
+    .filter((segment) => !/^\(.*\)$/u.test(segment) && segment !== 'index');
+  return `/${segments.join('/')}`;
+}
+
+/** A capture's flow id: `/` is `home`, `/atlas/[slug]` is `atlas-slug`. */
+export const captureId = (route) =>
+  route === '/' ? 'home' : route.slice(1).replace(/[[\]]/gu, '').split('/').join('-');
+
+/** Every route the mockup index names: governed, varied, or undrawn and waiting for a mockup. */
+export function indexRoutes(index) {
+  const routes = new Set(Object.keys(index.undrawn ?? {}));
+  for (const row of Object.values(index.mockups ?? {}))
+    for (const route of [...(row.primaryFor ?? []), ...(row.variantFor ?? [])]) routes.add(route);
+  return routes;
+}
+
+/**
+ * The capture spec, as one journey per route and locale — or why it cannot be (F-221, ADR-0134).
+ *
+ * Pure, like `renderFlow`, so the proof mutates objects and plants nothing. Refuses: a route the
+ * index names that the spec does not, a route the spec names that the index does not, a file that
+ * is not the route it claims, a route named twice, and a route neither reachable nor saying why.
+ * A route the spec marks unreachable gets no flow; the run records it as not captured, with the
+ * reason given here.
+ */
+export function captureSpecs(capture, indexed) {
+  const problems = [];
+  const specs = [];
+  const unreachable = [];
+  const entries = Array.isArray(capture?.routes) ? capture.routes : [];
+  if (entries.length === 0) problems.push('the capture spec names no route');
+
+  const seen = new Set();
+  for (const entry of entries) {
+    const at = `capture of "${String(entry.route)}"`;
+    if (typeof entry.route !== 'string' || typeof entry.file !== 'string') {
+      problems.push(`${at}: needs "route" and "file"`);
+      continue;
+    }
+    if (seen.has(entry.route)) problems.push(`${at}: named twice`);
+    seen.add(entry.route);
+    if (routeUrlOf(entry.file) !== entry.route)
+      problems.push(`${at}: "${entry.file}" serves ${routeUrlOf(entry.file)}, not ${entry.route}`);
+
+    if (entry.unreachable !== undefined) {
+      if (typeof entry.unreachable !== 'string' || entry.unreachable.trim().length < 12)
+        problems.push(`${at}: unreachable, and says no reason why`);
+      else unreachable.push({ route: entry.route, why: entry.unreachable });
+      continue;
+    }
+    if (typeof entry.anchor !== 'string') {
+      problems.push(`${at}: needs an "anchor" (a key the screen always renders) or "unreachable"`);
+      continue;
+    }
+
+    const reach =
+      entry.steps ??
+      (entry.route === '/'
+        ? []
+        : [
+            {
+              do: 'openRoute',
+              route: entry.file,
+              ...(entry.params === undefined ? {} : { params: entry.params }),
+            },
+          ]);
+    for (const locale of LOCALES)
+      specs.push({
+        route: entry.route,
+        locale,
+        path: join(CAPTURE_DIR, locale, `${captureId(entry.route)}.yaml`),
+        spec: {
+          name: captureId(entry.route),
+          title: `Capture: ${entry.route}, ${locale === 'ja' ? 'in Japanese' : 'in English'}`,
+          why: "F-221 (ADR-0134): the fidelity run's capture of this route, beside its mockup.",
+          locale,
+          steps: [
+            { do: 'launch', clearState: false },
+            ...reach,
+            { do: 'assertVisible', key: entry.anchor, route: entry.file },
+            { do: 'settle' },
+            { do: 'screenshot' },
+          ],
+        },
+      });
+  }
+
+  for (const route of indexed)
+    if (!seen.has(route))
+      problems.push(`the mockup index names ${route}, and the capture spec does not`);
+  for (const route of seen)
+    if (!indexed.has(route))
+      problems.push(`the capture spec names ${route}, which the mockup index does not`);
+
+  return { specs, unreachable, problems };
+}
+
+/** Every flow file on disk under a capture locale folder, so a stale one is found. */
+function captureFilesOnDisk() {
+  const found = [];
+  for (const locale of LOCALES) {
+    const dir = join(CAPTURE_DIR, locale);
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) if (name.endsWith('.yaml')) found.push(join(dir, name));
+  }
+  return found;
+}
+
 // --- the files ----------------------------------------------------------------------------
 
 /** Every spec on disk, newest-first by nothing — sorted, so the output order is stable. */
@@ -547,8 +678,8 @@ const flowPath = (spec) => join(FLOW_DIR, `${spec.name}.yaml`);
  * two strings of its own and call that a test. `committed` is the file's text, or `null` when
  * there is no file.
  */
-export function drift(spec, sources, committed) {
-  const { text, problems } = renderFlow(spec, sources);
+export function drift(spec, sources, committed, options) {
+  const { text, problems } = renderFlow(spec, sources, options);
   if (problems !== undefined) return { problems };
   if (committed === null) return { verdict: 'missing', text };
   return { verdict: committed === text ? 'up to date' : 'drifted', text };
@@ -614,6 +745,59 @@ async function main() {
     writeFileSync(path, text);
     console.log(`  written      ${shown}`);
   }
+
+  /* ---- the fidelity run's captures (F-221): one flow per route and locale ---- */
+
+  const posix = (path) => relative(ROOT, path).split('\\').join('/');
+  const capture = captureSpecs(
+    JSON.parse(readFileSync(CAPTURE_SPEC, 'utf8')),
+    indexRoutes(JSON.parse(readFileSync(MOCKUP_INDEX, 'utf8'))),
+  );
+  if (capture.problems.length > 0) {
+    failed = true;
+    console.error(`  ${posix(CAPTURE_SPEC)}`);
+    for (const problem of capture.problems) console.error(`    REFUSED  ${problem}`);
+  }
+  const expected = new Set();
+  let captures = 0;
+  for (const { path, spec } of capture.specs) {
+    expected.add(path);
+    const committed = existsSync(path) ? readFileSync(path, 'utf8') : null;
+    const { text, problems, verdict } = drift(spec, sources, committed, { origin: CAPTURE_ORIGIN });
+    if (problems !== undefined) {
+      failed = true;
+      console.error(`  ${posix(path)}`);
+      for (const problem of problems) console.error(`    REFUSED  ${problem}`);
+      continue;
+    }
+    captures += 1;
+    if (mode === '--check') {
+      if (verdict === 'up to date') continue;
+      failed = true;
+      console.error(
+        verdict === 'missing'
+          ? `  MISSING      ${posix(path)} — the capture spec names it, and the flow is not committed.`
+          : `  DRIFTED      ${posix(path)} — the committed flow is not what the sources produce.`,
+      );
+      continue;
+    }
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, text);
+  }
+  // A flow for a route the spec no longer names is a capture nothing asks for: refused under
+  // --check, removed when writing, so the folders always hold exactly the spec.
+  for (const path of captureFilesOnDisk()) {
+    if (expected.has(path)) continue;
+    if (mode === '--check') {
+      failed = true;
+      console.error(`  STALE        ${posix(path)} — no route in the capture spec produces it.`);
+    } else unlinkSync(path);
+  }
+  console.log(
+    `  captures     ${String(captures)} flow(s), ${String(capture.specs.length / LOCALES.length)} route(s) ` +
+      `in ${String(LOCALES.length)} locales; ${String(capture.unreachable.length)} route(s) ` +
+      'unreachable from a cleared app, recorded as not captured',
+  );
 
   if (failed) {
     console.error(

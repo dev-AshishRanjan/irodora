@@ -27,6 +27,8 @@ import { pathToFileURL } from 'node:url';
 
 import {
   renderFlow,
+  captureSpecs,
+  indexRoutes,
   drift,
   loadSources,
   specFiles,
@@ -376,6 +378,84 @@ async function prove() {
       () => undefined,
       'is not in the catalogue',
       { ...sources, catalogues: { ...sources.catalogues, ja: withoutJa } },
+    );
+  }
+
+  /*
+   * THE CAPTURE SPEC (F-221). The real one first: every route the index names, each reachable
+   * route rendering in both locales. Then each way the spec and the index could part.
+   */
+  {
+    const captureSpec = JSON.parse(readFileSync(join(FLOW_DIR, 'capture', 'routes.json'), 'utf8'));
+    const indexed = indexRoutes(
+      JSON.parse(readFileSync(join(FLOW_DIR, '..', '..', '..', 'mockups', 'index.json'), 'utf8')),
+    );
+    const real = captureSpecs(captureSpec, indexed);
+    const unrendered = real.specs.filter(
+      ({ spec: one }) => renderFlow(one, sources).problems !== undefined,
+    );
+    check(
+      'the real capture spec covers the index, and every reachable route renders in both locales',
+      real.problems.length === 0 &&
+        unrendered.length === 0 &&
+        real.specs.length + real.unreachable.length * 2 === indexed.size * 2,
+      [...real.problems, ...unrendered.map((u) => `${u.route} (${u.locale}) does not render`)].join(
+        '; ',
+      ),
+    );
+
+    const refusesSpec = (label, mutate, expect, index = indexed) => {
+      const mutated = clone(captureSpec);
+      mutate(mutated);
+      const { problems } = captureSpecs(mutated, index);
+      check(
+        label,
+        problems.some((problem) => problem.includes(expect)),
+        problems.length === 0
+          ? 'ACCEPTED ANYWAY — the mutation was not caught'
+          : problems.join('; '),
+      );
+    };
+    refusesSpec(
+      'a route the index names, missing from the capture spec',
+      (m) => {
+        m.routes = m.routes.filter((r) => r.route !== '/atlas/compare');
+      },
+      'the mockup index names /atlas/compare, and the capture spec does not',
+    );
+    refusesSpec(
+      'a route the capture spec names, which the index does not',
+      () => undefined,
+      'the capture spec names /atlas/compare, which the mockup index does not',
+      new Set([...indexed].filter((route) => route !== '/atlas/compare')),
+    );
+    refusesSpec(
+      'a file that is not the route it claims',
+      (m) => {
+        m.routes.find((r) => r.route === '/atlas/compare').file = '(tabs)/atlas/find.tsx';
+      },
+      'serves /atlas/find, not /atlas/compare',
+    );
+    refusesSpec(
+      'a route named twice',
+      (m) => {
+        m.routes.push(clone(m.routes.find((r) => r.route === '/atlas')));
+      },
+      'named twice',
+    );
+    refusesSpec(
+      'a route marked unreachable with no reason',
+      (m) => {
+        m.routes.find((r) => r.unreachable !== undefined).unreachable = '';
+      },
+      'says no reason why',
+    );
+    refusesSpec(
+      'a route with neither an anchor nor a reason it cannot be reached',
+      (m) => {
+        delete m.routes.find((r) => r.route === '/atlas').anchor;
+      },
+      'needs an "anchor"',
     );
   }
 

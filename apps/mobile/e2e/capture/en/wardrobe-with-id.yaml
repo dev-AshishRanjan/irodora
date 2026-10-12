@@ -1,0 +1,25 @@
+# GENERATED from apps/mobile/e2e/capture/routes.json —
+# do not edit. Run `node scripts/generate-e2e-flows.mjs` after changing the spec.
+#
+# Capture: /wardrobe/with/[id], in English
+# F-221 (ADR-0134): the fidelity run's capture of this route, beside its mockup.
+#
+# Selectors resolved against corpus 2026.09.3 and the English catalogue.
+appId: com.irodora.app
+---
+- launchApp:
+    clearState: false
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'aki-batake'
+- tapOn: 'Red Earth'
+- tapOn:
+    id: 'wardrobe\.save'
+- tapOn:
+    id: 'tab-wardrobe'
+- tapOn: 'aki-batake'
+- tapOn: 'What goes with this garment'
+- assertVisible: 'What goes with this'
+- waitForAnimationToEnd
+- takeScreenshot: capture

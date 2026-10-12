@@ -1,0 +1,15 @@
+# GENERATED from apps/mobile/e2e/capture/routes.json —
+# do not edit. Run `node scripts/generate-e2e-flows.mjs` after changing the spec.
+#
+# Capture: /atlas/card/[slug], in English
+# F-221 (ADR-0134): the fidelity run's capture of this route, beside its mockup.
+#
+# Selectors resolved against corpus 2026.09.3 and the English catalogue.
+appId: com.irodora.app
+---
+- launchApp:
+    clearState: false
+- openLink: 'irodora://atlas/card/aki-batake'
+- assertVisible: 'Colour card'
+- waitForAnimationToEnd
+- takeScreenshot: capture

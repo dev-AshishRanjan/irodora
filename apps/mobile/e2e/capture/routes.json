@@ -1,0 +1,176 @@
+{
+  "$comment": "F-221 (ADR-0134): every route mockups/index.json names, and how a capture reaches it from a cleared app. scripts/generate-e2e-flows.mjs turns each into one flow per locale under capture/en and capture/ja (launch without clearing, because the runner clears under --erase-app-data; open the route; assert its anchor, a catalogue key the screen always renders; settle; take one capture), and refuses a route the index names that is missing here, a route here the index does not name, or a file that is not that route. A parameter is a published colour; a route that needs an id the app creates is reached through steps; a route no cleared app can reach says why, and the run records it as not captured.",
+  "routes": [
+    {
+      "route": "/",
+      "file": "(tabs)/index.tsx",
+      "anchor": "home.what1"
+    },
+    {
+      "route": "/lens",
+      "file": "(tabs)/lens.tsx",
+      "anchor": "lens.title"
+    },
+    {
+      "route": "/atlas",
+      "file": "(tabs)/atlas/index.tsx",
+      "anchor": "atlas.title"
+    },
+    {
+      "route": "/atlas/[slug]",
+      "file": "(tabs)/atlas/[slug].tsx",
+      "params": {
+        "slug": {
+          "colour": "aki-batake"
+        }
+      },
+      "anchor": "detail.provenance"
+    },
+    {
+      "route": "/atlas/compare",
+      "file": "(tabs)/atlas/compare.tsx",
+      "anchor": "compare.title"
+    },
+    {
+      "route": "/atlas/find",
+      "file": "(tabs)/atlas/find.tsx",
+      "anchor": "finder.title"
+    },
+    {
+      "route": "/atlas/palettes",
+      "file": "(tabs)/atlas/palettes.tsx",
+      "anchor": "studio.title"
+    },
+    {
+      "route": "/atlas/card/[slug]",
+      "file": "(tabs)/atlas/card/[slug].tsx",
+      "params": {
+        "slug": {
+          "colour": "aki-batake"
+        }
+      },
+      "anchor": "card.title"
+    },
+    {
+      "route": "/atlas/nearby/[slug]",
+      "file": "(tabs)/atlas/nearby/[slug].tsx",
+      "params": {
+        "slug": {
+          "colour": "aki-batake"
+        }
+      },
+      "anchor": "contemporary.title"
+    },
+    {
+      "route": "/atlas/wear/[slug]",
+      "file": "(tabs)/atlas/wear/[slug].tsx",
+      "params": {
+        "slug": {
+          "colour": "aki-batake"
+        }
+      },
+      "anchor": "wear.title"
+    },
+    {
+      "route": "/atlas/with/[slug]",
+      "file": "(tabs)/atlas/with/[slug].tsx",
+      "params": {
+        "slug": {
+          "colour": "aki-batake"
+        }
+      },
+      "anchor": "combos.title"
+    },
+    {
+      "route": "/atlas/with/reading/[id]",
+      "file": "(tabs)/atlas/with/reading/[id].tsx",
+      "unreachable": "A reading exists only after the Lens measures something through the camera, which a cleared app has not done and no flow can make it do deterministically. Home opens this route from the last reading. F-259, which rebuilds it as mockup 24, owns capturing it."
+    },
+    {
+      "route": "/wardrobe",
+      "file": "(tabs)/wardrobe/index.tsx",
+      "anchor": "browse.title"
+    },
+    {
+      "route": "/wardrobe/add",
+      "file": "(tabs)/wardrobe/add.tsx",
+      "anchor": "wardrobe.title"
+    },
+    {
+      "route": "/wardrobe/outfit",
+      "file": "(tabs)/wardrobe/outfit.tsx",
+      "anchor": "outfit.title"
+    },
+    {
+      "route": "/wardrobe/shopping",
+      "file": "(tabs)/wardrobe/shopping.tsx",
+      "anchor": "shopping.title"
+    },
+    {
+      "route": "/wardrobe/with/[id]",
+      "file": "(tabs)/wardrobe/with/[id].tsx",
+      "steps": [
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "aki-batake",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "aka-tsuchi",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "tap",
+          "testID": "tab-wardrobe"
+        },
+        {
+          "do": "tap",
+          "colour": "aki-batake",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "key": "combos.garment"
+        }
+      ],
+      "anchor": "combos.title"
+    },
+    {
+      "route": "/profile",
+      "file": "(tabs)/profile/index.tsx",
+      "anchor": "profile.title"
+    },
+    {
+      "route": "/profile/export",
+      "file": "(tabs)/profile/export.tsx",
+      "anchor": "export.title"
+    },
+    {
+      "route": "/profile/measure",
+      "file": "(tabs)/profile/measure.tsx",
+      "anchor": "measure.title"
+    },
+    {
+      "route": "/profile/preferences",
+      "file": "(tabs)/profile/preferences.tsx",
+      "anchor": "settings.title"
+    }
+  ]
+}
