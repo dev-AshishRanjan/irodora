@@ -8442,7 +8442,7 @@
       ],
       "from": {
         "kind": "symbol",
-        "ref": "scripts/verify-ci.mjs#runStep"
+        "ref": "scripts/verify-ci.mjs#runSteps"
       },
       "to": [
         {
@@ -8462,9 +8462,9 @@
           "ref": "lint"
         }
       ],
-      "guard": "node scripts/verify-ci.mjs --prove, in the root lint chain: a step that prints 2 MiB and exits 0 is passed; an exit 3 is failed and its tail is kept (the decoy); a step that cannot start (a missing working directory) and a step the runner kills (a timeout) are not run, each naming its error. Watched failing first on the runner as it was.",
+      "guard": "node scripts/verify-ci.mjs --prove, in the root lint chain: four synthetic steps go through runSteps and failureReport, the code a real run reports with, and the printed text is asserted. A step that prints 16 MiB and exits 0 reads passed; an exit 3 reads failed and its report shows the end of its log, whole lines only, behind 80 KiB of earlier output; a step that cannot start and a step the runner kills read not run, each naming why; the count keeps failed apart from not run. Watched failing first on the runner as it was, and seven mutants of the runner and the report each fail it.",
       "memory": "memory/effects/a-step-is-judged-by-its-exit-not-by-what-it-printed.md",
-      "rationale": "Tier 2 (ADR-0132) reads verify-ci --all as evidence. A runner that buffers output kills a long-talking step and reports it failed, which taught every reader to discount three reds; a runner that cannot tell a failed check from a step that never ran hides an environment failure as a test failure. Change how runStep spawns or classifies, and what Tier 2 records changes with it."
+      "rationale": "Tier 2 (ADR-0132) reads verify-ci --all as evidence. A runner that buffers output kills a long-talking step and reports it failed, which taught every reader to discount three reds; a report that cannot tell a failed check from a step that never ran hides an environment failure as a test failure. Change how runSteps runs, classifies or prints a step, and what Tier 2 records changes with it."
     }
   ]
 }

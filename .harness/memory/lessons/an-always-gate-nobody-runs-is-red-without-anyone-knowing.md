@@ -45,13 +45,11 @@ gate 0 proofs finish in under a minute.
 5. Before committing a change to `scripts/` or `.harness/`, run `pnpm verify:ci`, not only the
    gates. Put its result in the verification record as well.
 
-Until **F-295** is done, `verify-ci` reports test, a11y and contrast red on a clean tree when they
-run uncached: each prints about 7 MB, and its `spawnSync` stops reading at 1 MiB. Read those three
-by their own exit codes.
-
-**F-295 is done (2026-10-12):** each step writes to a log, so its exit code decides, and a step
-that could not run is marked `!` and named apart from a failed check. Read every step from
-`verify-ci --all` as it reports.
+Until **F-295** (2026-10-12), `verify-ci` reported test, a11y and contrast red on a clean tree when
+they ran uncached: each printed about 7 MB, and its `spawnSync` stopped reading at 1 MiB, so those
+three had to be read by their own exit codes. Since F-295 each step writes to a log and its exit
+code decides. A step that could not run is marked `!`, names why, and is counted as not run apart
+from the failures. Read every step from `verify-ci --all` as it reports.
 
 ## Addendum — 2026-10-10 (ADR-0132): "always" is every feature, not every commit
 

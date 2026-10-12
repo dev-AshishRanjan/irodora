@@ -32,13 +32,13 @@ fixed inside the feature (rule 2), and it is not left unrecorded (rule 5).
 
 Links: [[a-package-gate-is-not-the-repository-gate]]
 
-## And run `verify:ci` with `--all` while F-295 is open
+## And run `verify:ci` with `--all`
 
-`pnpm verify:ci` stops at its first red step, and F-295 makes Gate 4 (test) red on every uncached
-run. So a plain run never reaches the steps after test. At F-236's close-out, `--all` found the a11y
-mutation proof red since F-232 (F-324). Read test, a11y and contrast by their own exit codes, as the
-lesson above says, and every other step from `--all`. **Since F-295 (2026-10-12)** those three are
-reported by their exit codes too; `--all` is still the way to see every step past the first red.
+`pnpm verify:ci` stops at its first red step, as CI does. Until F-295 (2026-10-12) Gate 4 (test)
+was red on every uncached run, so a plain run never reached the steps after it: at F-236's
+close-out, `--all` found the a11y mutation proof red since F-232 (F-324). F-295 made verify-ci
+report every step by its exit code. `--all` is still the only way to see every step past the first
+red, and a known red always sits ahead of the rest.
 
 ## Addendum — 2026-10-10 (ADR-0132): the floor is per feature
 
