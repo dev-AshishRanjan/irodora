@@ -31,7 +31,7 @@ import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
-import { nativeArtStroke, nativeColors, nativeType } from '@irodora/design-tokens';
+import { nativeArtStroke, nativeColors, nativeMotion, nativeType } from '@irodora/design-tokens';
 import {
   illustrationBox,
   lockupGeometry,
@@ -41,13 +41,16 @@ import {
   PROGRESS_TRACK,
   ThemeProvider,
 } from '@irodora/ui';
-import { flattenStyle } from '@irodora/ui/testing';
+import { animatedStyleOf, flattenStyle } from '@irodora/ui/testing';
 import {
   Launch,
   LAUNCH_GLOW,
+  LAUNCH_HOLD,
+  LAUNCH_RISE,
   LAUNCH_SPACING,
   LaunchHost,
   launchLayout,
+  launchLine,
   launchProgress,
   SILK_WAVE_LINES_END,
   SPLASH_MARK,
@@ -383,20 +386,77 @@ describe('the hand-over', () => {
     expect(shown === null ? undefined : flattenStyle(shown.props['style'])['opacity']).not.toBe(0);
   });
 
+  /*
+   * THE LINE KEEPS PACE WITH THE SEQUENCE (F-266, ADR-0133 §2). It heads for the next step's value
+   * over that step, so it is half-way as the mark arrives and full before the app appears. Read with
+   * `animatedStyleOf`: the worklet's live scale, not the style it mounted with.
+   */
+  const lineOf = (tree: ReturnType<typeof render>): number =>
+    (
+      animatedStyleOf(tree.getByTestId('launch.progress.fill', hidden))['transform'] as {
+        scaleX: number;
+      }[]
+    )[0]?.scaleX ?? NaN;
+  const RISE = nativeMotion.durations[LAUNCH_RISE];
+  const HOLD = nativeMotion.durations[LAUNCH_HOLD];
+  /**
+   * The clock, a frame at a time, each in its own act(), as a device runs it (F-231's review, B1).
+   * One act() over a whole step holds the arrival's state change until the end of it, so the next
+   * segment would start a step late — a harness artefact, not the line's (F-266).
+   */
+  const run = (ms: number): void => {
+    for (let left = ms; left > 0; left -= 20)
+      act(() => {
+        jest.advanceTimersByTime(Math.min(20, left));
+      });
+  };
+
   it('fills the line as the launch gets there: 0, then half, then all', () => {
     expect([
       launchProgress('native'),
       launchProgress('arrived'),
       launchProgress('leaving'),
     ]).toEqual([0, 0.5, 1]);
+    const done: string[] = [];
+    const tree = draw(undefined, () => done.push('done'));
+    expect(lineOf(tree)).toBe(0);
+    run(RISE - 20);
+    // A frame before the arrival it is nearly half-way. DECOY: a line that set off only once the
+    // step was reached would still read launchProgress('native'), 0.
+    expect(lineOf(tree)).toBeGreaterThan(0.4);
+    expect(lineOf(tree)).toBeLessThanOrEqual(0.5);
+    run(20 + HOLD);
+    // The hold is over and the overlay is about to leave: the line is full, and the app is not yet.
+    expect(lineOf(tree)).toBeCloseTo(1, 2);
+    expect(done).toHaveLength(0);
+  });
+
+  it('never runs backwards, and never past its end', () => {
     const tree = draw();
-    const fill = () =>
-      flattenStyle(tree.getByTestId('launch.progress.fill', hidden).props['style'])['transform'];
-    expect(fill()).toStrictEqual([{ scaleX: 0 }]);
-    act(() => {
-      jest.advanceTimersByTime(260);
-    });
-    expect(fill()).toStrictEqual([{ scaleX: 0.5 }]);
+    let last = 0;
+    for (let t = 0; t < RISE + HOLD + RISE; t += 20) {
+      act(() => {
+        jest.advanceTimersByTime(20);
+      });
+      const now = lineOf(tree);
+      expect(now).toBeGreaterThanOrEqual(last);
+      expect(now).toBeLessThanOrEqual(1);
+      last = now;
+    }
+  });
+});
+
+describe('launchLine: the step the line heads for (F-266)', () => {
+  const phases = ['native', 'arrived', 'leaving'] as const;
+  it('is the next step’s value while the sequence runs, and 0 before it starts', () => {
+    expect(phases.map((p) => launchLine(p, true, false))).toEqual([0.5, 1, 1]);
+    expect(phases.map((p) => launchLine(p, false, false))).toEqual([0, 0, 0]);
+  });
+  it('is the step reached under reduced motion, started or not', () => {
+    for (const started of [true, false])
+      expect(phases.map((p) => launchLine(p, started, true))).toEqual(
+        phases.map((p) => launchProgress(p)),
+      );
   });
 });
 
@@ -460,6 +520,10 @@ describe('under reduced motion nothing moves, and 14 is still seen', () => {
     expect(tree.queryByTestId('launch.handover', hidden)).toBeNull();
     expect(live(tree.getByTestId('launch.composition', hidden))['opacity']).toBe(1);
     expect(tree.UNSAFE_getAllByType(Mark)).toHaveLength(1);
+    // The line is at the step reached, half-way, and does not travel there (F-266).
+    expect(
+      animatedStyleOf(tree.getByTestId('launch.progress.fill', hidden))['transform'],
+    ).toStrictEqual([{ scaleX: launchProgress('arrived') }]);
   });
 
   it('holds it for the beat, then the app — and never fades the overlay', async () => {
@@ -505,11 +569,12 @@ describe('the order is the feature', () => {
       () => order.push('done'),
     );
     const progress: number[] = [];
+    // The worklet's live scale (F-266): `props.style` holds only the value it mounted with.
     const fill = () =>
       (
-        flattenStyle(tree.getByTestId('launch.progress.fill', hidden).props['style'])[
-          'transform'
-        ] as { scaleX: number }[]
+        animatedStyleOf(tree.getByTestId('launch.progress.fill', hidden))['transform'] as {
+          scaleX: number;
+        }[]
       )[0]?.scaleX ?? NaN;
     for (let ms = 0; ms < 5000; ms += 20) {
       act(() => {
@@ -518,9 +583,10 @@ describe('the order is the feature', () => {
       progress.push(fill());
     }
     expect(order).toEqual(['shown', 'done']);
-    // The line only ever moves forward, and reaches its end: 0, 0.5, 1.
+    // The line only ever moves forward, never past its end, passes the arrival's half and ends full.
     expect(progress.every((v, i) => i === 0 || v >= (progress[i - 1] ?? 0))).toBe(true);
-    expect([...new Set(progress)]).toStrictEqual([0, 0.5, 1].filter((v) => progress.includes(v)));
+    expect(progress.every((v) => v >= 0 && v <= 1)).toBe(true);
+    expect(progress).toContain(launchProgress('arrived'));
     expect(progress.at(-1)).toBe(1);
   });
 

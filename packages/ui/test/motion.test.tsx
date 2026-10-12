@@ -19,9 +19,17 @@
 
 import { act, render } from '@testing-library/react-native';
 import { AccessibilityInfo, Text as RNText } from 'react-native';
-import Animated, { getAnimatedStyle } from 'react-native-reanimated';
+import Animated, { getAnimatedStyle, useAnimatedStyle } from 'react-native-reanimated';
 import { nativeMotion } from '@irodora/design-tokens';
-import { Appear, durations, overlayKeyframes, useMotion, usePress } from '../src/motion.js';
+import {
+  Appear,
+  durations,
+  overlayKeyframes,
+  useMotion,
+  usePress,
+  useValueMotion,
+} from '../src/motion.js';
+import { animatedStyleOf } from '../src/testing/index.js';
 import { ThemeProvider } from '../src/theme.js';
 
 /** One frame at 60fps, the unit reanimated advances in. */
@@ -341,5 +349,78 @@ describe('usePress — the response a control gives to being touched (F-189)', (
   it('returns a style, so the response has somewhere to land', () => {
     mount();
     expect(captured?.style).toBeDefined();
+  });
+});
+
+/**
+ * A VALUE MOVES WHEN IT CHANGES, NEVER WHEN IT MOUNTS (F-266, ADR-0133 §3).
+ *
+ * The hook drives a probe's `scaleX`; the worklet captures the shared value alone, so advancing
+ * time is safe (E-069). Reduced motion is driven through the captured listeners, mid-session too.
+ */
+describe('useValueMotion (F-266)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  function Probe({ value }: { readonly value: number }): React.JSX.Element {
+    const shown = useValueMotion(value);
+    const style = useAnimatedStyle(() => ({ transform: [{ scaleX: shown.value }] }));
+    return <Animated.View testID="probe" style={style} />;
+  }
+  const scale = (tree: ReturnType<typeof render>): number =>
+    (animatedStyleOf(tree.getByTestId('probe'))['transform'] as { scaleX: number }[])[0]?.scaleX ??
+    NaN;
+  const advance = (ms: number): void => {
+    act(() => {
+      jest.advanceTimersByTime(ms);
+    });
+  };
+  const VIEW = nativeMotion.durations.view;
+
+  it('mounts at its value, and is still there a frame later', () => {
+    const tree = render(<Probe value={0.6} />);
+    advance(FRAME);
+    expect(scale(tree)).toBe(0.6);
+  });
+
+  it('moves to a new value over view with inOut: between, then there', () => {
+    const tree = render(<Probe value={0.1} />);
+    tree.rerender(<Probe value={0.9} />);
+    advance(FRAME * 2);
+    expect(scale(tree)).toBeGreaterThan(0.1);
+    expect(scale(tree)).toBeLessThan(0.9);
+    advance(VIEW);
+    expect(scale(tree)).toBe(0.9);
+  });
+
+  it('lands at once under reduced motion', async () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const tree = render(<Probe value={0.1} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    tree.rerender(<Probe value={0.9} />);
+    advance(FRAME);
+    expect(scale(tree)).toBe(0.9);
+  });
+
+  it('lands a move already running when reduced motion is switched on mid-session', async () => {
+    const tree = render(<Probe value={0.1} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    tree.rerender(<Probe value={0.9} />);
+    advance(FRAME * 2);
+    // DECOY: the move is under way, so a landing below is the setting's doing.
+    expect(scale(tree)).toBeLessThan(0.9);
+    act(() => {
+      for (const l of listeners) l(true);
+    });
+    advance(FRAME);
+    expect(scale(tree)).toBe(0.9);
   });
 });

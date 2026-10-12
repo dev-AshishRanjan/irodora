@@ -17,7 +17,8 @@
  *
  * **How it is read.** Jest has no layout pass, and the thumb takes its unmounted branch until the
  * root has a width — so the root is given one. Then a toggle, and the animated styles one frame
- * in, read with `getAnimatedStyle` (`props.style` is only the mount value). The worklets here
+ * in, read with `animatedStyleOf`: what the WORKLET returned, alone, so a worklet that returned no
+ * colour could not pass on the static token underneath (`props.style` is only the mount value). The worklets here
  * capture shared values and numbers, so advancing time is safe (E-069).
  */
 
@@ -26,10 +27,10 @@ import { join } from 'node:path';
 import { useState } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated';
 import { Switch as HeroSwitch } from 'heroui-native';
 import { nativeColors } from '@irodora/design-tokens';
 import { Switch, ThemeProvider } from '../src/index.js';
+import { animatedStyleOf } from '../src/testing/index.js';
 
 /** The version the audit above was made against. An upgrade fails here until it is re-audited. */
 const AUDITED_HEROUI = '1.0.8';
@@ -59,7 +60,7 @@ afterEach(() => {
 function animated(root: Instance): Record<string, unknown>[] {
   return root
     .findAll((n) => typeof n.type === 'string' && 'jestAnimatedStyle' in n.props)
-    .map((n) => getAnimatedStyle(n as never) as unknown as Record<string, unknown>);
+    .map((n) => animatedStyleOf(n));
 }
 
 /** Give every node that measures itself a layout, as a device would on first frame. */

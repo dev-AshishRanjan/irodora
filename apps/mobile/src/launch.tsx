@@ -119,6 +119,13 @@ export const SILK_WAVE_LINES_END = 20.4;
  */
 export const LAUNCH_HOLD = 'view' as const;
 
+/**
+ * How long the mark takes to rise from the native frame into the lockup, as a motion step: the
+ * manifest's `view`, as one screen replacing another. Named so the rise, the timer that ends it
+ * and the line that keeps pace with it read the same step (F-266).
+ */
+export const LAUNCH_RISE = 'view' as const;
+
 /** Where the launch has got: the first frame, the mark arrived in the lockup, and leaving. */
 export type LaunchPhase = 'native' | 'arrived' | 'leaving';
 
@@ -130,6 +137,22 @@ export type LaunchPhase = 'native' | 'arrived' | 'leaving';
  */
 export function launchProgress(phase: LaunchPhase): number {
   return phase === 'native' ? 0 : phase === 'arrived' ? 0.5 : 1;
+}
+
+/**
+ * Where the progress line is heading (F-266, ADR-0133 §2): the value of the step the sequence is
+ * moving TOWARD, so the line arrives at `launchProgress(step)` as the sequence does — 0.5 as the
+ * mark arrives, 1 by the time the overlay leaves — and moves over each segment between. A line that
+ * set off only once a step was reached would read 0 at the arrival and still be filling as the app
+ * appeared.
+ *
+ * Before the sequence starts it is 0. Under reduced motion nothing moves, so it is the step
+ * reached: 0.5 while the composition is held.
+ */
+export function launchLine(phase: LaunchPhase, started: boolean, reduced: boolean): number {
+  if (reduced) return launchProgress(phase);
+  if (!started) return 0;
+  return phase === 'native' ? launchProgress('arrived') : launchProgress('leaving');
 }
 
 /** A box, in the window's points. */
@@ -298,7 +321,7 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
 
   useEffect(() => {
     if (!shown) return undefined;
-    const step = nativeMotion.durations.view;
+    const step = nativeMotion.durations[LAUNCH_RISE];
     const hold = nativeMotion.durations[LAUNCH_HOLD];
     const timers: ReturnType<typeof setTimeout>[] = [];
     if (reduced) {
@@ -321,7 +344,7 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
        * arrival (a React state change — the travelling mark gives way to the lockup's — so it is
        * here rather than on the UI thread), the hold, the leaving, and the unmount a frame after it.
        */
-      arrive.value = withTiming(1, live.current.timing('view'));
+      arrive.value = withTiming(1, live.current.timing(LAUNCH_RISE));
       timers.push(
         setTimeout(() => {
           setPhase('arrived');
@@ -413,7 +436,15 @@ export function Launch({ onShown, onDone }: LaunchProps): React.JSX.Element {
           <Illustration name="silk-wave" width={layout.wave.width} color="foreground.3" />
         </View>
         <View style={placed(layout.line)}>
-          <ProgressBar value={launchProgress(phase)} testID="launch.progress" />
+          {/*
+            THE LINE KEEPS PACE WITH THE SEQUENCE (F-266): it heads for the next step's value over
+            that step's own duration — the rise, then the hold.
+          */}
+          <ProgressBar
+            value={launchLine(phase, shown, reduced)}
+            step={phase === 'native' ? LAUNCH_RISE : LAUNCH_HOLD}
+            testID="launch.progress"
+          />
         </View>
       </Animated.View>
       {/*

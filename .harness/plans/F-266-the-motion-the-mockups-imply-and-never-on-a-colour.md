@@ -653,7 +653,23 @@ animated portal, worklet reach and the progress line.
   - The guard now reads `jestAnimatedStyle` and `jestAnimatedProps`: colour keys are simulated, every other key is unchanged, and the keys must match.
   - Two decoys in the sweep: a worklet returning a raw hex is named in every mode; one returning the painted colour passes.
 - **Tier 1, each exit 0:** format, typecheck, lint (one `no-unnecessary-type-assertion` fixed, type-only, then re-run), `verify-motion --prove`, affected tests (18 tasks; ui 1143, mobile 1313). No journal left. |
-| 4 | | |
+| 4 | this commit | **The line moves between its steps.**
+- **`useValueMotion(value, step = 'view')`:** it mounts at `value` and moves to each new one with `inOut`. Under reduced motion the move takes no time, and a mid-session switch lands a running move. Exported.
+- **`ProgressBar`:** the fill is an `Animated.View`. Its static parts (corner, ink, origin) are in a style array, and only `scaleX` is the worklet's. The new `step` prop defaults to `view`. It validates after the hooks and before throwing, so hook order never depends on the value.
+- **`launch.tsx`:**
+  - `LAUNCH_RISE = 'view'`; the rise and its timer read it.
+  - `launchLine(phase, started, reduced)` is the next step's value while the sequence runs, 0 before it starts, and the step reached under reduced motion.
+  - The line passes the step its segment is on.
+- **`@irodora/ui/testing`:** `animatedStyleOf` and `animatedPropsOf` read the worklet's return alone (`jestAnimatedStyle.value` and `jestAnimatedProps.value`). Reanimated's `getAnimatedStyle` merges the static style underneath, so a worklet returning nothing would read as the static token. `motion-dependencies.test` now uses `animatedStyleOf`, so it proves HeroUI's worklet itself returns our colours.
+- **Tests:**
+  - `progress-bar.test`, 6 new: at rest on mount, with the grown-from-0 decoy; between, then there; only `transform`, ink unchanged mid-move, with a decoy reader naming a colour worklet; reduced lands.
+  - `motion.test`, 4: useValueMotion mounts at rest, moves, lands under reduced, and lands mid-session (with its decoy).
+  - `launch.test`: the line is near half a frame before arrival, then full before `done`; it never runs backwards or past 1 (monotone); the `launchLine` table; under reduced it is 0.5. The order test reads the live scale.
+- **A harness lesson, twice over.**
+  - One `act()` over a whole step delayed the arrival's state change, so the next segment started late. A 20 ms trace showed the component right (0.5 at 260 ms, 1 at 520 ms, `done` at 780 ms), and the tests now step a frame per `act()`.
+  - **F-240's B1 recurred** (the ui conformance file's cleanup hook past 5 s, on the same test). The cause was RNTL awaiting an async unmount per render after each test. The derived themes now run one test per subject, and the duplicate `checkAll(SUBJECTS)` test is removed. The lesson [[a-mock-records-every-call-until-something-clears-it]] gains the half `clearMocks` did not touch.
+- **`toEqual([])`** became `toHaveLength(0)` (verify-empty-assertions).
+- **Tier 1, each exit 0:** format, typecheck, lint, affected tests (18 tasks; ui 1301, mobile 1316). |
 | 5 | | |
 | 6 | | |
 | 7 | | |

@@ -452,6 +452,7 @@ export {
   overlayKeyframes,
   useMotion,
   usePress,
+  useValueMotion,
   type AppearProps,
   type DurationStep,
   type EasingName,

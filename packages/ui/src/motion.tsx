@@ -39,6 +39,7 @@ import Animated, {
   useSharedValue,
   withDelay,
   withTiming,
+  type SharedValue,
   type WithTimingConfig,
 } from 'react-native-reanimated';
 import { nativeMotion, nativeSpacing } from '@irodora/design-tokens';
@@ -176,6 +177,30 @@ export function usePress(): PressResponse {
     },
     style,
   };
+}
+
+/**
+ * A value that moves when it changes, and never when it mounts (F-266, ADR-0133 §3).
+ *
+ * It mounts AT `value`: a reading grown from 0 on every visit would draw values nobody computed.
+ * Each new value is reached over `step` with `inOut` — the easing for a value in motion — and under
+ * reduced motion the move takes no time at all. It lands; it does not run faster. A switch of the
+ * setting mid-move lands the move, because the duration is what the effect keys on.
+ *
+ * A shared value, so the caller's worklet reads it on the UI thread. A figure printed beside it is
+ * printed from the value itself, at once: a figure is replaced, never counted.
+ */
+export function useValueMotion(value: number, step: DurationStep = 'view'): SharedValue<number> {
+  const { timing } = useMotion();
+  const shown = useSharedValue(value);
+  // Read out of the config for the reason `Appear` gives: `timing` is rebuilt every render, and
+  // the duration is what changes when anything about it does.
+  const move = timing(step, 'inOut');
+  const moveDuration = move.duration;
+  useEffect(() => {
+    shown.value = withTiming(value, move);
+  }, [value, moveDuration, shown]);
+  return shown;
 }
 
 export interface AppearProps {

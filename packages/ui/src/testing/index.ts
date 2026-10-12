@@ -34,6 +34,8 @@ export {
 
 export { previewMismatches } from './preview.js';
 
+export { animatedPropsOf, animatedStyleOf } from './animated.js';
+
 export { isStatusToken, resolveColor, tokensForValue, type ColorResolution } from './tokens.js';
 
 export { secondConfidenceFormats, type SecondConfidenceFormat } from './confidence.js';

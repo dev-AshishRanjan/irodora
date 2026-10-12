@@ -2933,10 +2933,23 @@ const SUBJECTS: readonly ConformanceSubject[] = [
  * pairing in them; what those gates cannot do is RENDER — so this asks whether every component still
  * resolves every colour it paints to a token, and draws only declared pairs, on those palettes.
  */
+/*
+ * ONE TEST PER SUBJECT, NOT ONE OVER THE REGISTRY (F-266, finishing F-240's review B1).
+ *
+ * React Native Testing Library queues an async unmount for EVERY `render()` and awaits each one in
+ * its `afterEach`, whether or not the test already unmounted the tree — so a single test that drew
+ * the whole registry in two palettes left hundreds of `act`s for one hook with a 5 s limit. Under
+ * turbo's parallel load that hook ran past it, twice, on this test and no other; `clearMocks` had
+ * only taken the memory out of it. Per subject, each hook awaits one subject's renders, and a
+ * failure names the subject.
+ */
 describe('the derived themes conform too (F-225)', () => {
-  it('produces no findings on Slate or Obsidian', () => {
-    expect(formatFindings(checkAll(SUBJECTS, ['slate.dark', 'obsidian.dark']))).toBe('');
-  });
+  it.each(SUBJECTS.map((s) => [s.name, s] as const))(
+    '%s, on Slate and Obsidian',
+    (_name, subject) => {
+      expect(formatFindings(checkSubject(subject, ['slate.dark', 'obsidian.dark']))).toBe('');
+    },
+  );
 });
 
 /**
@@ -3158,14 +3171,13 @@ describe('the registry itself', () => {
   });
 });
 
+/*
+ * PER SUBJECT, AND ONLY PER SUBJECT (F-266). A test here once called `checkAll(SUBJECTS)` as well:
+ * `checkAll` is the per-subject check flat-mapped over the registry, plus the two guards "the
+ * registry itself" asserts above, so it drew every subject a second time inside one test — the
+ * shape whose cleanup hook outran its limit (see the derived themes, above).
+ */
 describe('every registered component conforms, in both themes', () => {
-  it('produces no findings', () => {
-    const findings = checkAll(SUBJECTS);
-    // Compare the FORMATTED findings: jest's `expect` takes no message argument, so making
-    // the human-readable form the compared value is what puts the detail in the failure.
-    expect(formatFindings(findings)).toBe('');
-  });
-
   it.each(SUBJECTS.map((s) => [s.name, s] as const))('%s', (_name, subject) => {
     const findings = checkSubject(subject, ['light', 'dark']);
     // Compare the FORMATTED findings: jest's `expect` takes no message argument, so making
