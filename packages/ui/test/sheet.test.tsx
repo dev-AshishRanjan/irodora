@@ -21,18 +21,19 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { act, render } from '@testing-library/react-native';
+import { AccessibilityInfo, Text } from 'react-native';
 import { BottomSheetHandle } from '@gorhom/bottom-sheet';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { nativeColors } from '@irodora/design-tokens';
+import { nativeColors, nativeMotion } from '@irodora/design-tokens';
 import {
   resizeSheet,
   Sheet,
   SHEET_FORMS,
   SHEET_HANDLE,
-  ThemeProvider,
+  SHEET_MOTION,
   type SheetProps,
+  ThemeProvider,
 } from '../src/index.js';
 import { flattenStyle, type TestNode } from '../src/testing/index.js';
 
@@ -472,5 +473,52 @@ describe('the handle adjusts, and the docked sheet clears the home indicator (F-
 
   it('DECOY: the floating sheet is already lifted clear, so it adds nothing', () => {
     expect(contentPadding({ form: 'floating', ...NAMED }, 34)).toBe(SHEET_FORMS.floating.inset);
+  });
+});
+
+/**
+ * THE SHEET SETTLES ON THE SCALE (F-266, ADR-0133 §6): opening, snapping and closing on the motion
+ * system's `view` step with `out`, not F-177's spring. Read off the config gorhom is handed; time is
+ * never advanced here, because a sheet installs a mapper whose walk reaches React Native's
+ * namespace under this harness (E-069).
+ */
+describe('the sheet settles on the motion system’s step (F-266)', () => {
+  const configOf = (root: Instance): Readonly<Record<string, unknown>> =>
+    gorhomSheet(root).props['animationConfigs'] as Readonly<Record<string, unknown>>;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('takes the view step and the out easing, with reanimated’s own reduced-motion check', () => {
+    expect(SHEET_MOTION).toStrictEqual({ step: 'view', easing: 'out' });
+    const config = configOf(open());
+    expect(config['duration']).toBe(nativeMotion.durations.view);
+    // The out bezier (reanimated 4 hands it over as a factory): gorhom sends a config with a
+    // duration or an easing to withTiming.
+    expect(config['easing']).toBeDefined();
+    expect(config['reduceMotion']).toBe('system');
+  });
+
+  it('DECOY — is neither F-177’s spring nor gorhom’s own 250 ms', () => {
+    const config = configOf(open());
+    for (const spring of ['damping', 'stiffness', 'mass'])
+      expect(config).not.toHaveProperty(spring);
+    expect(config['duration']).not.toBe(250);
+  });
+
+  it('carries the same step in both forms', () => {
+    expect(configOf(open({ form: 'docked', sideInset: 9.5, ...NAMED }))['duration']).toBe(
+      nativeMotion.durations.view,
+    );
+  });
+
+  it('takes no time at all under reduced motion', async () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const root = open();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(configOf(root)['duration']).toBe(0);
   });
 });

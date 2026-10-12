@@ -690,7 +690,19 @@ animated portal, worklet reach and the progress line.
   - **`progress-ring.test`:** the whole circle from 12 o'clock with `[L, L]` and offset `L·(1−v)` for six values. DECOY: `27`'s 218° is not 0.606's. Full is no offset (react-native-svg writes a zero offset as `null`). Empty has opacity 0, and the decoy 0.01 has 1. The dash is held to `L·(1−v)` for 200 seeded values. Nothing but the dash moves with the value. Movement: between mid-move while the spoken value is already 80 (DECOY: the dash not yet at its end); only `opacity` and `strokeDashoffset` animate, ink still `foreground`; it moves from 0; reduced lands.
   - **`charts.test`:** the dial's path, dash and offset. DECOY: `11`'s 249°. For eight shares, offset and printed percent; no dot at zero. A change moves the arc while the figure and the name are already 84 %, with only those two keys animated.
 - **Tier 1, each exit 0:** format, typecheck, lint, `verify-motion --prove` (its baseline now scans a real `useAnimatedProps`), `a11y-scope` (87 components, all reached), affected tests (18 tasks; ui 1307, mobile 1321). |
-| 7 | | |
+| 7 | this commit | **The sheet settles on the scale.**
+- **`overlay.tsx`:**
+  - `SHEET_MOTION = { step: 'view', easing: 'out' }` is exported. Its doc states the costs: a flick's velocity is no longer carried, and the exit takes as long as the entrance.
+  - F-177's `SHEET_SPRING` is retired.
+  - `animationConfigs = timing(SHEET_MOTION.step, SHEET_MOTION.easing)`, keyed on `reduced`. Under reduced motion the duration is 0, and reanimated's `ReduceMotion.System` is carried besides.
+- **`sheet.test`, 4 new:**
+  - `view`'s duration, an easing present (reanimated 4 hands the bezier over as a factory object, so the test reads presence, not a function), and `reduceMotion: 'system'`;
+  - DECOY: no `damping`, `stiffness` or `mass`, and not gorhom's 250 ms;
+  - both forms carry it;
+  - duration 0 under reduced motion.
+
+  Time is never advanced (E-069).
+- **Tier 1, each exit 0:** format, typecheck, lint, affected tests (18 tasks; ui 1311, mobile 1321). |
 | 8 | | |
 | 9 | | |
 | 10 | | |

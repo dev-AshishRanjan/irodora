@@ -417,17 +417,18 @@ export {
 } from './brand.js';
 export {
   Dialog,
+  type DialogProps,
   Popover,
+  type PopoverProps,
+  resizeSheet,
   Sheet,
   SHEET_FORMS,
   SHEET_HANDLE,
-  resizeSheet,
-  type SheetResize,
-  Tabs,
-  type DialogProps,
-  type PopoverProps,
+  SHEET_MOTION,
   type SheetProps,
+  type SheetResize,
   type TabItem,
+  Tabs,
   type TabsProps,
 } from './overlay.js';
 export {

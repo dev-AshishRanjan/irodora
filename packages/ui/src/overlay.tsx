@@ -395,8 +395,19 @@ const SHEET_LARGE_DETENT = 0.9;
  */
 const SHEET_CONTENT_CEILING = 0.8;
 
-/** How long the sheet takes to settle, and how tightly. Position only, which is a transform. */
-const SHEET_SPRING = { damping: 28, stiffness: 260, mass: 1 } as const;
+/**
+ * How the sheet comes to rest at a detent — opening, snapping and closing alike (F-266, ADR-0133 §6).
+ * Position only, which is a transform.
+ *
+ * The motion system's `view` step, the one a sheet belongs to, with `out`: a detent is where the
+ * sheet comes to REST, which is what `out` decelerates into. gorhom sends any config carrying a
+ * duration or an easing to `withTiming`, so the step reaches it as written. F-177's spring
+ * (damping 28, stiffness 260, mass 1) is retired: a physics spring has no step on the scale.
+ *
+ * **Costs, stated:** a flick's velocity is no longer carried into the settle, and the exit is as
+ * long as the entrance — gorhom applies one config to all three. F-267 judges the feel on a device.
+ */
+export const SHEET_MOTION = { step: 'view', easing: 'out' } as const;
 
 /**
  * The drag handle, in dp: `03`'s, drawn at 2 px per dp (40 × 4). `04`'s, drawn on a spec card, is
@@ -547,9 +558,10 @@ export function Sheet({
   // at camera frame rate behind the Lens, and a new array re-derives every detent.
   const snapPoints = useMemo(() => [`${String(Math.round(SHEET_LARGE_DETENT * 100))}%`], []);
 
-  // REDUCED MOTION GETS NO ANIMATION, and the zero is the motion system's (F-144). Keyed on
-  // `reduced`, because `timing` is rebuilt every render (the argument `Appear` makes).
-  const animationConfigs = useMemo(() => (reduced ? timing('micro') : SHEET_SPRING), [reduced]);
+  // ON THE SCALE (F-266), AND REDUCED MOTION GETS NO ANIMATION: `timing` is zero for every step
+  // then, and carries reanimated's own `ReduceMotion.System` besides (F-144). Keyed on `reduced`,
+  // because `timing` is rebuilt every render (the argument `Appear` makes).
+  const animationConfigs = useMemo(() => timing(SHEET_MOTION.step, SHEET_MOTION.easing), [reduced]);
 
   const floating = form === 'floating';
   const drawn = floating ? SHEET_FORMS.floating : SHEET_FORMS.docked;
