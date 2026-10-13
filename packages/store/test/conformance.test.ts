@@ -24,7 +24,16 @@ afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-describe('the node:sqlite driver conforms', () => {
+/**
+ * WHAT A WHOLE-SUITE RUN IS GIVEN (F-306). Each case below runs every check in `checkStore`, on
+ * real database files: measured at 0.3–0.65 s alone (2026-10-13, 14 checks). Under the monorepo's
+ * full parallel `turbo run test --force` the same case passed vitest's 5 s default — F-306 saw
+ * 5.6 s, and F-237's Tier 2 saw a decoy case time out after its two checks were added. 30 s is about
+ * fifty times the measured cost: room for the load, and a hang still fails.
+ */
+const SUITE_BUDGET = { timeout: 30_000 };
+
+describe('the node:sqlite driver conforms', SUITE_BUDGET, () => {
   it('produces no findings, and actually ran its checks', () => {
     const { findings, ran, info } = checkStore(open);
     expect(formatStoreFindings(findings)).toBe('');
@@ -45,7 +54,7 @@ describe('the node:sqlite driver conforms', () => {
   });
 });
 
-describe('the suite rejects what it is supposed to reject', () => {
+describe('the suite rejects what it is supposed to reject', SUITE_BUDGET, () => {
   const findingsFor = (mutate: (d: ReturnType<typeof nodeDriver>) => void) => {
     return checkStore(() => {
       const made = nodeDriver(join(dir, `db-${String(n++)}.sqlite`));
