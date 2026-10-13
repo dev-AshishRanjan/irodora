@@ -58,3 +58,9 @@ reserved edge would redraw it. So focus on Button, Chip, the segmented ChoiceGro
 the Slider thumb is `FocusRing`: a `ring` overlay just outside the box, which costs no layout.
 The Switch used to draw focus as a border inside its track, and that is gone. Each form is
 rendered focused and not, in button-forms, switch, slider and segmented-choice tests.
+
+## F-237 (2026-10-13): SearchField can carry a trailing toggle, and without one is unchanged
+
+The Atlas's bookmark filter sits inside the field (ADR-0135 D1). The focus ring and the field's
+ground are untouched. `search-field.test` asserts that a field with no toggle renders as before,
+and, as its decoy, that a field with one stops its text short of it.

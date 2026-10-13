@@ -45,3 +45,10 @@ device attestation.
 
 Related: [[a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it]],
 [[a-controls-default-size-is-a-median-of-the-drawings]].
+
+## F-237 (2026-10-13): a toggle inside a field gets a box the size of the target
+
+The trailing toggle sits in a box `platformTapTarget()` wide, at the field's trailing edge and its
+full height, so the glyph's slop ends at the box's edges. Placed in a 24 dp box, the slop would have
+reached outside its parent, and Android delivers no touch there. The field itself is still 44 dp
+tall on Android, which is F-305's.

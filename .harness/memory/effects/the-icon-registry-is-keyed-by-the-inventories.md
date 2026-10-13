@@ -51,3 +51,10 @@ is F-232's, and the inventories record it as `ui:Button` with no copy.
 caller passes resolved stops (`glyphSpectrum`). What this note's test holds, the one-ink
 silhouette, is exactly what they draw without stops, and `spectrum.test`'s decoy asserts that.
 The stops are minted tokens (E-159).
+
+## F-237 (2026-10-13): the one fill no mockup draws
+
+`bookmark` is drawn filled when on (ADR-0135 D2): 06 draws only the outline, and on has to be a
+shape, not only a stated state (rule 13). It is the same path filled, as `home` is, and listed in
+R9 §4 E4. `IconButton`'s `selected` compiles only for a fillable glyph, so a toggle can never be on
+in a way nobody can see.

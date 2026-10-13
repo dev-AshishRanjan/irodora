@@ -82,3 +82,9 @@ whether its own colours are allowed.
 
 Related: [[an-unreached-token-is-unfinished-work]] ·
 [[a-derived-check-catches-the-change-a-written-down-one-waves-through]]
+
+## F-237 (2026-10-13): a fifth treatment, `glyph`
+
+A glyph toggle has no ground to paint, so the chooser's `accent.muted`/`accent` cannot apply.
+`glyph` reads the picture off the tree in both states: a filled shape in `active`, and none in
+`default`, so the fill is what changes. Each half has its own decoy.

@@ -59,3 +59,15 @@ directly. Otherwise it would be a refusal nobody has ever seen fire.
 
 Whether the migration runs correctly **on a device**, and whether SQLCipher encrypted anything
 at all. Both are F-041's standing attestation; nothing off-device stands in for either.
+
+## F-237 (2026-10-13): migration 10, and a new table no longer joins the backup by itself
+
+`color_bookmark` is a pointer to a corpus slug, one row per slug, tombstoned and revived. Since
+F-241, `ARCHIVE_TABLES` is an explicit list (ADR-0105), so the old "joins the backup without anyone
+editing `archive.ts`" is no longer true. The table had to be added to both lists by hand.
+`bookmark.test` asserts both, a round trip through the serialised file, a schema-9 archive and
+erasure. `profile-avatar.test`'s length relation catches a table in one list and not the other.
+
+**SQLCipher, in the paragraph above, is not built in at all** (F-336). expo-sqlite links it only
+when its config plugin is given `useSQLCipher: true`, and the app never passes that. So the
+device's encryption has not merely been unproven so far: it has very likely been absent.

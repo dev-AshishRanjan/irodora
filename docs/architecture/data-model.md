@@ -154,8 +154,12 @@ The list dimensions are a child table rather than three delimited TEXT columns. 
 string is a parser, and it would be the second place in the package where corpus slugs are
 addressed. The rows carry the sync columns like every other user table, so a slug taken out of
 `avoid` is one tombstone rather than a wholesale replacement — and, because
-`ARCHIVE_TABLES = [...SYNC_TABLES]`, both tables joined the backup format and its canonical
-digest without anyone editing `archive.ts` ([E-023](../../.harness/state/effects.json)).
+`ARCHIVE_TABLES` was then `[...SYNC_TABLES]`, both tables joined the backup format and its
+canonical digest without anyone editing `archive.ts` ([E-023](../../.harness/state/effects.json)).
+**That stopped being true with F-241**: `ARCHIVE_TABLES` is an explicit list since
+`profile_avatar` was kept out of the archive
+([ADR-0105](../adr/0105-a-face-stays-out-of-the-plaintext-archive.md)), so a new table joins the
+backup only when it is added there by hand, and erasure walks `SYNC_TABLES`.
 
 How the guided path produces these values, and why the confidence ceiling is 0.75, is
 [ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md).
@@ -225,6 +229,9 @@ recommendation_feedback  recommendation_id · result_index · verdict · created
 
 pairing_preference       family_a · family_b (canonical order, UNIQUE) · accepted · rejected
                          COUNTS, never a weight — see below (FR-37, F-046, migration 6)
+
+color_bookmark           corpus_slug (UNIQUE) — a pointer, no colour value
+                         (FR-56, F-237, migration 10; ADR-0135 D6)
 ```
 
 **There is no `image_path` column. The bytes are a BLOB in `garment_image`, inside the
@@ -261,6 +268,18 @@ The pair is canonically ordered with `CHECK (family_a <= family_b)` and `UNIQUE`
 pairing is unordered — without it the same preference is learned twice under two keys and half
 of it is never found. **Reset is a HARD delete**, alone among the deletes here: a tombstone
 would be a record of what somebody asked to have forgotten.
+
+**A bookmark is a pointer to a corpus slug, never a `saved_color` row** (F-237,
+[ADR-0135](../adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md)
+D6). `06` bookmarks a colour in the corpus, so what a person keeps is the slug, and the colour
+and its provenance are read back from the pinned corpus — the way `profile_dimension_color`
+holds one. `saved_color` would have been wrong four ways: a bookmark could not be told from a
+palette's or a garment's colour; `reusableColorId` shares one row by slug, so removing a
+bookmark would tombstone a palette's colour; `upsertColor` never clears `deleted_at`, so a
+colour bookmarked twice would not come back; and Home reads the newest `saved_color` row as the
+person's *last reading* (F-337). `UNIQUE (corpus_slug)` gives a slug one row for life: removal
+tombstones it and bookmarking again revives the same id. It is in `SYNC_TABLES` and in
+`ARCHIVE_TABLES`, because a bookmark is something the person made.
 
 The reproducibility envelope is stored as **four separate columns**, not one JSON blob, so
 "which recommendations used rule version 2026.08.4?" is an indexed query rather than a table

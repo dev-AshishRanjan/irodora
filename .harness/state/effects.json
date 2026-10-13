@@ -846,6 +846,10 @@
         {
           "kind": "file",
           "ref": "packages/store/src/archive.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/store/test/bookmark.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -856,7 +860,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/a-migration-reaches-two-drivers-and-a-backup-format.md",
-      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply. MIGRATION 7 (F-053) ADDED `calibration` AND A NULLABLE `saved_color.calibration_id`. The table joins SYNC_TABLES, and because archive.ts reads `SELECT *` over that list, it joined the backup format and its canonical digest WITHOUT anybody editing archive.ts — which is this link predicting itself again, and is asserted deliberately in packages/store/test/calibration.test.ts rather than discovered from a restore that came back without its corrections. THE STAKES ARE DIFFERENT FROM THE USUAL TABLE: a `calibrated` colour is a CLAIM that a correction was applied, so a backup that dropped the corrections would leave every such claim unfalsifiable while looking intact. The new CHECK constraints are the other half — STRICT plus CHECK is what refuses a max residual below its own mean, or a space no correction can be applied in, both of which are silently meaningless rather than loudly broken and would only surface when F-063 read the numbers back.",
+      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply. MIGRATION 7 (F-053) ADDED `calibration` AND A NULLABLE `saved_color.calibration_id`. The table joins SYNC_TABLES, and because archive.ts reads `SELECT *` over that list, it joined the backup format and its canonical digest WITHOUT anybody editing archive.ts — which is this link predicting itself again, and is asserted deliberately in packages/store/test/calibration.test.ts rather than discovered from a restore that came back without its corrections. THE STAKES ARE DIFFERENT FROM THE USUAL TABLE: a `calibrated` colour is a CLAIM that a correction was applied, so a backup that dropped the corrections would leave every such claim unfalsifiable while looking intact. The new CHECK constraints are the other half — STRICT plus CHECK is what refuses a max residual below its own mean, or a space no correction can be applied in, both of which are silently meaningless rather than loudly broken and would only surface when F-063 read the numbers back. MIGRATION 10 (F-237) ADDED `color_bookmark`, AND THIS LINK’S EARLIER CLAIM STOPPED HOLDING. Since F-241 `ARCHIVE_TABLES` is an explicit list, not `[...SYNC_TABLES]` (ADR-0105), so a new table no longer joins the backup by construction: it joins only when it is added to that list by hand. `color_bookmark` was added to both, and packages/store/test/bookmark.test.ts asserts it is in each, round-trips it through the serialised file with tombstones and an identical digest, restores a schema-9 archive with no bookmarks, and erases it; profile-avatar.test’s length relation (ARCHIVE = SYNC − 1) is what catches a table added to one list and not the other. The conformance suite gained bookmark-durability and bookmark-atomicity, so the table is proven on the device driver’s path too when checkStore runs there.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -3261,7 +3265,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared. F-233: the `sample-ink` rule measures text on a declared sample (sample-ink.test.tsx), the one pair `pair-undeclared` cannot see.",
+      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared. F-233: the `sample-ink` rule measures text on a declared sample (sample-ink.test.tsx), the one pair `pair-undeclared` cannot see. SINCE F-237 A FIFTH TREATMENT, `glyph`: a selectable glyph toggle must fill a shape in `active` AND fill none in `default`, so the fill is the change. Two decoys in packages/ui/test/conformance.test.tsx (an outline in active, a fill in default), and two registry subjects use it (IconButton (bookmark toggle), SearchField (05, with its bookmark toggle)).",
       "memory": "memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md",
       "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro. F-232 (2026-09-28): new painted pairs — a selection dot in foreground or accent.foreground on its fill, thumbs on tracks — all resolve to tokens and pass `pair-undeclared`. Text ON A SAMPLE (24's tinted ΔE00 badge) is invisible to that rule, so its ink is chosen by `inkOnSample`, which has its own tests and reports \"neither\" on a mid-tone (E-158).",
       "confidence": 0.94,
@@ -5426,7 +5430,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "packages/ui/test/glyphs.test.tsx reads mockups/inventory/*.json and asserts both directions — every bound icon name has a glyph, every glyph is bound — with a decoy each way (calendar, drawn nowhere; share, dropped), plus no two glyphs one shape, only the given ink, every shape declaring its fill, filled drawings solid, other glyphs unchanged by a fill, and the glyph hidden from a screen reader. Five faults planted in Glyph.tsx failed exactly the nine tests aimed at them. The set is also held to being SOLID where its element is: a table of the thirteen glyphs drawn with no line, checked in both directions. mockups/inventory/** is a turbo global dependency so an inventory edit reruns the test; verify-cache-scope was watched failing without it. components.test.tsx asserts icon.check and icon.cross render the registry paths for check and close, with a decoy. icon-button.test.tsx holds three @ts-expect-error refusals with compiling decoys and the rendered name, state, target, glyph and ink; the conformance suite registers IconButton. NOT GUARDED, and this is what the F-228 review found: that a glyph looks like the element it was drawn against. Nine did not — the first draft drew every glyph as an outline where 00, 02, 03, 11 and 13 draw solids — and no check here could see it. The plan's Evidence table names each source element; F-281 is a check that measures a drawing against its crop; F-221's device captures are the other half.",
+      "guard": "packages/ui/test/glyphs.test.tsx reads mockups/inventory/*.json and asserts both directions — every bound icon name has a glyph, every glyph is bound — with a decoy each way (calendar, drawn nowhere; share, dropped), plus no two glyphs one shape, only the given ink, every shape declaring its fill, filled drawings solid, other glyphs unchanged by a fill, and the glyph hidden from a screen reader. Five faults planted in Glyph.tsx failed exactly the nine tests aimed at them. The set is also held to being SOLID where its element is: a table of the thirteen glyphs drawn with no line, checked in both directions. mockups/inventory/** is a turbo global dependency so an inventory edit reruns the test; verify-cache-scope was watched failing without it. components.test.tsx asserts icon.check and icon.cross render the registry paths for check and close, with a decoy. icon-button.test.tsx holds three @ts-expect-error refusals with compiling decoys and the rendered name, state, target, glyph and ink; the conformance suite registers IconButton. NOT GUARDED, and this is what the F-228 review found: that a glyph looks like the element it was drawn against. Nine did not — the first draft drew every glyph as an outline where 00, 02, 03, 11 and 13 draw solids — and no check here could see it. The plan's Evidence table names each source element; F-281 is a check that measures a drawing against its crop; F-221's device captures are the other half. SINCE F-237 FILLABLE_GLYPHS HOLDS ONE FILL NO MOCKUP DRAWS: `bookmark`, 06’s glyph, is drawn filled when on (ADR-0135 D2, listed in R9 §4 E4). glyphs.test’s `it.each(FILLABLE_GLYPHS)` holds it to a solid drawing distinct from its outline, and IconButton’s `selected` compiles only for a fillable glyph (@ts-expect-error on `share`).",
       "feature": "F-228",
       "memory": "memory/effects/the-icon-registry-is-keyed-by-the-inventories.md",
       "rationale": "Every icon a mockup draws is one entry in Glyph, named as F-220's inventory binds it, so a surface writes the name its inventory records and nothing translates it. That makes the inventories an input to @irodora/ui, and makes NavIcon, Icon (check and cross) and IconButton draw through one drawing. High because it reaches every icon in the product at once and in both directions: a renamed inventory icon leaves a surface asking for a glyph that does not exist, and a glyph nobody bound is a design nobody made — and neither shows as a colour, contrast or layout failure. The review also showed the second direction is not enough on its own: a name can be bound by two elements that draw DIFFERENT things, and the registry then has to split the name rather than pick one — eight did (close-circle, hue-ring, image-solid, palette-solid, lock-solid, seal-star, seal-check, filter-lines), and two more are tint-dependent shapes recorded in OQ-37. F-232 (2026-09-28): two glyphs draw a colour layer — `colour-wheel` and `palette-solid`, a hue sweep clipped to the silhouette's own area — only when a caller passes resolved stops; the one-ink rendering glyphs.test holds is unchanged (spectrum.test's decoy asserts it).",
@@ -6171,6 +6175,10 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/search-field.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6179,7 +6187,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "`selection.test.tsx` renders TextField and SearchField focused and not, in all four palettes. It requires the focus edge to be `ring` and not `border.strong`, and requires no edge without focus. Mutation-checked: painting focus in `border.strong` fails four cases. The selection tone's own tests hold `ring` for focus in every state. Gate 9 checks `ring` at 3:1 on the ground and levels 1–3 in every palette. Gate 10's `[ring, border.strong]` pair keeps them distinguishable, which is what moved Washi's ring off the drawn `#1A1B1E`. AND `inventory-pairings.test.ts` now checks the premise per element instead of assuming it. Every element outlined in `border.strong` must carry a label, its own or a child's, and a decoy with none is named. The strong border drawn as a FOREGROUND, the sheet handle, maps to `border.indicator`, whose pairings must be declared in both themes. F-233: sample-family.test (the bled sample's frame inside, the ordinary one outside) and the conformance Swatch subject under `selection-treatment` (chooser) in four palettes.",
+      "guard": "`selection.test.tsx` renders TextField and SearchField focused and not, in all four palettes. It requires the focus edge to be `ring` and not `border.strong`, and requires no edge without focus. Mutation-checked: painting focus in `border.strong` fails four cases. The selection tone's own tests hold `ring` for focus in every state. Gate 9 checks `ring` at 3:1 on the ground and levels 1–3 in every palette. Gate 10's `[ring, border.strong]` pair keeps them distinguishable, which is what moved Washi's ring off the drawn `#1A1B1E`. AND `inventory-pairings.test.ts` now checks the premise per element instead of assuming it. Every element outlined in `border.strong` must carry a label, its own or a child's, and a decoy with none is named. The strong border drawn as a FOREGROUND, the sheet handle, maps to `border.indicator`, whose pairings must be declared in both themes. F-233: sample-family.test (the bled sample's frame inside, the ordinary one outside) and the conformance Swatch subject under `selection-treatment` (chooser) in four palettes. SINCE F-237 SearchField takes an optional `trailing` toggle; without it the field renders the tree it rendered before, which search-field.test asserts (no button, no right padding) beside the decoy that with one the text stops short of it.",
       "memory": "memory/effects/a-token-that-changes-meaning-keeps-its-name-and-loses-its-readers.md",
       "rationale": "F-225 changed what `border.strong` MEANS without changing its name. It is now decorative, drawn where a label already identifies the component, and it pairs with nothing. `ring` carries every state indicator. A consumer that still paints a state in `border.strong` compiles and renders, but falls below 3:1 on the cards, and no type catches that. The two text fields did exactly this until F-225, with no test. A token whose meaning moves keeps every reader it had, and each one has to be found by hand. THE REVIEW FOUND THE ONE I MISSED. The sheet's drag handle (overlay.tsx; `03.sheet.handle`, `04.sheet.handle`) was left in `border.strong` under a reason, 'or is a sheet handle', that did not hold: the handle has no label. It fell to 1.65:1 on Sumi and 1.07:1 on Slate, and no gate could see it, because the premise had been asserted wholesale in the test. It is now `border.indicator` (#788090 on Sumi, the drawn ink on Washi). F-232 (2026-09-28): focus on a control drawn at its mockup's size is `FocusRing`, a `ring` overlay OUTSIDE the box that costs no layout — Button, Chip, the segmented ChoiceGroup, Switch and the Slider thumb. The Switch drew focus as a border inside its track; that is gone. Rendered in button-forms, switch, slider and segmented-choice tests, each with an unfocused decoy. F-233 (2026-09-29): a Swatch has no well to paint the chooser treatment on, so SelectionFrame draws it just outside the sample (and, on a sample bled into its card, as its edge drawn over it). It paints `ring` under focus and `accent` when chosen, so a change to either token's meaning reaches it. No mockup draws a chosen sample (R9 §4 E4).",
       "confidence": 0.85,
@@ -6378,6 +6386,10 @@
         {
           "kind": "gate",
           "ref": "a11y"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/SearchField.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6389,7 +6401,7 @@
         "packages/design-tokens"
       ],
       "severity": "critical",
-      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms.",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 SearchField places its trailing toggle in a box the size of platformTapTarget(), at the field’s trailing edge and full height, so the IconButton’s hitArea slop ends at the box and never reaches past the field (Android delivers no touch outside a parent); search-field.test asserts the box and that the glyph plus its slop reach the target exactly.",
       "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
       "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
     },
@@ -8578,6 +8590,69 @@
       "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions.",
       "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
       "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-237",
+      "id": "E-204",
+      "severity": "high",
+      "scope": [
+        "packages",
+        "mobile",
+        ".harness"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/bookmarks.tsx#BookmarksProvider"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/index.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/SearchField.tsx#SearchFieldToggle"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/schema.ts#color_bookmark"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/bookmarks.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order, combines with the query (decoy: toggle off, same query), shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test.",
+      "memory": "memory/effects/the-bookmark-set-is-written-on-06-and-read-on-05.md",
+      "rationale": "A bookmark is written on 06 and read back on 05 through one provider, so a change to how the set is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to bookmark, or a write nothing reads (OQ-39). F-246 and F-247 rebuild both screens, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once because nothing else writes; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout inside the native header (a device capture), and encryption at rest, which depends on SQLCipher being built in (F-336)."
     }
   ]
 }
