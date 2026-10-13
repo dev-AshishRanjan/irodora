@@ -28,7 +28,9 @@ import { pathToFileURL } from 'node:url';
 import {
   renderFlow,
   captureSpecs,
+  featureStatuses,
   indexRoutes,
+  staleFlows,
   drift,
   loadSources,
   specFiles,
@@ -390,7 +392,8 @@ async function prove() {
     const indexed = indexRoutes(
       JSON.parse(readFileSync(join(FLOW_DIR, '..', '..', '..', 'mockups', 'index.json'), 'utf8')),
     );
-    const real = captureSpecs(captureSpec, indexed);
+    const features = featureStatuses();
+    const real = captureSpecs(captureSpec, indexed, features);
     const unrendered = real.specs.filter(
       ({ spec: one }) => renderFlow(one, sources).problems !== undefined,
     );
@@ -404,10 +407,10 @@ async function prove() {
       ),
     );
 
-    const refusesSpec = (label, mutate, expect, index = indexed) => {
+    const refusesSpec = (label, mutate, expect, index = indexed, owners = features) => {
       const mutated = clone(captureSpec);
       mutate(mutated);
-      const { problems } = captureSpecs(mutated, index);
+      const { problems } = captureSpecs(mutated, index, owners);
       check(
         label,
         problems.some((problem) => problem.includes(expect)),
@@ -456,6 +459,41 @@ async function prove() {
         delete m.routes.find((r) => r.route === '/atlas').anchor;
       },
       'needs an "anchor"',
+    );
+
+    // A route declared unreachable is a debt with an owner (F-221's review, B2).
+    const declared = (m) => m.routes.find((r) => r.unreachable !== undefined);
+    refusesSpec(
+      'an unreachable route that names no feature owing its reach',
+      (m) => {
+        delete declared(m).owner;
+      },
+      'names no feature that owes its reach',
+    );
+    refusesSpec(
+      'an unreachable route owed by something that is not a feature',
+      (m) => {
+        declared(m).owner = 'F-9999';
+      },
+      'which is not a feature',
+    );
+    {
+      const owner = declared(captureSpec).owner;
+      refusesSpec(
+        'an unreachable route owed by a feature already done',
+        () => undefined,
+        `owed by ${owner}, which is done`,
+        indexed,
+        new Map([...features, [owner, 'done']]),
+      );
+    }
+
+    // A flow left on disk for a route the spec no longer names (M7): the --check refusal's rule.
+    check(
+      'a capture flow no route produces is found stale, and the ones the spec produces are not',
+      JSON.stringify(
+        staleFlows(new Set(['a.yaml', 'b.yaml']), ['a.yaml', 'b.yaml', 'old.yaml']),
+      ) === JSON.stringify(['old.yaml']),
     );
   }
 

@@ -763,7 +763,9 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
    runs every route in the index on an Android device or emulator at 384 dp, in Sumi and Washi,
    English and Japanese, and composes each capture beside the mockups that govern it, into
    `.harness/verification/evidence/fidelity/<UTC>/compose/`, with a record of what it captured and
-   what it could not. A person runs it, compares each pair and records the result — the sweep itself
+   what it could not. A route no cleared app can reach is declared in the capture spec with the
+   feature that owes its reach — `/atlas/with/reading/[id]`, owed by `F-259` — and the run fails
+   while it is. A person runs it, compares each pair and records the result — the sweep itself
    says it *"cannot see a layout that is cramped or unbalanced"*.
 3. **Everything else is unchanged.** Contrast, CVD, claims, token reach, font coverage and brand
    byte-comparison stay blocking. Fidelity is a reason to materialise a mockup — never a reason to

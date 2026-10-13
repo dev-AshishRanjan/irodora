@@ -576,7 +576,7 @@ export function indexRoutes(index) {
  * A route the spec marks unreachable gets no flow; the run records it as not captured, with the
  * reason given here.
  */
-export function captureSpecs(capture, indexed) {
+export function captureSpecs(capture, indexed, features = null) {
   const problems = [];
   const specs = [];
   const unreachable = [];
@@ -595,10 +595,23 @@ export function captureSpecs(capture, indexed) {
     if (routeUrlOf(entry.file) !== entry.route)
       problems.push(`${at}: "${entry.file}" serves ${routeUrlOf(entry.file)}, not ${entry.route}`);
 
+    /*
+     * A ROUTE NO CLEARED APP REACHES IS A DEBT WITH AN OWNER (F-221's review, B2). It names the
+     * feature that owes its reach, which must exist and not be done: an owner that closed, or none,
+     * would let any route that fails be declared away. The run still fails while one is declared.
+     */
     if (entry.unreachable !== undefined) {
       if (typeof entry.unreachable !== 'string' || entry.unreachable.trim().length < 12)
         problems.push(`${at}: unreachable, and says no reason why`);
-      else unreachable.push({ route: entry.route, why: entry.unreachable });
+      else if (typeof entry.owner !== 'string')
+        problems.push(`${at}: unreachable, and names no feature that owes its reach ("owner")`);
+      else if (features !== null && !features.has(entry.owner))
+        problems.push(`${at}: unreachable, owed by ${entry.owner}, which is not a feature`);
+      else if (features !== null && features.get(entry.owner) === 'done')
+        problems.push(
+          `${at}: unreachable, owed by ${entry.owner}, which is done: reach it, or name who owes it`,
+        );
+      else unreachable.push({ route: entry.route, why: entry.unreachable, owner: entry.owner });
       continue;
     }
     if (typeof entry.anchor !== 'string') {
@@ -647,6 +660,17 @@ export function captureSpecs(capture, indexed) {
 
   return { specs, unreachable, problems };
 }
+
+/** Each feature's status, by id, for the owner of an unreachable route (B2). */
+export function featureStatuses() {
+  const list = JSON.parse(
+    readFileSync(join(ROOT, '.harness', 'state', 'feature_list.json'), 'utf8'),
+  );
+  return new Map(list.features.map((f) => [f.id, f.status]));
+}
+
+/** The flows on disk that no route in the spec produces (pure, so the proof can hold it, M7). */
+export const staleFlows = (expected, onDisk) => onDisk.filter((path) => !expected.has(path));
 
 /** Every flow file on disk under a capture locale folder, so a stale one is found. */
 function captureFilesOnDisk() {
@@ -752,6 +776,7 @@ async function main() {
   const capture = captureSpecs(
     JSON.parse(readFileSync(CAPTURE_SPEC, 'utf8')),
     indexRoutes(JSON.parse(readFileSync(MOCKUP_INDEX, 'utf8'))),
+    featureStatuses(),
   );
   if (capture.problems.length > 0) {
     failed = true;
@@ -786,8 +811,7 @@ async function main() {
   }
   // A flow for a route the spec no longer names is a capture nothing asks for: refused under
   // --check, removed when writing, so the folders always hold exactly the spec.
-  for (const path of captureFilesOnDisk()) {
-    if (expected.has(path)) continue;
+  for (const path of staleFlows(expected, captureFilesOnDisk())) {
     if (mode === '--check') {
       failed = true;
       console.error(`  STALE        ${posix(path)} — no route in the capture spec produces it.`);

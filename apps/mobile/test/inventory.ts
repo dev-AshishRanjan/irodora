@@ -15,19 +15,74 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { render } from '@testing-library/react-native';
 import * as ui from '@irodora/ui';
-import { drawsSomething, renderedTexts, type TestNode } from '@irodora/ui/testing';
+import { drawsSomething, flattenStyle, renderedTexts, type TestNode } from '@irodora/ui/testing';
 import { t, type Locale, type MessageKey } from '../src/i18n';
 
 /**
- * The live tree's nodes, as the sweep reads them: each node's component and its `name` prop. The
- * JSON tree carries only host nodes, so a component is found here. Taken while the tree is still
- * mounted (`snapshot`), because a live tree cannot be walked once it is unmounted.
+ * The live tree's nodes, as the sweep reads them: each node's component, its `name` prop, the test
+ * ids on it and above it, and whether a static `opacity: 0` on it or above it hides it. The JSON
+ * tree carries only host nodes, so a component is found here. Taken while the tree is still mounted
+ * (`snapshot`), because a live tree cannot be walked once it is unmounted.
  */
-export type LiveNodes = readonly { readonly type: unknown; readonly name: unknown }[];
+export type LiveNodes = readonly {
+  readonly type: unknown;
+  readonly name: unknown;
+  readonly ids: readonly string[];
+  readonly hidden: boolean;
+}[];
+
+/**
+ * Whether a node's own props hide what it draws: a static `opacity: 0`, as the lockup withholds its
+ * mark until the travelling one arrives. An opacity an ANIMATION drives (the node carries
+ * reanimated's `jestAnimatedStyle`) is where a motion starts at mount, not the drawing: the launch's
+ * composition and a list's arrival begin at 0 and rise, and reading that frame would call every
+ * element in them undrawn.
+ */
+function staticallyHidden(props: Readonly<Record<string, unknown>>): boolean {
+  return (
+    flattenStyle(props['style'])['opacity'] === 0 &&
+    !('jestAnimatedStyle' in props) &&
+    !('animatedStyle' in props)
+  );
+}
 
 /** A live root's nodes, read before it unmounts. */
 export function snapshot(root: ReturnType<typeof render>['UNSAFE_root']): LiveNodes {
-  return root.findAll(() => true).map((n) => ({ type: n.type, name: n.props['name'] as unknown }));
+  return root
+    .findAll(() => true)
+    .map((n) => {
+      const ids: string[] = [];
+      let hidden = false;
+      for (let at: typeof n | null = n; at !== null; at = at.parent) {
+        const id = at.props['testID'] as unknown;
+        if (typeof id === 'string') ids.push(id);
+        if (staticallyHidden(at.props)) hidden = true;
+      }
+      return { type: n.type, name: n.props['name'] as unknown, ids, hidden };
+    });
+}
+
+/**
+ * ONE SURFACE, AND ONLY WHAT SHOWS (F-221's review, B1). Counted anywhere on the screen, a
+ * component another part of it also draws stands in for a missing element: the Lens's mode chips
+ * for 27's step chips, the lockup's mark withheld at `opacity: 0` for the visible one. So every
+ * count is taken inside the surface's own root, and a node a static `opacity: 0` hides is not
+ * drawn. An opacity an animation sets is not read here: the sweep draws each surface at mount.
+ */
+export function scopeLive(live: LiveNodes, root: string): LiveNodes {
+  return live.filter((n) => n.ids.includes(root) && !n.hidden);
+}
+
+/** The JSON subtree a surface's root id starts, its hidden branches pruned; null if none. */
+export function scopeJson(json: TestNode, root: string): TestNode | null {
+  const prune = (node: TestNode): TestNode => ({
+    ...node,
+    children: (node.children ?? [])
+      .filter((c) => typeof c === 'string' || !staticallyHidden(c.props))
+      .map((c) => (typeof c === 'string' ? c : prune(c))),
+  });
+  const found = byTestID(json, root)[0];
+  return found === undefined ? null : prune(found);
 }
 
 /** One element of an F-220 inventory, at the fields the sweep reads. */

@@ -29,7 +29,10 @@
  *   (0, which Android reports as reduced motion, so screens are captured at rest); night mode
  *   (Sumi, then Washi); the app's own language (API 33+), unless `--locale-by-hand` says the person
  *   sets the phone's language instead, one language per run.
- * - Each is put back in a `finally` and on Ctrl+C. A restore that fails prints its command.
+ * - Each is put back in a `finally`, the app's language and the hierarchy file included. Ctrl+C
+ *   kills the device command in flight, and the run stops there, puts everything back and writes
+ *   the record (`Interrupted`); a window closed outright cannot, which is what `restore.txt` is for.
+ *   A restore that fails prints its command.
  *
  * ## What is decided without a device
  *
@@ -42,7 +45,10 @@
  *
  * The device-side formats are documented, not observed here (ADR-0134, "revisit after the first
  * run"): `openLink`'s URL form, where `takeScreenshot` lands, `uiautomator`'s XML, and whether the
- * per-app language survives `pm clear`. Every step fails closed into the record.
+ * per-app language survives `pm clear`. Every answer the device gives is checked and fails closed
+ * into the record, as a miss or as unread. A defect in the repository itself — a mockup that no
+ * longer hashes to its pin, a flow file missing after preflight — throws: the device is still put
+ * back, and no record is written for a run that could not mean anything.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -71,7 +77,7 @@ import {
   runPassed,
   summaryLine,
 } from './fidelity-record.mjs';
-import { captureId, captureSpecs, indexRoutes } from './generate-e2e-flows.mjs';
+import { captureId, captureSpecs, featureStatuses, indexRoutes } from './generate-e2e-flows.mjs';
 import { imageSizeOf } from './mockup-inventory.mjs';
 import { onPath } from './on-path.mjs';
 
@@ -89,6 +95,9 @@ const ANIMATIONS = [
 
 const TAGS = { en: 'en-GB', ja: 'ja-JP' };
 
+/** Where the device writes the screen's hierarchy; removed before each dump and after the run. */
+const HIERARCHY = '/sdcard/irodora-hierarchy.xml';
+
 /** What a run captures: the routes, each one's flow per locale, and why any is unreachable. */
 export function capturePlan(root = ROOT) {
   const index = JSON.parse(readFileSync(join(root, 'mockups', 'index.json'), 'utf8'));
@@ -96,7 +105,7 @@ export function capturePlan(root = ROOT) {
     readFileSync(join(root, 'apps', 'mobile', 'e2e', 'capture', 'routes.json'), 'utf8'),
   );
   const indexed = indexRoutes(index);
-  const { specs, unreachable, problems } = captureSpecs(spec, indexed);
+  const { specs, unreachable, problems } = captureSpecs(spec, indexed, featureStatuses());
   const flows = new Map();
   for (const s of specs) flows.set(`${s.route} ${s.locale}`, s.path);
   const inventories = new Map(
@@ -110,10 +119,27 @@ export function capturePlan(root = ROOT) {
     inventories,
     routes: [...indexed].sort(),
     flows,
-    unreachable: new Map(unreachable.map((u) => [u.route, u.why])),
+    unreachable: new Map(unreachable.map((u) => [u.route, `${u.why} Owed by ${u.owner}.`])),
     problems,
   };
 }
+
+/**
+ * A device command a person interrupted with Ctrl+C (F-221's review, S1). The run is synchronous,
+ * so Node's own SIGINT handler would never get a turn: the child a Ctrl+C kills is the signal. The
+ * driver throws this; `runCapture` stops, records every capture not taken as interrupted, and its
+ * `finally` puts the device back.
+ */
+export class Interrupted extends Error {
+  constructor(what) {
+    super(`interrupted (Ctrl+C) during ${what}`);
+    this.name = 'Interrupted';
+  }
+}
+
+/** Whether a finished child was ended by Ctrl+C: SIGINT on POSIX, STATUS_CONTROL_C_EXIT on win32. */
+export const interruptedChild = (result) =>
+  result.signal === 'SIGINT' || result.status === 3221225786 || result.status === 130;
 
 /** A value from a `key: value` line in a command's output, or null. */
 const field = (text, label) => {
@@ -129,7 +155,9 @@ const field = (text, label) => {
  * - `sink`: `{ write(path, data) }`, paths relative to the run folder
  * - `args`: `{ eraseAppData, serial, localeByHand }`
  * - `plan`: from `capturePlan`; `readMockup(id)`: the image's bytes; `checkFlows()`: problems
- * - `onInterrupt(restore)`: registers the restore for Ctrl+C (the CLI); the proof passes nothing
+ *
+ * A driver call may throw `Interrupted`: the run stops there, every capture not taken is recorded
+ * as interrupted, the device is put back, and the record is written.
  *
  * Returns `{ record, exitCode }`.
  */
@@ -143,7 +171,6 @@ export function runCapture({
   commit,
   compiled,
   log = () => undefined,
-  onInterrupt = () => undefined,
 }) {
   const routes = plan.routes;
   const notCaptured = (reason, only = () => true) =>
@@ -203,6 +230,8 @@ export function runCapture({
     fontScale: sh('settings get system font_scale').stdout.trim(),
     animations: ANIMATIONS.map((a) => sh(`settings get global ${a}`).stdout.trim()),
     night: field(sh('cmd uimode night').stdout, 'Night mode'),
+    // The app's own language, as the system holds it (`are [ja-JP]`), to put back (S2).
+    locales: /are \[([^\]]*)\]/u.exec(sh(`cmd locale get-app-locales ${APP}`).stdout)?.[1] ?? '',
   };
   const device = {
     serial,
@@ -245,6 +274,8 @@ export function runCapture({
         `settings put global ${a} ${original.animations[i] === 'null' ? '1' : original.animations[i]}`,
     ),
     `cmd uimode night ${original.night ?? 'auto'}`,
+    `cmd locale set-app-locales ${APP} --locales ${original.locales === '' ? "''" : original.locales.replace(/\s+/gu, '')}`,
+    `rm -f ${HIERARCHY}`,
   ];
   sink.write(
     'restore.txt',
@@ -262,10 +293,10 @@ export function runCapture({
       );
     return failed;
   };
-  onInterrupt(restore);
 
   const results = [];
   const claims = { capturesChecked: 0, texts: 0, findings: 0, unread: 0 };
+  let interrupted = null;
   try {
     /* ---------------------------------------------------------------- the reference width */
     const width = device.physicalPx[0];
@@ -281,13 +312,26 @@ export function runCapture({
           `the screen is ${String(device.dpWidth)} dp wide at density ${String(used)}, not ${String(REFERENCE_DP)}`,
         ),
       );
-    else {
+    // Font scale and animations, set and READ BACK, so the record states what the device did (M5).
+    let settled = false;
+    if (!offWidth) {
       sh('settings put system font_scale 1.0');
       for (const a of ANIMATIONS) sh(`settings put global ${a} 0`);
+      const scale = Number(sh('settings get system font_scale').stdout.trim());
+      const motion = ANIMATIONS.map((a) => Number(sh(`settings get global ${a}`).stdout.trim()));
+      device.fontScale.used = scale;
+      device.animations = motion;
+      settled = scale === 1 && motion.every((m) => m === 0);
+      if (!settled)
+        results.push(
+          ...notCaptured(
+            `the font scale reads back ${String(scale)} and the animation scales ${motion.join('/')}, not 1 and 0`,
+          ),
+        );
     }
 
     // Written once, after the restore below: the record says whether the device was put back.
-    for (const condition of offWidth ? [] : CONDITIONS) {
+    for (const condition of offWidth || !settled ? [] : CONDITIONS) {
       const { theme, locale } = condition;
       const here = (c) => c.theme === theme && c.locale === locale;
       if (args.localeByHand !== undefined && args.localeByHand !== locale) {
@@ -327,7 +371,11 @@ export function runCapture({
           continue;
         }
 
-        sh(`pm clear ${APP}`);
+        const cleared = sh(`pm clear ${APP}`);
+        if (cleared.status !== 0 || !/Success/u.test(cleared.stdout)) {
+          miss(`the app's data did not clear (pm clear: "${cleared.stdout.trim()}")`);
+          continue;
+        }
         if (args.localeByHand === undefined) {
           sh(`cmd locale set-app-locales ${APP} --locales ${TAGS[locale]}`);
           const locales = sh(`cmd locale get-app-locales ${APP}`).stdout.replace(/_/gu, '-');
@@ -362,9 +410,13 @@ export function runCapture({
         const xml = driver.dumpHierarchy(serial);
         if (xml !== null) sink.write(`${dir}/hierarchy.xml`, xml);
         let text;
+        let textCount = 0;
         try {
-          const texts = hierarchyTexts(xml ?? '');
+          // The app's own screen, with something on it: another package's dump, or an empty one,
+          // is unread, never a capture with nothing to report (S4).
+          const texts = hierarchyTexts(xml ?? '', { app: APP });
           const findings = captureClaims(texts, compiled);
+          textCount = texts.length;
           claims.capturesChecked += 1;
           claims.texts += texts.length;
           claims.findings += findings.length;
@@ -406,11 +458,24 @@ export function runCapture({
           governing: panels.map((p) => p.id),
           composed,
           claims: `${dir}/claims.txt`,
+          texts: textCount,
         });
       }
     }
+  } catch (error) {
+    if (!(error instanceof Interrupted)) throw error;
+    interrupted = error.message;
   } finally {
     restore();
+  }
+  if (interrupted !== null) {
+    // Every capture not taken when the person stopped the run says so.
+    const taken = new Set(results.map((r) => `${r.route} ${r.theme} ${r.locale}`));
+    for (const r of notCaptured(interrupted))
+      if (!taken.has(`${r.route} ${r.theme} ${r.locale}`)) results.push(r);
+    log(
+      `Stopped: ${interrupted}. The device was put back${device.restored === true ? '' : ' in part: see above'}.`,
+    );
   }
   return finish(results, device, app, claims);
 }
@@ -428,19 +493,25 @@ function filesNamed(dir, name, out = []) {
   return out;
 }
 
+/**
+ * One argument for `cmd.exe`, quoted when it needs it. Windows runs a `.cmd` or `.bat` only through
+ * a shell, and a path with a space in it, the command's own included, is two words there (S6).
+ */
+const quoted = (arg) => (/^[\w\-./:\\=]+$/u.test(arg) ? arg : `"${arg.replace(/"/gu, '""')}"`);
+
 /** adb and Maestro, as `runCapture` asks for them. */
 export function realDriver() {
   const adb = onPath('adb');
   const maestro = onPath('maestro');
-  const run = (command, args, timeout = 120_000) => {
-    // A `.cmd` or `.bat` on Windows runs only through a shell; quote what has spaces.
-    const shell = process.platform === 'win32' && /\.(?:cmd|bat)$/iu.test(command);
-    return spawnSync(command, shell ? args.map((a) => (/\s/u.test(a) ? `"${a}"` : a)) : args, {
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-      timeout,
-      shell,
-    });
+  const run = (command, args, { timeout = 120_000, cwd } = {}) => {
+    const viaShell = process.platform === 'win32' && /\.(?:cmd|bat)$/iu.test(command);
+    const options = { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout, cwd };
+    // Through a shell, one command line, every part quoted, and no argument array beside it.
+    const result = viaShell
+      ? spawnSync([command, ...args].map(quoted).join(' '), { ...options, shell: true })
+      : spawnSync(command, args, options);
+    if (interruptedChild(result)) throw new Interrupted(`${command} ${args.join(' ')}`);
+    return result;
   };
   return {
     tools: () => ({ adb: adb !== null, maestro: maestro !== null }),
@@ -456,11 +527,12 @@ export function realDriver() {
     runFlow: (serial, flow) => {
       const out = mkdtempSync(join(tmpdir(), 'fidelity-'));
       try {
-        const r = run(
-          maestro,
-          ['--device', serial, 'test', '--test-output-dir', out, flow],
-          300_000,
-        );
+        // Run INSIDE the output folder, so a screenshot written relative to the working directory
+        // lands there too, never in the repository (M10); every capture.png under it is read.
+        const r = run(maestro, ['--device', serial, 'test', '--test-output-dir', out, flow], {
+          timeout: 300_000,
+          cwd: out,
+        });
         return {
           status: r.status ?? 1,
           log: `${r.stdout ?? ''}${r.stderr ?? ''}`,
@@ -471,9 +543,13 @@ export function realDriver() {
       }
     },
     dumpHierarchy: (serial) => {
-      const path = '/sdcard/irodora-hierarchy.xml';
-      if (run(adb, ['-s', serial, 'shell', `uiautomator dump ${path}`]).status !== 0) return null;
-      const cat = run(adb, ['-s', serial, 'exec-out', `cat ${path}`]);
+      // The last dump is removed first, and this one must say it was written: a dump that failed
+      // quietly would otherwise hand back the previous screen's text (S4).
+      run(adb, ['-s', serial, 'shell', `rm -f ${HIERARCHY}`]);
+      const dump = run(adb, ['-s', serial, 'shell', `uiautomator dump ${HIERARCHY}`]);
+      if (dump.status !== 0 || !/dumped to/iu.test(`${dump.stdout ?? ''}${dump.stderr ?? ''}`))
+        return null;
+      const cat = run(adb, ['-s', serial, 'exec-out', `cat ${HIERARCHY}`]);
       return cat.status === 0 ? cat.stdout : null;
     },
   };
@@ -498,13 +574,38 @@ export function recompose(dir, plan, readMockup, compiled) {
   const before = JSON.parse(readFileSync(join(dir, 'record.json'), 'utf8'));
   const sink = folder(dir);
   const claims = { capturesChecked: 0, texts: 0, findings: 0, unread: 0 };
-  const results = before.results.map((r) => {
+  const width = before.device?.physicalPx?.[0];
+  /*
+   * NOTHING IN THE RETURNED RECORD IS TRUSTED THAT THE FILES CAN SAY (M4). Unreachable comes from
+   * the capture spec, not the record's flag; a capture counts only if its PNG is there and as wide
+   * as the screen the run measured.
+   */
+  const results = before.results.map((recorded) => {
+    const why = plan.unreachable.get(recorded.route);
+    if (why !== undefined)
+      return { ...recorded, status: 'not-captured', unreachable: true, reason: why };
+    // The flag is the spec's to set, above, never the returned record's.
+    const r = { ...recorded };
+    delete r.unreachable;
     if (r.status !== 'captured') return r;
-    const png = readFileSync(join(dir, r.capture));
+    const path = join(dir, String(r.capture));
+    const png = existsSync(path) ? readFileSync(path) : null;
+    const size = png === null ? null : imageSizeOf(png);
+    if (png === null || size === null || size.w !== width)
+      return {
+        ...r,
+        status: 'not-captured',
+        reason:
+          png === null
+            ? `recomposed: ${String(r.capture)} is not in the run folder`
+            : `recomposed: the capture is ${String(size?.w)} px wide; the screen was ${String(width)}`,
+      };
     const rawDir = dirname(r.capture);
     const hierarchy = join(dir, rawDir, 'hierarchy.xml');
     try {
-      const texts = hierarchyTexts(existsSync(hierarchy) ? readFileSync(hierarchy, 'utf8') : '');
+      const texts = hierarchyTexts(existsSync(hierarchy) ? readFileSync(hierarchy, 'utf8') : '', {
+        app: APP,
+      });
       const findings = captureClaims(texts, compiled);
       claims.capturesChecked += 1;
       claims.texts += texts.length;
@@ -580,10 +681,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   }
   const stamp = new Date().toISOString().replace(/[:.]/gu, '-');
   const dir = join(ROOT, '.harness', 'verification', 'evidence', 'fidelity', stamp);
-  const commit = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  }).stdout.trim();
+  // The commit, marked when the tree it was built from had uncommitted changes (M8).
+  const git = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
+  const commit = `${git(['rev-parse', '--short', 'HEAD'])}${git(['status', '--porcelain']) === '' ? '' : '-dirty'}`;
+  // FAILS CLOSED (S3): any non-zero exit is a problem, named by what it printed, or by its exit.
   const checkFlows = () => {
     const r = spawnSync(
       process.execPath,
@@ -593,36 +694,46 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
         encoding: 'utf8',
       },
     );
-    return r.status === 0
-      ? []
-      : `${r.stdout ?? ''}${r.stderr ?? ''}`
-          .split('\n')
-          .filter((line) => /MISSING|DRIFTED|STALE|REFUSED/u.test(line))
-          .map((line) => line.trim());
+    if (r.status === 0) return [];
+    const named = `${r.stdout ?? ''}${r.stderr ?? ''}`
+      .split('\n')
+      .filter((line) => /MISSING|DRIFTED|STALE|REFUSED/u.test(line))
+      .map((line) => line.trim());
+    return named.length > 0 ? named : [`generate-e2e-flows --check exited ${String(r.status)}`];
   };
 
+  /*
+   * CTRL+C IS HANDLED WHERE IT LANDS (S1). The run is synchronous, so a SIGINT handler here would
+   * only run once it had finished: a Ctrl+C kills the device command in flight, the driver throws
+   * `Interrupted`, and `runCapture` puts the device back and writes the record. This listener only
+   * keeps Node from exiting outright between commands, before that `finally` can run.
+   */
+  process.on('SIGINT', () => undefined);
+
   console.log(`\nFidelity capture → ${dir}\n`);
-  const { exitCode } = runCapture({
-    driver: realDriver(),
-    sink: folder(dir),
-    args: {
-      eraseAppData: argv.includes('--erase-app-data'),
-      serial: value('--serial'),
-      localeByHand,
-    },
-    plan,
-    readMockup,
-    checkFlows,
-    commit,
-    compiled,
-    log: (line) => console.log(line),
-    onInterrupt: (restore) => {
-      process.on('SIGINT', () => {
-        restore();
-        process.exit(130);
-      });
-    },
-  });
+  let outcome;
+  try {
+    outcome = runCapture({
+      driver: realDriver(),
+      sink: folder(dir),
+      args: {
+        eraseAppData: argv.includes('--erase-app-data'),
+        serial: value('--serial'),
+        localeByHand,
+      },
+      plan,
+      readMockup,
+      checkFlows,
+      commit,
+      compiled,
+      log: (line) => console.log(line),
+    });
+  } catch (error) {
+    // Stopped before anything on the device changed: preflight only reads.
+    if (!(error instanceof Interrupted)) throw error;
+    console.log(`\nStopped before any change to the device: ${error.message}\n`);
+    process.exit(130);
+  }
   console.log(`\n  ${join(dir, 'record.md')}\n`);
-  process.exit(exitCode);
+  process.exit(outcome.exitCode);
 }

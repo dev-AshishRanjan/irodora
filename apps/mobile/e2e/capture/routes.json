@@ -84,7 +84,8 @@
     {
       "route": "/atlas/with/reading/[id]",
       "file": "(tabs)/atlas/with/reading/[id].tsx",
-      "unreachable": "A reading exists only after the Lens measures something through the camera, which a cleared app has not done and no flow can make it do deterministically. Home opens this route from the last reading. F-259, which rebuilds it as mockup 24, owns capturing it."
+      "unreachable": "A reading exists only after the Lens reads a colour: through the camera, or from a library photo (F-166). A cleared app has none, and reaching one in a flow means seeding a photo (Maestro addMedia) and driving the system photo picker, which a generated flow cannot address without a raw selector (ADR-0086). Until that reach exists, every fidelity run records this route as not captured and fails.",
+      "owner": "F-259"
     },
     {
       "route": "/wardrobe",

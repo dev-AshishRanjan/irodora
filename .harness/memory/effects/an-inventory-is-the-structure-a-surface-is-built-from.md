@@ -60,6 +60,9 @@ inventory was written it stopped discriminating — the full gate run caught it 
 
 The conformance sweep enrolls a surface once its feature is done, and asserts every element its
 inventory records is drawn — found by what it draws (catalogue words, glyph, illustration, component,
-an engine value), a `testID` only where it lands on something drawn. A changed element turns
-`pnpm test` red: every element needs a locator, and every locator an element. The composer also
+an engine value), a `testID` only where it lands on something drawn — counted inside the surface's
+own root, with anything a static `opacity: 0` hides left out (F-221's review, B1: counted across the
+screen, another part's look-alike stood in). For an ENROLLED surface, a changed element turns `pnpm
+test` red: every element needs a locator, and every locator an element. A decoy for each kind of
+locator shows it. The composer also
 reads each framed inventory's screen box to crop the mockup it shows.

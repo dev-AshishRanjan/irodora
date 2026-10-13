@@ -24,12 +24,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { compileBanned, loadClaims } from './claims-patterns.mjs';
-import { APP, capturePlan, runCapture } from './fidelity-capture.mjs';
+import { APP, capturePlan, Interrupted, runCapture } from './fidelity-capture.mjs';
 import { composeSvg, governingPanels, REFERENCE_DP } from './fidelity-compose.mjs';
 import {
   buildRecord,
   captureClaims,
-  claimsFile,
   CONDITIONS,
   hierarchyTexts,
   recordMarkdown,
@@ -262,29 +261,26 @@ const mockupOf = (id, governs, rule) => {
     ),
   );
   const declared = all.map((r, i) =>
-    i < 4 ? { ...r, status: 'not-captured', unreachable: true, reason: 'needs the camera' } : r,
+    i < 4
+      ? {
+          ...r,
+          status: 'not-captured',
+          unreachable: true,
+          reason: 'A reading needs the camera or a library photo. Owed by F-259.',
+        }
+      : r,
   );
   const withDeclared = buildRecord({ ...base, results: declared, claims: claims(all.length - 4) });
   check(
-    'a miss the capture spec declares unreachable is named as that in the summary, and does not fail the run',
-    runPassed(withDeclared) &&
+    'a miss the capture spec declares unreachable is named as that, with its owner, and the run still fails (B2)',
+    !runPassed(withDeclared) &&
       summaryLine(withDeclared).endsWith(
         '4 unreachable from a cleared app, as the capture spec says',
       ) &&
-      recordMarkdown(withDeclared).includes('UNREACHABLE — needs the camera'),
+      recordMarkdown(withDeclared).includes(
+        'UNREACHABLE — A reading needs the camera or a library photo. Owed by F-259.',
+      ),
     summaryLine(withDeclared),
-  );
-  check(
-    'DECOY — one undeclared miss beside them fails it',
-    !runPassed(
-      buildRecord({
-        ...base,
-        results: declared.map((r, i) =>
-          i === 4 ? { ...r, status: 'not-captured', reason: 'maestro exited 1' } : r,
-        ),
-        claims: claims(all.length - 5),
-      }),
-    ),
   );
 }
 
@@ -313,7 +309,7 @@ const mockupOf = (id, governs, rule) => {
         animator_duration_scale: '1',
       },
       night: 'no',
-      locales: '',
+      locales: over.locales ?? '',
       width: 1080,
     };
     const events = [];
@@ -344,7 +340,7 @@ const mockupOf = (id, governs, rule) => {
       }
       if (command === 'settings get system font_scale') return ok(state.fontScale);
       if ((m = /^settings put system font_scale (\S+)$/u.exec(command))) {
-        state.fontScale = m[1];
+        if (over.fontScaleStuck !== true || m[1] !== '1.0') state.fontScale = m[1];
         return ok();
       }
       if ((m = /^settings get global (\w+)$/u.exec(command))) return ok(state.animations[m[1]]);
@@ -358,11 +354,13 @@ const mockupOf = (id, governs, rule) => {
         return ok();
       }
       if (command === `pm clear ${APP}`) {
+        if (over.clearFails === true) return ok('Error: java.lang.SecurityException');
         state.locales = '';
         return ok('Success');
       }
+      if (command === 'rm -f /sdcard/irodora-hierarchy.xml') return ok();
       if ((m = /^cmd locale set-app-locales \S+ --locales (\S+)$/u.exec(command))) {
-        state.locales = m[1];
+        state.locales = m[1] === "''" ? '' : m[1];
         return ok();
       }
       if (command === `cmd locale get-app-locales ${APP}`)
@@ -397,12 +395,12 @@ const mockupOf = (id, governs, rule) => {
     };
     return { driver, sink, state, events, files };
   };
-  const run = (device, args = { eraseAppData: true }) =>
+  const run = (device, args = { eraseAppData: true }, usePlan = plan) =>
     runCapture({
       driver: device.driver,
       sink: device.sink,
       args,
-      plan,
+      plan: usePlan,
       readMockup,
       checkFlows: () => [],
       commit: 'abc1234',
@@ -411,6 +409,12 @@ const mockupOf = (id, governs, rule) => {
   const MUTATING =
     /^shell (?:wm density (?:\d+|reset)|settings put|cmd uimode night (?:yes|no|auto)|pm clear|cmd locale set-app-locales)/u;
   const reachable = plan.routes.length - plan.unreachable.size;
+  /** The same plan with the unreachable routes left out: what a run looks like once they are reached. */
+  const allReachable = {
+    ...plan,
+    routes: plan.routes.filter((r) => !plan.unreachable.has(r)),
+    unreachable: new Map(),
+  };
 
   {
     const d = fakeDevice();
@@ -439,15 +443,23 @@ const mockupOf = (id, governs, rule) => {
     );
   }
   {
-    const d = fakeDevice();
+    const d = fakeDevice({ locales: 'ja-JP' });
     const { record, exitCode } = run(d);
     const firstChange = d.events.findIndex((e) => MUTATING.test(e));
     check(
-      `a full run captures every reachable route in four conditions (${String(reachable * 4)}), and passes`,
+      `a full run captures every reachable route (${String(reachable * 4)}), names the unreachable one, and fails while it is (B2)`,
       record.captured === reachable * 4 &&
         record.unreachable === plan.unreachable.size * 4 &&
-        exitCode === 0,
+        exitCode === 1 &&
+        summaryLine(record).endsWith('unreachable from a cleared app, as the capture spec says'),
       `${summaryLine(record)} (exit ${String(exitCode)})`,
+    );
+    const whole = fakeDevice();
+    const passed = run(whole, { eraseAppData: true }, allReachable);
+    check(
+      'with every route reachable, a full run passes',
+      passed.record.captured === allReachable.routes.length * 4 && passed.exitCode === 0,
+      `${summaryLine(passed.record)} (exit ${String(passed.exitCode)})`,
     );
     check(
       'it writes restore.txt before its first change to the device',
@@ -456,14 +468,17 @@ const mockupOf = (id, governs, rule) => {
         d.events.indexOf('write restore.txt') < firstChange,
     );
     check(
-      'it sets the screen to 384 dp (density 450 for 1080 px), and puts every setting back',
+      "it sets the screen to 384 dp (density 450 for 1080 px), reads back what it set, and puts every setting back — the app's language and the dump file included (S2)",
       record.device.dpWidth === REFERENCE_DP &&
         record.device.density.used === 450 &&
+        record.device.fontScale.used === 1 &&
         record.device.restored === true &&
         d.state.override === null &&
         d.state.fontScale === '1.15' &&
         d.state.night === 'no' &&
-        Object.values(d.state.animations).every((v) => v === '1'),
+        d.state.locales === 'ja-JP' &&
+        Object.values(d.state.animations).every((v) => v === '1') &&
+        d.events.includes('shell rm -f /sdcard/irodora-hierarchy.xml'),
       JSON.stringify(d.state),
     );
     check(
@@ -472,6 +487,39 @@ const mockupOf = (id, governs, rule) => {
         [...d.files.keys()].filter((p) => p.startsWith('compose/')).length === reachable * 4 &&
         d.files.has('raw/dark-ja/atlas-slug/capture.png') &&
         d.files.has('compose/atlas-slug.light.ja.svg'),
+    );
+  }
+  {
+    let flows = 0;
+    const d = fakeDevice({
+      flow: () => {
+        flows += 1;
+        if (flows === 3) throw new Interrupted('maestro test');
+        return undefined;
+      },
+    });
+    const { record, exitCode } = run(d);
+    check(
+      'DECOY — Ctrl+C mid-run stops it there: the device is put back, and the record names every capture not taken (S1)',
+      record.captured === 2 &&
+        record.results.filter((r) => r.reason?.startsWith('interrupted (Ctrl+C)') === true).length >
+          0 &&
+        record.device.restored === true &&
+        d.state.override === null &&
+        d.files.has('record.json') &&
+        exitCode === 1,
+      summaryLine(record),
+    );
+  }
+  {
+    const stuck = run(fakeDevice({ fontScaleStuck: true })).record;
+    const uncleared = run(fakeDevice({ clearFails: true })).record;
+    check(
+      'DECOY — a font scale that does not take, or app data that does not clear, is a miss, never a capture (M5)',
+      stuck.captured === 0 &&
+        stuck.results[0].reason.startsWith('the font scale reads back 1.15') &&
+        uncleared.captured === 0 &&
+        uncleared.results.some((r) => r.reason.startsWith("the app's data did not clear")),
     );
   }
   {
@@ -549,16 +597,38 @@ const mockupOf = (id, governs, rule) => {
   }
   {
     const unread = run(fakeDevice({ hierarchy: '<hierarchy><node text="cut' })).record;
+    const otherApp = run(
+      fakeDevice({
+        hierarchy: rendered('clean.xml').replaceAll('com.irodora.app', 'com.android.launcher3'),
+      }),
+    ).record;
+    const silent = run(
+      fakeDevice({
+        hierarchy:
+          '<?xml version="1.0"?><hierarchy rotation="0"><node text="" package="com.irodora.app" bounds="[0,0][1080,2400]" /></hierarchy>',
+      }),
+    ).record;
+    check(
+      "DECOY — a dump that is unreadable, not the app's screen, or has no text on it is unread, and fails the run (S4)",
+      [unread, otherApp, silent].every(
+        (r) => !runPassed(r) && r.claims.unread === reachable * 4 && r.claims.capturesChecked === 0,
+      ),
+    );
+    // The finding's own words, read the way the run reads them, so the check is about those words.
+    const words = hierarchyTexts(rendered('composed.xml'), { app: APP }).find(
+      (t) => t.kind === 'line',
+    )?.text;
     const found = fakeDevice({ hierarchy: rendered('composed.xml') });
     const claimed = run(found).record;
     check(
-      'DECOY — unreadable text fails the run; a composed claim fails it, its words in claims.txt alone',
-      !runPassed(unread) &&
-        unread.claims.unread === reachable * 4 &&
+      'DECOY — a composed claim fails the run; its words are in claims.txt, and in neither record.json nor record.md (M6)',
+      words !== undefined &&
         !runPassed(claimed) &&
         claimed.claims.findings === reachable * 4 &&
-        String(found.files.get('raw/dark-en/home/claims.txt')).includes('(line)') &&
-        !String(found.files.get('record.json')).includes('(line)'),
+        String(found.files.get('raw/dark-en/home/claims.txt')).includes(words) &&
+        !String(found.files.get('record.json')).includes(words) &&
+        !String(found.files.get('record.md')).includes(words),
+      String(words),
     );
   }
 }
@@ -598,27 +668,30 @@ const mockupOf = (id, governs, rule) => {
     unread !== null,
   );
 
-  // The finding's words go to the capture's claims.txt and nowhere a repository walker reads.
-  const line = composed.find((f) => f.kind === 'line');
-  const record = buildRecord({
-    commit: 'abc1234',
-    app: { package: 'com.irodora.app' },
-    device: { model: 'probe' },
-    routes: ['/atlas'],
-    results: CONDITIONS.map((c) => ({
-      route: '/atlas',
-      ...c,
-      status: 'captured',
-      claims: 'raw/x/claims.txt',
-    })),
-    claims: { capturesChecked: 4, texts: 4, findings: 1, unread: 0 },
-  });
+  // A figure beside a label stacked over its note (S5): read by its top line, as the jest sweep reads it.
+  const figure = '97%';
+  const label = 'Match';
+  const node = (text, y) =>
+    `<node text="${text}" class="android.widget.TextView" package="com.irodora.app" bounds="[0,${String(y)}][200,${String(y + 60)}]" />`;
+  const besideAStack = [
+    '<?xml version="1.0"?>',
+    '<hierarchy rotation="0">',
+    '<node text="" class="android.view.ViewGroup" package="com.irodora.app" bounds="[0,300][1080,460]">',
+    node(figure, 300).replace('[0,300][200,360]', '[0,300][150,360]'),
+    '<node text="" class="android.view.ViewGroup" package="com.irodora.app" bounds="[170,300][1080,460]">',
+    node(label, 300).replace('[0,300][200,360]', '[170,300][400,360]'),
+    node('for this garment', 400).replace('[0,400][200,460]', '[170,400][600,460]'),
+    '</node>',
+    '</node>',
+    '</hierarchy>',
+  ].join('\n');
+  const stackTexts = hierarchyTexts(besideAStack, { app: APP });
   check(
-    "a finding's words are in claims.txt, and in neither record.json nor record.md",
-    line !== undefined &&
-      claimsFile(composed).includes(line.text) &&
-      !JSON.stringify(record).includes(line.text) &&
-      !recordMarkdown(record).includes(line.text),
+    'a figure beside a label stacked over its note is read as the figure and the label, and refused (S5)',
+    stackTexts.some((t) => t.kind === 'line' && t.text === `${figure} ${label}`) &&
+      captureClaims(stackTexts, compiled).length > 0 &&
+      !stackTexts.some((t) => t.kind === 'line' && t.text.includes('for this garment')),
+    JSON.stringify(stackTexts),
   );
 }
 

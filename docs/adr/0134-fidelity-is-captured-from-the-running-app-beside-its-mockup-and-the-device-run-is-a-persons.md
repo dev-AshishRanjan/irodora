@@ -144,7 +144,8 @@ done:
 
 Every other surface is **owed** by the features whose `mockups` field names it. The owners are read
 from `feature_list.json`, so the sweep keeps no copy of R9 §7's feature column. A feature marked done
-while its surface is still owed turns `pnpm test` red.
+while its surface is still owed turns `lint` red: `verify-mockups` holds the rule, because it reads
+the feature list and a cached test may not (E-203).
 
 `00`, `14.icon`, `25` and `26` are not whole surfaces:
 
@@ -169,8 +170,10 @@ belong to each surface feature's own first criterion.
   sweeps by `pnpm test`.
 - **The device-side formats are documented, not yet observed:** `openLink`'s URL form,
   `takeScreenshot`'s folder, `uiautomator`'s XML, and `set-app-locales` through `pm clear`. Every
-  step fails closed into the record, as not captured or unread. **Revisit this ADR after the first
-  run**; anything the run shows needs fixing becomes a feature.
+  answer the device gives is checked and fails closed into the record, as not captured or unread;
+  a defect in the repository itself (a mockup that no longer hashes to its pin) throws, after the
+  device is put back, and writes no record. **Revisit this ADR after the first run**; anything the
+  run shows needs fixing becomes a feature.
 
 ## Alternatives considered
 
@@ -184,10 +187,15 @@ belong to each surface feature's own first criterion.
 
 ## Recorded while building (F-221)
 
-- **A route a cleared app cannot reach is declared, not hidden.** `/atlas/with/reading/[id]` opens
-  from a reading, and a reading exists only after the Lens measures through the camera. The capture
-  spec says so, the record counts it as unreachable and names it in the summary, and the run passes
-  without it; any other miss fails the run. F-259 owns capturing it.
+- **A route a cleared app cannot reach is declared, owed, and still fails the run** (corrected by
+  the review, B2). `/atlas/with/reading/[id]` opens from a reading. A reading needs the Lens to
+  read a colour, through the camera or from a library photo (F-166), and a generated flow cannot
+  drive the system photo picker without a raw selector (ADR-0086). So the capture spec declares the
+  route unreachable with its reason and its owner, F-259, which must exist and not be done
+  (`generate-e2e-flows --check`). The record names it, and **the run fails while it is declared**:
+  criterion 1 asks for every route. Its attestation stays outstanding until F-259 adds the reach. The
+  first draft let a declared route pass, on the false premise that only the camera makes a reading;
+  that would have let any failing route be declared away.
 - **One route is reached by steps.** `/wardrobe/with/[id]` needs a garment: its flow adds one from
   the corpus swatches. The save button carries a `testID`, because its words are also the Wear
   screen's control and a generated tap may not choose between two (ADR-0086).
@@ -196,3 +204,15 @@ belong to each surface feature's own first criterion.
 - **What enrolling 27 found.** The registry's empty-wardrobe subject drew a branch the route never
   shows when the wardrobe is empty, so 27's card had never been swept; it now passes the route's
   props.
+- **The one review's other corrections** (F-221's review):
+  - **The sweep counts inside each surface's own root**, and a static `opacity: 0` hides. Counted
+    across the screen, the Lens's mode chips stood in for 27's step chips, and the lockup's withheld
+    mark for the visible one (B1).
+  - **Ctrl+C stops the run where it lands.** The run is synchronous, so the device command a Ctrl+C
+    kills is the signal: the run stops, puts the device back, and records every capture not taken
+    (S1). The app's language and the dump file are restored too (S2).
+  - **Every device answer is checked:** the flows (S3), a fresh and confirmed dump from the app's
+    own screen with text on it (S4), font and animation scales read back, `pm clear` confirmed (M5).
+  - **A figure beside a stacked label is one line** in both readers (S5), and SVG text is read in
+    the sweep. A phone's accessibility tree does not carry SVG text, so there it is read in the sweep
+    alone (M9).

@@ -384,4 +384,37 @@ F-091's journey criteria by an actual run.
 - **ADR-0134** gains "Recorded while building": the declared unreachable route, the steps to the garment route, the owner rule's home, and what enrolling 27 found.
 - **Downstream:** F-231's note is followed through. Every surface feature still waiting on F-221 is told to enroll its surface in the same change.
 - **Tier 1, each exit 0:** format, typecheck, state, claims, lint. |
-| review | | |
+| review | this commit | **The one review (evaluator): FAIL as delivered.** Two blocking, six significant and twelve minor findings. Its Tier 2 on 4b953bf, each run one at a time:
+- **Exit 0:** state, typecheck, lint, format, build, `test --force` (35/35 uncached), a11y, contrast, cvd, `fidelity-proof`, `generate-e2e-flows --check`, `e2e-flows-proof`, `verify-mockups --prove`.
+- **Exit 1, expected:** security (F-322's nine). `verify-ci --all` was 35/38, exactly the known reds, with no F-333 event. `test:e2e` refused, with no Maestro. The capture command with no adb wrote NOTHING CAPTURED and exited 1.
+
+It proved B1 with a probe. Each finding fixed or recorded:
+- **B1, fixed: four of 31 elements were not really asserted.** Locators counted anywhere on the screen, so the Lens's mode chips stood in for 27's step chips, the lockup's mark withheld at opacity 0 for the visible one, and the whole card for its glow. Now:
+  - every surface names its root, and counts are taken inside it;
+  - a STATIC `opacity: 0` hides, and an animated one, the mount frame, does not (probed: animated views carry `jestAnimatedStyle`);
+  - the glow and step chips are found by their own ids, and the empty card by its id;
+  - a removal decoy runs for each kind of locator (testID, text, component, the hidden mark, illustration, glyph, the step chip and glow).
+- **B2, fixed: "every route" had been narrowed, on a false premise.** A reading also comes from a library photo (F-166). The reading route stays declared unreachable, with the corrected reason, because a generated flow cannot drive the system photo picker (ADR-0086). Now:
+  - it names its owner, F-259, and `generate-e2e-flows --check` refuses an unreachable route with no owner, a non-feature owner, or a done one;
+  - **the run fails while any route is declared**, and the record still names it, with the owner;
+  - criterion 1's attestation now reads "every route" and cannot be discharged until F-259 adds the reach;
+  - the obligation is in F-259's notes.
+- **S1, fixed: Ctrl+C never reached the restore.** The run is synchronous. A device command a Ctrl+C kills (SIGINT, or exit 3221225786 on win32) now throws `Interrupted`, and the run stops, puts the device back and records every capture not taken. A no-op listener keeps Node from dying between commands.
+- **S2, fixed:** the app's language is read at the start and restored, and the dump file is removed.
+- **S3, fixed:** the flow preflight fails closed on any non-zero exit.
+- **S4, fixed:** the old dump is removed and the new one must report "dumped to". A dump from another package, or with no text, is unread. Per-capture text counts are recorded.
+- **S5, fixed:** in both readers, a row's children give their top lines, so a figure beside a stacked label is one line, and its note stays apart.
+- **S6, fixed:** through a Windows shell the whole command line is quoted, the command included, and no argument array is passed (no DEP0190).
+- **Minors:**
+  - M1 (ADR D7: lint, not test), M2 (R9 §12 names the declared route), M3 (the "fails closed" claim is corrected in the header and ADR) and M11 (row 7 said 15 runner cases; it had 12) are corrected.
+  - M4: `recompose` re-derives unreachable from the spec and re-checks each capture's file and width.
+  - M5: font and animation scales are read back, and `pm clear` is confirmed.
+  - M6: the weak case is gone; the runner case checks the finding's real words against `record.json` and `record.md`.
+  - M7: `staleFlows` is pure, with a proof case.
+  - M8: the commit gains `-dirty`.
+  - M9: SVG text is read in the sweep. A phone does not expose it, and the header and ADR say so.
+  - M10: Maestro runs inside its own output folder.
+  - M12 is recorded as backlog **F-335**: gate 7's runner cannot start `maestro.bat`.
+- **Proofs after the fixes:** `fidelity-proof` 42 cases; `e2e-flows-proof` gains 4 (the three owner refusals and stale flows); the ui rendered-text tests 12; the inventory sweep 16 cases; E-128's guard and note are reworded to what is asserted.
+
+**Tier 1 on the fixes:** see the commit. Tier 2 on the final tree: see `progress.md`. |

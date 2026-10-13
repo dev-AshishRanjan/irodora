@@ -9,7 +9,7 @@
 
 import { Text as NativeText, View } from 'react-native';
 import { render } from '@testing-library/react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 import { type Theme } from '@irodora/design-tokens';
 import { ThemeProvider } from '../src/index.js';
 import {
@@ -93,7 +93,20 @@ describe('renderedTexts', () => {
     expect(of(tree, 'line')).toStrictEqual([CLAIM]);
   });
 
-  it('DECOY — a column inside a row ends the run, so a title is never read into its subtitle', () => {
+  it('reads a figure beside a label stacked over its note as the figure and the label (S5)', () => {
+    const tree = draw(
+      <View style={{ flexDirection: 'row' }}>
+        <NativeText>{FIGURE}</NativeText>
+        <View>
+          <NativeText>{LABEL}</NativeText>
+          <NativeText>for this garment</NativeText>
+        </View>
+      </View>,
+    );
+    expect(of(tree, 'line')).toStrictEqual([CLAIM]);
+  });
+
+  it('DECOY — a column inside a row gives only its top line, so a title is never read into its subtitle', () => {
     const tree = draw(
       <View style={{ flexDirection: 'row' }}>
         <NativeText>Ai</NativeText>
@@ -104,7 +117,17 @@ describe('renderedTexts', () => {
         <NativeText>{FIGURE}</NativeText>
       </View>,
     );
-    expect(of(tree, 'line')).toHaveLength(0);
+    expect(of(tree, 'line')).toStrictEqual([`Ai Indigo ${FIGURE}`]);
+    expect(of(tree, 'line').some((line) => line.includes('Cool, deep'))).toBe(false);
+  });
+
+  it('reads text drawn inside an SVG, as the colour card draws its line (M9)', () => {
+    const tree = draw(
+      <Svg width={100} height={20}>
+        <SvgText>Aizome · after Nagasaki</SvgText>
+      </Svg>,
+    );
+    expect(of(tree, 'paragraph')).toContain('Aizome · after Nagasaki');
   });
 
   it('reads nested text as the one paragraph React Native sets it as', () => {

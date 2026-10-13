@@ -90,13 +90,14 @@ export function summaryLine(record) {
 }
 
 /**
- * Whether a run proved what criteria 1, 2 and 5 ask: every reachable capture taken and read, and
- * nothing claimed. A miss the spec declares unreachable does not fail it; it stays in the record and
- * its summary, with why. Any other miss does.
+ * Whether a run proved what criteria 1, 2 and 5 ask: EVERY route captured and read, and nothing
+ * claimed. A miss the capture spec declares unreachable is named as that, with why and the feature
+ * that owes its reach, and it still fails the run: criterion 1 asks for every route, and a run that
+ * missed one has not shown it (F-221's review, B2).
  */
 export function runPassed(record) {
   return (
-    record.notCaptured === record.unreachable &&
+    record.notCaptured === 0 &&
     record.claims.findings === 0 &&
     record.claims.unread === 0 &&
     record.claims.capturesChecked === record.captured
@@ -204,8 +205,21 @@ const sameLine = (a, b) =>
  * children of one node, each holding exactly one text, that sit on the same line on the screen,
  * read left to right: a figure and a label set side by side.
  */
-export function hierarchyTexts(xmlText) {
+export function hierarchyTexts(xmlText, { app } = {}) {
   const root = parseHierarchy(xmlText);
+  // The app's own screen (S4): a dump of the launcher, a dialog, or another app is not its capture.
+  if (app !== undefined) {
+    const packages = new Set();
+    const collect = (node) => {
+      if (node.attributes.package !== undefined) packages.add(node.attributes.package);
+      for (const child of node.children) collect(child);
+    };
+    collect(root);
+    if (!packages.has(app))
+      throw new Error(
+        `the screen is not ${app}'s (it shows ${[...packages].join(', ') || 'nothing'})`,
+      );
+  }
   const out = [];
   const walk = (node) => {
     const text = (node.attributes.text ?? '').trim();
@@ -213,17 +227,21 @@ export function hierarchyTexts(xmlText) {
     const name = (node.attributes['content-desc'] ?? '').trim();
     if (name !== '' && name !== text) out.push({ kind: 'name', text: name });
 
-    const single = node.children
-      .map((child) => textsIn(child))
-      .filter((held) => held.length === 1)
-      .map((held) => held[0])
-      .filter((t) => t.box !== null)
+    /*
+     * EACH CHILD'S TOP LINE (F-221's review, S5). A child holding several texts, a label stacked
+     * over its note, sits beside its neighbours by its top line: a figure beside a stack of a label
+     * over its note is read as the figure and the label. The note stays apart.
+     */
+    const tops = node.children
+      .map((child) => textsIn(child).filter((t) => t.box !== null))
+      .filter((held) => held.length > 0)
+      .map((held) => [...held].sort((a, b) => a.box.y1 - b.box.y1 || a.box.x1 - b.box.x1)[0])
       .sort((a, b) => a.box.x1 - b.box.x1);
     const used = new Set();
-    for (const [i, first] of single.entries()) {
+    for (const [i, first] of tops.entries()) {
       if (used.has(i)) continue;
       const line = [first];
-      for (const [j, other] of single.entries())
+      for (const [j, other] of tops.entries())
         if (j > i && !used.has(j) && sameLine(first.box, other.box)) {
           line.push(other);
           used.add(j);
@@ -233,6 +251,9 @@ export function hierarchyTexts(xmlText) {
     for (const child of node.children) walk(child);
   };
   walk(root);
+  // A whole dump with no text on it is unread, never a screen that said nothing (S4).
+  if (app !== undefined && !out.some((t) => t.kind === 'paragraph'))
+    throw new Error('the screen carries no text');
   return out;
 }
 

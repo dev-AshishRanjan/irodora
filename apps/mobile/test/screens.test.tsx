@@ -40,6 +40,8 @@ import {
   Appear,
   Arrival,
   EmptyState,
+  Glyph,
+  Illustration,
   STATE_TEST_IDS,
   Text,
   ThemeProvider,
@@ -48,6 +50,7 @@ import {
   type StateKind,
   type ThemeColors,
   type VisionMode,
+  Wordmark,
 } from '@irodora/ui';
 import {
   brokenFlexChains,
@@ -138,6 +141,8 @@ import { t as message } from '../src/i18n';
 import {
   elementFindings,
   loadInventories,
+  scopeJson,
+  scopeLive,
   snapshot,
   surfacesOf,
   type LiveNodes,
@@ -5210,6 +5215,8 @@ const fromSubject =
 
 interface Enrolled {
   readonly surface: string;
+  /** The test id of the surface's own root: every element is counted inside it (B1). */
+  readonly root: string;
   readonly render: (theme: Theme) => TestNode | null;
   readonly locators: Readonly<Record<string, Locator>>;
 }
@@ -5217,6 +5224,7 @@ interface Enrolled {
 const ENROLLED: readonly Enrolled[] = [
   {
     surface: '14.splash',
+    root: 'launch',
     render: (theme) => draw(<Launch onShown={() => undefined} onDone={() => undefined} />, theme),
     locators: {
       // An app component (a masked image), found by the id it carries and by drawing a tint.
@@ -5227,16 +5235,27 @@ const ENROLLED: readonly Enrolled[] = [
   },
   {
     surface: '27.wardrobe-empty',
+    root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
-    locators: {},
+    // The card is the surface's own root; its component wraps it, so it is found by its id.
+    locators: { '27.wardrobe-empty': { by: 'testID', id: STATE_TEST_IDS.empty } },
   },
   {
     surface: '27.lens-working',
+    root: STATE_TEST_IDS.working,
     render: fromSubject('screens/Lens (awaiting a capture)'),
-    locators: { '27.lens-working': { by: 'testID', id: STATE_TEST_IDS.working } },
+    locators: {
+      '27.lens-working': { by: 'testID', id: STATE_TEST_IDS.working },
+      // The inventory records the whole card's component for the glow and a generic Chip for each
+      // step; each part carries its own id, so each is found as itself (F-221's review, B1).
+      '27.lens-working.glow': { by: 'testID', id: `${STATE_TEST_IDS.working}.glow` },
+      '27.lens-working.step-1': { by: 'testID', id: `${STATE_TEST_IDS.working}.step-1` },
+      '27.lens-working.step-2': { by: 'testID', id: `${STATE_TEST_IDS.working}.step-2` },
+    },
   },
   {
     surface: '27.lens-refused',
+    root: STATE_TEST_IDS.refused,
     render: fromSubject('screens/Lens (a capture refused)'),
     locators: {
       '27.lens-refused': { by: 'testID', id: STATE_TEST_IDS.refused },
@@ -5265,10 +5284,24 @@ const ENROLLED: readonly Enrolled[] = [
   },
   {
     surface: '27.lens-permission',
+    root: STATE_TEST_IDS.denied,
     render: fromSubject('screens/Lens (denied)'),
     locators: { '27.lens-permission': { by: 'testID', id: STATE_TEST_IDS.denied } },
   },
 ];
+
+/**
+ * One enrolled surface, drawn and cut to its own root, its hidden branches left out (B1). A root that
+ * is not drawn at all is returned as null, for the case to report.
+ */
+const drawSurface = (
+  enrolled: Enrolled,
+  theme: Theme,
+): { json: TestNode; live: LiveNodes } | null => {
+  const { json, live } = drawLive(enrolled.render, theme);
+  const scoped = scopeJson(json, enrolled.root);
+  return scoped === null ? null : { json: scoped, live: scopeLive(live, enrolled.root) };
+};
 
 /** Counted for the sweep's evidence, below. */
 const inventorySwept = { surfaces: 0, elements: 0, renders: 0 };
@@ -5301,9 +5334,18 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       for (const { tag, locale } of SWEPT_LOCALES)
         for (const theme of ['light', 'dark'] as const) {
           mockLanguageTag = tag;
-          const { json, live } = drawLive(enrolled.render, theme);
-          for (const f of elementFindings(live, json, elements, enrolled.locators, locale))
-            findings.push(`[${locale}/${theme}] ${f}`);
+          const drawn = drawSurface(enrolled, theme);
+          if (drawn === null)
+            findings.push(`[${locale}/${theme}] the root ${enrolled.root} is not drawn`);
+          else
+            for (const f of elementFindings(
+              drawn.live,
+              drawn.json,
+              elements,
+              enrolled.locators,
+              locale,
+            ))
+              findings.push(`[${locale}/${theme}] ${f}`);
           inventorySwept.renders += 1;
         }
       inventorySwept.surfaces += 1;
@@ -5312,10 +5354,20 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
     },
   );
 
-  describe('DECOYS — each rule fires on what it is for', () => {
-    const splash = ENROLLED[0];
-    if (splash === undefined) throw new Error('14.splash is not enrolled');
-    const elements = SURFACES.get('14.splash')?.elements ?? [];
+  describe('DECOYS — each rule fires on what it is for, one per kind of locator (B1)', () => {
+    const enrolledAs = (surface: string): Enrolled => {
+      const found = ENROLLED.find((e) => e.surface === surface);
+      if (found === undefined) throw new Error(`${surface} is not enrolled`);
+      return found;
+    };
+    const elementsOf = (surface: string) => SURFACES.get(surface)?.elements ?? [];
+    const drawnAs = (surface: string): { json: TestNode; live: LiveNodes } => {
+      const drawn = drawSurface(enrolledAs(surface), 'dark');
+      if (drawn === null) throw new Error(`${surface}'s root is not drawn`);
+      return drawn;
+    };
+    const findingsFor = (surface: string, json: TestNode, live: LiveNodes): readonly string[] =>
+      elementFindings(live, json, elementsOf(surface), enrolledAs(surface).locators, 'en');
 
     /** The tree with every node carrying one id taken out. */
     const without = (node: TestNode, id: string): TestNode => ({
@@ -5324,34 +5376,129 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         .filter((c) => typeof c === 'string' || c.props['testID'] !== id)
         .map((c) => (typeof c === 'string' ? c : without(c, id))),
     });
-
-    it('names exactly the element whose node is gone', () => {
-      const { json, live } = drawLive(splash.render, 'dark');
-      const found = elementFindings(
-        live,
-        without(json, 'launch.glow'),
-        elements,
-        splash.locators,
-        'en',
-      );
+    /** The tree with every Text whose words are these taken out. */
+    const withoutText = (node: TestNode, text: string): TestNode => ({
+      ...node,
+      children: (node.children ?? [])
+        .filter(
+          (c) =>
+            typeof c === 'string' ||
+            !(
+              c.type === 'Text' &&
+              (c.children ?? [])
+                .filter((part): part is string => typeof part === 'string')
+                .join('')
+                .trim() === text
+            ),
+        )
+        .map((c) => (typeof c === 'string' ? c : withoutText(c, text))),
+    });
+    /** Exactly one finding, about exactly this element. */
+    const expectOnly = (found: readonly string[], id: string): void => {
       expect(found).toHaveLength(1);
-      expect(found[0]).toMatch(/^14\.splash\.glow: not drawn/u);
+      expect(found[0]?.startsWith(`${id}: not drawn`)).toBe(true);
+    };
+
+    it('the real surfaces are clean as drawn, so each decoy below changes one thing', () => {
+      for (const surface of ['14.splash', '27.lens-working', '27.lens-refused']) {
+        const { json, live } = drawnAs(surface);
+        expect({ [surface]: findingsFor(surface, json, live) }).toStrictEqual({ [surface]: [] });
+      }
     });
 
-    it('names a node that carries the id and draws nothing', () => {
-      const { live } = drawLive(splash.render, 'dark');
+    it('testID: names the element whose node is gone', () => {
+      const { json, live } = drawnAs('14.splash');
+      expectOnly(findingsFor('14.splash', without(json, 'launch.glow'), live), '14.splash.glow');
+    });
+
+    it('testID: names a node that carries the id and draws nothing', () => {
+      const { live } = drawnAs('14.splash');
       const empty: TestNode = { type: 'View', props: { testID: 'launch.glow' }, children: null };
-      const found = elementFindings(live, empty, elements, splash.locators, 'en');
-      expect(found.some((f) => f.startsWith('14.splash.glow') && f.includes('draw nothing'))).toBe(
-        true,
+      expect(
+        findingsFor('14.splash', empty, live).some(
+          (f) => f.startsWith('14.splash.glow') && f.includes('draw nothing'),
+        ),
+      ).toBe(true);
+    });
+
+    it('text: names the element whose words are gone', () => {
+      const { json, live } = drawnAs('14.splash');
+      const subline = message('en', 'brand.splashSubline');
+      expectOnly(findingsFor('14.splash', withoutText(json, subline), live), '14.splash.subline');
+    });
+
+    it('component: names the element whose component is gone', () => {
+      const { json, live } = drawnAs('14.splash');
+      expectOnly(
+        findingsFor(
+          '14.splash',
+          json,
+          live.filter((n) => n.type !== Wordmark),
+        ),
+        '14.splash.lockup',
+      );
+    });
+
+    it('component: a mark withheld at opacity 0 does not stand in for the visible one', () => {
+      // At mount the lockup's own mark is withheld and the travelling mark is the one seen
+      // (F-231): take the travelling one away and the hidden one must not satisfy the element.
+      const { json, live } = drawnAs('14.splash');
+      expectOnly(
+        findingsFor(
+          '14.splash',
+          json,
+          live.filter((n) => !n.ids.includes('launch.handover')),
+        ),
+        '14.splash.mark',
+      );
+    });
+
+    it('illustration: names the element whose illustration is gone', () => {
+      const { json, live } = drawnAs('14.splash');
+      expectOnly(
+        findingsFor(
+          '14.splash',
+          json,
+          live.filter((n) => !(n.type === Illustration && n.name === 'silk-wave')),
+        ),
+        '14.splash.wave',
+      );
+    });
+
+    it('glyph: names the element whose glyph is gone', () => {
+      const { json, live } = drawnAs('27.lens-refused');
+      expectOnly(
+        findingsFor(
+          '27.lens-refused',
+          json,
+          live.filter((n) => !(n.type === Glyph && n.name === 'glare')),
+        ),
+        '27.lens-refused.icon',
+      );
+    });
+
+    it("a part found by its own id: the working card's step chip and glow, not the screen's other chips", () => {
+      // The Lens also draws mode chips. Counted anywhere, they stood in for 27's step chips.
+      const { json, live } = drawnAs('27.lens-working');
+      const id = STATE_TEST_IDS.working;
+      expectOnly(
+        findingsFor('27.lens-working', without(json, `${id}.step-1`), live),
+        '27.lens-working.step-1',
+      );
+      expectOnly(
+        findingsFor('27.lens-working', without(json, `${id}.glow`), live),
+        '27.lens-working.glow',
       );
     });
 
     it('names a locator for an element the inventory does not record, and an element with none', () => {
-      const { json, live } = drawLive(splash.render, 'dark');
-      const stray = { ...splash.locators, '14.splash.nothing': { by: 'testID', id: 'x' } as const };
+      const { json, live } = drawnAs('14.splash');
+      const stray = {
+        ...enrolledAs('14.splash').locators,
+        '14.splash.nothing': { by: 'testID', id: 'x' } as const,
+      };
       const unlocated = [
-        ...elements,
+        ...elementsOf('14.splash'),
         {
           id: '14.splash.extra',
           component: 'app:Nothing',

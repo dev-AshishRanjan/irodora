@@ -949,9 +949,20 @@ export interface RenderedText {
 const ACCESSIBLE_TEXT_PROPS = ['accessibilityLabel', 'aria-label', 'accessibilityHint'] as const;
 
 /** Every paragraph in a subtree, outermost `Text`s only, in order. */
+/**
+ * The words an SVG text element draws (F-221's review, M9): its string children and the `content`
+ * react-native-svg gives each span. The colour card composes a line this way, beyond `Text`.
+ */
+const svgWords = (node: TestNode): string =>
+  [
+    typeof node.props['content'] === 'string' ? node.props['content'] : '',
+    ...(node.children ?? []).map((c) => (typeof c === 'string' ? c : svgWords(c))),
+  ].join('');
+
 function paragraphsOf(node: TestNode): string[] {
-  if (node.type === 'Text') {
-    const text = paragraph(node).replace(/\s+/gu, ' ').trim();
+  if (node.type === 'Text' || node.type === 'RNSVGText') {
+    const words = node.type === 'Text' ? paragraph(node) : svgWords(node);
+    const text = words.replace(/\s+/gu, ' ').trim();
     return text === '' ? [] : [text];
   }
   return (node.children ?? []).flatMap((c) => (isNode(c) ? paragraphsOf(c) : []));
@@ -963,14 +974,19 @@ function paragraphsOf(node: TestNode): string[] {
  *
  * **A claim is composed on the screen, not in the source.** A figure and its label are written in
  * two `Text`s, so a lint that reads source lines sees the figure and the word apart, while a person
- * reads the two as one claim. A LINE is how they meet here. Under a host laid out in a row, each run of two or more
- * consecutive children that hold exactly one paragraph each is one line, read in visual order (a
- * `row-reverse` reads backwards). A child holding several paragraphs is a column of its own: it ends
- * the run, and its paragraphs stay apart.
+ * reads the two as one claim. A LINE is how they meet here. Under a host laid out in a row, the
+ * children's top lines are one line, read in visual order (a `row-reverse` reads backwards): each
+ * child gives its FIRST paragraph, so a figure beside a label stacked over its note reads as the
+ * figure and the label (F-221's review, S5), and the note stays apart. A child with no text, an icon
+ * between them, neither joins nor breaks the line.
+ *
+ * Text drawn inside an SVG (`RNSVGText`, its spans' `content`) is read as a paragraph too, which is
+ * how the colour card composes its line (M9).
  *
  * WHAT IT CANNOT SEE: wrapping. jest has no layout, so a row too narrow for its line, which a device
  * would wrap, is still read as one line here, and two paragraphs a device sets side by side through
- * absolute positioning are not. The fidelity run reads the device's own text for that (D3).
+ * absolute positioning are not. The fidelity run reads the device's own text for that (D3); a phone's
+ * accessibility tree does not carry SVG text, so there the colour card's line is read here alone.
  */
 export function renderedTexts(root: TestNode): readonly RenderedText[] {
   const out: RenderedText[] = [];
@@ -989,7 +1005,7 @@ export function renderedTexts(root: TestNode): readonly RenderedText[] {
         out.push({ kind: 'name', text: text.trim(), path: here });
     }
 
-    if (node.type === 'Text') {
+    if (node.type === 'Text' || node.type === 'RNSVGText') {
       for (const text of paragraphsOf(node)) out.push({ kind: 'paragraph', text, path: here });
       return;
     }
@@ -998,17 +1014,10 @@ export function renderedTexts(root: TestNode): readonly RenderedText[] {
     if (direction === 'row' || direction === 'row-reverse') {
       const children = (node.children ?? []).filter(isNode);
       const ordered = direction === 'row-reverse' ? [...children].reverse() : children;
-      let run: string[] = [];
-      const close = (): void => {
-        if (run.length >= 2) out.push({ kind: 'line', text: run.join(' '), path: here });
-        run = [];
-      };
-      for (const child of ordered) {
-        const held = paragraphsOf(child);
-        if (held.length === 1 && held[0] !== undefined) run.push(held[0]);
-        else if (held.length > 1) close();
-      }
-      close();
+      const tops = ordered
+        .map((child) => paragraphsOf(child)[0])
+        .filter((top): top is string => top !== undefined);
+      if (tops.length >= 2) out.push({ kind: 'line', text: tops.join(' '), path: here });
     }
 
     for (const child of node.children ?? []) if (isNode(child)) walk(child, here);
