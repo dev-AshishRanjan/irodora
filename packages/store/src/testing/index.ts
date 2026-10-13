@@ -27,6 +27,7 @@ import { uuidv7 } from '../id.js';
 import type {
   Driver,
   DriverInfo,
+  NewOutfit,
   NewPalette,
   NewPersonalProfile,
   NewSavedColor,
@@ -41,8 +42,8 @@ export interface StoreFinding {
 /** Opens a fresh, EMPTY database. A file path, not `:memory:` — durability needs a reopen. */
 export type OpenStore = () => { readonly driver: Driver; readonly info: DriverInfo };
 
-const sample = (id: string, name: string): NewSavedColor => ({
-  id,
+/** A colour's values without a row id: what an outfit's snapshot holds (F-238). */
+const sampleSnapshot = (name: string): Omit<NewSavedColor, 'id'> => ({
   name,
   xyz_x: 0.1805,
   xyz_y: 0.0722,
@@ -60,6 +61,33 @@ const sample = (id: string, name: string): NewSavedColor => ({
   // a Lens capture (F-040) will take.
   corpus_slug: null,
 });
+
+const sample = (id: string, name: string): NewSavedColor => ({ id, ...sampleSnapshot(name) });
+
+/**
+ * The smallest lookbook entry that crosses all three tables (F-238): one slot, two components.
+ * The colour snapshot is `sample`'s values without a row id, as an outfit stores it.
+ */
+const lookbookEntry = (garmentId: string): NewOutfit => {
+  const color = sampleSnapshot('Indigo');
+  return {
+    overall: 64,
+    countsThreshold: 60,
+    envelope: {
+      engine: 'conformance',
+      scorer: 'conformance',
+      corpus: 'conformance',
+      rules: 'conformance',
+      occasion: 'default',
+      profile: 'conformance:1',
+    },
+    items: [{ slot: 'top', garmentId, garmentLabel: 'top', locked: true, color }],
+    components: [
+      { component: 'harmony', score: 70, direction: 'supports', weight: 0.5, contribution: 35 },
+      { component: 'contrast', score: 58, direction: 'neutral', weight: 0.5, contribution: 29 },
+    ],
+  };
+};
 
 /**
  * A two-member palette, the smallest one the corpus schema accepts: an anchor and one other.
@@ -539,6 +567,88 @@ export function checkStore(open: OpenStore): {
         'bookmark-atomicity',
         'a bookmark survived a write whose change-log entry failed — a row nothing logged is a ' +
           'change a future reconciliation can never see',
+      );
+    repo.close();
+  });
+
+  // --- a saved outfit survives a reopen, whole, and so does its removal (F-238) -------------
+  run('outfit-durability', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+    const garment = uuidv7();
+    repo.createGarment({ id: garment, type: 'top', color: sample(uuidv7(), 'Indigo') }, 1000);
+
+    // Three tables in one write, so "it survived" means all three did: an outfit read back
+    // without its slot or without its score is a lookbook entry nobody can render.
+    const { id } = repo.saveOutfit(lookbookEntry(garment), 1000);
+    repo.reopen();
+    const [after] = repo.listOutfits();
+    if (after?.id !== id) at('outfit-durability', 'the outfit did not survive a reopen');
+    else if (after.items.length !== 1 || after.components.length !== 2)
+      at(
+        'outfit-durability',
+        `${String(after.items.length)} slot(s) and ${String(after.components.length)} ` +
+          'component(s) survived the reopen; 1 and 2 were written',
+      );
+
+    repo.removeOutfit(id, 2000);
+    repo.reopen();
+    if (repo.listOutfits().length > 0)
+      at('outfit-durability', 'removed, then reopened: the outfit is still listed');
+
+    // Saving the same composition after a removal is a new record, never the old one revived.
+    const again = repo.saveOutfit(lookbookEntry(garment), 3000);
+    repo.reopen();
+    if (!again.written || again.id === id || repo.listOutfits()[0]?.id !== again.id)
+      at('outfit-durability', 'saved again after a removal, then reopened: not a new record');
+    repo.close();
+  });
+
+  // --- an outfit's three tables and their change-log entries commit together -----------------
+  run('outfit-atomicity', () => {
+    const { driver: inner, info: i } = open();
+
+    /*
+     * THROUGH THE METHOD, AND LATE. The change log refuses the FIRST COMPONENT's entry, so by
+     * then the outfit row and its slot are already written inside the transaction. A method that
+     * committed the outfit before its children would leave an outfit with no score — exactly the
+     * half-entry a lookbook must never show.
+     */
+    let refuseComponents = false;
+    const driver: Driver = {
+      ...inner,
+      run(sql, params) {
+        if (
+          refuseComponents &&
+          sql.includes('INSERT INTO change_log') &&
+          params?.[0] === 'outfit_component'
+        )
+          throw new Error('deliberate: the change log refused a component');
+        inner.run(sql, params);
+      },
+    };
+    const repo = createRepository(driver, i);
+    const garment = uuidv7();
+    repo.createGarment({ id: garment, type: 'top', color: sample(uuidv7(), 'Indigo') }, 1000);
+    refuseComponents = true;
+    let threw = false;
+    try {
+      repo.saveOutfit(lookbookEntry(garment), 1000);
+    } catch {
+      threw = true;
+    }
+    refuseComponents = false;
+    repo.reopen();
+
+    if (!threw) at('outfit-atomicity', 'the refused change-log write did not surface');
+    const left = ['outfit', 'outfit_item', 'outfit_component'].filter(
+      (table) => (driver.query<{ n: number }>(`SELECT COUNT(*) AS n FROM ${table}`)[0]?.n ?? 0) > 0,
+    );
+    if (left.length > 0)
+      at(
+        'outfit-atomicity',
+        `rows survived in ${left.join(', ')} after a save whose component log failed — a ` +
+          'lookbook entry with no score, or a slot of nothing',
       );
     repo.close();
   });

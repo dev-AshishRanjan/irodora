@@ -39,9 +39,9 @@ describe('the node:sqlite driver conforms', SUITE_BUDGET, () => {
     expect(formatStoreFindings(findings)).toBe('');
     // A suite reporting zero findings over zero checks is the shape this asserts against.
     // Raised with the two palette checks (F-020) and again with the three profile checks
-    // (F-026), and again with the two bookmark checks (F-237): a floor that never moves stops
-    // noticing a check that quietly went missing.
-    expect(ran).toBeGreaterThanOrEqual(14);
+    // (F-026), again with the two bookmark checks (F-237), and with the two outfit checks (F-238):
+    // a floor that never moves stops noticing a check that quietly went missing.
+    expect(ran).toBeGreaterThanOrEqual(16);
     expect(info.name).toBe('node:sqlite');
   });
 
@@ -119,6 +119,33 @@ describe('the suite rejects what it is supposed to reject', SUITE_BUDGET, () => 
     const checks = findingsFor(() => undefined);
     expect(checks).not.toContain('bookmark-atomicity');
     expect(checks).not.toContain('bookmark-durability');
+  });
+
+  it('catches an outfit written outside a transaction (F-238)', () => {
+    // The outfit and its slot are written before the component's log entry is refused; with no
+    // BEGIN and no ROLLBACK nothing takes them back, and a lookbook entry has no score.
+    const checks = findingsFor((made) => {
+      made.driver.transaction = <T>(fn: () => T): T => fn();
+    });
+    expect(checks).toContain('outfit-atomicity');
+  });
+
+  it('catches an outfit read back without its score (F-238)', () => {
+    // A store that dropped the component rows: the outfit survives a reopen, half of it.
+    const checks = findingsFor((made) => {
+      const realRun = made.driver.run.bind(made.driver);
+      made.driver.run = (sql: string, params?: readonly unknown[]) => {
+        if (sql.includes('INSERT INTO outfit_component')) return;
+        realRun(sql, params);
+      };
+    });
+    expect(checks).toContain('outfit-durability');
+  });
+
+  it('does not report either outfit check on an unmutated driver', () => {
+    const checks = findingsFor(() => undefined);
+    expect(checks).not.toContain('outfit-atomicity');
+    expect(checks).not.toContain('outfit-durability');
   });
 });
 
