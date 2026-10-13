@@ -151,6 +151,7 @@ Two rules that matter more than the format:
 | [0133](0133-motion-is-the-change-a-drawn-binding-defines-and-a-length-may-move-where-a-colour-may-not.md) | Motion is the change a drawn binding defines, and a length may move where a colour may not | Accepted |
 | [0134](0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md) | Fidelity is captured from the running app beside its mockup, and the device run is a person's | Accepted |
 | [0135](0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md) | The bookmarked colours are read back on the Atlas, through a toggle in its search field | Accepted |
+| [0136](0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md) | The lookbook is read back on the Wardrobe through a *Garments · Lookbook* choice, and a saved outfit is never rescored | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

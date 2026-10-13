@@ -305,6 +305,29 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   bookmarked colours, combined with the query and the filters, and *Clear* clears it. An empty set
   is `00`'s caption (ADR-0128 D3). It is one control in an element `05` already draws: no route, no
   section, and no change to `05`'s chips, pills or grid. F-246 and F-247 keep both toggles.
+- **The lookbook, read back** (FR-33, FR-56; `F-238`,
+  [ADR-0136](../adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md)).
+  `13` draws *Save Outfit to Lookbook* (`13.actions.save`, `submit:lookbook.save`), and no mockup
+  draws the lookbook (OQ-40).
+  - **Where it is read back.** The Wardrobe (`11`) reads it back through a segmented choice,
+    *Garments · Lookbook*, directly above its grid, in `10.source`'s form: a pill `ChoiceGroup`,
+    the chosen segment filled with its leading dot (a shape and an announced selection, rule 13).
+  - **What an entry shows.** *Lookbook* lists the saved outfits, newest first, each a full-width
+    card in `13`'s vocabulary:
+    - its slots (sample, hex, garment name, and `13`'s *Locked* badge where a slot was locked);
+    - its stored overall with all six components (FR-32);
+    - the versions that scored it, with the words *not recomputed* (rule 11);
+    - *Remove from lookbook*.
+
+    Each sample is the colour that was scored, with its stored provenance (rule 12).
+  - **What does not change.** Nothing above the grid moves. There is no route, and no section on Home
+    or in the profile.
+  - **Empty.** An empty lookbook is `00`'s caption (ADR-0128 D3): the Outfit Lab button is on the
+    same screen.
+  - **The save.** On the Lab, *Save Outfit to Lookbook* is disabled, with its reason on a line beneath
+    it, until every slot holds a garment, and while the outfit is already saved.
+
+  F-255 and F-257 keep both.
 
 ---
 
@@ -739,7 +762,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-43** | `05` draws its selected season chip as a fill swap with no mark; ACCESSIBILITY §4 asks for a highlight + checkmark, and `12 15 17` mark a chosen pill with a leading dot. Does golden rule 13 force the dot onto `05`'s chip? A segmented row is a different case — an unchosen segment draws no shape, so its fill is a shape appearing (F-232) | `F-246` |
 | **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
-| **OQ-40** | `13` draws *Save Outfit to Lookbook*, and no mockup draws the lookbook — nothing in any inventory reads a saved outfit back (see `OQ-39`, the same gap for colours) | `F-238` |
 | **OQ-38** | `18`'s report envelope draws a signature — the word *Signed*, written in a script face (`18.report.preview.envelope.signature`). It is TYPE, not a drawing: traced into paths it is a word pretending to be a picture, and set as text it needs a script face the product does not bundle (ADR-0057 bundles a Japanese subset; `F-226` ships the serif). It is also the one drawing that makes a claim about a person having signed something. Trace it, set it in a bundled face, or drop the element? | `F-229` `F-263` |
 
 
@@ -747,6 +769,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-40** | Saved outfits are read back on the Wardrobe (`11`), through a *Garments · Lookbook* choice directly above its grid in `10.source`'s form; an entry is read-only, in `13`'s vocabulary, and its score is stored and never recomputed | [ADR-0136](../adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md) |
 | **OQ-39** | The bookmarked colours are read back on the Atlas (`05`), through a toggle at the trailing end of its search field in `06`'s glyph; on is the glyph filled and an announced *selected*, it combines with the query and filters, and an empty set is `00`'s caption | [ADR-0135](../adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md) |
 | **OQ-9** | Each figure is a defined computation and none is a match: 03's percentage is FR-7's similarity percentage with *Similar*; 13's label says whether the outfit counts toward the valid outfits (≥ 60); 23's line is a profile concordance, its title *Garment Concordance*; 22's pairings count the owned garments the candidate forms a valid outfit with. The ΔE00 words are one cited table (ADR-0125) | [ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md) |
 | **OQ-50** | `04`'s delta bars share one unit — the smaller side's room — in every row and on both sides, scaled by F-245's tolerance over each axis's weighted CIEDE2000 term; every bar takes the hue bar's drawn ink, `text.tertiary` on a card. The slate fails 3:1 (E3) and the green is a per-axis verdict by colour alone (E2, rule 13) | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |

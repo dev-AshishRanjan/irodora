@@ -145,5 +145,7 @@ its search field.**
 - **Revisit:**
   - when F-246 decides `05.more`'s contents;
   - when OQ-40 (the lookbook, the same question for outfits) is answered, so that saved things are
-    found in one consistent way;
+    found in one consistent way. **Revisited 2026-10-14 by [ADR-0136](0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md): kept.**
+    Colours are a subset of the Atlas, so a toggle narrows it; outfits are a list of their own, so a
+    choice switches the Wardrobe's view. Both are read back on the list screen of their domain;
   - if a person reports they cannot find their bookmarks.
