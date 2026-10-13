@@ -24,21 +24,19 @@
  * and closes it. The child adds no transaction of its own. So a method that wrote its row and its
  * change-log entry in two transactions would be replayed as two, and the cut between them would
  * leave half a write; the split decoy below shows the per-cut assertion catching exactly that.
- * Every boundary is cut, not a chosen few.
+ * Every boundary is cut, not a chosen few. The harness is `fixtures/force-quit.ts`, shared with the
+ * lookbook (F-238).
  */
 
-import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
-import { nodeDriver } from '../src/drivers/node.js';
-import { CONNECTION_PRAGMAS } from '../src/schema.js';
-import { createRepository, type Driver, type Repository } from '../src/index.js';
+import type { Repository } from '../src/index.js';
+import { BEGIN, COMMIT, expected, forceQuit, shape } from './fixtures/force-quit.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'irodora-force-quit-'));
-const CHILD = fileURLToPath(new URL('./fixtures/replay-and-die.ts', import.meta.url));
+const { base, record, everyCut } = forceQuit(dir);
 const NOW = 1_760_000_000_000;
 /**
  * Each every-cut case spawns one child per boundary, five to seven of them. Alone that is under a
@@ -46,120 +44,31 @@ const NOW = 1_760_000_000_000;
  * with nothing wrong. The budget is for the processes, not for a slow write.
  */
 const CHILDREN_BUDGET = 60_000;
-let n = 0;
 
 afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
 });
-
-interface Recorded {
-  readonly sql: string;
-  readonly params: readonly unknown[];
-}
 
 interface State {
   readonly bookmarks: readonly string[];
   readonly logged: number;
 }
 
-const BEGIN: Recorded = { sql: 'BEGIN', params: [] };
-const COMMIT: Recorded = { sql: 'COMMIT', params: [] };
+/** What a relaunch shows: the live bookmarks, and how many bookmark writes the log holds. */
+const read = (repo: Repository): State => ({
+  bookmarks: repo.listBookmarks(),
+  logged: repo.changeLog().filter((e) => e.table_name === 'color_bookmark').length,
+});
 
-/** A migrated database file, closed, with `ai-nezumi` never bookmarked, live, or removed. */
-function base(bookmark: 'none' | 'live' | 'removed'): string {
-  const path = join(dir, `base-${String(n++)}.sqlite`);
-  const { driver, info } = nodeDriver(path);
-  const repo = createRepository(driver, info);
-  if (bookmark !== 'none') repo.bookmarkColor('ai-nezumi', NOW - 2000);
-  if (bookmark === 'removed') repo.unbookmarkColor('ai-nezumi', NOW - 1000);
-  repo.close();
-  return path;
-}
-
-/**
- * Every write one repository call issues, in order, with the BEGIN and COMMIT of each transaction
- * it opens. A write made outside any transaction is recorded too, bare — and replays in autocommit,
- * which is what it would do on a phone.
- */
-function record(from: string, write: (repo: Repository) => void): readonly Recorded[] {
-  const scratch = join(dir, `scratch-${String(n++)}.sqlite`);
-  copyFileSync(from, scratch);
-  const { driver: inner, info } = nodeDriver(scratch);
-  let recording = false;
-  const writes: Recorded[] = [];
-  const recorder: Driver = {
-    ...inner,
-    run(sql, params = []) {
-      if (recording) writes.push({ sql, params });
-      inner.run(sql, params);
-    },
-    transaction<T>(fn: () => T): T {
-      if (recording) writes.push(BEGIN);
-      const result = inner.transaction(fn);
-      if (recording) writes.push(COMMIT);
-      return result;
-    },
-  };
-  const repo = createRepository(recorder, info);
-  recording = true;
-  write(repo);
-  recording = false;
-  repo.close();
-  return writes;
-}
-
-/** Replay `statements` on a copy of `from` in a child, killed before statement `cut`. */
-function killedAt(from: string, statements: readonly Recorded[], cut: number): string {
-  const target = join(dir, `target-${String(n++)}.sqlite`);
-  copyFileSync(from, target);
-  const plan = join(dir, `plan-${String(n++)}.json`);
-  writeFileSync(plan, JSON.stringify({ pragmas: CONNECTION_PRAGMAS, statements, cut }));
-  const child = spawnSync(process.execPath, [CHILD, target, plan], {
-    encoding: 'utf8',
-    timeout: 30_000,
+/** `ai-nezumi` never bookmarked, live, or removed. */
+const seeded = (bookmark: 'none' | 'live' | 'removed'): string =>
+  base((repo) => {
+    if (bookmark !== 'none') repo.bookmarkColor('ai-nezumi', NOW - 2000);
+    if (bookmark === 'removed') repo.unbookmarkColor('ai-nezumi', NOW - 1000);
   });
-  // It got to the cut, and it did not leave cleanly: a child that threw before the cut, or
-  // exited normally, would make every assertion below a statement about something else.
-  expect(child.stdout, child.stderr).toBe('CUT\n');
-  expect(child.status === 0 && child.signal === null).toBe(false);
-  return target;
-}
-
-/** The next launch: open what the child left, check it, and read the bookmarks back. */
-function relaunch(path: string): State {
-  const { driver, info } = nodeDriver(path);
-  const check = driver.query<{ integrity_check: string }>('PRAGMA integrity_check');
-  // Mapped out of node:sqlite's null-prototype rows, which toStrictEqual tells from a literal.
-  expect(check.map((row) => row.integrity_check)).toStrictEqual(['ok']);
-  const repo = createRepository(driver, info);
-  const state = {
-    bookmarks: repo.listBookmarks(),
-    logged: repo.changeLog().filter((e) => e.table_name === 'color_bookmark').length,
-  };
-  repo.close();
-  return state;
-}
-
-/** What the next launch sees after a kill at every boundary: before the first statement to after the last. */
-const everyCut = (from: string, statements: readonly Recorded[]): readonly State[] =>
-  Array.from({ length: statements.length + 1 }, (_, cut) =>
-    relaunch(killedAt(from, statements, cut)),
-  );
-
-/**
- * The claim, for one recorded write: a kill anywhere before its COMMIT has run leaves exactly the
- * state before it, and a kill after leaves exactly the state after. Nothing in between, ever.
- */
-const expected = (statements: readonly Recorded[], before: State, after: State): State[] => {
-  const commit = statements.lastIndexOf(COMMIT);
-  return Array.from({ length: statements.length + 1 }, (_, cut) => (cut > commit ? after : before));
-};
-
-const shape = (statements: readonly Recorded[]): string[] =>
-  statements.map((s) => s.sql.trim().split(/\s+/).slice(0, 3).join(' '));
 
 describe('a bookmark killed at every point of its write', () => {
-  const empty = base('none');
+  const empty = seeded('none');
   const bookmark = record(empty, (repo) => {
     repo.bookmarkColor('ai-nezumi', NOW);
   });
@@ -176,7 +85,7 @@ describe('a bookmark killed at every point of its write', () => {
   it(
     'leaves nothing until COMMIT has run, and the bookmark with its log entry after',
     () => {
-      expect(everyCut(empty, bookmark)).toStrictEqual(
+      expect(everyCut(empty, bookmark, read)).toStrictEqual(
         expected(bookmark, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
       );
     },
@@ -192,7 +101,7 @@ describe('a bookmark killed at every point of its write', () => {
       const [, row, log] = bookmark;
       if (row === undefined || log === undefined) throw new Error('the recording is not a write');
       const split = [BEGIN, row, COMMIT, BEGIN, log, COMMIT];
-      const states = everyCut(empty, split);
+      const states = everyCut(empty, split, read);
       expect(states).not.toStrictEqual(
         expected(split, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
       );
@@ -203,7 +112,7 @@ describe('a bookmark killed at every point of its write', () => {
 });
 
 describe('a removal killed at every point of its write', () => {
-  const live = base('live');
+  const live = seeded('live');
   const removal = record(live, (repo) => {
     repo.unbookmarkColor('ai-nezumi', NOW);
   });
@@ -220,7 +129,7 @@ describe('a removal killed at every point of its write', () => {
   it(
     'leaves the bookmark live until COMMIT has run, and removed after',
     () => {
-      expect(everyCut(live, removal)).toStrictEqual(
+      expect(everyCut(live, removal, read)).toStrictEqual(
         expected(removal, { bookmarks: ['ai-nezumi'], logged: 1 }, { bookmarks: [], logged: 2 }),
       );
     },
@@ -229,7 +138,7 @@ describe('a removal killed at every point of its write', () => {
 });
 
 describe('a revival killed at every point of its write', () => {
-  const removed = base('removed');
+  const removed = seeded('removed');
   const revival = record(removed, (repo) => {
     repo.bookmarkColor('ai-nezumi', NOW);
   });
@@ -246,7 +155,7 @@ describe('a revival killed at every point of its write', () => {
   it(
     'leaves it removed until COMMIT has run, and bookmarked again after',
     () => {
-      expect(everyCut(removed, revival)).toStrictEqual(
+      expect(everyCut(removed, revival, read)).toStrictEqual(
         expected(revival, { bookmarks: [], logged: 2 }, { bookmarks: ['ai-nezumi'], logged: 3 }),
       );
     },
