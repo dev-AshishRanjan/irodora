@@ -30,8 +30,9 @@ describe('the node:sqlite driver conforms', () => {
     expect(formatStoreFindings(findings)).toBe('');
     // A suite reporting zero findings over zero checks is the shape this asserts against.
     // Raised with the two palette checks (F-020) and again with the three profile checks
-    // (F-026): a floor that never moves stops noticing a check that quietly went missing.
-    expect(ran).toBeGreaterThanOrEqual(12);
+    // (F-026), and again with the two bookmark checks (F-237): a floor that never moves stops
+    // noticing a check that quietly went missing.
+    expect(ran).toBeGreaterThanOrEqual(14);
     expect(info.name).toBe('node:sqlite');
   });
 
@@ -81,6 +82,34 @@ describe('the suite rejects what it is supposed to reject', () => {
     // The baseline half. Without it the assertion above cannot distinguish "the check caught
     // my mutation" from "the check always fires".
     expect(findingsFor(() => undefined)).not.toContain('foreign-keys');
+  });
+
+  it('catches a bookmark written outside a transaction (F-237)', () => {
+    // A `transaction` that runs its function with no BEGIN and no ROLLBACK: the bookmark row
+    // is written, the change log refuses, and nothing takes the row back.
+    const checks = findingsFor((made) => {
+      made.driver.transaction = <T>(fn: () => T): T => fn();
+    });
+    expect(checks).toContain('bookmark-atomicity');
+  });
+
+  it('catches a removed bookmark that cannot come back (F-237)', () => {
+    // A store whose revival is lost — what `saved_color`'s upsert, which never clears
+    // `deleted_at`, would have done to a colour bookmarked a second time.
+    const checks = findingsFor((made) => {
+      const realRun = made.driver.run.bind(made.driver);
+      made.driver.run = (sql: string, params?: readonly unknown[]) => {
+        if (sql.includes('SET deleted_at = NULL') && sql.includes('color_bookmark')) return;
+        realRun(sql, params);
+      };
+    });
+    expect(checks).toContain('bookmark-durability');
+  });
+
+  it('does not report either bookmark check on an unmutated driver', () => {
+    const checks = findingsFor(() => undefined);
+    expect(checks).not.toContain('bookmark-atomicity');
+    expect(checks).not.toContain('bookmark-durability');
   });
 });
 

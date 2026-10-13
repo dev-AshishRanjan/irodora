@@ -474,6 +474,75 @@ export function checkStore(open: OpenStore): {
     driver.close();
   });
 
+  // --- a bookmark survives a reopen, and so does its removal (F-237) -----------------------
+  run('bookmark-durability', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+
+    // Each state is read back AFTER a reopen, for the reason `durability` gives: an in-process
+    // object would satisfy every read without one. Three states, because the revival is the
+    // write that a store reusing `saved_color`'s upsert would have lost (ADR-0135 D6).
+    const states: readonly [string, boolean][] = [
+      ['bookmarked', true],
+      ['removed', false],
+      ['bookmarked again', true],
+    ];
+    let now = 1000;
+    for (const [label, on] of states) {
+      if (on) repo.bookmarkColor('ai-nezumi', now);
+      else repo.unbookmarkColor('ai-nezumi', now);
+      now += 1;
+      repo.reopen();
+      const listed = repo.listBookmarks().includes('ai-nezumi');
+      if (listed !== on)
+        at(
+          'bookmark-durability',
+          `${label}, then reopened: the bookmark is ${listed ? 'listed' : 'missing'}`,
+        );
+    }
+    repo.close();
+  });
+
+  // --- a bookmark and its change-log entry commit together, through the repository ---------
+  run('bookmark-atomicity', () => {
+    const { driver: inner, info: i } = open();
+
+    /*
+     * THROUGH THE METHOD, NOT A HAND-WRITTEN TRANSACTION. `transaction-atomicity` proves the
+     * driver rolls back; this proves `bookmarkColor` puts its row and its log entry in ONE
+     * transaction. A method that wrote the row before opening the transaction would pass the
+     * driver check and fail this one: the change log refuses, and the row must go with it.
+     */
+    let refuseLog = false;
+    const driver: Driver = {
+      ...inner,
+      run(sql, params) {
+        if (refuseLog && sql.includes('INSERT INTO change_log'))
+          throw new Error('deliberate: the change log refused the write');
+        inner.run(sql, params);
+      },
+    };
+    const repo = createRepository(driver, i);
+    refuseLog = true;
+    let threw = false;
+    try {
+      repo.bookmarkColor('ai-nezumi', 1000);
+    } catch {
+      threw = true;
+    }
+    refuseLog = false;
+    repo.reopen();
+
+    if (!threw) at('bookmark-atomicity', 'the refused change-log write did not surface');
+    if (repo.listBookmarks().length > 0)
+      at(
+        'bookmark-atomicity',
+        'a bookmark survived a write whose change-log entry failed — a row nothing logged is a ' +
+          'change a future reconciliation can never see',
+      );
+    repo.close();
+  });
+
   return { findings, ran, info };
 }
 
