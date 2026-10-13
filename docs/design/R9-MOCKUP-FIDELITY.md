@@ -296,6 +296,15 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   *Allow Camera Access*, which asks (`F-236`,
   [ADR-0128](../adr/0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md),
   D6).
+- **The bookmarked set, read back** (FR-56; `F-237`,
+  [ADR-0135](../adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md)).
+  `06` draws a bookmark toggle in its app bar (`06.bookmark`). No mockup draws its on state, or where
+  bookmarks are read back (OQ-39). On, the glyph is drawn filled: a shape, with an announced
+  *selected* state (rule 13), in the same ink. The Atlas (`05`) reads the set back through a toggle
+  at the trailing end of its search field (`05.search`), in the same glyph. On, it lists only
+  bookmarked colours, combined with the query and the filters, and *Clear* clears it. An empty set
+  is `00`'s caption (ADR-0128 D3). It is one control in an element `05` already draws: no route, no
+  section, and no change to `05`'s chips, pills or grid. F-246 and F-247 keep both toggles.
 
 ---
 
@@ -731,7 +740,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
 | **OQ-40** | `13` draws *Save Outfit to Lookbook*, and no mockup draws the lookbook — nothing in any inventory reads a saved outfit back (see `OQ-39`, the same gap for colours) | `F-238` |
-| **OQ-39** | `06` draws a bookmark toggle, and no mockup draws where the bookmarks are read back — no saved list, no filter, no route | `F-237` |
 | **OQ-38** | `18`'s report envelope draws a signature — the word *Signed*, written in a script face (`18.report.preview.envelope.signature`). It is TYPE, not a drawing: traced into paths it is a word pretending to be a picture, and set as text it needs a script face the product does not bundle (ADR-0057 bundles a Japanese subset; `F-226` ships the serif). It is also the one drawing that makes a claim about a person having signed something. Trace it, set it in a bundled face, or drop the element? | `F-229` `F-263` |
 
 
@@ -739,6 +747,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-39** | The bookmarked colours are read back on the Atlas (`05`), through a toggle at the trailing end of its search field in `06`'s glyph; on is the glyph filled and an announced *selected*, it combines with the query and filters, and an empty set is `00`'s caption | [ADR-0135](../adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md) |
 | **OQ-9** | Each figure is a defined computation and none is a match: 03's percentage is FR-7's similarity percentage with *Similar*; 13's label says whether the outfit counts toward the valid outfits (≥ 60); 23's line is a profile concordance, its title *Garment Concordance*; 22's pairings count the owned garments the candidate forms a valid outfit with. The ΔE00 words are one cited table (ADR-0125) | [ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md) |
 | **OQ-50** | `04`'s delta bars share one unit — the smaller side's room — in every row and on both sides, scaled by F-245's tolerance over each axis's weighted CIEDE2000 term; every bar takes the hue bar's drawn ink, `text.tertiary` on a card. The slate fails 3:1 (E3) and the green is a per-axis verdict by colour alone (E2, rule 13) | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
 | **OQ-51** | `04`'s rows print what `04` prints; each row's accessible name carries the quantity and the space. FR-61 governs the professional surfaces, where `08` prints the notation | [ADR-0119](../adr/0119-the-delta-bars-share-one-unit-and-one-ink-and-print-what-04-prints.md) |
