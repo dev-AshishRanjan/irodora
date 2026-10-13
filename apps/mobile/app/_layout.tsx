@@ -12,6 +12,7 @@ import { VisionProvider } from '../src/vision';
 import { deviceRepository } from '../src/store/repository';
 import { LaunchHost } from '../src/launch';
 import { TargetProvider, useTarget } from '../src/target';
+import { BookmarksProvider } from '../src/bookmarks';
 import { TargetBar } from '../src/TargetBar';
 
 /*
@@ -149,7 +150,13 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
         nobody chose" hazard every surface in this product refuses.
       */}
       <TargetProvider>
-        <Chrome />
+        {/*
+          THE BOOKMARKED SET (F-237, ADR-0135): written on a colour's page, read back on the Atlas,
+          so it sits above every route. Read from the device repository once, at mount.
+        */}
+        <BookmarksProvider store={deviceRepository()}>
+          <Chrome />
+        </BookmarksProvider>
       </TargetProvider>
       {/*
         THE LAUNCH OVERLAY LIVES INSIDE THE THEME (F-190), because it paints `background` and

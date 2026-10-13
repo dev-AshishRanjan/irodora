@@ -84,6 +84,7 @@ import {
   type DerivedPanel,
   STATES as COLOUR_DETAIL_STATES,
 } from '../src/screens/ColourDetail';
+import { ColourBookmark } from '../src/bookmarks';
 import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
 import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
 import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
@@ -1095,6 +1096,23 @@ const SCREENS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  ...([false, true] as const).map((on): ConformanceSubject => ({
+    /*
+     * 06's BOOKMARK, AS THE APP COMPOSES IT (F-237, ADR-0135 D2): the catalogue's name in both
+     * locales, 06's glyph and ink, off and on. `static`, like every screen here: the toggle's
+     * own states — the fill appearing on `active`, the announcement — are the ui registry's
+     * `IconButton (bookmark toggle)`, where the `glyph` treatment holds them.
+     */
+    name: `screens/ColourDetail (06's bookmark, ${on ? 'on' : 'off'})`,
+    shows: showing(COLOUR_DETAIL_STATES),
+    kind: 'static',
+    forbiddenNames: ['bookmark', 'icon'],
+    render: (_state, theme) =>
+      draw(
+        <ColourBookmark slug={WITH_COMPLEMENT.entry.slug} on={on} onChange={() => undefined} />,
+        theme,
+      ),
+  })),
   {
     /*
      * WITH THE REFERENCE SECTIONS FOLDED AWAY (F-156).

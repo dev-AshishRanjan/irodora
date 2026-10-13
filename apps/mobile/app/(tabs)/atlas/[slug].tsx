@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ColourDetail } from '../../../src/screens/ColourDetail';
 import { colorFor, entryBySlug } from '../../../src/corpus';
 import { useTarget } from '../../../src/target';
+import { ColourBookmark, useBookmarks } from '../../../src/bookmarks';
 
 /**
  * The colour detail route. Navigation options and the parameter, and nothing else.
@@ -17,11 +18,30 @@ export default function ColourDetailRoute(): React.JSX.Element {
   // was claiming a guarantee the router does not give for a malformed path.
   const router = useRouter();
   const { arm } = useTarget();
+  const { bookmarked, setBookmarked } = useBookmarks();
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const slug = Array.isArray(params.slug) ? (params.slug[0] ?? '') : (params.slug ?? '');
   return (
     <>
-      <Stack.Screen options={{ title: 'Irodora' }} />
+      {/*
+        06's BOOKMARK (06.bookmark, F-237), in the header's trailing slot. The route is still on the
+        platform header, so `headerRight` is the trailing slot that exists today; moving the header to
+        `AppBar` moves this with it, and that is F-247's (ADR-0135 D5).
+      */}
+      <Stack.Screen
+        options={{
+          title: 'Irodora',
+          headerRight: () => (
+            <ColourBookmark
+              slug={slug}
+              on={bookmarked.has(slug)}
+              onChange={(on) => {
+                setBookmarked(slug, on);
+              }}
+            />
+          ),
+        }}
+      />
       <ColourDetail
         slug={slug}
         onOpenCard={(s) => {

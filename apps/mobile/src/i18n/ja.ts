@@ -57,6 +57,7 @@ export const ja: Record<MessageKey, string> = {
   'atlas.openCompare': '2色を比べる',
   'atlas.openPalettes': '配色をつくる',
   'detail.compareWith': 'この色を別の色と比べる',
+  'detail.bookmark': 'この色をブックマーク',
   'compare.title': '2色をくらべる',
   'compare.slotA': '1つめの色',
   'compare.slotB': '2つめの色',

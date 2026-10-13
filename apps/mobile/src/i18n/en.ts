@@ -68,6 +68,7 @@ export const en = {
   'atlas.openCompare': 'Compare two colours',
   'atlas.openPalettes': 'Build a palette',
   'detail.compareWith': 'Compare this with another colour',
+  'detail.bookmark': 'Bookmark this colour',
   'compare.title': 'Compare two colours',
   'compare.slotA': 'First colour',
   'compare.slotB': 'Second colour',
