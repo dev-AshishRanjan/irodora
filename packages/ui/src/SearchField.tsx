@@ -77,8 +77,9 @@ export function SearchField({
 }: SearchFieldProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-  // The toggle's box is the platform's tap target, so its hit area is the box and never reaches
-  // past the field: Android does not deliver a touch outside a view's parent.
+  // The toggle's box is the platform's tap target, and the field is at least that tall, so its
+  // hit area is the box and never reaches past the field: Android does not deliver a touch
+  // outside a view's parent.
   const target = platformTapTarget();
 
   return (
@@ -108,8 +109,14 @@ export function SearchField({
           borderWidth: focused ? 2 : 0,
           ...(focused ? { borderColor: colors.ring } : {}),
           opacity: inert ? 0.5 : 1,
-          // The text stops where the toggle starts, so a long query never runs under it.
-          ...(trailing === undefined ? {} : { paddingRight: target }),
+          /*
+            The text stops where the toggle starts, so a long query never runs under it. And a
+            field that holds the toggle is at least the toggle's target tall: on Android that is
+            48 dp, past this field's 44, and a target taller than its parent is clipped there.
+          */
+          ...(trailing === undefined
+            ? {}
+            : { paddingRight: target, minHeight: Math.max(nativeTapTarget, target) }),
         }}
       />
       {trailing === undefined ? null : (

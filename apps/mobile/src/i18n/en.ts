@@ -111,7 +111,7 @@ export const en = {
   'atlas.empty': 'No colour matches these filters.',
   'atlas.emptyHint': 'Clear them to see the whole corpus.',
   'atlas.bookmarkedOnly': 'Show only bookmarked colours',
-  'atlas.bookmarkedNone': 'No colour is bookmarked yet.',
+  'atlas.bookmarkedNone': 'No colour in this corpus is bookmarked yet.',
   'atlas.bookmarkedNoneHint':
     'Turn the bookmark filter off to see the whole corpus, or bookmark a colour from its page.',
   'filter.family': 'Family',

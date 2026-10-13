@@ -41,13 +41,18 @@
 
 ## How the criteria are read
 
-- **Criterion 1, "persists in the encrypted store":** written to the one database file the
-  encryption is meant to cover. Whether that file is encrypted is F-336's to prove, not this
-  feature's. This feature claims nothing about it.
-- **Criterion 1, "a force-quit mid-write":** three levels of evidence, each named:
-  - a child process killed between the statements of `bookmarkColor`'s transaction, in CI;
-  - `bookmark-atomicity` on both drivers;
-  - the person's device run.
+- **Criterion 1, "persists in the encrypted store": UNMET on this build** (corrected by the
+  review, B1). The bookmark is written to the one database file the encryption is meant to cover,
+  and that file is not encrypted today, because SQLCipher is not built in (F-336). Writing to it is
+  not the criterion. This half stays outstanding, blocking the release, until F-336 lands and the
+  attestation's step 5 passes.
+- **Criterion 1, "a force-quit mid-write":** the evidence, each part named with where it runs:
+  - **in CI, on node:sqlite:** a child process killed at every boundary of each write — bookmark,
+    removal, revival — with the method's own BEGIN and COMMIT recorded and replayed;
+  - **in CI, on node:sqlite:** `bookmark-durability` and `bookmark-atomicity` in `checkStore`;
+  - **on the device:** the person's run, attestation steps 2 and 3. `checkStore` is NOT run on
+    the device driver: `runDeviceStoreConformance` would open the person's own database for every
+    check, and give false results (F-338).
 
   A process kill is not power loss. `synchronous = FULL` is the guard for power loss, and nothing
   here can test it.
@@ -186,8 +191,8 @@ docs/adr/0135-…; docs/design/R9-MOCKUP-FIDELITY.md; docs/PRD.md; docs/architec
 
 - **E-023** (`MIGRATIONS` → repository, archive, testing, the device store, data-model): migration
   10.
-  - Guards: `bookmark.test`'s migrate-from-v9 case; `bookmark-durability` on both drivers; the
-    archive round trip.
+  - Guards: `bookmark.test`'s migrate-from-v9 case; `bookmark-durability` on node:sqlite (the
+    device driver's run is F-338's); the archive round trip.
   - Update its rationale: since F-241 a new table does not join the archive on its own.
 - **E-139** (SYNC vs ARCHIVE): `profile-avatar.test`'s length relation catches a forgotten archive
   entry. Erasure reaches the table through `SYNC_TABLES`, asserted in `bookmark.test`.
@@ -349,3 +354,4 @@ Android debug build, pasting each output into `progress.md`:
 | 6 | `cd2a2e4` | `bookmarks.tsx` (provider, hook, `ColourBookmark`), the provider in `_layout`, `headerRight` on the colour page, `detail.bookmark`. **Changed from the plan:** 06's toggle is two static subjects (off, on) in the screens registry, not one interactive one. An interactive subject must render focus, disabled and loading, which the toggle does not have; its interactive states are the ui registry's `IconButton (bookmark toggle)`. Inset rows captured through the test's own `capture()`. **Tier 1:** all 0; content 0. |
 | 7 | `3363aa1` | The Atlas: `bookmarked`, `initialBookmarkedOnly`, the toggle, AND with the query and filters, *Clear*, the caption with none bookmarked; the route; three keys; the Japanese subset regenerated. Two Atlas subjects (bookmarked only; none bookmarked). The sweep: 86 subjects, 0 findings. **Tier 1:** lint was red once on gate 0, because this increment's records were written while it ran; they were stashed and lint re-run, 0. All others 0; content, a11y, contrast, cvd 0. |
 | 8 | this commit | Records: E-204 and its note; E-023, E-134, E-086, E-151 and E-156 extended, with their notes; data-model §5, including the correction that `ARCHIVE_TABLES` has been an explicit list since F-241; two lessons; the memory index. |
+| review | this commit | **The one review: FAIL as delivered.** 1 blocking, 3 significant and 9 minor findings. Each is fixed or recorded. **B1, fixed and recorded:** the attestation and this plan said `bookmark-atomicity` ran "on both drivers". It runs on node:sqlite only. The device runner opens the person's own database for every check, so it is unfit to run it (F-338, recorded). The "encrypted store" half is recorded as UNMET on this build. **S1, fixed:** the Atlas AND-tests now use a query matching three entries with one bookmarked: count 1 on, the query's own count off. A family-filter case is added. **S2, fixed:** the force-quit test records and replays the method's own BEGIN and COMMIT, cuts every boundary of the bookmark, removal and revival writes, and has a decoy where the write is split into two transactions. **S3, fixed:** a field holding a toggle is at least the platform target tall (48 on Android), and 06's toggle sits in a target-sized square; both are tested as iOS and as Android. **M1** the schema-9 restore now asserts a row from another table. **M2** "No colour in this corpus is bookmarked yet." **M3** R9 §9 ✓. **M4** the inset record's comment. **M5** F-337 is `todo`, with a note on F-242. **M6** the lessons say "by reading". **M7** the keyboard journey is attestation step 6; the captures are F-246's and F-247's. **M8** E-204 no longer points at the schema. **M9** recorded as F-339, a person's call. |

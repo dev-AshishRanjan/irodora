@@ -13,14 +13,18 @@
  * **A process kill is not power loss.** Pages the OS already holds survive a kill and may not
  * survive a power cut; `synchronous = FULL` is the guard for that, and nothing on a CI runner can
  * pull a phone's battery. Nor is it the device: the person's run kills the real app (F-237's
- * attestation). What this proves is that a write cut between its statements leaves the database
- * as it was, intact, and that a write cut after its COMMIT is kept.
+ * attestation). What this proves is that a write cut at any boundary of its statements leaves the
+ * database as it was, intact, and that a write cut after its COMMIT is kept.
  *
  * ## Why the statements are recorded rather than written here
  *
  * A hand-written replay would test the hand-written replay. The statements come from
  * `bookmarkColor` and `unbookmarkColor` themselves, through a recording driver over a scratch
- * copy, so a change to either method changes what is replayed.
+ * copy — **their transaction's `BEGIN` and `COMMIT` included**, recorded where the method opens
+ * and closes it. The child adds no transaction of its own. So a method that wrote its row and its
+ * change-log entry in two transactions would be replayed as two, and the cut between them would
+ * leave half a write; the split decoy below shows the per-cut assertion catching exactly that.
+ * Every boundary is cut, not a chosen few.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -47,50 +51,59 @@ interface Recorded {
   readonly params: readonly unknown[];
 }
 
-/** A migrated database file, closed, optionally with `ai-nezumi` already bookmarked. */
-function base(bookmarked: boolean): string {
+interface State {
+  readonly bookmarks: readonly string[];
+  readonly logged: number;
+}
+
+const BEGIN: Recorded = { sql: 'BEGIN', params: [] };
+const COMMIT: Recorded = { sql: 'COMMIT', params: [] };
+
+/** A migrated database file, closed, with `ai-nezumi` never bookmarked, live, or removed. */
+function base(bookmark: 'none' | 'live' | 'removed'): string {
   const path = join(dir, `base-${String(n++)}.sqlite`);
   const { driver, info } = nodeDriver(path);
   const repo = createRepository(driver, info);
-  if (bookmarked) repo.bookmarkColor('ai-nezumi', NOW - 1000);
+  if (bookmark !== 'none') repo.bookmarkColor('ai-nezumi', NOW - 2000);
+  if (bookmark === 'removed') repo.unbookmarkColor('ai-nezumi', NOW - 1000);
   repo.close();
   return path;
 }
 
-/** The writes one repository call issues inside its transaction, in order. */
+/**
+ * Every write one repository call issues, in order, with the BEGIN and COMMIT of each transaction
+ * it opens. A write made outside any transaction is recorded too, bare — and replays in autocommit,
+ * which is what it would do on a phone.
+ */
 function record(from: string, write: (repo: Repository) => void): readonly Recorded[] {
   const scratch = join(dir, `scratch-${String(n++)}.sqlite`);
   copyFileSync(from, scratch);
   const { driver: inner, info } = nodeDriver(scratch);
+  let recording = false;
   const writes: Recorded[] = [];
-  let inside = false;
-  const recording: Driver = {
+  const recorder: Driver = {
     ...inner,
     run(sql, params = []) {
-      if (inside) writes.push({ sql, params });
+      if (recording) writes.push({ sql, params });
       inner.run(sql, params);
     },
     transaction<T>(fn: () => T): T {
-      inside = true;
-      try {
-        return inner.transaction(fn);
-      } finally {
-        inside = false;
-      }
+      if (recording) writes.push(BEGIN);
+      const result = inner.transaction(fn);
+      if (recording) writes.push(COMMIT);
+      return result;
     },
   };
-  const repo = createRepository(recording, info);
+  const repo = createRepository(recorder, info);
+  recording = true;
   write(repo);
+  recording = false;
   repo.close();
   return writes;
 }
 
-/** Replay `statements` on a copy of `from` in a child, killed at `cut`; return the copy. */
-function killedAt(
-  from: string,
-  statements: readonly Recorded[],
-  cut: number | 'after-commit',
-): string {
+/** Replay `statements` on a copy of `from` in a child, killed before statement `cut`. */
+function killedAt(from: string, statements: readonly Recorded[], cut: number): string {
   const target = join(dir, `target-${String(n++)}.sqlite`);
   copyFileSync(from, target);
   const plan = join(dir, `plan-${String(n++)}.json`);
@@ -107,79 +120,114 @@ function killedAt(
 }
 
 /** The next launch: open what the child left, check it, and read the bookmarks back. */
-function relaunch(path: string): {
-  readonly bookmarks: readonly string[];
-  readonly logged: number;
-} {
+function relaunch(path: string): State {
   const { driver, info } = nodeDriver(path);
   const check = driver.query<{ integrity_check: string }>('PRAGMA integrity_check');
   // Mapped out of node:sqlite's null-prototype rows, which toStrictEqual tells from a literal.
   expect(check.map((row) => row.integrity_check)).toStrictEqual(['ok']);
   const repo = createRepository(driver, info);
-  const result = {
+  const state = {
     bookmarks: repo.listBookmarks(),
     logged: repo.changeLog().filter((e) => e.table_name === 'color_bookmark').length,
   };
   repo.close();
-  return result;
+  return state;
 }
 
-describe('a bookmark killed mid-write', () => {
-  const empty = base(false);
+/** What the next launch sees after a kill at every boundary: before the first statement to after the last. */
+const everyCut = (from: string, statements: readonly Recorded[]): readonly State[] =>
+  Array.from({ length: statements.length + 1 }, (_, cut) =>
+    relaunch(killedAt(from, statements, cut)),
+  );
+
+/**
+ * The claim, for one recorded write: a kill anywhere before its COMMIT has run leaves exactly the
+ * state before it, and a kill after leaves exactly the state after. Nothing in between, ever.
+ */
+const expected = (statements: readonly Recorded[], before: State, after: State): State[] => {
+  const commit = statements.lastIndexOf(COMMIT);
+  return Array.from({ length: statements.length + 1 }, (_, cut) => (cut > commit ? after : before));
+};
+
+const shape = (statements: readonly Recorded[]): string[] =>
+  statements.map((s) => s.sql.trim().split(/\s+/).slice(0, 3).join(' '));
+
+describe('a bookmark killed at every point of its write', () => {
+  const empty = base('none');
   const bookmark = record(empty, (repo) => {
     repo.bookmarkColor('ai-nezumi', NOW);
   });
 
-  it('records the row and its change-log entry, in that order', () => {
-    // What the cuts below fall between. If the method's shape changes, this says so first.
-    expect(bookmark.map((s) => s.sql.trim().split(/\s+/).slice(0, 3).join(' '))).toStrictEqual([
+  it('is one transaction: the row and its change-log entry between one BEGIN and one COMMIT', () => {
+    expect(shape(bookmark)).toStrictEqual([
+      'BEGIN',
       'INSERT INTO color_bookmark',
       'INSERT INTO change_log',
+      'COMMIT',
     ]);
   });
 
-  it('killed after the row and before the change log, nothing survives', () => {
-    expect(relaunch(killedAt(empty, bookmark, 1))).toStrictEqual({ bookmarks: [], logged: 0 });
+  it('leaves nothing until COMMIT has run, and the bookmark with its log entry after', () => {
+    expect(everyCut(empty, bookmark)).toStrictEqual(
+      expected(bookmark, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
+    );
   });
 
-  it('killed after both and before COMMIT, nothing survives', () => {
-    expect(relaunch(killedAt(empty, bookmark, 2))).toStrictEqual({ bookmarks: [], logged: 0 });
-  });
-
-  it('the decoy: killed after COMMIT, the bookmark is there', () => {
-    // Without it the two cases above cannot tell "the kill rolled the write back" from "the
-    // replay never wrote anything a relaunch could see".
-    expect(relaunch(killedAt(empty, bookmark, 'after-commit'))).toStrictEqual({
-      bookmarks: ['ai-nezumi'],
-      logged: 1,
-    });
+  it('the decoy: the same write split into two transactions leaves half of it at one cut', () => {
+    // What a method that committed its row before logging it would replay as. Without this, the
+    // case above cannot tell "the method's transaction held" from "the per-cut check cannot see a
+    // half-write".
+    const [, row, log] = bookmark;
+    if (row === undefined || log === undefined) throw new Error('the recording is not a write');
+    const split = [BEGIN, row, COMMIT, BEGIN, log, COMMIT];
+    const states = everyCut(empty, split);
+    expect(states).not.toStrictEqual(
+      expected(split, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
+    );
+    expect(states).toContainEqual({ bookmarks: ['ai-nezumi'], logged: 0 });
   });
 });
 
-describe('a removal killed mid-write', () => {
-  const kept = base(true);
-  const removal = record(kept, (repo) => {
+describe('a removal killed at every point of its write', () => {
+  const live = base('live');
+  const removal = record(live, (repo) => {
     repo.unbookmarkColor('ai-nezumi', NOW);
   });
 
-  it('records the tombstone and its change-log entry', () => {
-    expect(removal.map((s) => s.sql.trim().split(/\s+/).slice(0, 2).join(' '))).toStrictEqual([
-      'UPDATE color_bookmark',
-      'INSERT INTO',
+  it('is one transaction: the tombstone and its change-log entry', () => {
+    expect(shape(removal)).toStrictEqual([
+      'BEGIN',
+      'UPDATE color_bookmark SET',
+      'INSERT INTO change_log',
+      'COMMIT',
     ]);
   });
 
-  it('killed before COMMIT, the bookmark is still live', () => {
-    expect(relaunch(killedAt(kept, removal, 2))).toStrictEqual({
-      bookmarks: ['ai-nezumi'],
-      logged: 1,
-    });
+  it('leaves the bookmark live until COMMIT has run, and removed after', () => {
+    expect(everyCut(live, removal)).toStrictEqual(
+      expected(removal, { bookmarks: ['ai-nezumi'], logged: 1 }, { bookmarks: [], logged: 2 }),
+    );
+  });
+});
+
+describe('a revival killed at every point of its write', () => {
+  const removed = base('removed');
+  const revival = record(removed, (repo) => {
+    repo.bookmarkColor('ai-nezumi', NOW);
   });
 
-  it('the decoy: killed after COMMIT, it is removed', () => {
-    expect(relaunch(killedAt(kept, removal, 'after-commit'))).toStrictEqual({
-      bookmarks: [],
-      logged: 2,
-    });
+  it('is one transaction: the revived row and its change-log entry', () => {
+    expect(shape(revival)).toStrictEqual([
+      'BEGIN',
+      'UPDATE color_bookmark SET',
+      'INSERT INTO change_log',
+      'COMMIT',
+    ]);
+  });
+
+  it('leaves it removed until COMMIT has run, and bookmarked again after', () => {
+    expect(everyCut(removed, revival)).toStrictEqual(
+      expected(revival, { bookmarks: [], logged: 2 }, { bookmarks: ['ai-nezumi'], logged: 3 }),
+    );
   });
 });

@@ -16,8 +16,8 @@ four ways:
 4. **Home shows the newest `saved_color` row as the person's *Last reading***, so a bookmarked corpus
    colour would have been presented as a measurement.
 
-The fourth was already happening to palette colours. That is F-337: a table holding several kinds of
-thing, read as if it held one.
+By the code, the fourth already happens to palette colours. That is F-337, found by reading, not
+yet run: a table holding several kinds of thing, read as if it held one.
 
 ## The rule
 

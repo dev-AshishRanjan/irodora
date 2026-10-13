@@ -50,5 +50,10 @@ Related: [[a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-
 
 The trailing toggle sits in a box `platformTapTarget()` wide, at the field's trailing edge and its
 full height, so the glyph's slop ends at the box's edges. Placed in a 24 dp box, the slop would have
-reached outside its parent, and Android delivers no touch there. The field itself is still 44 dp
-tall on Android, which is F-305's.
+reached outside its parent, and Android delivers no touch there.
+
+**The first version was still short on Android, and only a check run as Android could see it**
+(F-237's review, S3). The field was 44 dp tall, the toggle's target 48, so 2 dp above and below
+were clipped. A field holding a toggle is now at least the platform's target tall. 06's toggle
+sits in a target-sized square, because the header's slot sizes itself to a 24 dp glyph. Both are
+tested as iOS and as Android. Every other field, still 44 dp on Android, is F-305's.

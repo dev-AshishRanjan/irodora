@@ -10,7 +10,14 @@
  */
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { StyleSheet, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  TextInput,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
 import {
   platformTapTarget,
@@ -97,24 +104,47 @@ describe('the toggle', () => {
   });
 });
 
-describe('its hit area lies inside the field', () => {
-  it('sits in a box the size of the tap target, at the trailing edge, the field’s full height', () => {
-    render(field({ trailing: toggle(false) }));
-    const button = screen.getByTestId('toggle');
-    // The box the toggle sits in: the one positioned view in the field.
-    const boxes = screen
-      .UNSAFE_getAllByType(View)
-      .map((v) => flat(v.props['style']))
-      .filter((style) => style['position'] === 'absolute');
-    expect(boxes).toHaveLength(1);
-    const holder = boxes[0] ?? {};
-    expect(holder).toMatchObject({ position: 'absolute', top: 0, bottom: 0, right: 0 });
-    expect(holder['width']).toBe(platformTapTarget());
-    // The glyph and its slop reach the target exactly, so the slop ends at the box's edges.
-    const reach = tapTargetReach(flat(button.props['style']), button.props['hitSlop'] as never);
-    expect(reach.width).toBe(platformTapTarget());
-    // And the field is at least as tall as the box the toggle is centred in.
-    const input = screen.UNSAFE_getByType(TextInput);
-    expect(flat(input.props['style'])['minHeight']).toBe(nativeTapTarget);
+describe('its hit area lies inside the field, on both platforms', () => {
+  /*
+   * ON EACH PLATFORM'S OWN TARGET. jest renders as iOS, where the target is 44 and so is the field;
+   * Android's is 48, past the field's 44, and a check run only as iOS could not see a target taller
+   * than its parent — which Android clips (F-237's review, S3).
+   */
+  it.each([['ios'], ['android']] as const)('on %s', (os) => {
+    const replaced = jest.replaceProperty(Platform, 'OS', os);
+    try {
+      const target = platformTapTarget(os);
+      render(field({ trailing: toggle(false) }));
+      const button = screen.getByTestId('toggle');
+      // The box the toggle sits in: the one positioned view in the field.
+      const boxes = screen
+        .UNSAFE_getAllByType(View)
+        .map((v) => flat(v.props['style']))
+        .filter((style) => style['position'] === 'absolute');
+      expect(boxes).toHaveLength(1);
+      const holder = boxes[0] ?? {};
+      expect(holder).toMatchObject({ position: 'absolute', top: 0, bottom: 0, right: 0 });
+      expect(holder['width']).toBe(target);
+      // The glyph and its slop reach the target exactly, so the slop ends at the box's edges.
+      const reach = tapTargetReach(flat(button.props['style']), button.props['hitSlop'] as never);
+      expect(reach).toStrictEqual({ width: target, height: target });
+      // And the field, whose full height the box spans, is at least the target tall.
+      const input = screen.UNSAFE_getByType(TextInput);
+      expect(flat(input.props['style'])['minHeight']).toBeGreaterThanOrEqual(target);
+    } finally {
+      replaced.restore();
+    }
+  });
+
+  it('DECOY: a field with no toggle keeps its own height on Android', () => {
+    // The taller field is the toggle's; a field without one is not changed by it.
+    const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      render(field({}));
+      const input = screen.UNSAFE_getByType(TextInput);
+      expect(flat(input.props['style'])['minHeight']).toBe(nativeTapTarget);
+    } finally {
+      replaced.restore();
+    }
   });
 });

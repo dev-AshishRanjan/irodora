@@ -10,8 +10,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { Platform, StyleSheet, Text } from 'react-native';
+import { platformTapTarget, ThemeProvider } from '@irodora/ui';
+import { tapTargetReach } from '@irodora/ui/testing';
 import {
   BookmarksProvider,
   ColourBookmark,
@@ -19,7 +20,7 @@ import {
   type BookmarkStore,
   type BookmarksValue,
 } from '../src/bookmarks';
-import { allEntries } from '../src/corpus';
+import { allEntries, familyLabel } from '../src/corpus';
 import { Atlas } from '../src/screens/Atlas';
 import { t } from '../src/i18n';
 
@@ -156,6 +157,30 @@ describe("06's bookmark", () => {
     draw(false, 'not-a-corpus-slug');
     expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
+
+  /*
+   * THE HEADER SLOT SIZES ITSELF TO WHAT IT HOLDS (F-237's review, S3). A 24 dp glyph's slop past a
+   * 24 dp slot is a target Android never delivers, so the toggle brings its own box: the platform's
+   * target, square, with the glyph and its slop exactly filling it. Checked as each platform.
+   */
+  it.each([['ios'], ['android']] as const)('sits in a box the size of the %s tap target', (os) => {
+    const replaced = jest.replaceProperty(Platform, 'OS', os);
+    try {
+      draw(false);
+      const target = platformTapTarget(os);
+      const box = StyleSheet.flatten(screen.getByTestId('detail.bookmark.box').props['style']) as
+        Record<string, unknown> | undefined;
+      expect(box).toMatchObject({ width: target, height: target });
+      const button = screen.getByTestId('detail.bookmark');
+      const reach = tapTargetReach(
+        (StyleSheet.flatten(button.props['style']) ?? {}) as Record<string, unknown>,
+        button.props['hitSlop'] as never,
+      );
+      expect(reach).toStrictEqual({ width: target, height: target });
+    } finally {
+      replaced.restore();
+    }
+  });
 });
 
 describe('the routes carry the controls ADR-0135 places (E-204)', () => {
@@ -214,28 +239,62 @@ describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
     expect(screen.queryByLabelText(label(entries[1]!))).toBeNull();
   });
 
-  it('combines with the query', () => {
-    open(new Set([first.entry.slug, third.entry.slug]), { initialBookmarkedOnly: true });
-    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), third.entry.name.romaji);
-    expect(screen.queryByLabelText(label(first))).toBeNull();
-    expect(screen.getByLabelText(label(third))).toBeTruthy();
+  /*
+   * THE AND, WHERE THE TOGGLE DECIDES THE ANSWER (F-237's review, S1). The query must match more
+   * than one entry, only one of them bookmarked: then the count is 1 with the toggle on and the
+   * query's own count with it off, and a screen that ignored the toggle once a query was typed
+   * fails one of the two. The word is chosen from the bundle, and the test says so if it stops
+   * holding.
+   */
+  const QUERY = 'midori';
+  const matchingQuery = entries.filter((e) =>
+    [
+      e.entry.name.kanji,
+      e.entry.name.kana,
+      e.entry.name.romaji,
+      e.entry.name.en,
+      e.entry.slug,
+    ].some((v) => v.toLowerCase().includes(QUERY)),
+  );
+  const notMatching = entries.find((e) => !matchingQuery.includes(e))!;
+
+  it('has a query that matches several entries, so the next two cases can disagree', () => {
+    expect(matchingQuery.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('DECOY: toggled off, the same query is not narrowed to the bookmarks', () => {
-    // The query alone finds every entry whose names hold it; the toggle is what took them away.
-    const query = third.entry.name.romaji;
-    const matching = entries.filter((e) =>
-      [
-        e.entry.name.kanji,
-        e.entry.name.kana,
-        e.entry.name.romaji,
-        e.entry.name.en,
-        e.entry.slug,
-      ].some((v) => v.toLowerCase().includes(query.toLowerCase())),
-    );
-    open(new Set([third.entry.slug]));
-    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), query);
-    expect(screen.getByText(count(matching.length))).toBeTruthy();
+  it('combines with the query: one of its matches bookmarked, one listed', () => {
+    const kept = matchingQuery[1]!;
+    open(new Set([kept.entry.slug, notMatching.entry.slug]), { initialBookmarkedOnly: true });
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), QUERY);
+    expect(screen.getByText(count(1))).toBeTruthy();
+    expect(screen.getByLabelText(label(kept))).toBeTruthy();
+    expect(screen.queryByLabelText(label(matchingQuery[0]!))).toBeNull();
+  });
+
+  it('DECOY: toggled off, the same query lists every match, not only the bookmarked one', () => {
+    open(new Set([matchingQuery[1]!.entry.slug, notMatching.entry.slug]));
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), QUERY);
+    expect(screen.getByText(count(matchingQuery.length))).toBeTruthy();
+  });
+
+  it('combines with a filter: two bookmarks in two families, one family chosen, one listed', () => {
+    // A family with more than one colour, so the filter alone would list more than the bookmark.
+    const inFamily = (e: (typeof entries)[number]) =>
+      entries.filter((x) => x.entry.taxonomy.family === e.entry.taxonomy.family).length;
+    const one = entries.find((e) => inFamily(e) >= 2)!;
+    expect(inFamily(one)).toBeGreaterThanOrEqual(2);
+    const other = entries.find((e) => e.entry.taxonomy.family !== one.entry.taxonomy.family)!;
+    open(new Set([one.entry.slug, other.entry.slug]), { initialBookmarkedOnly: true });
+    expect(screen.getByText(count(2))).toBeTruthy();
+    const family = familyLabel(one.entry.taxonomy.family, 'en');
+    const radio = screen
+      .getAllByRole('radio')
+      .find((r) => String(r.props['accessibilityLabel']).startsWith(`${family} `));
+    if (radio === undefined) throw new Error(`no family filter for ${family}`);
+    fireEvent.press(radio);
+    expect(screen.getByText(count(1))).toBeTruthy();
+    expect(screen.getByLabelText(label(one))).toBeTruthy();
+    expect(screen.queryByLabelText(label(other))).toBeNull();
   });
 
   it("says none is bookmarked, in 00's caption, never an empty list", () => {

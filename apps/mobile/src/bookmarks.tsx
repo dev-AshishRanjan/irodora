@@ -26,7 +26,8 @@
  */
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { IconButton } from '@irodora/ui';
+import { View } from 'react-native';
+import { IconButton, platformTapTarget } from '@irodora/ui';
 import type { Repository } from '@irodora/store';
 import { entryBySlug } from './corpus';
 import { useMessages } from './i18n/useMessages';
@@ -100,6 +101,10 @@ export function useBookmarks(): BookmarksValue {
  *
  * Renders nothing for a slug this corpus does not hold: that page is `00`'s caption, and a
  * bookmark of a colour the app cannot show would be a row nothing could ever read back.
+ *
+ * **In a box the size of the platform's tap target.** The header's trailing slot sizes itself to
+ * what it holds, and a 24 dp glyph's slop past a 24 dp slot is a target Android never delivers: it
+ * clips touches to the parent (F-237's review, S3). The box makes the slot the target.
  */
 export function ColourBookmark({
   slug,
@@ -112,15 +117,21 @@ export function ColourBookmark({
 }): React.JSX.Element | null {
   const { t } = useMessages();
   if (entryBySlug(slug) === null) return null;
+  const target = platformTapTarget();
   return (
-    <IconButton
-      name="bookmark"
-      label={t('detail.bookmark')}
-      selected={on}
-      onPress={() => {
-        onChange(!on);
-      }}
-      testID="detail.bookmark"
-    />
+    <View
+      testID="detail.bookmark.box"
+      style={{ width: target, height: target, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <IconButton
+        name="bookmark"
+        label={t('detail.bookmark')}
+        selected={on}
+        onPress={() => {
+          onChange(!on);
+        }}
+        testID="detail.bookmark"
+      />
+    </View>
   );
 }

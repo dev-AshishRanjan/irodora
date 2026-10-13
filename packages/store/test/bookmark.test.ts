@@ -340,8 +340,15 @@ describe('backup and restore (criterion 2)', () => {
     target.repo.close();
   });
 
-  it('an archive written before bookmarks existed restores with none', () => {
+  it('an archive written before bookmarks existed restores everything it holds, and no bookmark', () => {
+    /*
+     * The bookmark half alone cannot fail: a restore refuses a database that is not empty, so the
+     * target never held a bookmark to begin with. What can fail is the rest of the archive — a
+     * missing table refused, or read as corruption, would lose the person's other data — so the
+     * archive carries a row from another table, and that row is what is asserted to come back.
+     */
     const source = seeded();
+    source.repo.recordPreference('ai', 'beni', 'accepted', NOW + 5);
     const archive = exportArchive(source.driver, NOW + 10);
     source.repo.close();
     // As a schema-9 build wrote it: no color_bookmark table at all.
@@ -349,6 +356,7 @@ describe('backup and restore (criterion 2)', () => {
     delete older['color_bookmark'];
     const target = open();
     importArchive(target.driver, { ...archive, schemaVersion: 9, tables: older });
+    expect(target.repo.listPreferences()).toHaveLength(1);
     expect(target.repo.listBookmarks()).toHaveLength(0);
     target.repo.close();
   });

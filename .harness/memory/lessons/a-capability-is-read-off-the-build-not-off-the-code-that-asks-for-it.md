@@ -8,9 +8,10 @@ The device driver opens the database and runs `PRAGMA key` before anything else.
 explain at length why the order matters, and it reports `encryptsAtRest: true`. F-041, F-042 and
 F-241 all reasoned about "the SQLCipher database".
 
-The library was never SQLCipher. expo-sqlite links SQLCipher only when its config plugin is given
-`useSQLCipher: true`, and `app.config.ts` never passed it. Plain SQLite ignores a pragma it does not
-know, so `PRAGMA key` and `PRAGMA rekey` succeeded and did nothing. Every test stayed green:
+By the build's own files, the library is not SQLCipher. expo-sqlite links SQLCipher only when its
+config plugin is given `useSQLCipher: true`, and `app.config.ts` never passes it. Plain SQLite
+ignores a pragma it does not know, so `PRAGMA key` and `PRAGMA rekey` would succeed and do nothing.
+That is confirmed by reading the build, not yet on a device (F-336). Every test stayed green:
 
 - the CI driver honestly reports `encryptsAtRest: false`;
 - the device driver's `true` was a literal;

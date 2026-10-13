@@ -6390,6 +6390,10 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/SearchField.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/bookmarks.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6401,7 +6405,7 @@
         "packages/design-tokens"
       ],
       "severity": "critical",
-      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 SearchField places its trailing toggle in a box the size of platformTapTarget(), at the field’s trailing edge and full height, so the IconButton’s hitArea slop ends at the box and never reaches past the field (Android delivers no touch outside a parent); search-field.test asserts the box and that the glyph plus its slop reach the target exactly.",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44.",
       "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
       "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
     },
@@ -8630,10 +8634,6 @@
           "ref": "packages/ui/src/SearchField.tsx#SearchFieldToggle"
         },
         {
-          "kind": "symbol",
-          "ref": "packages/store/src/schema.ts#color_bookmark"
-        },
-        {
           "kind": "decision",
           "ref": "docs/adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md"
         },
@@ -8650,7 +8650,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order, combines with the query (decoy: toggle off, same query), shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test.",
+      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test.",
       "memory": "memory/effects/the-bookmark-set-is-written-on-06-and-read-on-05.md",
       "rationale": "A bookmark is written on 06 and read back on 05 through one provider, so a change to how the set is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to bookmark, or a write nothing reads (OQ-39). F-246 and F-247 rebuild both screens, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once because nothing else writes; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout inside the native header (a device capture), and encryption at rest, which depends on SQLCipher being built in (F-336)."
     }
