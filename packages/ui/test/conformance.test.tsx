@@ -1275,6 +1275,41 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    /*
+     * 05's FIELD WITH ITS BOOKMARK TOGGLE (F-237, ADR-0135 D1). `active` is the toggle on, so the
+     * `glyph` treatment holds the fill to it; `focus`, `disabled` and `loading` are the field's,
+     * and the toggle goes inert with it.
+     */
+    name: 'SearchField (05, with its bookmark toggle)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'glyph',
+    forbiddenNames: ['search', 'field', 'input', 'bookmark'],
+    render: (state, theme) =>
+      draw(
+        <SearchField
+          label="Search by name or reading"
+          value=""
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+          trailing={{
+            glyph: 'bookmark',
+            label: 'Show only bookmarked colours',
+            selected: state === 'active',
+            onPress: () => {
+              /* the suite renders; it does not drive */
+            },
+          }}
+        />,
+        theme,
+      ),
+  },
+  {
     name: 'TextField',
     kind: 'interactive',
     // The words a screen reader must never hear as the WHOLE name. "Name" would be one of

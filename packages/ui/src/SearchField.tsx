@@ -20,11 +20,33 @@
  * Uniwind resolves `className` in Metro and jest never runs Metro, so a field styled that way
  * renders in the test harness with no colours at all and the contrast gate measures an empty
  * set [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+ *
+ * ## One toggle at the trailing end, and only when asked for
+ *
+ * `trailing` puts a glyph toggle inside the field, at its trailing end — the Atlas's bookmark,
+ * which reads the bookmarked colours back (F-237, ADR-0135 D1). It is an `IconButton` with
+ * `selected`, so on is the glyph filled and an announced state, never a colour. Its box is the tap
+ * target, inside the field, and the text stops short of it. Without `trailing` the field renders
+ * exactly the tree it rendered before.
  */
 
 import { TextInput, View, type TextInputProps } from 'react-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import type { FillableGlyph } from './Glyph.js';
+import { platformTapTarget } from './hitArea.js';
+import { IconButton } from './IconButton.js';
 import { useTheme } from './theme.js';
+
+/** A glyph toggle at the field's trailing end (F-237): the Atlas's bookmark filter. */
+export interface SearchFieldToggle {
+  /** A glyph with a filled drawing, because on is that fill (ADR-0135 D2). */
+  readonly glyph: FillableGlyph;
+  /** What turning it on does — "Show only bookmarked colours" — for a screen reader. */
+  readonly label: string;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+  readonly testID?: string;
+}
 
 export type SearchFieldProps = Omit<
   TextInputProps,
@@ -39,6 +61,8 @@ export type SearchFieldProps = Omit<
   readonly loading?: boolean;
   /** Focused by an external keyboard or Switch Control. */
   readonly focused?: boolean;
+  /** A toggle inside the field, at its trailing end. Inert whenever the field is. */
+  readonly trailing?: SearchFieldToggle;
 };
 
 export function SearchField({
@@ -48,10 +72,14 @@ export function SearchField({
   disabled = false,
   loading = false,
   focused = false,
+  trailing,
   ...rest
 }: SearchFieldProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
+  // The toggle's box is the platform's tap target, so its hit area is the box and never reaches
+  // past the field: Android does not deliver a touch outside a view's parent.
+  const target = platformTapTarget();
 
   return (
     <View>
@@ -80,8 +108,33 @@ export function SearchField({
           borderWidth: focused ? 2 : 0,
           ...(focused ? { borderColor: colors.ring } : {}),
           opacity: inert ? 0.5 : 1,
+          // The text stops where the toggle starts, so a long query never runs under it.
+          ...(trailing === undefined ? {} : { paddingRight: target }),
         }}
       />
+      {trailing === undefined ? null : (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: target,
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'box-none',
+          }}
+        >
+          <IconButton
+            name={trailing.glyph}
+            label={trailing.label}
+            selected={trailing.selected}
+            onPress={trailing.onPress}
+            disabled={inert}
+            {...(trailing.testID === undefined ? {} : { testID: trailing.testID })}
+          />
+        </View>
+      )}
     </View>
   );
 }

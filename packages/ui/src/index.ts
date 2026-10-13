@@ -333,7 +333,7 @@ export {
   type ConfirmKind,
   type SkeletonProps,
 } from './feedback.js';
-export { SearchField, type SearchFieldProps } from './SearchField.js';
+export { SearchField, type SearchFieldProps, type SearchFieldToggle } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
 export {
   Pair,
