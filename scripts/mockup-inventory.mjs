@@ -45,7 +45,11 @@ export const conflictIdsIn = (spec) =>
 
 /** Width and height of a JPEG or PNG, read from its header — no decoder, no dependency. */
 export function imageSize(file) {
-  const b = readFileSync(file);
+  return imageSizeOf(readFileSync(file));
+}
+
+/** The same, from bytes already read (F-221: the composer holds the images it embeds). */
+export function imageSizeOf(b) {
   if (b[0] === 0x89 && b[1] === 0x50) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
   if (b[0] !== 0xff || b[1] !== 0xd8) return null;
   let i = 2;

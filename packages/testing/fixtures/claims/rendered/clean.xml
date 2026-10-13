@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.irodora.app" content-desc="" bounds="[0,0][1080,2400]">
+    <node index="0" text="Autumn Field" resource-id="" class="android.widget.TextView" package="com.irodora.app" content-desc="" bounds="[48,200][700,260]" />
+    <node index="1" text="" resource-id="" class="android.view.ViewGroup" package="com.irodora.app" content-desc="" bounds="[48,300][1032,360]">
+      <node index="0" text="ΔE00" resource-id="" class="android.widget.TextView" package="com.irodora.app" content-desc="" bounds="[48,300][200,360]" />
+      <node index="1" text="1.18" resource-id="" class="android.widget.TextView" package="com.irodora.app" content-desc="" bounds="[220,300][360,360]" />
+    </node>
+    <node index="2" text="" resource-id="" class="android.widget.Button" package="com.irodora.app" content-desc="Where this colour came from" bounds="[48,420][1032,520]" />
+  </node>
+</hierarchy>
