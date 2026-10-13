@@ -7,6 +7,7 @@
  * differ in is how it talks to SQLite; what it may not differ in is what the data means.
  */
 
+import { uuidv7 } from './id.js';
 import type { SanitisedImage } from './image.js';
 import { migrate } from './migrate.js';
 import {
@@ -17,6 +18,7 @@ import {
   PROFILE_METHODS,
   StoreError,
   GARMENT_COLOR_ROLES,
+  type BookmarkRow,
   GARMENT_SEASONS,
   type ChangeLogRow,
   type ContrastPreference,
@@ -1232,6 +1234,60 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           ]);
         log('pairing_preference', 'all', 'delete', now);
       });
+    },
+
+    bookmarkColor(slug: string, now: Millis): void {
+      driver.transaction(() => {
+        const [row] = driver.query<Pick<BookmarkRow, 'id' | 'deleted_at'>>(
+          'SELECT id, deleted_at FROM color_bookmark WHERE corpus_slug = ?',
+          [slug],
+        );
+        // Already bookmarked: no write, so nothing to log. A log row for a write that did not
+        // happen is a change a future reconciliation would apply to nothing.
+        if (row?.deleted_at === null) return;
+        if (row !== undefined) {
+          // Removed before: REVIVED on the same id, so a slug has one row and one history.
+          // `saved_color`'s upsert never clears `deleted_at`, which is one of the reasons a
+          // bookmark is not a row there (ADR-0135 D6).
+          driver.run('UPDATE color_bookmark SET deleted_at = NULL, updated_at = ? WHERE id = ?', [
+            now,
+            row.id,
+          ]);
+          log('color_bookmark', row.id, 'update', now);
+          return;
+        }
+        const id = uuidv7(now);
+        driver.run(
+          `INSERT INTO color_bookmark (id, created_at, updated_at, deleted_at, corpus_slug)
+           VALUES (?, ?, ?, NULL, ?)`,
+          [id, now, now, slug],
+        );
+        log('color_bookmark', id, 'insert', now);
+      });
+    },
+
+    unbookmarkColor(slug: string, now: Millis): void {
+      driver.transaction(() => {
+        const [row] = driver.query<Pick<BookmarkRow, 'id'>>(
+          'SELECT id FROM color_bookmark WHERE corpus_slug = ? AND deleted_at IS NULL',
+          [slug],
+        );
+        if (row === undefined) return;
+        driver.run('UPDATE color_bookmark SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+          now,
+          now,
+          row.id,
+        ]);
+        log('color_bookmark', row.id, 'delete', now);
+      });
+    },
+
+    listBookmarks(): readonly string[] {
+      return driver
+        .query<Pick<BookmarkRow, 'corpus_slug'>>(
+          'SELECT corpus_slug FROM color_bookmark WHERE deleted_at IS NULL ORDER BY corpus_slug',
+        )
+        .map((row) => row.corpus_slug);
     },
 
     getSetting(key: string): string | undefined {

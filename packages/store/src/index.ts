@@ -120,6 +120,7 @@ export type {
   StoredCaptureConditions,
   StoredPreference,
   PairingPreferenceRow,
+  BookmarkRow,
   PreferenceVerdict,
   StoredGarment,
   StoredGarmentColor,

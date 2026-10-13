@@ -482,6 +482,16 @@ export interface StoredPreference {
 /** What a person did about one pairing, once. */
 export type PreferenceVerdict = 'accepted' | 'rejected';
 
+/* ------------------------------------------------------------- bookmarks (F-237) */
+
+/**
+ * A bookmarked corpus colour: a pointer to a slug and nothing else (ADR-0135 D6). The colour and
+ * its provenance are read from the pinned corpus, so no value here can travel without them.
+ */
+export interface BookmarkRow extends SyncRow {
+  readonly corpus_slug: string;
+}
+
 /** What a caller can learn about a stored image without loading it. */
 export interface StoredImageInfo {
   readonly byteLength: number;
@@ -707,6 +717,23 @@ export interface Repository {
    * nothing a future sync would need to reconcile.
    */
   resetPreferences(now: Millis): void;
+
+  /**
+   * Bookmark a corpus colour (F-237, FR-56).
+   *
+   * One row per slug, ever: a slug never bookmarked is inserted; one bookmarked and removed is
+   * revived on the SAME id, so its history is one row; one already bookmarked is left alone, and
+   * nothing is logged for a write that did not happen.
+   */
+  bookmarkColor(slug: string, now: Millis): void;
+  /**
+   * Remove a bookmark. A tombstone, like every other removal of something a person made, so a
+   * future sync can tell *removed* from *never existed*. Removing what is not bookmarked writes
+   * nothing.
+   */
+  unbookmarkColor(slug: string, now: Millis): void;
+  /** The live bookmarks' slugs, in slug order. Membership is read from this one list. */
+  listBookmarks(): readonly string[];
 
   /**
    * Read a device setting, or `undefined` if it has never been set.

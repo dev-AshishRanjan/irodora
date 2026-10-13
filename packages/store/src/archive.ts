@@ -87,6 +87,9 @@ export const ARCHIVE_TABLES = [
   'garment_image',
   'pairing_preference',
   'calibration',
+  // F-237. Something the person made, so it is in the file they own (ADR-0135 D6). An archive
+  // written before it existed imports with no bookmarks: a missing table is read as empty.
+  'color_bookmark',
 ] as const;
 
 /**

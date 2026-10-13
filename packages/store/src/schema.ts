@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -620,6 +620,48 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       CREATE INDEX profile_avatar_profile ON profile_avatar (profile_id);
     `,
   },
+  {
+    version: 10,
+    /**
+     * A bookmarked colour (F-237, FR-56; ADR-0135 D6).
+     *
+     * ## A pointer, and deliberately not a `saved_color` row
+     *
+     * `06` bookmarks a colour IN THE CORPUS, so what a person keeps is a slug, and the colour is
+     * read back from the pinned corpus with its provenance — the way `profile_dimension_color`
+     * already holds one. No colour value is stored here, so golden rule 12 holds by construction:
+     * there is nothing here that could be shown without its provenance.
+     *
+     * `saved_color` was the obvious home and it is wrong four ways. A bookmark could not be told
+     * from a palette's or a garment's colour; `reusableColorId` shares one row between them, so
+     * removing a bookmark would tombstone a colour a palette uses; `upsertColor` never clears
+     * `deleted_at`, so a colour bookmarked again would never come back; and Home reads the newest
+     * `saved_color` row as the person's *last reading* (F-337), so a bookmark would have been
+     * shown as a measurement.
+     *
+     * ## One row per slug, and the database is what says so
+     *
+     * The id is a UUIDv7 (data-model §2). `UNIQUE (corpus_slug)` is the natural key: removing a
+     * bookmark tombstones the row and bookmarking again revives the same one, so a slug has one
+     * history rather than a row per change of mind. The writer looks the row up first; the
+     * constraint is what makes a second row impossible rather than unlikely — a hand-edited
+     * archive with two rows for one slug fails here and the restore rolls back whole.
+     *
+     * ## In the sync list and in the archive
+     *
+     * A bookmark is something the person made, so it is in their backup (migration 8's line), and
+     * erasure reaches it with every other table.
+     */
+    up: `
+      CREATE TABLE color_bookmark (
+        ${SYNC_COLUMNS},
+        corpus_slug TEXT NOT NULL UNIQUE CHECK (corpus_slug <> '')
+      ) STRICT;
+
+      CREATE INDEX color_bookmark_live
+        ON color_bookmark (deleted_at) WHERE deleted_at IS NULL;
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -645,5 +687,7 @@ export const SYNC_TABLES = [
   'garment_image',
   'pairing_preference',
   'calibration',
+  // F-237. No foreign key, so its place in the list (and in erasure's reverse walk) is free.
+  'color_bookmark',
 ] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];
