@@ -8,6 +8,100 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-13 — F-221 Every route renders beside its mockup, so fidelity is a picture a person can check
+
+**Done here, and the device half is owed.** Fidelity was something an agent asserted. It is now a
+picture a person can check, and an inventory of each enrolled surface that `pnpm test` holds. It
+shipped in ten commits, `1268f90` through this one
+([ADR-0134](../../docs/adr/0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md)).
+
+- **Unblocked on the person's direction (2026-10-12).** They ran the app on their own phone,
+  everything worked, and they asked for F-221's prerequisite device run to be treated as done; they
+  will run the device half when it is needed. F-091's three attested criteria stay outstanding: the
+  person's words do not name its journey, its no-socket assertion or a CI run (rule 11).
+- **Criterion 1: one command.** `pnpm fidelity:capture -- --erase-app-data` runs every route in the
+  index on an Android device or emulator:
+  - at 384 dp, in Sumi and Washi, English and Japanese;
+  - each capture composed beside the mockups that govern it, into
+    `.harness/verification/evidence/fidelity/<UTC>/compose/`.
+
+  It changes nothing without consent, and writes `restore.txt` before the first change. It reads
+  back every setting it changes, and puts them all back, on Ctrl+C too.
+- **Criterion 2: the running app, through generated flows (OQ-53, D2: "a device or emulator").**
+  - 40 capture flows, generated from `apps/mobile/e2e/capture/routes.json` and checked by
+    `generate-e2e-flows --check`.
+  - One route is declared unreachable, with its owner: `/atlas/with/reading/[id]`, owed by F-259. A
+    reading needs the camera or a library photo, and a generated flow cannot drive the system
+    picker. **The run fails while it is declared.**
+- **Criterion 3: the record.** Every route in every condition, exactly once, captured or not and
+  why. `NOTHING CAPTURED — 0 of 84` can never read as no difference.
+- **Criterion 4: the structural sweep.** 14's splash and 27's four cards are enrolled: 31 elements,
+  each found by what it draws, inside its surface's own root. A removal decoy runs for each kind of
+  locator. A surface feature cannot close with its surface unswept: `verify-mockups`, E-203.
+  - **What enrolling 27 found:** the registry drew an empty-wardrobe branch the route never shows,
+    so 27's card had never been swept. Fixed.
+- **Criterion 5: claims on rendered text.**
+  - **The sweep** reads every rendered tree, in 8 conditions, as paragraphs, visual lines and names:
+    22,956, 3,450 and 10,136 of them, with 0 findings. A composed claim fails it (decoy).
+  - **The capture** reads each device dump the same way.
+  - **One compile for three readers:** `claims-patterns.mjs`.
+- **Proven without a device.** `fidelity-proof` (42 cases) drives the real `runCapture` on a fake
+  phone, alongside the composer, the record and the text. `e2e-flows-proof` holds 42 cases, the capture vocabulary and spec among them.
+- **Record.**
+  - Effects: E-055, E-126, E-128 and E-090 extended; E-203 new.
+  - R9 §4 E2 and §12; ADR-0134.
+  - Criteria 1, 2 and 5 attested, each blocking the release.
+  - Notes on F-231, F-259 and every surface feature.
+  - Backlog: F-334 (from F-296) and F-335 (gate 7's runner on Windows).
+
+**Review (once): FAIL as delivered**, with 2 blocking, 6 significant and 12 minor findings. Every one
+is fixed or recorded; the plan's `review` row lists each.
+
+- **B1, fixed:** look-alikes elsewhere on the screen stood in for four elements. Counts are now
+  scoped and hidden nodes excluded, with a decoy per locator kind.
+- **B2, fixed:** "every route" had been narrowed on a false premise. The unreachable route is owed,
+  and fails the run.
+- **S1–S6, fixed:** Ctrl+C now restores, the app's language is restored, the flow preflight fails
+  closed, a stale or foreign dump is refused, a figure beside a stacked label is one line, and
+  Windows quoting is correct.
+
+**Gates run on the final tree:**
+
+Each exit 0, one at a time:
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`, uncached
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd`
+- `node scripts/fidelity-proof.mjs` (42 cases) · `node scripts/generate-e2e-flows.mjs --check` (40 flows;
+  1 route declared unreachable, owed by F-259) · `node scripts/e2e-flows-proof.mjs` ·
+  `node scripts/verify-mockups.mjs --prove`
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories, recounted: nine. F-221 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **35 of 38 green, none not run** (one shell block skipped). The
+  three reds are exactly the recorded ones: the iOS config half on win32, F-324 and F-322. No F-333
+  event.
+- `pnpm test:e2e` refuses: there is no Maestro here.
+- `pnpm fidelity:capture -- --erase-app-data` with no adb wrote `NOTHING CAPTURED — 0 of 84`, with
+  the reason on every row, and exited 1.
+
+**Not run:** `e2e` (no Maestro or JDK here; gate 7 is pending). The device half of criteria 1, 2 and
+5 is the person's run, and blocks the release.
+
+### Lessons
+
+[[presence-is-asked-inside-the-thing-not-anywhere-on-the-screen]] (new),
+[[an-exception-a-check-allows-needs-an-owner-and-still-counts]] (new).
+
+### Next
+
+The person's capture run, when they are ready. Then the loop: F-237 (OQ-39, bookmarks read back),
+F-238 (OQ-40, the lookbook), and the surface features F-242 to F-263, which F-221 unblocks.
+
+---
+
+
 ## 2026-10-12 — F-296 plant-proof deletes a plant journal it did not write
 
 **Done.** A leftover plant journal now survives every proof in `lint` and in `ci.yml` until a person
