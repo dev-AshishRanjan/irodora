@@ -8,6 +8,108 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-13 — F-237 A colour can be bookmarked
+
+**Done here, with the device half and the encryption owed.** A colour's page (06) bookmarks it;
+the Atlas (05) reads the bookmarks back. It shipped in thirteen commits, `71162fb` through this one
+([ADR-0135](../../docs/adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md)).
+
+- **OQ-39, decided under the person's delegation of 2026-10-05.** The bookmarked set is read back
+  on the Atlas, through a toggle at the trailing end of its search field, in 06's glyph.
+  - On is the glyph filled and an announced *selected* (rule 13).
+  - It combines with the query and the filters, and *Clear* turns it off.
+  - With nothing bookmarked, `00`'s caption says so.
+  - Criterion 2 was amended in the open to name that place. R9 §4 E4 lists the departure.
+- **Found first, and recorded before anything was built:**
+  - **F-336, must, todo:** SQLCipher is not built in. expo-sqlite links it only when its config
+    plugin is given `useSQLCipher: true`, and the app never passes it, so `PRAGMA key` does
+    nothing and the database is very likely plain. Confirmed by reading the build, not on a
+    device.
+  - **F-337, must, todo:** Home's *Last reading* is the newest colour row of any kind, so a
+    palette's corpus colour shows as a reading. Found by reading the code.
+- **Criterion 1.** A bookmark is a pointer to a corpus slug in its own table, `color_bookmark`
+  (migration 10).
+  - One row per slug: tombstoned on removal, revived on the same id, every write logged.
+  - No colour value is stored (rule 12).
+  - `checkStore` gains `bookmark-durability` and `bookmark-atomicity`; its floor goes from 12 to
+    14.
+  - **The first test that kills a process mid-write.** A child process replays the method's own
+    statements, BEGIN and COMMIT included, and is killed with SIGKILL at every boundary of a
+    bookmark, a removal and a revival. A decoy splits the write into two transactions and the
+    test sees the half-write. A kill is not power loss.
+  - **The "encrypted store" half is unmet on this build**, until F-336 lands.
+- **Criterion 2.** The toggle is in the Atlas's search field. Bookmarks round-trip through the
+  serialised backup file, tombstones included; a schema-9 archive restores; erase reaches the
+  table.
+- **The UI pieces:**
+  - `IconButton` gains `selected`, which compiles only on a glyph with a filled drawing.
+  - `bookmark` gains its filled drawing, the one fill no mockup draws.
+  - `SearchField` gains `trailing`.
+  - The conformance suite gains a `glyph` treatment: the fill must appear when on and be absent
+    when off.
+  - Each control is in a target-sized box inside its parent, tested as iOS and as Android.
+- **Record.**
+  - Effects: E-204 new; E-023, E-134, E-086, E-151 and E-156 extended, with their notes.
+  - data-model §5, including the correction that `ARCHIVE_TABLES` has been explicit since F-241.
+  - PRD §10 and R9 §11 close OQ-39; R9 §9 ✓.
+  - Notes on F-242, F-246, F-247 and F-263.
+  - Backlog: F-338 and F-339.
+
+**Review (once): FAIL as delivered**, with 1 blocking, 3 significant and 9 minor findings. Every one
+is fixed or recorded; the plan's `review` row lists each.
+
+- **B1:** the attestation and the plan said `bookmark-atomicity` ran "on both drivers". It runs on
+  node:sqlite only. The device runner opens the person's own database for every check (F-338,
+  recorded). Corrected, and the encrypted half is recorded as unmet.
+- **S1:** the Atlas's AND-tests could not fail. They now use a query matching three entries, and a
+  family-filter case is added.
+- **S2:** the force-quit test now replays the method's own transaction boundaries, at every cut,
+  with a split-transaction decoy.
+- **S3:** on Android the toggle's 48 dp target was 4 dp taller than the 44 dp field. The field
+  holding it is now the target's height, and 06's toggle has its own box.
+- **After the fixes, Tier 2 found two timeouts under full load, each fixed:** the every-cut cases spawn five to seven children each (a named 60 s budget, `f8fef4d`); a whole-suite store conformance case, F-306's flake made likelier by the two new checks (a measured 30 s budget, `104e430`).
+- **M9:** golden rule 14 and R9 §11's widened delegation disagree. That is a person's call:
+  F-339.
+
+**Gates run on the final tree:**
+
+On `104e430`, each exit 0, run one at a time:
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`, uncached: 35 of 35 tasks; the store has 274 tests
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The conformance sweep: 86 subjects, 8 conditions, 0 findings. Claims read 23,956 paragraphs,
+  3,570 lines and 11,024 names, with 0 findings.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories, recounted: nine. F-237 changed no
+  dependency.
+- `node scripts/verify-ci.mjs --all`: **35 of 38 green, none not run**. The three reds are exactly
+  the recorded ones: the iOS config half on win32, F-324, and F-322. No F-333 event; no plant
+  journal left behind.
+- **Two earlier Tier 2 runs were red on `test`, and both reds are fixed, not rerun past:**
+  - on `f155cf2`, the every-cut force-quit cases timed out under full load (fixed in `f8fef4d`);
+  - on `f8fef4d`, a whole-suite store conformance case timed out the same way. That is F-306's
+    flake, made likelier by this feature (fixed in `104e430`).
+
+**Not run:** e2e (no Maestro or JDK here); every device step. The attestation is the person's: steps
+1–4 and 6 on an Android debug build, and step 5, the encrypted file, which is expected to fail until
+F-336 lands and is to be recorded as failed.
+
+### Lessons
+
+[[a-capability-is-read-off-the-build-not-off-the-code-that-asks-for-it]] (new),
+[[a-new-kind-of-thing-does-not-move-into-a-table-because-its-columns-fit]] (new).
+
+### Next
+
+The loop: F-238 (OQ-40, the lookbook), then the surface features F-242 onward, lowest id first.
+F-336 (SQLCipher) and F-337 (Home's *Last reading*) are `todo` in R9 and will be reached in order.
+
+---
+
+
 ## 2026-10-13 — F-221 Every route renders beside its mockup, so fidelity is a picture a person can check
 
 **Done here, and the device half is owed.** Fidelity was something an agent asserted. It is now a
