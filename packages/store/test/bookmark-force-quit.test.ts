@@ -40,6 +40,12 @@ import { createRepository, type Driver, type Repository } from '../src/index.js'
 const dir = mkdtempSync(join(tmpdir(), 'irodora-force-quit-'));
 const CHILD = fileURLToPath(new URL('./fixtures/replay-and-die.ts', import.meta.url));
 const NOW = 1_760_000_000_000;
+/**
+ * Each every-cut case spawns one child per boundary, five to seven of them. Alone that is under a
+ * second; under the whole monorepo's parallel run it passed the 5 s default and the case timed out
+ * with nothing wrong. The budget is for the processes, not for a slow write.
+ */
+const CHILDREN_BUDGET = 60_000;
 let n = 0;
 
 afterAll(() => {
@@ -167,25 +173,33 @@ describe('a bookmark killed at every point of its write', () => {
     ]);
   });
 
-  it('leaves nothing until COMMIT has run, and the bookmark with its log entry after', () => {
-    expect(everyCut(empty, bookmark)).toStrictEqual(
-      expected(bookmark, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
-    );
-  });
+  it(
+    'leaves nothing until COMMIT has run, and the bookmark with its log entry after',
+    () => {
+      expect(everyCut(empty, bookmark)).toStrictEqual(
+        expected(bookmark, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
+      );
+    },
+    CHILDREN_BUDGET,
+  );
 
-  it('the decoy: the same write split into two transactions leaves half of it at one cut', () => {
-    // What a method that committed its row before logging it would replay as. Without this, the
-    // case above cannot tell "the method's transaction held" from "the per-cut check cannot see a
-    // half-write".
-    const [, row, log] = bookmark;
-    if (row === undefined || log === undefined) throw new Error('the recording is not a write');
-    const split = [BEGIN, row, COMMIT, BEGIN, log, COMMIT];
-    const states = everyCut(empty, split);
-    expect(states).not.toStrictEqual(
-      expected(split, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
-    );
-    expect(states).toContainEqual({ bookmarks: ['ai-nezumi'], logged: 0 });
-  });
+  it(
+    'the decoy: the same write split into two transactions leaves half of it at one cut',
+    () => {
+      // What a method that committed its row before logging it would replay as. Without this, the
+      // case above cannot tell "the method's transaction held" from "the per-cut check cannot see a
+      // half-write".
+      const [, row, log] = bookmark;
+      if (row === undefined || log === undefined) throw new Error('the recording is not a write');
+      const split = [BEGIN, row, COMMIT, BEGIN, log, COMMIT];
+      const states = everyCut(empty, split);
+      expect(states).not.toStrictEqual(
+        expected(split, { bookmarks: [], logged: 0 }, { bookmarks: ['ai-nezumi'], logged: 1 }),
+      );
+      expect(states).toContainEqual({ bookmarks: ['ai-nezumi'], logged: 0 });
+    },
+    CHILDREN_BUDGET,
+  );
 });
 
 describe('a removal killed at every point of its write', () => {
@@ -203,11 +217,15 @@ describe('a removal killed at every point of its write', () => {
     ]);
   });
 
-  it('leaves the bookmark live until COMMIT has run, and removed after', () => {
-    expect(everyCut(live, removal)).toStrictEqual(
-      expected(removal, { bookmarks: ['ai-nezumi'], logged: 1 }, { bookmarks: [], logged: 2 }),
-    );
-  });
+  it(
+    'leaves the bookmark live until COMMIT has run, and removed after',
+    () => {
+      expect(everyCut(live, removal)).toStrictEqual(
+        expected(removal, { bookmarks: ['ai-nezumi'], logged: 1 }, { bookmarks: [], logged: 2 }),
+      );
+    },
+    CHILDREN_BUDGET,
+  );
 });
 
 describe('a revival killed at every point of its write', () => {
@@ -225,9 +243,13 @@ describe('a revival killed at every point of its write', () => {
     ]);
   });
 
-  it('leaves it removed until COMMIT has run, and bookmarked again after', () => {
-    expect(everyCut(removed, revival)).toStrictEqual(
-      expected(revival, { bookmarks: [], logged: 2 }, { bookmarks: ['ai-nezumi'], logged: 3 }),
-    );
-  });
+  it(
+    'leaves it removed until COMMIT has run, and bookmarked again after',
+    () => {
+      expect(everyCut(removed, revival)).toStrictEqual(
+        expected(revival, { bookmarks: [], logged: 2 }, { bookmarks: ['ai-nezumi'], logged: 3 }),
+      );
+    },
+    CHILDREN_BUDGET,
+  );
 });
