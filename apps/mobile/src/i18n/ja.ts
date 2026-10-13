@@ -98,6 +98,10 @@ export const ja: Record<MessageKey, string> = {
   'atlas.showing': '表示中',
   'atlas.empty': '条件に合う色がありません。',
   'atlas.emptyHint': '解除するとすべての色が表示されます。',
+  'atlas.bookmarkedOnly': 'ブックマークした色だけを表示',
+  'atlas.bookmarkedNone': 'ブックマークした色はまだありません。',
+  'atlas.bookmarkedNoneHint':
+    'ブックマークの絞り込みを解除するとすべての色が表示されます。色はそれぞれのページからブックマークできます。',
   'filter.family': '系統',
   'filter.temperature': '寒暖',
   'filter.lightness': '明るさ',

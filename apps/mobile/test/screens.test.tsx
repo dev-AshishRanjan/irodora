@@ -394,6 +394,13 @@ const PAIR_B = 'soko-zumi';
 /** An entry that HAS a complementary, so the populated branch is rendered too. */
 const WITH_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length > 0)!;
 
+/** Three bookmarked colours (F-237): the Atlas subjects draw its toggle, on and off. */
+const BOOKMARKED: ReadonlySet<string> = new Set(
+  allEntries()
+    .slice(0, 3)
+    .map((e) => e.entry.slug),
+);
+
 /**
  * An in-memory `PaletteStore`.
  *
@@ -1075,9 +1082,33 @@ const SCREENS: readonly ConformanceSubject[] = [
           onOpenFinder={() => undefined}
           onOpenCompare={() => undefined}
           onOpenPalettes={() => undefined}
+          // The bookmark toggle in the search field, off (F-237).
+          bookmarked={BOOKMARKED}
         />,
         theme,
       ),
+  },
+  {
+    /*
+     * THE BOOKMARKED COLOURS, READ BACK (F-237, ADR-0135 D1): the toggle on, the list narrowed to
+     * the set, the count line with it.
+     */
+    name: 'screens/Atlas (bookmarked only)',
+    shows: showing(ATLAS_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Atlas bookmarked={BOOKMARKED} initialBookmarkedOnly />, theme),
+  },
+  {
+    /*
+     * NOTHING BOOKMARKED (F-237, ADR-0135 D3): 00's caption, saying so and how to change it — the
+     * way out is the toggle on this screen.
+     */
+    name: 'screens/Atlas (bookmarked only, none bookmarked)',
+    shows: showing(ATLAS_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Atlas bookmarked={new Set()} initialBookmarkedOnly />, theme),
   },
   {
     name: 'screens/ColourDetail',

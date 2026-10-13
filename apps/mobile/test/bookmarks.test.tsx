@@ -20,6 +20,7 @@ import {
   type BookmarksValue,
 } from '../src/bookmarks';
 import { allEntries } from '../src/corpus';
+import { Atlas } from '../src/screens/Atlas';
 import { t } from '../src/i18n';
 
 const slug = allEntries()[0]!.entry.slug;
@@ -170,7 +171,105 @@ describe('the routes carry the controls ADR-0135 places (E-204)', () => {
     expect(page).toMatch(/headerRight: \(\) => \(\s*<ColourBookmark/);
   });
 
+  it('the Atlas route reads the set and hands it to the screen', () => {
+    const route = source('app/(tabs)/atlas/index.tsx');
+    expect(route).toMatch(/useBookmarks\(\)/);
+    expect(route).toMatch(/bookmarked=\{bookmarked\}/);
+  });
+
   it('DECOY: a route that has nothing to do with bookmarks does not read them', () => {
     expect(source('app/(tabs)/atlas/compare.tsx')).not.toMatch(/useBookmarks/);
+  });
+});
+
+describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
+  const entries = allEntries();
+  const first = entries[0]!;
+  const third = entries[2]!;
+  const label = (e: (typeof entries)[number]): string =>
+    `${e.entry.name.kanji} ${e.entry.name.romaji} ${e.entry.name.en}`;
+  const count = (n: number): string =>
+    `${t('en', 'atlas.showing')} ${String(n)} / ${String(entries.length)}`;
+  const toggle = () => screen.getByRole('button', { name: t('en', 'atlas.bookmarkedOnly') });
+
+  const open = (bookmarked: ReadonlySet<string> | undefined, extra: object = {}) =>
+    render(
+      <ThemeProvider theme="dark">
+        <Atlas {...(bookmarked === undefined ? {} : { bookmarked })} {...extra} />
+      </ThemeProvider>,
+    );
+
+  it('lists only the bookmarked colours, in corpus order, once the toggle is on', () => {
+    // Bookmarked out of order, so corpus order is the list's and not the set's.
+    open(new Set([third.entry.slug, first.entry.slug]));
+    expect((toggle().props['accessibilityState'] as { selected?: boolean }).selected).toBe(false);
+    fireEvent.press(toggle());
+    expect((toggle().props['accessibilityState'] as { selected?: boolean }).selected).toBe(true);
+    expect(screen.getByText(count(2))).toBeTruthy();
+    const listed = screen
+      .getAllByRole('button')
+      .map((b) => b.props['accessibilityLabel'] as unknown)
+      .filter((name) => name === label(first) || name === label(third));
+    expect(listed).toStrictEqual([label(first), label(third)]);
+    expect(screen.queryByLabelText(label(entries[1]!))).toBeNull();
+  });
+
+  it('combines with the query', () => {
+    open(new Set([first.entry.slug, third.entry.slug]), { initialBookmarkedOnly: true });
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), third.entry.name.romaji);
+    expect(screen.queryByLabelText(label(first))).toBeNull();
+    expect(screen.getByLabelText(label(third))).toBeTruthy();
+  });
+
+  it('DECOY: toggled off, the same query is not narrowed to the bookmarks', () => {
+    // The query alone finds every entry whose names hold it; the toggle is what took them away.
+    const query = third.entry.name.romaji;
+    const matching = entries.filter((e) =>
+      [
+        e.entry.name.kanji,
+        e.entry.name.kana,
+        e.entry.name.romaji,
+        e.entry.name.en,
+        e.entry.slug,
+      ].some((v) => v.toLowerCase().includes(query.toLowerCase())),
+    );
+    open(new Set([third.entry.slug]));
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), query);
+    expect(screen.getByText(count(matching.length))).toBeTruthy();
+  });
+
+  it("says none is bookmarked, in 00's caption, never an empty list", () => {
+    open(new Set(), { initialBookmarkedOnly: true });
+    // 00's caption is one line: the message, then the hint.
+    expect(
+      screen.getByText(`${t('en', 'atlas.bookmarkedNone')} ${t('en', 'atlas.bookmarkedNoneHint')}`),
+    ).toBeTruthy();
+    expect(screen.queryByText(t('en', 'atlas.empty'), { exact: false })).toBeNull();
+  });
+
+  it('DECOY: bookmarks exist but none matches — the filters’ caption, not the bookmarks’', () => {
+    open(new Set([first.entry.slug]), { initialBookmarkedOnly: true, initialQuery: 'zzqx' });
+    expect(screen.getByText(t('en', 'atlas.empty'), { exact: false })).toBeTruthy();
+    expect(screen.queryByText(t('en', 'atlas.bookmarkedNone'), { exact: false })).toBeNull();
+  });
+
+  it('a bookmark the corpus does not hold is not a bookmark to list', () => {
+    open(new Set(['not-a-corpus-slug']), { initialBookmarkedOnly: true });
+    expect(screen.getByText(t('en', 'atlas.bookmarkedNone'), { exact: false })).toBeTruthy();
+  });
+
+  it('Clear turns the bookmark filter off with the rest', () => {
+    open(new Set([first.entry.slug]), { initialBookmarkedOnly: true });
+    expect(screen.getByText(count(1))).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: t('en', 'atlas.clear') }));
+    expect((toggle().props['accessibilityState'] as { selected?: boolean }).selected).toBe(false);
+    // Nothing is narrowed, so the count line is gone with the filter.
+    expect(screen.queryByText(count(1))).toBeNull();
+  });
+
+  it('draws no toggle, and narrows nothing, when the route supplies no set', () => {
+    open(undefined, { initialBookmarkedOnly: true });
+    expect(screen.queryByRole('button', { name: t('en', 'atlas.bookmarkedOnly') })).toBeNull();
+    expect(screen.queryByText(t('en', 'atlas.bookmarkedNone'), { exact: false })).toBeNull();
   });
 });

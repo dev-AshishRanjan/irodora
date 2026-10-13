@@ -1210,6 +1210,15 @@
     ],
     "screens/VisionStrip": [],
     "screens/ColourDetail (06's bookmark, off)": [],
-    "screens/ColourDetail (06's bookmark, on)": []
+    "screens/ColourDetail (06's bookmark, on)": [],
+    "screens/Atlas (bookmarked only)": [
+      1,
+      1,
+      1,
+      24
+    ],
+    "screens/Atlas (bookmarked only, none bookmarked)": [
+      24
+    ]
   }
 }

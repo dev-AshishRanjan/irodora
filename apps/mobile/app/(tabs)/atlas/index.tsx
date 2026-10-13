@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { Atlas } from '../../../src/screens/Atlas';
+import { useBookmarks } from '../../../src/bookmarks';
 
 /**
  * The route. Navigation options and the one navigation callback, and nothing else.
@@ -12,10 +13,13 @@ import { Atlas } from '../../../src/screens/Atlas';
  */
 export default function AtlasRoute(): React.JSX.Element {
   const router = useRouter();
+  const { bookmarked } = useBookmarks();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
       <Atlas
+        // The bookmarked colours, read back through the search field's toggle (F-237, ADR-0135).
+        bookmarked={bookmarked}
         onSelect={(slug) => {
           router.push(`/atlas/${slug}`);
         }}

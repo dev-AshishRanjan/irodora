@@ -36,6 +36,15 @@
  * `SearchField` now live in `@irodora/ui` where the suite asks them to render focus, active,
  * disabled and loading differently — and this screen stays `static`, which is what a screen
  * composed of checked components should be.
+ *
+ * ## The bookmarked colours are read back here (F-237, ADR-0135)
+ *
+ * `06` bookmarks a corpus colour, so every bookmark is an entry this list already holds. The
+ * search field carries a bookmark toggle at its trailing end: on, the list narrows to the
+ * bookmarked entries, together with the query and every filter, and *Clear* turns it off with the
+ * rest. It is screen state, never stored — a filter that narrowed the Atlas at the next launch would
+ * hide the corpus behind a choice nobody remembers making. With nothing bookmarked it says so, in
+ * `00`'s caption, because the way out is the toggle on this screen.
  */
 
 import { useMemo, useState } from 'react';
@@ -172,6 +181,13 @@ export interface AtlasProps {
    * to be able to render (F-236), and typing into it is not something a render can do.
    */
   readonly initialQuery?: string;
+  /**
+   * The bookmarked slugs (F-237). The route reads them from the provider; absent, no toggle is
+   * drawn and nothing is narrowed by it.
+   */
+  readonly bookmarked?: ReadonlySet<string>;
+  /** The toggle as the screen opens, for the reason `initialQuery` exists. */
+  readonly initialBookmarkedOnly?: boolean;
 }
 
 /**
@@ -276,16 +292,33 @@ export function Atlas({
   onOpenCompare,
   onOpenPalettes,
   initialQuery = '',
+  bookmarked,
+  initialBookmarkedOnly = false,
 }: AtlasProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
   const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [bookmarkedOnly, setBookmarkedOnly] = useState(initialBookmarkedOnly);
 
   const entries = useMemo(() => allEntries(), []);
   const familyOptions = useMemo(() => families(), []);
-  const shown = entries.filter((e) => matchesQuery(e, query) && matchesFilters(e, filters));
+  // Only when the route supplied a set: a toggle that is not drawn narrows nothing.
+  const onlyBookmarked = bookmarked !== undefined && bookmarkedOnly;
+  const shown = entries.filter(
+    (e) =>
+      matchesQuery(e, query) &&
+      matchesFilters(e, filters) &&
+      (!onlyBookmarked || bookmarked.has(e.entry.slug)),
+  );
+  /*
+   * NONE BOOKMARKED IS NOT NOTHING MATCHING. Counted over this corpus's entries, not the set: a
+   * bookmark for a slug the pinned corpus lacks (only a restore from another version can make one)
+   * is kept, and never listed, so it does not make the list any less empty.
+   */
+  const noneBookmarked = onlyBookmarked && !entries.some((e) => bookmarked.has(e.entry.slug));
 
-  const active = query.trim() !== '' || Object.values(filters).some((v) => v !== null);
+  const active =
+    query.trim() !== '' || Object.values(filters).some((v) => v !== null) || onlyBookmarked;
 
   /**
    * One filter, as a GROUP rather than as a row of buttons (F-186).
@@ -348,7 +381,28 @@ export function Atlas({
         {`${t('atlas.corpus')} ${CORPUS_LABEL} · ${String(CORPUS_ENTRY_COUNT)} ${t('atlas.colours')} · ${String(CORPUS_PALETTE_COUNT)} ${t('atlas.palettes')}`}
       </Text>
 
-      <SearchField label={t('atlas.search')} value={query} onChangeText={setQuery} />
+      {/*
+        THE BOOKMARKED COLOURS, READ BACK (F-237, ADR-0135 D1): a toggle at the field's trailing
+        end, in 06's glyph. On is the glyph filled and an announced `selected` (D2).
+      */}
+      <SearchField
+        label={t('atlas.search')}
+        value={query}
+        onChangeText={setQuery}
+        {...(bookmarked === undefined
+          ? {}
+          : {
+              trailing: {
+                glyph: 'bookmark',
+                label: t('atlas.bookmarkedOnly'),
+                selected: bookmarkedOnly,
+                onPress: () => {
+                  setBookmarkedOnly(!bookmarkedOnly);
+                },
+                testID: 'atlas.bookmarked',
+              },
+            })}
+      />
 
       {/*
         THE OTHER THREE WAYS OF USING A CORPUS (F-181).
@@ -467,6 +521,7 @@ export function Atlas({
             onPress={() => {
               setFilters(NO_FILTERS);
               setQuery('');
+              setBookmarkedOnly(false);
             }}
             style={{ minHeight: 44, justifyContent: 'center' }}
           >
@@ -478,13 +533,23 @@ export function Atlas({
       ) : null}
 
       {shown.length === 0 ? (
-        // 00's empty (F-236): the search and the filters that would change it are on this screen.
-        <EmptyState
-          message={t('atlas.empty')}
-          hint={t('atlas.emptyHint')}
-          resolvedHere
-          script={script}
-        />
+        // 00's empty (F-236): the search and the filters that would change it are on this screen —
+        // and with nothing bookmarked, the toggle that would (ADR-0135 D3).
+        noneBookmarked ? (
+          <EmptyState
+            message={t('atlas.bookmarkedNone')}
+            hint={t('atlas.bookmarkedNoneHint')}
+            resolvedHere
+            script={script}
+          />
+        ) : (
+          <EmptyState
+            message={t('atlas.empty')}
+            hint={t('atlas.emptyHint')}
+            resolvedHere
+            script={script}
+          />
+        )
       ) : null}
     </Stack>
   );
