@@ -19,6 +19,10 @@ import {
   StoreError,
   GARMENT_COLOR_ROLES,
   type BookmarkRow,
+  OUTFIT_DIRECTIONS,
+  type NewOutfit,
+  type OutfitRow,
+  type StoredOutfit,
   GARMENT_SEASONS,
   type ChangeLogRow,
   type ContrastPreference,
@@ -1288,6 +1292,282 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           'SELECT corpus_slug FROM color_bookmark WHERE deleted_at IS NULL ORDER BY corpus_slug',
         )
         .map((row) => row.corpus_slug);
+    },
+
+    saveOutfit(outfit: NewOutfit, now: Millis): { readonly id: string; readonly written: boolean } {
+      if (outfit.items.length === 0)
+        throw new StoreError(
+          'saveOutfit: an outfit with no items. A lookbook entry is a composition of garments, ' +
+            'and an empty one would be a score with nothing it was a score of.',
+        );
+      const slots = outfit.items.map((item) => item.slot);
+      if (new Set(slots).size !== slots.length)
+        throw new StoreError(`saveOutfit: a slot appears twice (${slots.join(', ')}).`);
+      const components = outfit.components.map((c) => c.component);
+      if (new Set(components).size !== components.length)
+        throw new StoreError(`saveOutfit: a component appears twice (${components.join(', ')}).`);
+
+      // The composition is the slot→garment pairs, in one canonical order; the locks are how it
+      // was made, not what it is, so they are not part of it.
+      const composition = (pairs: readonly (readonly [string, string])[]): string =>
+        pairs
+          .map(([slot, garment]) => `${slot}=${garment}`)
+          .sort()
+          .join('|');
+      const wanted = composition(outfit.items.map((item) => [item.slot, item.garmentId] as const));
+
+      return driver.transaction(() => {
+        const live = driver.query<{ outfit_id: string; slot: string; garment_id: string }>(
+          `SELECT i.outfit_id, i.slot, i.garment_id
+           FROM outfit_item i JOIN outfit o ON o.id = i.outfit_id
+           WHERE o.deleted_at IS NULL AND i.deleted_at IS NULL`,
+        );
+        const byOutfit = new Map<string, (readonly [string, string])[]>();
+        for (const row of live) {
+          const pairs = byOutfit.get(row.outfit_id) ?? [];
+          pairs.push([row.slot, row.garment_id]);
+          byOutfit.set(row.outfit_id, pairs);
+        }
+        for (const [id, pairs] of byOutfit)
+          // Already in the lookbook: no write, so nothing to log (ADR-0136 D6).
+          if (composition(pairs) === wanted) return { id, written: false };
+
+        const id = uuidv7(now);
+        const { envelope } = outfit;
+        driver.run(
+          `INSERT INTO outfit (id, created_at, updated_at, deleted_at, overall, counts_threshold,
+             envelope_engine, envelope_scorer, envelope_corpus, envelope_rules,
+             envelope_occasion, envelope_profile)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            now,
+            now,
+            outfit.overall,
+            outfit.countsThreshold,
+            envelope.engine,
+            envelope.scorer,
+            envelope.corpus,
+            envelope.rules,
+            envelope.occasion,
+            envelope.profile,
+          ],
+        );
+        log('outfit', id, 'insert', now);
+
+        outfit.items.forEach((item, position) => {
+          // Derived from the outfit, as a palette member's is: one row per slot, ever.
+          const itemId = `${id}:${item.slot}`;
+          const { color } = item;
+          driver.run(
+            `INSERT INTO outfit_item (id, created_at, updated_at, deleted_at, outfit_id, slot,
+               position, garment_id, garment_label, locked, name, xyz_x, xyz_y, xyz_z,
+               lab_l, lab_a, lab_b, oklch_l, oklch_c, oklch_h, hex, source, confidence,
+               corpus_slug, capture_illuminant, capture_quality, capture_samples,
+               capture_variance)
+             VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+               ?, ?, ?, ?)`,
+            [
+              itemId,
+              now,
+              now,
+              id,
+              item.slot,
+              position,
+              item.garmentId,
+              item.garmentLabel,
+              item.locked ? 1 : 0,
+              color.name,
+              color.xyz_x,
+              color.xyz_y,
+              color.xyz_z,
+              color.lab_l,
+              color.lab_a,
+              color.lab_b,
+              color.oklch_l,
+              color.oklch_c,
+              color.oklch_h,
+              color.hex,
+              color.source,
+              color.confidence,
+              color.corpus_slug,
+              color.conditions?.illuminant ?? null,
+              color.conditions?.quality ?? null,
+              color.conditions?.sampleCount ?? null,
+              color.conditions?.variance ?? null,
+            ],
+          );
+          log('outfit_item', itemId, 'insert', now);
+        });
+
+        outfit.components.forEach((component, position) => {
+          const componentId = `${id}:${component.component}`;
+          driver.run(
+            `INSERT INTO outfit_component (id, created_at, updated_at, deleted_at, outfit_id,
+               component, position, score, direction, weight, contribution)
+             VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              componentId,
+              now,
+              now,
+              id,
+              component.component,
+              position,
+              component.score,
+              component.direction,
+              component.weight,
+              component.contribution,
+            ],
+          );
+          log('outfit_component', componentId, 'insert', now);
+        });
+
+        return { id, written: true };
+      });
+    },
+
+    listOutfits(): readonly StoredOutfit[] {
+      const outfits = driver.query<OutfitRow>(
+        `SELECT id, created_at, updated_at, deleted_at, overall, counts_threshold,
+           envelope_engine, envelope_scorer, envelope_corpus, envelope_rules,
+           envelope_occasion, envelope_profile
+         FROM outfit WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC`,
+      );
+      if (outfits.length === 0) return [];
+
+      // Two queries for the whole lookbook rather than two per outfit, grouped here.
+      const items = driver.query<
+        SavedColorRow & {
+          readonly outfit_id: string;
+          readonly slot: string;
+          readonly position: number;
+          readonly garment_id: string;
+          readonly garment_label: string;
+          readonly locked: number;
+        }
+      >(
+        `SELECT i.id, i.created_at, i.updated_at, i.deleted_at, i.outfit_id, i.slot, i.position,
+           i.garment_id, i.garment_label, i.locked, i.name, i.xyz_x, i.xyz_y, i.xyz_z,
+           i.lab_l, i.lab_a, i.lab_b, i.oklch_l, i.oklch_c, i.oklch_h, i.hex, i.source,
+           i.confidence, i.corpus_slug, i.capture_illuminant, i.capture_quality,
+           i.capture_samples, i.capture_variance
+         FROM outfit_item i JOIN outfit o ON o.id = i.outfit_id
+         WHERE o.deleted_at IS NULL AND i.deleted_at IS NULL
+         ORDER BY i.outfit_id, i.position`,
+      );
+      const components = driver.query<{
+        readonly outfit_id: string;
+        readonly component: string;
+        readonly position: number;
+        readonly score: number;
+        readonly direction: string;
+        readonly weight: number;
+        readonly contribution: number;
+      }>(
+        `SELECT c.outfit_id, c.component, c.position, c.score, c.direction, c.weight,
+           c.contribution
+         FROM outfit_component c JOIN outfit o ON o.id = c.outfit_id
+         WHERE o.deleted_at IS NULL AND c.deleted_at IS NULL
+         ORDER BY c.outfit_id, c.position`,
+      );
+
+      return outfits.map((row) => ({
+        id: row.id,
+        createdAt: row.created_at,
+        overall: row.overall,
+        countsThreshold: row.counts_threshold,
+        envelope: {
+          engine: row.envelope_engine,
+          scorer: row.envelope_scorer,
+          corpus: row.envelope_corpus,
+          rules: row.envelope_rules,
+          occasion: row.envelope_occasion,
+          profile: row.envelope_profile,
+        },
+        items: items
+          .filter((item) => item.outfit_id === row.id)
+          .map((item) => ({
+            slot: item.slot,
+            position: item.position,
+            garmentId: item.garment_id,
+            garmentLabel: item.garment_label,
+            locked: item.locked === 1,
+            // The snapshot read as a colour row, so the app turns it into a `Color` the way it
+            // turns every other one — the same refusal of a capture without its conditions.
+            color: {
+              id: item.id,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              deleted_at: item.deleted_at,
+              name: item.name,
+              xyz_x: item.xyz_x,
+              xyz_y: item.xyz_y,
+              xyz_z: item.xyz_z,
+              lab_l: item.lab_l,
+              lab_a: item.lab_a,
+              lab_b: item.lab_b,
+              oklch_l: item.oklch_l,
+              oklch_c: item.oklch_c,
+              oklch_h: item.oklch_h,
+              hex: item.hex,
+              source: item.source,
+              confidence: item.confidence,
+              corpus_slug: item.corpus_slug,
+              capture_illuminant: item.capture_illuminant,
+              capture_quality: item.capture_quality,
+              capture_samples: item.capture_samples,
+              capture_variance: item.capture_variance,
+            },
+          })),
+        components: components
+          .filter((c) => c.outfit_id === row.id)
+          .map((c) => {
+            // Refused by name rather than cast into the union, as an avatar's format is.
+            const direction = OUTFIT_DIRECTIONS.find((d) => d === c.direction);
+            if (direction === undefined)
+              throw new StoreError(
+                `outfit ${row.id} has a component "${c.component}" pointing "${c.direction}", ` +
+                  `which is none of ${OUTFIT_DIRECTIONS.join(', ')}.`,
+              );
+            return {
+              component: c.component,
+              position: c.position,
+              score: c.score,
+              direction,
+              weight: c.weight,
+              contribution: c.contribution,
+            };
+          }),
+      }));
+    },
+
+    removeOutfit(id: string, now: Millis): void {
+      driver.transaction(() => {
+        const [live] = driver.query<{ id: string }>(
+          'SELECT id FROM outfit WHERE id = ? AND deleted_at IS NULL',
+          [id],
+        );
+        if (live === undefined) return;
+        driver.run('UPDATE outfit SET deleted_at = ?, updated_at = ? WHERE id = ?', [now, now, id]);
+        log('outfit', id, 'delete', now);
+        /*
+         * THE CHILDREN EXPLICITLY. Their foreign keys cascade on a DELETE, and this is an UPDATE —
+         * the trap `deletePalette` and `deleteProfile` already name. A child left live under a
+         * tombstoned outfit would come back in an archive as a slot of nothing.
+         */
+        for (const table of ['outfit_item', 'outfit_component'] as const)
+          for (const child of driver.query<{ id: string }>(
+            `SELECT id FROM ${table} WHERE outfit_id = ? AND deleted_at IS NULL`,
+            [id],
+          )) {
+            driver.run(`UPDATE ${table} SET deleted_at = ?, updated_at = ? WHERE id = ?`, [
+              now,
+              now,
+              child.id,
+            ]);
+            log(table, child.id, 'delete', now);
+          }
+      });
     },
 
     getSetting(key: string): string | undefined {

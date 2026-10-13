@@ -90,6 +90,11 @@ export const ARCHIVE_TABLES = [
   // F-237. Something the person made, so it is in the file they own (ADR-0135 D6). An archive
   // written before it existed imports with no bookmarks: a missing table is read as empty.
   'color_bookmark',
+  // F-238. The lookbook is something the person made (ADR-0136 D6). Parents before children, after
+  // `garment`, because an import runs this list forward with foreign keys on.
+  'outfit',
+  'outfit_item',
+  'outfit_component',
 ] as const;
 
 /**

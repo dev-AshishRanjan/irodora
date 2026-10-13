@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -662,6 +662,113 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
         ON color_bookmark (deleted_at) WHERE deleted_at IS NULL;
     `,
   },
+  {
+    version: 11,
+    /**
+     * The lookbook: an outfit saved from the Outfit Lab (F-238, FR-33; ADR-0136 D5, D6).
+     *
+     * ## A snapshot, because nothing it was made from holds still
+     *
+     * The obvious shape is a list of garment ids, and it cannot re-render what was saved. A
+     * garment's colour is a shared `saved_color` row: `reusableColorId` shares one row per slug and
+     * `upsertColor` overwrites it in place, so a later palette or garment write — or a later corpus
+     * version — changes the value under every pointer to it. A garment can be tombstoned. The
+     * profile the outfit was scored against is updated in place and keeps no history. So an item
+     * keeps its garment's id AND a copy of the colour that was scored, with its provenance; and the
+     * outfit keeps the score itself, never a way to recompute it.
+     *
+     * ## The score is stored, and the versions that produced it travel with it
+     *
+     * A score recomputed later is a different claim under the same name (golden rule 11). The
+     * overall, each component's score, direction, weight and contribution, and the threshold the
+     * verdict was read against are stored as computed. The envelope names what computed them:
+     * `ENGINE_VERSION`, the scorer's own version (`RECOMMENDATION_VERSION`, where the six formulas
+     * live — two different scores could otherwise carry identical versions), the corpus, the
+     * rules and the occasion the rules resolved, and the profile's identity and revision.
+     *
+     * ## The colour snapshot is `saved_color`'s columns, with the rule migration 5 could not add
+     *
+     * Column for column, so no second colour shape exists, and the values are the engine's as it
+     * wrote them (E-001). A new table can carry the table CHECKs an ALTER could not: the four
+     * capture columns are all present or all absent, and present exactly when the source is a
+     * capture. A captured colour without its conditions cannot be written at all (ADR-0005).
+     *
+     * ## The vocabulary is the engine's, not the store's
+     *
+     * `slot` and `component` are opaque text. The store has no runtime dependency, so it keeps no
+     * copy of the engine's names, and a fourth slot or a seventh component needs no migration. The
+     * app checks them against the engine's lists on the way in.
+     *
+     * ## In both lists; tombstoned, never revived
+     *
+     * Something the person made, so it is in their backup and erasure reaches it. Removal
+     * tombstones all three tables explicitly — a cascade fires on a DELETE and this is an UPDATE.
+     * A removed outfit is not revived: each save is its own record, with its own scores and versions.
+     */
+    up: `
+      CREATE TABLE outfit (
+        ${SYNC_COLUMNS},
+        overall           INTEGER NOT NULL CHECK (overall >= 0 AND overall <= 100),
+        counts_threshold  INTEGER NOT NULL CHECK (counts_threshold >= 0 AND counts_threshold <= 100),
+        envelope_engine   TEXT    NOT NULL CHECK (envelope_engine   <> ''),
+        envelope_scorer   TEXT    NOT NULL CHECK (envelope_scorer   <> ''),
+        envelope_corpus   TEXT    NOT NULL CHECK (envelope_corpus   <> ''),
+        envelope_rules    TEXT    NOT NULL CHECK (envelope_rules    <> ''),
+        envelope_occasion TEXT    NOT NULL CHECK (envelope_occasion <> ''),
+        envelope_profile  TEXT    NOT NULL CHECK (envelope_profile  <> '')
+      ) STRICT;
+
+      CREATE INDEX outfit_live   ON outfit (deleted_at) WHERE deleted_at IS NULL;
+      -- "Which saved outfits were scored by rules 2026.08.4?" is the replay question (FR-10).
+      CREATE INDEX outfit_rules  ON outfit (envelope_rules);
+      CREATE INDEX outfit_corpus ON outfit (envelope_corpus);
+
+      CREATE TABLE outfit_item (
+        ${SYNC_COLUMNS},
+        outfit_id     TEXT    NOT NULL REFERENCES outfit (id) ON DELETE CASCADE,
+        slot          TEXT    NOT NULL CHECK (slot <> ''),
+        position      INTEGER NOT NULL CHECK (position >= 0),
+        -- No ON DELETE: a garment is only ever tombstoned, so the row this points at persists.
+        -- Erasure, the one hard delete, walks the tables children first.
+        garment_id    TEXT    NOT NULL REFERENCES garment (id),
+        garment_label TEXT    NOT NULL CHECK (garment_label <> ''),
+        locked        INTEGER NOT NULL CHECK (locked IN (0, 1)),
+        name          TEXT    NOT NULL,
+        xyz_x REAL NOT NULL, xyz_y REAL NOT NULL, xyz_z REAL NOT NULL,
+        lab_l REAL NOT NULL, lab_a REAL NOT NULL, lab_b REAL NOT NULL,
+        oklch_l REAL NOT NULL, oklch_c REAL NOT NULL, oklch_h REAL NOT NULL,
+        hex           TEXT    NOT NULL,
+        source        TEXT    NOT NULL CHECK (source IN ('declared','reference','calibrated','estimated','unknown')),
+        confidence    REAL    NOT NULL CHECK (confidence >= 0.0 AND confidence <= 1.0),
+        corpus_slug   TEXT,
+        capture_illuminant TEXT,
+        capture_quality    TEXT,
+        capture_samples    INTEGER,
+        capture_variance   REAL,
+        CHECK ((capture_illuminant IS NULL) = (capture_quality  IS NULL)
+           AND (capture_quality    IS NULL) = (capture_samples  IS NULL)
+           AND (capture_samples    IS NULL) = (capture_variance IS NULL)),
+        CHECK ((source IN ('estimated','calibrated')) = (capture_illuminant IS NOT NULL)),
+        UNIQUE (outfit_id, slot),
+        UNIQUE (outfit_id, position)
+      ) STRICT;
+
+      CREATE INDEX outfit_item_garment ON outfit_item (garment_id);
+
+      CREATE TABLE outfit_component (
+        ${SYNC_COLUMNS},
+        outfit_id    TEXT    NOT NULL REFERENCES outfit (id) ON DELETE CASCADE,
+        component    TEXT    NOT NULL CHECK (component <> ''),
+        position     INTEGER NOT NULL CHECK (position >= 0),
+        score        REAL    NOT NULL CHECK (score >= 0.0 AND score <= 100.0),
+        direction    TEXT    NOT NULL CHECK (direction IN ('supports','opposes','neutral')),
+        weight       REAL    NOT NULL CHECK (weight >= 0.0 AND weight <= 1.0),
+        contribution REAL    NOT NULL CHECK (contribution >= 0.0 AND contribution <= 100.0),
+        UNIQUE (outfit_id, component),
+        UNIQUE (outfit_id, position)
+      ) STRICT;
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -689,5 +796,12 @@ export const SYNC_TABLES = [
   'calibration',
   // F-237. No foreign key, so its place in the list (and in erasure's reverse walk) is free.
   'color_bookmark',
+  /*
+   * F-238. After `garment`, which `outfit_item` references: an import runs this list forward
+   * (parents first) and erasure runs it in reverse (children first), and foreign keys are ON.
+   */
+  'outfit',
+  'outfit_item',
+  'outfit_component',
 ] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];

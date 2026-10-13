@@ -492,6 +492,105 @@ export interface BookmarkRow extends SyncRow {
   readonly corpus_slug: string;
 }
 
+/* --------------------------------------------------------------- the lookbook (F-238) */
+
+/** Which way a component points, as the engine reports it. The database CHECKs the same three. */
+export const OUTFIT_DIRECTIONS = ['supports', 'opposes', 'neutral'] as const;
+export type OutfitDirection = (typeof OUTFIT_DIRECTIONS)[number];
+
+/**
+ * What computed a saved outfit's score (ADR-0136 D5; color-engine.md §11's envelope).
+ *
+ * `scorer` is the recommendation package's own version, where the six formulas live: a formula
+ * change that kept the engine's version would otherwise give two different scores identical
+ * envelopes. `occasion` is the weighting the rules resolved, because one rules version holds one
+ * per occasion. `profile` is the profile's identity and revision.
+ */
+export interface OutfitEnvelope {
+  readonly engine: string;
+  readonly scorer: string;
+  readonly corpus: string;
+  readonly rules: string;
+  readonly occasion: string;
+  readonly profile: string;
+}
+
+/** One slot of an outfit being saved: the garment, and a copy of the colour that was scored. */
+export interface NewOutfitItem {
+  /** The engine's slot name. Opaque here: the store keeps no copy of the engine's vocabulary. */
+  readonly slot: string;
+  readonly garmentId: string;
+  /** What the slot was called when it was saved: the garment's name, or its type. */
+  readonly garmentLabel: string;
+  readonly locked: boolean;
+  /**
+   * The colour as it was scored, with its provenance — never a pointer to the garment's row,
+   * which a later write can overwrite (ADR-0136 D5). `saved_color`'s shape, so no second colour
+   * type exists, and its conditions as one object, so three of four cannot be written.
+   */
+  readonly color: Omit<NewSavedColor, 'id'>;
+}
+
+/** One of the six components, as the engine reported it. Stored, never recomputed. */
+export interface NewOutfitComponent {
+  readonly component: string;
+  readonly score: number;
+  readonly direction: OutfitDirection;
+  readonly weight: number;
+  readonly contribution: number;
+}
+
+/** An outfit being saved to the lookbook. Items and components are written in the order given. */
+export interface NewOutfit {
+  readonly overall: number;
+  /** The threshold the verdict was read against (`COVERAGE_THRESHOLD`), so it re-renders as saved. */
+  readonly countsThreshold: number;
+  readonly envelope: OutfitEnvelope;
+  readonly items: readonly NewOutfitItem[];
+  readonly components: readonly NewOutfitComponent[];
+}
+
+export interface OutfitRow extends SyncRow {
+  readonly overall: number;
+  readonly counts_threshold: number;
+  readonly envelope_engine: string;
+  readonly envelope_scorer: string;
+  readonly envelope_corpus: string;
+  readonly envelope_rules: string;
+  readonly envelope_occasion: string;
+  readonly envelope_profile: string;
+}
+
+/** A saved slot, read back. `color` is a `SavedColorRow` so the app reads it as it reads any. */
+export interface StoredOutfitItem {
+  readonly slot: string;
+  readonly position: number;
+  readonly garmentId: string;
+  readonly garmentLabel: string;
+  readonly locked: boolean;
+  readonly color: SavedColorRow;
+}
+
+export interface StoredOutfitComponent {
+  readonly component: string;
+  readonly position: number;
+  readonly score: number;
+  readonly direction: OutfitDirection;
+  readonly weight: number;
+  readonly contribution: number;
+}
+
+/** A saved outfit, read back exactly as it was written. */
+export interface StoredOutfit {
+  readonly id: string;
+  readonly createdAt: Millis;
+  readonly overall: number;
+  readonly countsThreshold: number;
+  readonly envelope: OutfitEnvelope;
+  readonly items: readonly StoredOutfitItem[];
+  readonly components: readonly StoredOutfitComponent[];
+}
+
 /** What a caller can learn about a stored image without loading it. */
 export interface StoredImageInfo {
   readonly byteLength: number;
@@ -734,6 +833,22 @@ export interface Repository {
   unbookmarkColor(slug: string, now: Millis): void;
   /** The live bookmarks' slugs, in slug order. Membership is read from this one list. */
   listBookmarks(): readonly string[];
+
+  /**
+   * Save an outfit to the lookbook (F-238, ADR-0136 D5, D6), in one transaction.
+   *
+   * The outfit row, then each item, then each component, every row logged. A composition — the
+   * slot→garment pairs, locks excluded — that is already live in the lookbook is not saved twice:
+   * the existing id comes back with `written: false`, and nothing is written or logged.
+   */
+  saveOutfit(outfit: NewOutfit, now: Millis): { readonly id: string; readonly written: boolean };
+  /** The live outfits, newest first; each one's items and components in their stored order. */
+  listOutfits(): readonly StoredOutfit[];
+  /**
+   * Remove an outfit: the outfit, its items and its components are tombstoned, each logged once.
+   * An unknown or already removed id writes nothing. A removed outfit is never revived.
+   */
+  removeOutfit(id: string, now: Millis): void;
 
   /**
    * Read a device setting, or `undefined` if it has never been set.

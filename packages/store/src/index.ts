@@ -77,6 +77,7 @@ export {
   PROFILE_METHODS,
   GARMENT_SEASONS,
   GARMENT_COLOR_ROLES,
+  OUTFIT_DIRECTIONS,
 } from './repository.js';
 export {
   DATABASE_KEY_NAME,
@@ -121,6 +122,15 @@ export type {
   StoredPreference,
   PairingPreferenceRow,
   BookmarkRow,
+  NewOutfit,
+  NewOutfitComponent,
+  NewOutfitItem,
+  OutfitDirection,
+  OutfitEnvelope,
+  OutfitRow,
+  StoredOutfit,
+  StoredOutfitComponent,
+  StoredOutfitItem,
   PreferenceVerdict,
   StoredGarment,
   StoredGarmentColor,
