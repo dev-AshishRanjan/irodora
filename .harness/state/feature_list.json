@@ -11144,6 +11144,43 @@
         "lint"
       ],
       "notes": "FOUND BY F-221’S REVIEW (2026-10-13), finding M12, by a probe: scripts/e2e-run.mjs spawns the path onPath returns (maestro.bat on Windows) without a shell, and Node throws EINVAL for a .bat or .cmd spawned that way. So `pnpm test:e2e`, which F-221’s plan advises the person to run in the same session as the fidelity capture to discharge F-091’s journey criteria, cannot start on a Windows machine with Maestro installed. fidelity-capture.mjs’s driver already runs .bat/.cmd through a shell with the whole command line quoted (F-221’s review, S6); this is the same fix in gate 7’s runner. Pre-existing; out of F-221’s scope (rule 2)."
+    },
+    {
+      "id": "F-336",
+      "title": "The database is encrypted only if SQLCipher is built in, and today it is not",
+      "requirements": [
+        "NFR-13"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "expo-sqlite is built with SQLCipher on Android and iOS: app.config.ts passes expo-sqlite’s config plugin `useSQLCipher: true`, and a test fails if the option is removed or the generated android/gradle.properties lacks `expo.sqlite.useSQLCipher=true`",
+        "The device driver asks the library before it reports anything: a connection where `PRAGMA cipher_version` returns no row is refused with a named error, and `encryptsAtRest` is that answer, never a literal",
+        "A database written before this feature, which is plain SQLite, is moved once into an encrypted file with `sqlcipher_export`. The plain file and its -wal and -shm are removed only after the encrypted copy opens under the key with the same schema version and row counts; a move killed at any point leaves a database that opens, and the next launch finishes it",
+        "On a device, the first 16 bytes of irodora.db are not `SQLite format 3`, and neither a bookmarked slug nor a stored garment image’s bytes can be found in the file or its -wal; a rotated key opens the database and the previous key does not",
+        "Every document that describes encryption at rest (PRD NFR-13, privacy-design §4, data-model, ARCHITECTURE, the threat model) says what the build does, and the record names when it was not true"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "security"
+      ],
+      "attested": [
+        {
+          "criterion": "On a device, the first 16 bytes of irodora.db are not `SQLite format 3`, and neither a bookmarked slug nor a stored garment image’s bytes can be found in the file or its -wal; a rotated key opens the database and the previous key does not",
+          "verifiedBy": "The person, on an Android debug build: `adb exec-out run-as com.irodora.app cat files/SQLite/irodora.db | head -c 16`, a search of the file and its -wal for a known slug and for a run of a stored image’s bytes, and the rotation check F-042 owes. node:sqlite has no SQLCipher, so no CI run can stand in for it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "FOUND BY F-237’S PLANNER (2026-10-13), CONFIRMED BY READING THE BUILD, NOT YET ON A DEVICE. expo-sqlite 57.0.1 links SQLCipher only when its config plugin is given `useSQLCipher: true`: android/build.gradle line 17 reads `USE_SQLCIPHER = findProperty('expo.sqlite.useSQLCipher') == 'true'`, ios/ExpoSQLite.podspec has the same switch, and plugin/build/withSQLite.js sets the property only from that option. apps/mobile/app.config.ts does not list expo-sqlite among its plugins, and apps/mobile/android/gradle.properties has no expo.sqlite property. So the app links plain SQLite, which ignores pragmas it does not know: `PRAGMA key` and `PRAGMA rekey` in apps/mobile/src/store/index.ts do nothing, and the driver still reports `encryptsAtRest: true` (index.ts:127, commented as a claim about what the connection asked for). CONSEQUENCES. The database, and the wardrobe and avatar images stored in it as BLOBs (ADR-0078), are very likely plain on every install so far. F-041’s first attested criterion and F-042’s third cannot pass until this lands, and F-237’s device step 5 will fail. F-241’s security sign-off read the storage as a SQLCipher BLOB on the strength of the same assumption. No copy a person sees claims encryption: the claims are in the PRD, the architecture documents and that literal. WHY IT IS ITS OWN FEATURE (rule 2). Turning the option on alone breaks every existing install: a plain file opened with a key fails as “file is not a database”. The move to an encrypted file has to ship with it. WHY todo, NOT backlog. It is the only route by which F-041’s and F-042’s release-blocking attestations can be discharged; left in backlog they would have no owner. Its device half is the person’s (their direction of 2026-10-12). SERVICE root: it draws nothing a person sees; its code is the native build configuration (app.config.ts, which generates the gradle and Podfile properties) and the device driver in apps/mobile/src/store."
     }
   ]
 }
