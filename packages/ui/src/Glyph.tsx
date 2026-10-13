@@ -56,6 +56,11 @@
  * the other three are drawn only in tab bars C1 supersedes, so whether `01`'s bar uses them is
  * F-234's question, recorded there. `camera` is drawn filled wherever it appears (`00`).
  *
+ * **`bookmark` is the one fill no mockup draws** (F-237, ADR-0135 D2). `06` draws the toggle off,
+ * as an outline, and nothing draws it on. On is a shape, beside the announced state (rule 13), so
+ * it is drawn filled in the same ink, on the same path as the outline, as `home` is — and listed in
+ * R9 §4 E4, where a capability no mockup draws is recorded.
+ *
  * ## The paths are ours
  *
  * NavIcon's reasoning holds: no vendored artwork, one family, one source. Each glyph was drawn after
@@ -148,7 +153,11 @@ export const FILLABLE_GLYPHS = [
   'lens',
   'profile',
   'compass',
+  'bookmark',
 ] as const satisfies readonly GlyphName[];
+
+/** A glyph with a filled drawing: the only kind a control may ask to draw as SELECTED. */
+export type FillableGlyph = (typeof FILLABLE_GLYPHS)[number];
 
 /**
  * The declared line width, in grid units, for a glyph drawn `size` dp wide.
@@ -363,6 +372,9 @@ const PAGE_FOLD = 'M14.5 3v3a1.5 1.5 0 0 0 1.5 1.5h3';
 const TURN_ARC = 'M3.5 12a8.5 8.5 0 1 0 2.49-6.01L3.5 8';
 const TURN_HEAD = 'M3.5 3.5V8H8';
 
+/** `06`'s bookmark: one path, stroked off and filled on, so the two states keep one silhouette. */
+const BOOKMARK = 'M6.5 4.5A1.5 1.5 0 0 1 8 3h8a1.5 1.5 0 0 1 1.5 1.5V21L12 17l-5.5 4z';
+
 const HOUSE = 'M4 10.3 12 3.8l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z';
 
 /** `00`'s wheel: the disc, and the palette inside it with its wells (a compound path, `evenodd`). */
@@ -419,9 +431,8 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
-  bookmark: (p) => (
-    <>{line('M6.5 4.5A1.5 1.5 0 0 1 8 3h8a1.5 1.5 0 0 1 1.5 1.5V21L12 17l-5.5 4z', p)}</>
-  ),
+  /** `06`, off. On is the same path filled (F-237): the one fill no mockup draws (R9 §4 E4). */
+  bookmark: (p) => (p.filled ? <>{solid(BOOKMARK, p)}</> : <>{line(BOOKMARK, p)}</>),
 
   /** `11`: a lit bulb, solid, on a banded base. Its yellow is OQ-37. */
   bulb: (p) => (

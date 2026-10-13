@@ -219,3 +219,54 @@ describe('what it draws', () => {
     }
   });
 });
+
+describe('a toggle is `selected`, and only a glyph with a filled drawing can be one (F-237)', () => {
+  it('refuses `selected` on a glyph with no fill, and with `filled` beside it', () => {
+    // @ts-expect-error — `share` has no filled drawing, so on would change only the announcement.
+    const unfillable = <IconButton name="share" label="Share" selected />;
+    // @ts-expect-error — one prop sets the fill of a toggle; two could disagree.
+    const both = <IconButton name="bookmark" label="Bookmark" selected filled />;
+    // DECOY — the toggle that is written honestly compiles.
+    const honest = <IconButton name="bookmark" label="Bookmark this colour" selected={false} />;
+    expect([unfillable, both, honest]).toHaveLength(3);
+  });
+
+  it('announces selected and draws the filled glyph, from one prop', () => {
+    const states = (selected: boolean) => {
+      render(
+        <ThemeProvider theme="dark">
+          <IconButton name="bookmark" label="Bookmark this colour" selected={selected} />
+        </ThemeProvider>,
+      );
+      const button = screen.getByRole('button', { name: 'Bookmark this colour' });
+      const announced = (button.props['accessibilityState'] as { selected?: boolean }).selected;
+      const paths = button.findAllByType(Path).map((p) => p.props as Record<string, unknown>);
+      screen.unmount();
+      return { announced, paths };
+    };
+    const on = states(true);
+    const off = states(false);
+    expect(on.announced).toBe(true);
+    expect(off.announced).toBe(false);
+    // On is a shape: filled in the ink, no outline. Off is the outline, filled with nothing.
+    expect(on.paths.map((p) => [p['fill'] !== 'none', p['stroke'] === undefined])).toStrictEqual([
+      [true, true],
+    ]);
+    expect(off.paths.map((p) => [p['fill'], p['stroke'] !== undefined])).toStrictEqual([
+      ['none', true],
+    ]);
+  });
+
+  it('DECOY: without `selected`, no selected state is announced at all', () => {
+    // A plain action is not "unselected". Announcing `selected: false` on every icon button would
+    // make a screen reader describe actions as toggles.
+    render(
+      <ThemeProvider theme="dark">
+        <IconButton name="bookmark" label="Bookmark this colour" />
+      </ThemeProvider>,
+    );
+    const button = screen.getByRole('button', { name: 'Bookmark this colour' });
+    // The host lists every state key it knows, so the VALUE is what is read: never set.
+    expect((button.props['accessibilityState'] as { selected?: boolean }).selected).toBeUndefined();
+  });
+});

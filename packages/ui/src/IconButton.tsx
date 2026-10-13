@@ -26,11 +26,19 @@
  * On HeroUI's `Button` (ADR-0062), with `feedbackVariant="scale"` for the reason `Button` gives:
  * the default highlight animates a background colour. `isIconOnly` is HeroUI's own flag for this
  * layout. Colour comes through `style` and props, never `className` — jest never runs Metro.
+ *
+ * ## A toggle is `selected`, and only a glyph with a filled drawing can be one
+ *
+ * `selected` draws the glyph filled AND announces the selected state, from one prop, so the two
+ * channels cannot disagree (F-237, ADR-0135 D2). It is typed against {@link FillableGlyph}: a glyph
+ * with no filled drawing would change nothing a person can see, leaving the announcement alone —
+ * so asking for it does not compile (rule 13). Without it, no `selected` key is set at all: a
+ * plain action does not announce itself as unselected.
  */
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import { Glyph, glyphSpectrum, type GlyphName } from './Glyph.js';
+import { Glyph, glyphSpectrum, type FillableGlyph, type GlyphName } from './Glyph.js';
 import { hitArea } from './hitArea.js';
 import {
   withoutOwnedAccessibility,
@@ -44,8 +52,6 @@ export type IconButtonProps = Omit<
   'style' | 'children' | 'disabled' | 'hitSlop' | OwnedAccessibility
 > &
   RefuseOwnedAccessibility & {
-    /** The glyph, by the name its inventory binds. */
-    readonly name: GlyphName;
     /**
      * What the control does, for a screen reader — "Share this colour", not "Share icon". Required:
      * the glyph is all a sighted person sees, and this is all a screen-reader user hears.
@@ -55,18 +61,31 @@ export type IconButtonProps = Omit<
     readonly color?: keyof ThemeColors;
     /** The glyph's size in dp; the line weight holds at every size ({@link glyphStroke}). */
     readonly size?: number;
-    /** The drawn active state, for the glyphs a mockup draws filled. */
-    readonly filled?: boolean;
     readonly disabled?: boolean;
     readonly loading?: boolean;
-  };
+  } & (
+    | {
+        /** The glyph, by the name its inventory binds. */
+        readonly name: GlyphName;
+        /** The drawn active state, for the glyphs a mockup draws filled. */
+        readonly filled?: boolean;
+        readonly selected?: never;
+      }
+    | {
+        readonly name: FillableGlyph;
+        /** A toggle: on draws the glyph filled and announces it selected (ADR-0135 D2). */
+        readonly selected: boolean;
+        readonly filled?: never;
+      }
+  );
 
 export function IconButton({
   name,
   label,
   color = 'foreground',
   size = 24,
-  filled = false,
+  filled,
+  selected,
   disabled = false,
   loading = false,
   ...rest
@@ -81,7 +100,11 @@ export function IconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       // Both flags, from the same two props — HeroUI sets `disabled` and nothing else.
-      accessibilityState={{ disabled: inert, busy: loading }}
+      accessibilityState={{
+        disabled: inert,
+        busy: loading,
+        ...(selected === undefined ? {} : { selected }),
+      }}
       isDisabled={inert}
       isIconOnly
       variant="ghost"
@@ -102,7 +125,7 @@ export function IconButton({
         name={name}
         color={colors[color]}
         size={size}
-        filled={filled}
+        filled={selected ?? filled ?? false}
         spectrum={glyphSpectrum(name, colors)}
       />
     </HeroButton>

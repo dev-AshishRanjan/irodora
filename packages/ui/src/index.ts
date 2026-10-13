@@ -50,6 +50,7 @@ export {
   SPECTRUM_STOPS,
   glyphStroke,
   type GlyphName,
+  type FillableGlyph,
   type GlyphTints,
   type GlyphProps,
 } from './Glyph.js';

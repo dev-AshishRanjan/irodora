@@ -117,9 +117,11 @@ export interface ConformanceSubject {
    * its label, so the fill is a SHAPE that appears, not a fill swapped on a shape that was already
    * there; that is why a segment needs no dot and a pill does (OQ-43 is the pill case). Either way
    * the picture is read off the rendered tree, never taken on the subject's word. `indicator` is 01's
-   * tab bar (F-234): the active tab draws its indicator and its word in `foreground`.
+   * tab bar (F-234): the active tab draws its indicator and its word in `foreground`. `glyph` is a
+   * toggle drawn as one glyph (F-237, ADR-0135 D2): on, the glyph is FILLED, a shape; off, it is an
+   * outline and fills nothing — so the fill is what appears, never a fill that was already there.
    */
-  readonly treatment?: 'chooser' | 'pill' | 'segment' | 'indicator';
+  readonly treatment?: 'chooser' | 'pill' | 'segment' | 'indicator' | 'glyph';
   /**
    * Why this subject paints no colour at all — a REASON, never a boolean.
    *
@@ -678,6 +680,26 @@ export function checkSubject(
        * fine — the treatment is the tokens, not the function — and the first is what this
        * catches [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
        */
+      /*
+       * A GLYPH TOGGLE'S FILL HAS TO BE THE CHANGE (F-237). Checked in `default` as well as `active`:
+       * a glyph drawn filled in both states would pass the active half, and then the fill says
+       * nothing about which state it is in — only the announcement would.
+       */
+      const fillsAShape = paintedHere.some(
+        (c) => c.property === 'fill' && c.resolution.kind === 'token',
+      );
+      if (
+        subject.selectable === true &&
+        subject.treatment === 'glyph' &&
+        state === 'default' &&
+        fillsAShape
+      )
+        at(
+          'selection-treatment',
+          'is an unselected glyph toggle but already draws a filled shape — off is the outline, so ' +
+            'that the fill appears is what shows it is on (ADR-0135 D2).',
+        );
+
       if (subject.selectable === true && state === 'active') {
         const paints = (property: string, token: string): boolean =>
           paintedHere.some(
@@ -711,6 +733,14 @@ export function checkSubject(
               'is an active tab but does not draw the picture 01 draws — the indicator in `foreground` ' +
                 'on the rule AND the word in `foreground` (F-234). An ink change alone is colour ' +
                 'alone.',
+            );
+        } else if (subject.treatment === 'glyph') {
+          if (!fillsAShape)
+            at(
+              'selection-treatment',
+              'is a selected glyph toggle but draws no filled shape — on is the glyph drawn filled, ' +
+                'a shape beside the announced state (ADR-0135 D2). An outline in both states leaves ' +
+                'the announcement as the only channel.',
             );
         } else if (subject.treatment === 'pill') {
           const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));

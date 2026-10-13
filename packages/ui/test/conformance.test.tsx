@@ -1106,6 +1106,30 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    /*
+     * A GLYPH TOGGLE (F-237): 06's bookmark. On is the glyph filled and an announced `selected`
+     * (ADR-0135 D2), so the `glyph` treatment reads the fill off the tree in both states — it
+     * must appear in `active` and be absent in `default`.
+     */
+    name: 'IconButton (bookmark toggle)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'glyph',
+    forbiddenNames: ['icon', 'glyph', 'bookmark'],
+    render: (state, theme) =>
+      draw(
+        <IconButton
+          name="bookmark"
+          label="Bookmark this colour"
+          selected={state === 'active'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
     name: 'Chip',
     kind: 'interactive',
     // Same as Swatch: a filter chip that is on says so in its name and in its state.
@@ -3742,6 +3766,49 @@ describe('and it has to be the SAME highlight as everything else (F-176)', () =>
     expect(checkSubject(notSelectable, ['light']).map((f) => f.rule)).not.toContain(
       'selection-treatment',
     );
+  });
+});
+
+describe('the `glyph` treatment reads the fill off the tree, in both states (F-237)', () => {
+  const toggle = (on: (state: string) => boolean | undefined): ConformanceSubject => ({
+    name: 'Glyph toggle',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'glyph',
+    render: (state, theme) => {
+      const selected = on(state);
+      return draw(
+        selected === undefined ? (
+          <IconButton name="bookmark" label="Bookmark this colour" testID={state} />
+        ) : (
+          <IconButton
+            name="bookmark"
+            label="Bookmark this colour"
+            selected={selected}
+            testID={state}
+          />
+        ),
+        theme,
+      );
+    },
+  });
+  const treatment = (s: ConformanceSubject): readonly string[] =>
+    checkSubject(s, ['dark'])
+      .filter((f) => f.rule === 'selection-treatment')
+      .map((f) => f.detail);
+
+  it('passes the toggle that fills when it is on', () => {
+    expect(treatment(toggle((state) => state === 'active'))).toHaveLength(0);
+  });
+
+  it('DECOY: reports an outline in `active` — announced on, drawn off', () => {
+    const findings = treatment(toggle(() => undefined));
+    expect(findings.some((d) => d.includes('draws no filled shape'))).toBe(true);
+  });
+
+  it('DECOY: reports a fill in `default` — then the fill cannot be what says it is on', () => {
+    const findings = treatment(toggle(() => true));
+    expect(findings.some((d) => d.includes('already draws a filled shape'))).toBe(true);
   });
 });
 
