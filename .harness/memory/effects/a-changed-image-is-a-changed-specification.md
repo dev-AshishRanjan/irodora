@@ -49,3 +49,9 @@ The second evaluation passed, and found three more gaps it could still delete wi
 the scope walk that makes gate 0 read `mockups/AGENTS.md`, the narrowing of the open-question lookup
 to PRD §10, and the rows of §7 that are not routes. Each has a case now — **30 in all, 26 that must
 fail and 4 that must pass.**
+
+## F-221: a capture is composed only beside the pinned image
+
+`fidelity-compose` hashes every mockup it embeds and refuses one whose bytes are not the index's
+sha256, so a fidelity page can never put a capture beside a drawing that is not the specification.
+A route added to the index must be added to the capture spec, or `generate-e2e-flows --check` fails.

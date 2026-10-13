@@ -181,3 +181,18 @@ belong to each surface feature's own first criterion.
 | An emulator on this workstation | No JDK, by the person's standing decision |
 | Wait for a CI device runner | F-091 criteria 3 and 4 are still outstanding, and R9 cannot wait for them |
 | Pixel diffing against the mockups | The mockups are drawings, not renders; a threshold would be a number chosen to pass. The comparison is F-267's, and a person's |
+
+## Recorded while building (F-221)
+
+- **A route a cleared app cannot reach is declared, not hidden.** `/atlas/with/reading/[id]` opens
+  from a reading, and a reading exists only after the Lens measures through the camera. The capture
+  spec says so, the record counts it as unreachable and names it in the summary, and the run passes
+  without it; any other miss fails the run. F-259 owns capturing it.
+- **One route is reached by steps.** `/wardrobe/with/[id]` needs a garment: its flow adds one from
+  the corpus swatches. The save button carries a `testID`, because its words are also the Wear
+  screen's control and a generated tap may not choose between two (ADR-0086).
+- **The owner rule is a lint script.** It reads the feature list, which a cached test may not
+  (`verify-cache-scope`); `verify-mockups` holds it, against a table both sides read (E-203).
+- **What enrolling 27 found.** The registry's empty-wardrobe subject drew a branch the route never
+  shows when the wardrobe is empty, so 27's card had never been swept; it now passes the route's
+  props.

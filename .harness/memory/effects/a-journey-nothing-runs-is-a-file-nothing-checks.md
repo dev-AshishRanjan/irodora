@@ -85,3 +85,10 @@ A broken journey does not break the app. It breaks the **only evidence** that br
 corpus works on a phone and opens no socket — and that evidence is already owed rather than
 held. `medium` records that the blast radius is the proof rather than the product, without
 pretending the proof does not matter.
+
+## F-221: the capture flows ride the same route table
+
+`apps/mobile/e2e/capture/routes.json` names every route the mockup index names, and the generator
+writes one capture flow per route and locale under `capture/en` and `capture/ja`. A renamed route
+file now breaks 2 capture flows as well as the journey, caught by the same `--check`; a route the
+index and the spec disagree about, and a stale flow, are refused there too.

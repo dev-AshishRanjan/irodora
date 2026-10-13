@@ -75,3 +75,11 @@ claims, and only a reader closes that gap. Left **outstanding** rather than argu
 Related: [[the-claims-lint-only-speaks-english]] ·
 [[two-thorough-checks-and-neither-looked-at-a-pair]] ·
 [[a-proof-that-plants-must-survive-being-killed]]
+
+## F-221: three readers, one compile
+
+`claims.json` is now read by the lint (source lines), the conformance sweep (every rendered tree's
+paragraphs, visual lines and accessible names) and `fidelity:capture` (every device capture's
+text). The scripts compile it through `claims-patterns.mjs`; the test runner, which cannot import a
+root script, is held to the lint's own fixtures in both directions. The sweep's evidence counts each
+kind of text it read, so "no finding" is about screens.

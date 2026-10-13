@@ -5521,7 +5521,9 @@ describe('the conformance sweep, with evidence (F-204)', () => {
         'That any of it LOOKS right. This sweep renders trees and measures structure, naming, ' +
         'tap targets, token resolution and selection treatment. It cannot see a layout that is ' +
         'cramped or unbalanced — and every "unprofessional" report in this project has been ' +
-        'about something that was green here at the time.',
+        'about something that was green here at the time. That is what pnpm fidelity:capture is ' +
+        'for (F-221, ADR-0134): every route from the running app beside its mockup, compared by a ' +
+        'person.',
     };
     writeFileSync(
       `${__dirname}/../../../.harness/verification/conformance-sweep.json`,

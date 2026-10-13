@@ -275,7 +275,7 @@ console.log(
 console.log(
   `${YELLOW}  !${OFF} ${DIM}NOT CHECKED HERE: a claim composed at render time from a figure and a label ` +
     `kept in separate places\n    — a catalogue key and a component, say. A composition inside one ` +
-    `source line is checked; one across lines or files is not.\n    F-221 runs these patterns over the text of every capture (F-219).${OFF}`,
+    `source line is checked; one across lines or files is not.\n    The conformance sweep reads every rendered tree's text against these patterns, and\n    pnpm fidelity:capture every device capture's (F-221, ADR-0134).${OFF}`,
 );
 
 console.log(

@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-12",
+  "updated": "2026-10-13",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2156,6 +2156,14 @@
         {
           "kind": "decision",
           "ref": "docs/adr/0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/capture/routes.json"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/capture"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2163,7 +2171,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "script:generate-e2e-flows.mjs --check (in gate:lint)",
+      "guard": "script:generate-e2e-flows.mjs --check (in gate:lint) F-221: the same --check covers the 40 capture flows (each route in en and ja), refusing a capture spec whose file is not its route by expo-router's rule, a route the mockup index and the spec disagree about, and a stale flow; openRoute resolves a route file and its parameters to a deep link (e2e-flows-proof, 32 cases).",
       "memory": "memory/effects/a-journey-nothing-runs-is-a-file-nothing-checks.md",
       "rationale": "A journey walks BETWEEN SCREENS, so it depends on the route table in a way no render test does: react-test-renderer mounts a screen without a navigator, which is precisely why \"rendered\" and \"reachable\" are the same sentence there and different sentences on a phone. Renaming `app/atlas/[slug].tsx` breaks the Atlas journey and breaks nothing else that would notice. Each step may therefore declare the `route` it expects to be on; the declaration changes no output and exists only so a moved file fails the build. SEVERITY IS medium RATHER THAN high because the route assertion is advisory to the RUN — a wrong route breaks a journey, not the app — but it is the only guard of its kind: the run that would otherwise catch it needs a device, and F-091 criteria 2 to 4 are attested for want of a JDK. THE GUARD CANNOT SEE that the screen at a route renders the key a step asserts. Checking that means reading a `.tsx` for `t(...)` occurrences, which is source analysis of the kind that has mistaken a comment for code five times in this repository (F-122, F-127, F-130, F-132, F-133). Named rather than attempted.",
       "confidence": 0.9,
@@ -3389,6 +3397,18 @@
         {
           "kind": "gate",
           "ref": "lint"
+        },
+        {
+          "kind": "symbol",
+          "ref": "scripts/claims-patterns.mjs#compileBanned"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/claims.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "scripts/fidelity-record.mjs#captureClaims"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3398,7 +3418,7 @@
         "content"
       ],
       "severity": "medium",
-      "guard": "THE COVERAGE CHECK IS THE GUARD, and it is the deliverable rather than a side effect. `verify-claims.mjs` now counts files carrying CJK and patterns able to match it, and FAILS when the first is non-zero and the second is zero — so a locale added without a policy turns the build red instead of passing silently. On every green run it also prints how many patterns can match Japanese and over how many files, stated as the SCOPE of the check rather than as evidence about the copy. The seven new patterns each have a real sentence in the mutation proof, and the proof carries a second green baseline built from the product’s own correct Japanese strings. The env-var weakening that makes the coverage check provable can only REMOVE patterns, which can only turn the build red — asserted by the proof case itself.",
+      "guard": "THE COVERAGE CHECK IS THE GUARD, and it is the deliverable rather than a side effect. `verify-claims.mjs` now counts files carrying CJK and patterns able to match it, and FAILS when the first is non-zero and the second is zero — so a locale added without a policy turns the build red instead of passing silently. On every green run it also prints how many patterns can match Japanese and over how many files, stated as the SCOPE of the check rather than as evidence about the copy. The seven new patterns each have a real sentence in the mutation proof, and the proof carries a second green baseline built from the product’s own correct Japanese strings. The env-var weakening that makes the coverage check provable can only REMOVE patterns, which can only turn the build red — asserted by the proof case itself. F-221: the patterns are compiled one way (claims-patterns.mjs) for the lint and the device capture, and the jest reader is held to the lint's drawn, variants and near-misses fixtures (claims.test.ts); the conformance sweep reads every rendered tree's paragraphs, lines and names against them, and fidelity:capture every capture's.",
       "memory": "memory/effects/a-check-must-report-its-scope-not-only-its-verdict.md",
       "rationale": "THE FIX FOR E-089 IS SEVEN PATTERNS; THE FIX FOR ITS SHAPE IS THE GATE ADMITTING WHAT IT CANNOT SEE. A false negative and a clean subject produce identical output — zero findings means either nothing is wrong or the checker cannot recognise what is wrong, and a gate that prints only its verdict has discarded that distinction before anyone reads it. E-089 was that at its most extreme: every byte of a Japanese file scanned, every pattern ASCII, `0 violation(s)` reported over a screen that called a camera estimate a measurement. So the gate now measures ITSELF as well as its subject, and that half needs no Japanese — which is why it is the half that outlives this feature. A third locale will fail this gate until somebody writes its policy, and that is the correct order rather than an inconvenience. 測定 IS DELIBERATELY NOT PATTERNED: six of its eight uses are on the `measure` screen where a person entered instrument values, which is exactly the provenance the word is reserved for. Distinguishing them is grammar, and a rule written from a dictionary would either pass everything or block the product’s only honest use of it, with neither failure visible to its author. The regression fixture is built from the product’s real strings so the outstanding review rules on concrete copy rather than on a regex, and its GREEN case is the one that matters — a pattern set banning the vocabulary would pass every red case in the proof and break the `measure` screen. PROVING A COVERAGE CHECK NEEDED A MUTATION THAT DOES NOT TOUCH A TRACKED FILE, because planting into one has broken this tree four times by three different mechanisms and a `finally` is a hope about how a process ends rather than a guarantee. The switch is acceptable because of what it can CAUSE rather than who would use it: it only removes patterns, the coverage check then fires, and the build goes red. WHAT IS NOT DISCHARGED is the first acceptance criterion — each pattern mirrors a reviewed English one, but mirrors and is correct are different claims, and only somebody who reads Japanese closes that gap.",
       "confidence": 0.9,
@@ -5031,6 +5051,14 @@
         {
           "kind": "gate",
           "ref": "state"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/capture/routes.json"
+        },
+        {
+          "kind": "symbol",
+          "ref": "scripts/fidelity-compose.mjs#composeSvg"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5039,7 +5067,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "scripts/verify-mockups.mjs in gate 2 (lint): every image on disk is a row and every row an image, the id being the file's two-digit prefix; each row pins its image by sha256; every route in apps/mobile/app — enumerated by the shared routePatterns(), never a second enumerator — has exactly one primary mockup, or an open question that PRD §10's table actually lists; and §7 of the fidelity specification names EXACTLY the index's primaries in its governing column and EXACTLY its variants in its variants column — an id missing or extra on either side fails — while every mockup id appears somewhere in §7 and every id §7 names is indexed, which covers the rows that are not routes. The open-question lookup reads PRD §10's table and nothing else. Gate 0 reads mockups/AGENTS.md in its scope walk, so a sentence there relaxing a golden rule fails the build. Gate 0 section 9b: a feature from R9 whose service is mobile or whose package is @irodora/ui names its mockups (empty only with an open question), and every id it names is indexed. THE INVENTORY HALF HAS AN OWNER AND AN END CONDITION: an inventory whose mockupSha256 differs from its image fails now, and once F-220 is done a null inventory fails too — read from F-220's status, and written into F-220's acceptance. All of it is proven by verify-mockups --prove, which plants 61 failures and 6 cases that must pass, each asserted by the name of the problem it produces, and runs in CI beside the viewport proof.",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint): every image on disk is a row and every row an image, the id being the file's two-digit prefix; each row pins its image by sha256; every route in apps/mobile/app — enumerated by the shared routePatterns(), never a second enumerator — has exactly one primary mockup, or an open question that PRD §10's table actually lists; and §7 of the fidelity specification names EXACTLY the index's primaries in its governing column and EXACTLY its variants in its variants column — an id missing or extra on either side fails — while every mockup id appears somewhere in §7 and every id §7 names is indexed, which covers the rows that are not routes. The open-question lookup reads PRD §10's table and nothing else. Gate 0 reads mockups/AGENTS.md in its scope walk, so a sentence there relaxing a golden rule fails the build. Gate 0 section 9b: a feature from R9 whose service is mobile or whose package is @irodora/ui names its mockups (empty only with an open question), and every id it names is indexed. THE INVENTORY HALF HAS AN OWNER AND AN END CONDITION: an inventory whose mockupSha256 differs from its image fails now, and once F-220 is done a null inventory fails too — read from F-220's status, and written into F-220's acceptance. All of it is proven by verify-mockups --prove, which plants 61 failures and 6 cases that must pass, each asserted by the name of the problem it produces, and runs in CI beside the viewport proof. F-221: the capture spec must name exactly the routes the index names (generate-e2e-flows --check), and the composer refuses a mockup whose bytes do not hash to the row's sha256, by name (fidelity-proof).",
       "memory": "memory/effects/a-changed-image-is-a-changed-specification.md",
       "rationale": "Golden rule 14 made the mockups the specification for everything visible, and nothing a machine could read said which image governs which route. So a route could go undrawn and be designed by taste, an image could govern nothing, and an image could change under every feature built from it — each silently. The index is the map; the hash is what turns \"the picture changed\" from something nobody notices into a red build. The first version compared §7 only for primaries and left the inventory gap unowned; the evaluator found both, and both are closed.",
       "confidence": 0.9,
@@ -5117,6 +5145,18 @@
         {
           "kind": "test",
           "ref": "packages/ui/test/icon-control-forms.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/inventory.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "scripts/fidelity-compose.mjs#composeSvg"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5125,7 +5165,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced.",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced. F-221: the inventory sweep in screens.test asserts every element of an enrolled surface is drawn, in both themes and both languages, one locator per element and an element per locator (31 elements: 14.splash and 27's four cards); the composer crops a framed mockup to its inventory's screen, read live.",
       "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
       "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it. F-232 (2026-09-28): 00, 05, 09, 12, 15, 17 and 23 re-recorded from measurement (control tokens, plate radii, dots, the switch's true track, 12's level3 fills, 05's filled chips, 17's options as ui:Chip); the schema gains `raw.trackPx`/`thumbPx`/`glyphPx` and ADR-0115's plate rule in the `component` description, held by icon-control-forms.test (30 icon-only controls, 15 plated, 15 bare, with an ambiguous decoy). Control defaults are now DERIVED from these records (E-157).",
       "confidence": 0.9,
@@ -8499,6 +8539,45 @@
       "guard": "node scripts/plant-proof.mjs, in the root lint chain and in ci.yml. (1) It refuses to start while a journal FILE exists, readable or not. (2) A killed child leaves a journal under another owner and plant-proof is run again: the second run must refuse in its own words, run none of its cases, and leave the journal and the planted file as they were — watched failing first, when it deleted the journal and exited 0. (3) The same over a truncated journal, which plant.mjs reads as empty. (4) Its own reset() and clean-up meet a third owner's entry and must leave it byte for byte. (5) No .mjs in scripts/ or tests/bench/src/, no package.json script and no workflow imports JOURNAL or recover from plant.mjs (named, renamed, namespace, re-exported, import() or require()), runs plant.mjs --recover, or names .plant-journal — the check proven in the file by twelve decoys and four controls, its blind spots written beside it. Seven mutants of the proof each fail it.",
       "memory": "memory/effects/a-proof-of-the-journal-never-clears-a-journal-it-did-not-write.md",
       "rationale": "The journal (F-173, E-094) is worth exactly as long as it survives: it is the only record of a plant a killed proof left, and the bytes to undo it. plant-proof runs after other proofs in lint and in ci.yml. While it deleted the journal, any leftover before it was erased with its plant still in place (F-291), and a proof that leaked an entry on every run (the a11y proof, since F-232) was hidden. Change how plant-proof clears, or let another script reach the journal, and every recovery after it changes with it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-221",
+      "id": "E-203",
+      "severity": "medium",
+      "scope": [
+        "scripts",
+        ".harness",
+        "apps"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": ".harness/state/feature_list.json"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "scripts/verify-mockups.mjs#sweptSurfaces"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/inventory-surfaces.json"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions.",
+      "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
+      "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
     }
   ]
 }

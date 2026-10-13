@@ -134,6 +134,12 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
 | `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps (claims-ok: quotes the drawn construction this row resolves) |
 
+**A claim composed on the screen is held too (`F-221`).** The claims lint reads source lines, so a
+figure and a label kept in two places reach the screen as one claim it never saw. The conformance
+sweep reads every rendered tree's paragraphs, visual lines and accessible names against the same
+patterns, in every condition, and `pnpm fidelity:capture` reads every device capture's text the same
+way ([ADR-0134](../adr/0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md) D3).
+
 `F-219` extended the claims lint to the rows above that are **claims** — the percentage offered as a
 match, the absolute CVD-safety wording, the verdict on a score, the borrowed grade, the
 spectrum the camera never takes — in English and Japanese. What that means is exactly two lists:
@@ -748,11 +754,17 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 ## 12. How fidelity is proven
 
 1. **Structure — automated.** `F-220` writes an element inventory per mockup. Each surface
-   feature adds its inventory to the conformance sweep, which asserts every element exists on
-   the rendered tree, in both themes and both locales.
-2. **Appearance — captured, then attested.** `F-221` renders every route at the reference
-   viewport and composes it beside its mockup. A person compares each pair and records the result
-   — the sweep itself says it *"cannot see a layout that is cramped or unbalanced"*.
+   feature enrolls its surface in the conformance sweep (`screens.test` and
+   `.harness/verification/inventory-surfaces.json`, `F-221`), which asserts every element is
+   drawn on the rendered tree, in both themes and both locales, each found by what it draws. A
+   surface feature cannot close with its surface unenrolled: `verify-mockups` refuses it (E-203).
+2. **Appearance — captured, then attested.** `pnpm fidelity:capture -- --erase-app-data` (`F-221`,
+   [ADR-0134](../adr/0134-fidelity-is-captured-from-the-running-app-beside-its-mockup-and-the-device-run-is-a-persons.md))
+   runs every route in the index on an Android device or emulator at 384 dp, in Sumi and Washi,
+   English and Japanese, and composes each capture beside the mockups that govern it, into
+   `.harness/verification/evidence/fidelity/<UTC>/compose/`, with a record of what it captured and
+   what it could not. A person runs it, compares each pair and records the result — the sweep itself
+   says it *"cannot see a layout that is cramped or unbalanced"*.
 3. **Everything else is unchanged.** Contrast, CVD, claims, token reach, font coverage and brand
    byte-comparison stay blocking. Fidelity is a reason to materialise a mockup — never a reason to
    lower a gate.

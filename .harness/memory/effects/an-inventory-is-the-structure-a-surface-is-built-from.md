@@ -55,3 +55,11 @@ inventory was written it stopped discriminating — the full gate run caught it 
     holds: 30 icon-only controls, 15 plated and 15 bare.
 - **Control defaults are now derived from these records** (E-157), so an edit here can move a
   default, and a test will say which.
+
+## F-221: the inventories are now asserted on the rendered tree
+
+The conformance sweep enrolls a surface once its feature is done, and asserts every element its
+inventory records is drawn — found by what it draws (catalogue words, glyph, illustration, component,
+an engine value), a `testID` only where it lands on something drawn. A changed element turns
+`pnpm test` red: every element needs a locator, and every locator an element. The composer also
+reads each framed inventory's screen box to crop the mockup it shows.

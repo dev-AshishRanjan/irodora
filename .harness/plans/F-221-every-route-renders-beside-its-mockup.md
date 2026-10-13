@@ -376,5 +376,12 @@ F-091's journey criteria by an actual run.
   - unreadable text and a composed claim.
 - **Smoke-tested here:** `--erase-app-data` with no adb wrote `NOTHING CAPTURED — 0 of 84` with the reason on every row, and exited 1. It also showed the record calling an unreached device "a physical device", now "none reached". `NO_JOURNAL_NEEDED` gains the runner.
 - **Tier 1, each exit 0:** format, typecheck, lint (the proofs included), plant-proof, state; `e2e-run` refuses without Maestro, as before. |
-| 8 | | |
+| 8 | this commit | **Records.**
+- **Effects:** E-055 (the route table now feeds the capture spec and its 40 flows), E-126 (the index feeds the spec and the composer's sha256 check), E-128 (the inventories are asserted on the rendered tree, and crop the composed mockups) and E-090 (one compile for three readers) are extended, each note with its F-221 section. New: **E-203**, a surface feature cannot close with its surface unswept, with its note and index line.
+- **R9-MOCKUP-FIDELITY:** §12 names the enrollment, the owner rule and `pnpm fidelity:capture`, and §4 E2 says a composed claim is now held on the screen too.
+- **`verify-claims`** now points its "not checked here" line at the sweep and the capture. The sweep's `notCovered` points at the capture, and its evidence is regenerated.
+- **F-221's `attested[]`:** criteria 1, 2 and 5, quoted verbatim, each with the exact run and what it must show, each blocking the release.
+- **ADR-0134** gains "Recorded while building": the declared unreachable route, the steps to the garment route, the owner rule's home, and what enrolling 27 found.
+- **Downstream:** F-231's note is followed through. Every surface feature still waiting on F-221 is told to enroll its surface in the same change.
+- **Tier 1, each exit 0:** format, typecheck, state, claims, lint. |
 | review | | |
