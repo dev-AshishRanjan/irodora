@@ -28,38 +28,14 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { delimiter, dirname, join, relative } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { onPath } from './on-path.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FLOW_DIR = join(ROOT, 'apps', 'mobile', 'e2e');
-
-/**
- * Find an executable on `PATH`.
- *
- * Written out rather than shelling out. `spawnSync('maestro')` reports `ENOENT` on Windows even
- * when `maestro.cmd` is sitting on the path, because Node does not consult `PATHEXT` — and this
- * script's whole job is to say accurately what is missing. Reporting "not installed" for a tool
- * that is installed would be the least useful lie it could tell.
- */
-function onPath(command) {
-  const extensions =
-    process.platform === 'win32' ? (process.env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';') : [''];
-
-  for (const directory of (process.env.PATH ?? '').split(delimiter)) {
-    if (directory === '') continue;
-    for (const extension of extensions) {
-      const candidate = join(directory, command + extension);
-      try {
-        if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
-      } catch {
-        // An unreadable PATH entry is not this script's problem. Keep looking.
-      }
-    }
-  }
-  return null;
-}
 
 /** Run a command with our stdio, and return its exit status. */
 function run(command, args) {

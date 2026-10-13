@@ -356,6 +356,25 @@ F-091's journey criteria by an actual run.
 - **`scripts/fidelity-proof.mjs`, in the `lint` chain.** 27 cases over the real mockups and inventories and fixture captures built in memory, each rule with a baseline and a decoy. It writes nothing.
 - **One composed page viewed rendered**, through a local server (the browser pane refuses `file://`): a blank capture beside 06 and 26, each cropped to its screen.
 - **Tier 1, each exit 0:** format, typecheck, lint (the proof and plant-proof included), `verify-mockups`, state. |
-| 7 | | |
+| 7 | this commit | **The runner: `pnpm fidelity:capture`.** `scripts/fidelity-capture.mjs` drives the device through an injected driver (`tools`, `devices`, `shell`, `runFlow`, `dumpHierarchy`) and writes through an injected sink, so the proof runs the same `runCapture` against a fake phone.
+- **Preflight, which changes nothing:** the flows are current; adb and Maestro are present; one device, or `--serial`; the app is installed and not debuggable; `--erase-app-data` was given. Each refusal is a record of nothing captured, with the reason on every row.
+- **The run:** `restore.txt` is written before the first change. The density is set so the screen is 384 ± 0.5 dp wide and read back. Font scale goes to 1 and the animation scales to 0. For each condition, night mode is set and read back. For each route: `pm clear`, the per-app language set and read back, the flow run, exactly one capture of the screen's width, the hierarchy dumped and read for claims, then composed. Everything is restored in a `finally` and on Ctrl+C, and a failed restore prints its commands. `--locale-by-hand` covers phones without per-app languages. `--compose <run folder>` recomposes a run sent back, with no device.
+- **Declared unreachable misses:** a miss the capture spec declares unreachable is counted apart (`unreachable`), named in the summary and in `record.md`, and does not fail the run; any other miss does. Without this, every run would exit 1 for the reading route.
+- **`onPath`** moves to `scripts/on-path.mjs`, shared with `e2e-run`, whose behaviour is unchanged: it still refuses without Maestro.
+- **The proof gains 15 cases on the fake device:**
+  - consent refused with zero mutating commands;
+  - no device, two devices, a debuggable build, no app;
+  - a full run of 80 captures that passes;
+  - `restore.txt` before the first change;
+  - 384 dp at density 450, with every setting put back;
+  - a clear before every capture, and every capture composed;
+  - a flow failing mid-run, with the device still put back;
+  - no capture, or one of the wrong width;
+  - a screen left at 411 dp;
+  - night mode ignored;
+  - a failed restore;
+  - unreadable text and a composed claim.
+- **Smoke-tested here:** `--erase-app-data` with no adb wrote `NOTHING CAPTURED — 0 of 84` with the reason on every row, and exited 1. It also showed the record calling an unreached device "a physical device", now "none reached". `NO_JOURNAL_NEEDED` gains the runner.
+- **Tier 1, each exit 0:** format, typecheck, lint (the proofs included), plant-proof, state; `e2e-run` refuses without Maestro, as before. |
 | 8 | | |
 | review | | |

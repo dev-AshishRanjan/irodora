@@ -500,6 +500,8 @@ const NO_JOURNAL_NEEDED = {
   'verify-app-glyphs.mjs': 'plants fixture screens under the OS temp directory (F-228)',
   'verify-native-assets.mjs':
     'synthesises native projects under the OS temp directory for its proof (F-231)',
+  'fidelity-capture.mjs':
+    'writes a run only under the gitignored .harness/verification/evidence/fidelity/ and Maestro output under the OS temp directory; it plants nothing (F-221)',
 };
 
 {

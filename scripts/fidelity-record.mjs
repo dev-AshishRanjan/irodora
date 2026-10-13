@@ -58,6 +58,9 @@ export function buildRecord({ commit, app, device, routes, results, claims }) {
     expected: wanted.size,
     captured,
     notCaptured: wanted.size - captured,
+    // Misses the capture spec declares, with its reason: a route no cleared app can reach.
+    unreachable: results.filter((r) => r.status === 'not-captured' && r.unreachable === true)
+      .length,
     claims: {
       capturesChecked: claims?.capturesChecked ?? 0,
       texts: claims?.texts ?? 0,
@@ -68,17 +71,32 @@ export function buildRecord({ commit, app, device, routes, results, claims }) {
   };
 }
 
-/** One line a person reads first. The two failures that look like success are spelled out. */
+/**
+ * One line a person reads first. The two failures that look like success are spelled out, and a
+ * miss the capture spec declares unreachable is named as that, never folded into a pass.
+ */
 export function summaryLine(record) {
   if (record.captured === 0) return `NOTHING CAPTURED — 0 of ${String(record.expected)}`;
   const head = `captured ${String(record.captured)} of ${String(record.expected)}`;
-  return record.notCaptured === 0 ? head : `${head}; ${String(record.notCaptured)} not captured`;
+  if (record.notCaptured === 0) return head;
+  const other = record.notCaptured - record.unreachable;
+  return [
+    head,
+    ...(other > 0 ? [`${String(other)} not captured`] : []),
+    ...(record.unreachable > 0
+      ? [`${String(record.unreachable)} unreachable from a cleared app, as the capture spec says`]
+      : []),
+  ].join('; ');
 }
 
-/** Whether a run proved what criterion 1, 2 and 5 ask: everything captured, nothing claimed. */
+/**
+ * Whether a run proved what criteria 1, 2 and 5 ask: every reachable capture taken and read, and
+ * nothing claimed. A miss the spec declares unreachable does not fail it; it stays in the record and
+ * its summary, with why. Any other miss does.
+ */
 export function runPassed(record) {
   return (
-    record.notCaptured === 0 &&
+    record.notCaptured === record.unreachable &&
     record.claims.findings === 0 &&
     record.claims.unread === 0 &&
     record.claims.capturesChecked === record.captured
@@ -94,7 +112,9 @@ export function recordMarkdown(record) {
     `**${summaryLine(record)}.** ${runPassed(record) ? 'Every capture taken and read, no claim found.' : 'Not a complete run: see below.'}`,
     '',
     `- commit \`${String(record.commit)}\`, app ${String(record.app?.package)} ${String(record.app?.versionName ?? '')}`,
-    `- device ${String(d.model)}, API ${String(d.sdk)}, ${d.emulator === true ? 'an emulator' : 'a physical device'}, ${String(d.dpWidth)} dp wide`,
+    record.device === null || record.device === undefined
+      ? '- device: none reached (each row says why)'
+      : `- device ${String(d.model)}, API ${String(d.sdk)}, ${d.emulator === true ? 'an emulator' : 'a physical device'}, ${String(d.dpWidth ?? 'unmeasured')} dp wide`,
     `- claims: ${String(record.claims.capturesChecked)} capture(s) read, ${String(record.claims.texts)} text(s), ` +
       `${String(record.claims.findings)} finding(s), ${String(record.claims.unread)} unread (each capture's claims.txt)`,
     '',
@@ -105,7 +125,7 @@ export function recordMarkdown(record) {
         `| \`${r.route}\` | ${r.theme}/${r.locale} | ${
           r.status === 'captured'
             ? `captured → \`${String(r.composed ?? r.capture)}\``
-            : `NOT CAPTURED — ${String(r.reason).replace(/\|/gu, '\\|')}`
+            : `${r.unreachable === true ? 'UNREACHABLE' : 'NOT CAPTURED'} — ${String(r.reason).replace(/\|/gu, '\\|')}`
         } |`,
     ),
     '',
