@@ -24,3 +24,20 @@ the parser is proven against aapt2's printed form taken from its source, and the
 ## F-231's review (2026-10-08)
 
 In a shortened release table, `mipmap/ic_launcher` and `mipmap/ic_launcher_round` also carry the anydpi-v26 adaptive-icon XML. Routed by resource name alone, it was read as an image and failed every real release APK. `brandResources` routes rasters only, and the SDK-free half of the proof now routes such a table, with routing by name alone as the decoy.
+
+## F-340 (2026-10-14): the routing case passed an array, and the gate passed an iterator
+
+`checkApk` hands `brandResources` the ZIP's `entries.keys()`, which is a one-shot iterator. B2's fix
+above read that input twice: the name scan used it up, and the set that skips the XML was built from
+nothing. So every file the table named was refused, and **every shortened release APK reported no
+launcher icon or splash logo**. The SDK-free case passed an array, which can be read twice, so it
+stayed green. The aapt2 shortened case did go red, but only in the Android lane, which a person
+dispatches. The person reported it from there.
+
+`brandResources` now reads its input once. The SDK-free case passes a `Map`'s `keys()`, as the gate
+does ([[a-proof-must-call-the-function-the-way-the-gate-does]]).
+
+**The SDK half does run on this workstation.** The SDK is at `%LOCALAPPDATA%\Android\Sdk` (build-tools
+33.0.1, android-32), and `ANDROID_HOME` names its parent. With `ANDROID_HOME` pointed at the `Sdk`
+directory, `node scripts/verify-apk.mjs --prove` builds its fixtures and runs all 26 cases. "What is
+not proven here", above, was true only of the environment variable.

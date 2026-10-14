@@ -90,6 +90,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-rule-written-for-snake-case-columns-cannot-read-camel-case-source.md](lessons/a-rule-written-for-snake-case-columns-cannot-read-camel-case-source.md) — the same regex missed `inferEthnicity` and `ageBand` silently; tokenise the identifier, then match stems per token.
 - [lessons/a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it.md](lessons/a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it.md) — two gates read source text and both failed on the COMMENT explaining the fix; writing about the forbidden thing produces it.
 - [lessons/a-mock-records-every-call-until-something-clears-it.md](lessons/a-mock-records-every-call-until-something-clears-it.md) — F-240: `screens.test` held every render alive through uncleared `jest.fn` records (`performance.now`, `AccessibilityInfo`), 2.1 GB, and `a11y` died; `clearMocks`, and measure retained heap per test; and (F-266) RNTL awaits an unmount per render after each test, so a whole-registry test is written per subject.
+- [lessons/a-proof-must-call-the-function-the-way-the-gate-does.md](lessons/a-proof-must-call-the-function-the-way-the-gate-does.md) — F-340: gate 16 passed a one-shot `entries.keys()` and read it twice, so a shortened APK had no icon; its proof passed an array and stayed green. Pass what the gate passes, the same kind of value, not just the same contents.
 
 ### Environment
 
