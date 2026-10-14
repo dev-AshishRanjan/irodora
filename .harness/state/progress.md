@@ -8,6 +8,83 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-14 — F-324 The a11y mutation proof plants its tap-target case again
+
+**Done.** The person reported CI red at *Gate 8 — a11y mutation proof*: "a tap target below the
+platform minimum: the source to mutate is not there any more — case UNRUNNABLE". The case anchored
+on Button's `minWidth` and `minHeight` of `nativeTapTarget`. F-232 increment 4 (`3802c00`) replaced
+both with a drawn height and `hitSlop={hitArea(height, height)}` (ADR-0114). The step had been red
+since then, and F-295 kept anyone from seeing it until CI reached it. F-324 shipped in four commits,
+`8a7990d` through this one.
+
+- **Criterion 1: the case plants the defect that matters today.**
+  - It removes `LabelledButton`'s `hitSlop={hitArea(height, height)}`, the only call with those
+    arguments. The result is a Button drawn at its size with no hit area.
+  - Gate 8 reports `tap-target`. Checked by hand: every finding is a Button subject, at 32 × 32 of
+    44, and at 11 × 11 and 14 × 14 for the smaller ones.
+  - **Watched failing first.** On the tree as it was, `pnpm verify:a11y:prove` exited 1 with the
+    person's message and left no journal. After the fix: exit 0, six of six cases caught, and the
+    baseline green before and after.
+- **Criterion 2: a moved anchor still fails.**
+  - That path is unchanged. The review ran a scratch copy with the old anchor, and it exited 1 with
+    the person's message.
+  - The step is green in the local CI mirror. **The GitHub run itself has not been observed**: no
+    push has been made, and that is the person's call.
+- **Records.**
+  - E-020 (`packages/ui` →) now lists the proof, because its six anchors are exact text in four of
+    that package's files. This is the review's S1.
+  - E-156 names the proof as a guard.
+  - Each link's note has an F-324 section.
+
+**Review (once): FAIL as delivered**, with no blocking finding, 1 significant and 4 minor. Every one
+is fixed. The plan's `review` rows list each.
+
+- **S1, fixed.** Nothing linked the four files the proof reads to the proof, so the next edit to them
+  would have traced nothing. That is how this case and the `isDisabled` one each went UNRUNNABLE.
+- **M1, fixed.** A comment said F-239's switch shipped with no slop. The record says it was raised
+  to 68 × 44.
+- **M2–M4, fixed.** The plan's hand check is labelled as a hand check, the note's guard line is
+  updated, and this entry says the CI evidence is local.
+
+**Gates run on the final tree:**
+
+Each exit 0:
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm format:check` · `pnpm build` ·
+  `pnpm lint`
+- `pnpm verify:a11y:prove`: six of six cases, baseline green before and after, no journal left
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories. F-324 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **31 of 38 green, none not run**, with one shell block skipped.
+  - **Gate 8's mutation proof is green**, and the plant journal proof after it is green too.
+  - **Two recorded reds:** the iOS config half on win32, and gate 15, which is F-322.
+  - **An F-333 event, in a new shape.** The contrast mutation proof's RESTORE hit win32's transient
+    `UNKNOWN` (`verify-contrast-proof.mjs:297`). So the manifest kept its plant (`status.warn` at L
+    0.54) and the journal kept the original bytes.
+  - **What that event broke after it.** Gate 10 (`pnpm test:cvd`) read the planted manifest and
+    failed four tests. The content, bench and no-inference proofs refused over the journal, as they
+    should.
+  - **Recovery.** The journal's bytes equalled HEAD, and `node scripts/plant.mjs --recover` restored
+    the file. Each of the five steps then exited 0 on its own, `test:cvd` with 148 of 148.
+
+**Not run:**
+
+- the GitHub Actions run (no push);
+- the Android lane (that is F-340's);
+- `e2e` (no Maestro or JDK here). Nothing a person can see changed.
+
+### Lessons
+
+None new. [[a-decoy-written-against-old-values-quietly-stops-discriminating]] already names the
+class. What F-324 adds is the link, E-020, so that an edit to the planted files is traced to the
+proof.
+
+### Next
+
+F-340: the person's second report, the Android lane's artefact proof.
+
 ## 2026-10-14 — F-238 An outfit can be saved to a lookbook
 
 **Done here, with the device half owed.** The Outfit Lab (13) saves an outfit; the Wardrobe (11)

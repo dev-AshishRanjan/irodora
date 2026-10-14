@@ -64,3 +64,14 @@ week.
 - **HeroUI's own internal classes**, which are theirs. The generated `global.css` is what themes
   them, and [E-019](the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md)
   is the link that covers it.
+
+## F-324 (2026-10-14): the a11y mutation proof reads this package's source by exact text
+
+`scripts/verify-a11y-proof.mjs` plants its six defects into `packages/ui` by matching exact text:
+three in `Button.tsx`, one each in `Swatch.tsx`, `Surface.tsx` and `Text.tsx`. An edit to any of
+those four files can move an anchor. The proof then fails in CI as UNRUNNABLE rather than passing
+quietly, which is the right failure, but it has now happened twice without the edit's author
+knowing: F-232 increment 4 moved the tap-target case's anchor, and HeroUI's `isDisabled` moved the
+disabled case's. So when a feature changes one of the four, it runs `pnpm verify:a11y:prove` and
+re-anchors the case on what the code does now. The case's defect stays the same: it still names
+what makes the control accessible today.

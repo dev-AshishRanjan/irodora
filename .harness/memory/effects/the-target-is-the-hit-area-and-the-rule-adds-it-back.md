@@ -1,7 +1,7 @@
 # E-156 — The target is the hit area, and the rule adds it back
 
 **Link:** `packages/ui/src/hitArea.ts` → every control · the `tap-target` rule · gate 8
-**Guard:** `hit-area.test.tsx` and every control form registered as a conformance subject
+**Guard:** `hit-area.test.tsx`, every control form registered as a conformance subject, and (since F-324) the a11y mutation proof, which plants a Button with no `hitSlop` and requires `tap-target`
 **Severity:** critical **Feature:** F-232 (ADR-0114)
 
 ---
