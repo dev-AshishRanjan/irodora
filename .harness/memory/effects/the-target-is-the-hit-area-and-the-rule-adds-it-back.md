@@ -57,3 +57,15 @@ reached outside its parent, and Android delivers no touch there.
 were clipped. A field holding a toggle is now at least the platform's target tall. 06's toggle
 sits in a target-sized square, because the header's slot sizes itself to a 24 dp glyph. Both are
 tested as iOS and as Android. Every other field, still 44 dp on Android, is F-305's.
+
+## F-324 (2026-10-14): the a11y mutation proof plants the slop's absence
+
+The mutation proof's tap-target case anchored on Button's `minWidth` and `minHeight` of
+`nativeTapTarget`, the pre-ADR-0114 way a Button reached the target. F-232 increment 4 removed
+them, and the case reported UNRUNNABLE in CI from then until the person reported it. It now
+removes `hitSlop={hitArea(height, height)}` from `LabelledButton`, which is the defect this link
+exists for: a control drawn at its size with no slop. Gate 8 must then report `tap-target`, and it
+does, at 32 × 32 of 44.
+
+**A change to how a control reaches the target moves this anchor too.** The proof fails loudly when
+it cannot plant, so the next move shows up in CI as UNRUNNABLE rather than as a quiet pass.

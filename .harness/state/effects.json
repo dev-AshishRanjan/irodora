@@ -6406,6 +6406,10 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/bookmarks.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-a11y-proof.mjs"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6417,7 +6421,7 @@
         "packages/design-tokens"
       ],
       "severity": "critical",
-      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44.",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44. SINCE F-324 the a11y mutation proof (verify-a11y-proof.mjs, ci.yml “Gate 8 — a11y mutation proof”) plants a LabelledButton with no hitSlop and requires gate 8 to report tap-target; it fails as UNRUNNABLE when Button stops reaching the target through hitArea(height, height).",
       "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
       "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
     },
