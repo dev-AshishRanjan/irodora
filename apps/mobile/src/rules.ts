@@ -60,8 +60,12 @@ import {
  * `default` and only `default`, because nothing in the app asks a question that varies by
  * occasion yet. Naming it here rather than threading it through means the day something does,
  * the change is visible as a change rather than as a parameter that was always there.
+ *
+ * **Exported for the lookbook (F-238).** A rules version holds one weighting per occasion, so a
+ * saved outfit's envelope names the occasion its score was weighted for — the day a second one is
+ * used, two weightings under one version would otherwise be indistinguishable.
  */
-const OCCASION = 'default' as const;
+export const RULES_OCCASION = 'default' as const;
 
 let cached: RuleSet | null = null;
 
@@ -108,7 +112,7 @@ export function ruleSet(): RuleSet {
         'generations — run `node scripts/generate-rules-bundle.mjs`.',
     );
 
-  cached = ruleSetFor(content, OCCASION);
+  cached = ruleSetFor(content, RULES_OCCASION);
   return cached;
 }
 

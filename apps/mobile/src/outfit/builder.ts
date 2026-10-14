@@ -107,7 +107,11 @@ export function engineProfile(profile: Profile): PersonalProfile {
   };
 }
 
-const pieceOf = (p: Placement): OutfitPiece => ({ slot: p.slot, color: colorOf(p.garment.color) });
+/** A placed garment as the engine scores it. Exported for the lookbook's whole-draft score (F-238). */
+export const pieceOf = (p: Placement): OutfitPiece => ({
+  slot: p.slot,
+  color: colorOf(p.garment.color),
+});
 
 /**
  * Which slot a garment can fill.
