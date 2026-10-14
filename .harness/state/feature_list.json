@@ -10897,7 +10897,7 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "in_progress",
       "blockedBy": [],
       "acceptance": [
         "verify-a11y-proof.mjs plants every case: the tap-target case mutates what makes a Button reach the target today (its hitSlop from hitArea, ADR-0114) and gate 8 reports tap-target",
@@ -10908,7 +10908,8 @@
         "lint",
         "a11y"
       ],
-      "notes": "FOUND DURING F-236’s close-out (2026-10-09), running `node scripts/verify-ci.mjs --all`. The case \"a tap target below the platform minimum\" reports \"cannot plant: source moved\": it looks for minWidth and minHeight of nativeTapTarget in packages/ui/src/Button.tsx, which F-232 increment 4 (3802c00) replaced with a drawn height and `hitSlop={hitArea(height, height)}`. So the a11y mutation proof’s CI step has been red since F-232. NOBODY SAW IT BECAUSE OF F-295: `pnpm verify:ci` stops at its first red step, and F-295 makes Gate 4 (test) red on every uncached run, so every step after test goes unread unless --all is given. Out of F-236’s scope (it touched neither file): recorded, not fixed (rule 2). FOUND BY F-295’S REVIEW (2026-10-12): verify-a11y-proof.mjs opens its journal (`guardPlants`) before it checks the case can plant, and on “cannot plant: source moved” it `continue`s past `journal.close()`. The tap-target case is the last of its six, so every run leaves an entry naming an unmodified packages/ui/src/Button.tsx. Nothing has refused over it because the next ci.yml step, the plant journal proof, deletes the whole journal (F-296). Fixing this case removes the leftover; the skip path should close its journal whatever F-324 does. F-296 (2026-10-12): the skip path’s leaked journal entry is fixed — the proof opens its journal only once a case can plant, so “cannot plant” leaves none. The case itself still cannot plant; that is this feature."
+      "notes": "FOUND DURING F-236’s close-out (2026-10-09), running `node scripts/verify-ci.mjs --all`. The case \"a tap target below the platform minimum\" reports \"cannot plant: source moved\": it looks for minWidth and minHeight of nativeTapTarget in packages/ui/src/Button.tsx, which F-232 increment 4 (3802c00) replaced with a drawn height and `hitSlop={hitArea(height, height)}`. So the a11y mutation proof’s CI step has been red since F-232. NOBODY SAW IT BECAUSE OF F-295: `pnpm verify:ci` stops at its first red step, and F-295 makes Gate 4 (test) red on every uncached run, so every step after test goes unread unless --all is given. Out of F-236’s scope (it touched neither file): recorded, not fixed (rule 2). FOUND BY F-295’S REVIEW (2026-10-12): verify-a11y-proof.mjs opens its journal (`guardPlants`) before it checks the case can plant, and on “cannot plant: source moved” it `continue`s past `journal.close()`. The tap-target case is the last of its six, so every run leaves an entry naming an unmodified packages/ui/src/Button.tsx. Nothing has refused over it because the next ci.yml step, the plant journal proof, deletes the whole journal (F-296). Fixing this case removes the leftover; the skip path should close its journal whatever F-324 does. F-296 (2026-10-12): the skip path’s leaked journal entry is fixed — the proof opens its journal only once a case can plant, so “cannot plant” leaves none. The case itself still cannot plant; that is this feature. REPORTED BY THE USER (2026-10-14): CI red at “Gate 8 — a11y mutation proof”, “a tap target below the platform minimum: the source to mutate is not there any more — case UNRUNNABLE”. Claimed out of order at the person’s direction, with the Android lane’s artefact proof (F-340).",
+      "plan": "plans/F-324-the-a11y-mutation-proof-plants-its-tap-target-case-again.md"
     },
     {
       "id": "F-325",
@@ -11279,6 +11280,37 @@
         "state"
       ],
       "notes": "FOUND BY F-237’S REVIEW (2026-10-13, finding M9). R9-MOCKUP-FIDELITY §11 “Widened, 2026-10-05” records the person’s delegation of every open question, an undrawn surface included, and ADR-0134 and ADR-0135 were decided under it; AGENTS.md golden rule 14 still says an undrawn surface waits for a person. Every evaluator will trip on the difference. Changing a golden rule’s words is a person’s call, so this is recorded rather than decided."
+    },
+    {
+      "id": "F-340",
+      "title": "Gate 16 finds no icon in a release APK: the entry names are read twice from a one-shot iterator",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "brandResources reads the entry names it is given once, whatever iterable they come in: verify-apk --prove’s SDK-free routing case passes them as checkApk does (`entries.keys()`, a one-shot iterator) and routes the four rasters — watched failing first",
+        "pnpm verify:apk:prove exits 0 where the SDK is, its shortened-paths case green, run against this workstation’s build-tools",
+        "Gate 16 passes on the Android lane’s release APK, whose resource paths are shortened"
+      ],
+      "attested": [
+        {
+          "criterion": "Gate 16 passes on the Android lane’s release APK, whose resource paths are shortened",
+          "verifiedBy": "The next workflow_dispatch run of android-build.yml: its steps “Artifact proof” and “Gate 16 — artifact” conclude success, the second with the SHORTENED note printed (the release variant’s paths are shortened by AGP optimizeReleaseResources). A Gradle release build needs a JDK, which this workstation does not have, and the run needs a push, which is the person’s call.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "notes": "REPORTED BY THE USER (2026-10-14): the Android lane red at “Artifact proof”: “the same, its resource paths SHORTENED (must stay GREEN) — expected GREEN, got: no launcher icon or splash logo in the artefact”. Reproduced on this workstation, whose SDK is at %LOCALAPPDATA%\\Android\\Sdk (build-tools 33.0.1, android-32) although ANDROID_HOME names its parent. CAUSE: checkApk passes `entries.keys()` — a one-shot Map iterator — to brandResources, which spreads it for the name scan (`[...entryNames]`) and then builds `new Set(entryNames)` from the drained iterator. The set is empty, so `names.has(path)` refuses every file the resource table names, and a shortened APK reports no icon. A debug-named APK passes, because the name scan reads the iterator first. Introduced by 508ea1d (F-231’s review, B2), which added the set to skip the adaptive-icon XML; its SDK-free routing case passes an ARRAY, which can be read twice, so the proof meant to cover the fix could not see it. The same defect fails gate 16 itself on every real release APK, so the lane’s next step would have failed for the same reason. Filed with F-324 at the person’s direction."
     }
   ]
 }
