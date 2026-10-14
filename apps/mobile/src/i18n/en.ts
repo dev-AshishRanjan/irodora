@@ -586,6 +586,10 @@ export const en = {
   'outfit.wore': 'I wore this',
   'outfit.woreDone': 'Recorded. One more wear on each piece.',
   'outfit.woreNothing': 'Choose something, and you can record wearing it.',
+  'lab.saveToLookbook': 'Save Outfit to Lookbook',
+  'lookbook.wholeOutfit': 'The whole outfit',
+  'lookbook.needsEverySlot': 'Put a garment in every slot to save this outfit.',
+  'lookbook.alreadySaved': 'This outfit is in your lookbook: on the Wardrobe, under Lookbook.',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   /*
    * F-180 — THE WORD A PERSON LOOKS FOR.

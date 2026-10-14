@@ -9,16 +9,31 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import type { NewOutfit, StoredOutfit } from '@irodora/store';
+import { parseWeightContent } from '@irodora/recommendation';
+import type { NewOutfit, SavedColorRow, StoredGarment, StoredOutfit } from '@irodora/store';
+import { ThemeProvider } from '@irodora/ui';
+import { allEntries } from '../src/corpus';
+import { t } from '../src/i18n';
+import { ruleSet } from '../src/rules';
+import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
+import { OutfitBuilder } from '../src/screens/OutfitBuilder';
+import { colorOf } from '../src/wardrobe';
+import type { OutfitDraft } from '../src/outfit/builder';
 import {
   LookbookProvider,
   useLookbook,
   type LookbookStore,
   type LookbookValue,
 } from '../src/lookbook';
-import { compositionKey } from '../src/outfit/lookbook';
+import {
+  compositionKey,
+  draftKey,
+  outfitRecord,
+  scoreDraft,
+  type ScoringContext,
+} from '../src/outfit/lookbook';
 
 const ENVELOPE = {
   engine: '0.1.0',
@@ -210,11 +225,196 @@ describe('the provider', () => {
   });
 });
 
+describe('the Lab saves the whole outfit (13, ADR-0136 D4)', () => {
+  const rowOf = (slug: string): SavedColorRow => {
+    const found = allEntries().find((e) => e.entry.slug === slug);
+    if (found === undefined) throw new Error(`no entry ${slug}`);
+    return {
+      id: `colour-${slug}`,
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      name: found.entry.name.en,
+      xyz_x: found.entry.color.xyz[0],
+      xyz_y: found.entry.color.xyz[1],
+      xyz_z: found.entry.color.xyz[2],
+      lab_l: found.derived.lab[0],
+      lab_a: found.derived.lab[1],
+      lab_b: found.derived.lab[2],
+      oklch_l: found.derived.oklch[0],
+      oklch_c: found.derived.oklch[1],
+      oklch_h: found.derived.oklch[2],
+      hex: found.derived.hex,
+      source: 'reference',
+      confidence: 1,
+      corpus_slug: slug,
+      capture_illuminant: null,
+      capture_quality: null,
+      capture_samples: null,
+      capture_variance: null,
+    };
+  };
+  const garment = (id: string, type: string, slug: string): StoredGarment => ({
+    id,
+    type,
+    color: rowOf(slug),
+    name: null,
+    pattern: null,
+    material: null,
+    formality: null,
+    brand: null,
+    size: null,
+    purchaseDate: null,
+    costMinor: null,
+    currency: null,
+    wearCount: 0,
+    seasons: [],
+    colors: [],
+    createdAt: 1,
+    updatedAt: 1,
+    deletedAt: null,
+  });
+  const slugs = allEntries()
+    .slice(0, 4)
+    .map((e) => e.entry.slug);
+  const WARDROBE = [
+    garment('o-1', 'jumper', slugs[0]!),
+    garment('o-2', 'trousers', slugs[1]!),
+    garment('o-3', 'shoes', slugs[2]!),
+    garment('o-4', 'boots', slugs[3]!),
+  ];
+  const context: ScoringContext = {
+    profile: {
+      id: 'p',
+      method: 'guided',
+      lightness: { min: 0.3, max: 0.8 },
+      temperatureBias: 0.2,
+      chroma: { min: 0.02, max: 0.2 },
+      contrast: 'medium',
+      confidence: {
+        lightness: 0.7,
+        temperature: 0.7,
+        chroma: 0.7,
+        contrast: 0.7,
+        neutrals: 0.7,
+        accents: 0.7,
+        avoid: 0.7,
+      },
+      origin: {
+        lightness: 'derived',
+        temperature: 'derived',
+        chroma: 'derived',
+        contrast: 'derived',
+        neutrals: 'derived',
+        accents: 'derived',
+        avoid: 'derived',
+      },
+      neutrals: [],
+      accents: [],
+      avoid: [],
+    },
+    rules: ruleSet(),
+    weights: parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json'),
+    reference: allEntries()
+      .slice(0, 8)
+      .map((e) => ({ id: e.entry.slug, color: colorOf(rowOf(e.entry.slug)) })),
+  };
+  const COMPLETE: OutfitDraft = [
+    { slot: 'top', garment: WARDROBE[0]!, locked: true },
+    { slot: 'trouser', garment: WARDROBE[1]!, locked: false },
+    { slot: 'shoe', garment: WARDROBE[2]!, locked: false },
+  ];
+  const save = () => screen.getByRole('button', { name: t('en', 'lab.saveToLookbook') });
+  const disabled = () =>
+    (save().props['accessibilityState'] as { disabled?: boolean }).disabled === true;
+
+  const lab = (
+    draft: OutfitDraft,
+    saved: ReadonlySet<string> = new Set(),
+    onSave: (o: NewOutfit) => void = () => undefined,
+  ) =>
+    render(
+      <ThemeProvider theme="dark">
+        <OutfitBuilder
+          wardrobe={WARDROBE}
+          context={context}
+          initialDraft={draft}
+          store={{ enrichGarment: () => undefined, listGarments: () => WARDROBE }}
+          lookbook={{ envelope: { ...ENVELOPE }, saved, onSave }}
+        />
+      </ThemeProvider>,
+    );
+
+  it('is disabled, with its reason, until every slot holds a garment', () => {
+    lab(COMPLETE.slice(0, 2));
+    expect(disabled()).toBe(true);
+    expect(screen.getByText(t('en', 'lookbook.needsEverySlot'))).toBeTruthy();
+  });
+
+  it('DECOY: with every slot filled it is enabled, and the whole outfit is scored beside it', () => {
+    lab(COMPLETE);
+    expect(disabled()).toBe(false);
+    expect(screen.queryByText(t('en', 'lookbook.needsEverySlot'))).toBeNull();
+    expect(screen.getByText(t('en', 'lookbook.wholeOutfit'))).toBeTruthy();
+    const overall = scoreDraft(COMPLETE, context).overall;
+    expect(
+      screen.getAllByText(`${t('en', 'outfit.overall')}: ${String(Math.round(overall))}`).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('saves exactly the record of the outfit shown, once', () => {
+    const onSave = jest.fn();
+    lab(COMPLETE, new Set(), onSave);
+    fireEvent.press(save());
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave).toHaveBeenCalledWith(
+      outfitRecord(COMPLETE, scoreDraft(COMPLETE, context), { ...ENVELOPE }),
+    );
+  });
+
+  it('once saved, it is disabled and says where the outfit is', () => {
+    lab(COMPLETE, new Set([draftKey(COMPLETE)]));
+    expect(disabled()).toBe(true);
+    expect(screen.getByText(t('en', 'lookbook.alreadySaved'))).toBeTruthy();
+  });
+
+  it('DECOY: a different garment in one slot is a different outfit, and can be saved', () => {
+    const other: OutfitDraft = [
+      ...COMPLETE.slice(0, 2),
+      { slot: 'shoe', garment: WARDROBE[3]!, locked: false },
+    ];
+    lab(other, new Set([draftKey(COMPLETE)]));
+    expect(disabled()).toBe(false);
+  });
+
+  it('draws no save at all when the route supplies no lookbook', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <OutfitBuilder
+          wardrobe={WARDROBE}
+          context={context}
+          initialDraft={COMPLETE}
+          store={{ enrichGarment: () => undefined, listGarments: () => WARDROBE }}
+        />
+      </ThemeProvider>,
+    );
+    expect(screen.queryByRole('button', { name: t('en', 'lab.saveToLookbook') })).toBeNull();
+  });
+});
+
 describe('the routes carry the lookbook (E-205)', () => {
   const source = (path: string): string => readFileSync(join(__dirname, '..', path), 'utf8');
 
   it('the root layout mounts the provider with the device repository', () => {
     expect(source('app/_layout.tsx')).toMatch(/<LookbookProvider store=\{deviceRepository\(\)\}>/);
+  });
+
+  it('the Lab route reads the lookbook and hands the screen its envelope, saved set and save', () => {
+    const route = source('app/(tabs)/wardrobe/outfit.tsx');
+    expect(route).toMatch(/useLookbook\(\)/);
+    expect(route).toMatch(
+      /lookbook=\{\{ envelope, saved: lookbook\.saved, onSave: lookbook\.save \}\}/,
+    );
   });
 
   it('DECOY: a route that has nothing to do with the lookbook does not read it', () => {

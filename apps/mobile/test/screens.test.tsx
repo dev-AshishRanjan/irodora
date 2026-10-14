@@ -112,7 +112,8 @@ import { colorOf } from '../src/wardrobe';
 import { groupByColour } from '../src/wardrobe/browse';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
-import { engineProfile } from '../src/outfit/builder';
+import { engineProfile, type OutfitDraft } from '../src/outfit/builder';
+import { draftKey } from '../src/outfit/lookbook';
 import {
   outfitWeights,
   parseWeightContent,
@@ -767,6 +768,23 @@ const OUTFIT_WARDROBE = [
   outfitGarment('o-2', 'trousers', allEntries()[1]!.entry.slug),
   outfitGarment('o-3', 'shoes', allEntries()[2]!.entry.slug),
 ];
+
+/** Every slot filled, the top locked: an outfit the Lab can save (F-238). */
+const OUTFIT_COMPLETE: OutfitDraft = [
+  { slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true },
+  { slot: 'trouser', garment: OUTFIT_WARDROBE[1]!, locked: false },
+  { slot: 'shoe', garment: OUTFIT_WARDROBE[2]!, locked: false },
+];
+
+/** A save's versions, as a route would build them. Fixture values, not the build's. */
+const LOOKBOOK_ENVELOPE = {
+  engine: '0.1.0',
+  scorer: '0.5.0',
+  corpus: '2026.08.1',
+  rules: '2026.08.4',
+  occasion: 'default',
+  profile: 'p:1',
+} as const;
 
 /**
  * The same wardrobe with a price and a wear history on the top (F-051).
@@ -1509,6 +1527,32 @@ const SCREENS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  ...(['every slot filled', 'in your lookbook'] as const).map((state): ConformanceSubject => ({
+    /*
+     * SAVE OUTFIT TO LOOKBOOK (F-238, ADR-0136 D4): every slot filled, so the whole outfit's
+     * score is drawn beside the save — enabled, or disabled with its reason once it is saved.
+     * Two trees, each measured in every condition.
+     */
+    name: `screens/OutfitBuilder (${state})`,
+    shows: showing(OUTFIT_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <OutfitBuilder
+          wardrobe={OUTFIT_WARDROBE}
+          context={OUTFIT_CONTEXT}
+          initialDraft={OUTFIT_COMPLETE}
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+          lookbook={{
+            envelope: LOOKBOOK_ENVELOPE,
+            saved: new Set(state === 'in your lookbook' ? [draftKey(OUTFIT_COMPLETE)] : []),
+            onSave: () => undefined,
+          }}
+        />,
+        theme,
+      ),
+  })),
   {
     /*
      * The SAME screen where cost per wear HAS an answer (F-051).

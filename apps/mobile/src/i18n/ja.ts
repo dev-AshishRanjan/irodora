@@ -532,6 +532,11 @@ export const ja: Record<MessageKey, string> = {
   'outfit.wore': 'これを着ました',
   'outfit.woreDone': '記録しました。それぞれの着用回数が1増えました。',
   'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
+  'lab.saveToLookbook': 'コーディネートをルックブックに保存',
+  'lookbook.wholeOutfit': 'コーディネート全体',
+  'lookbook.needsEverySlot': 'すべての枠に服を入れると、このコーディネートを保存できます。',
+  'lookbook.alreadySaved':
+    'このコーディネートはルックブックにあります（ワードローブの「ルックブック」）。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   // F-180 — see en.ts for why this screen is named twice.
   // F-241 — see en.ts for why the hint says what the picture is NOT used for.

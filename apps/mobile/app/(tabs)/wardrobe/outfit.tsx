@@ -8,6 +8,8 @@ import { ruleSet } from '../../../src/rules';
 import { WEIGHTS_TEXT } from '../../../src/rules/generated/weights';
 import { activeProfile, toWorking } from '../../../src/profile/store';
 import { deviceRepository } from '../../../src/store/repository';
+import { useLookbook } from '../../../src/lookbook';
+import { outfitEnvelope } from '../../../src/outfit/lookbook';
 
 /**
  * The route. Navigation options, and the wires the screen cannot make itself.
@@ -69,10 +71,20 @@ export default function OutfitRoute(): React.JSX.Element {
     [stored],
   );
 
+  /*
+   * THE LOOKBOOK (F-238, ADR-0136): the versions a save is scored by — the stored profile's identity
+   * and revision, and the rules the context scores with — and the provider's saved compositions.
+   */
+  const lookbook = useLookbook();
+  const envelope = useMemo(
+    () => (stored === null ? null : outfitEnvelope(stored, context.rules)),
+    [stored, context.rules],
+  );
+
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      {context.profile === null ? null : (
+      {context.profile === null || envelope === null ? null : (
         <OutfitBuilder
           store={repo}
           wardrobe={repo.listGarments()}
@@ -85,6 +97,7 @@ export default function OutfitRoute(): React.JSX.Element {
           onAddGarment={() => {
             router.push('/wardrobe/add');
           }}
+          lookbook={{ envelope, saved: lookbook.saved, onSave: lookbook.save }}
         />
       )}
     </>

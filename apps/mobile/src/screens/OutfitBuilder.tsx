@@ -32,6 +32,15 @@
  * samples. The component scores are therefore numbers and words — golden rule 13 satisfied by
  * having nothing to satisfy — and `screens.test.tsx` runs `checkStatusAdjacency` over every
  * screen, so the next person to reach for a status token here is told rather than trusted.
+ *
+ * ## Saving to the lookbook (F-238, ADR-0136 D4)
+ *
+ * The proposals each score the locked pieces plus one candidate. A saved outfit is the WHOLE
+ * draft, so once every slot is filled the controls show that outfit's own score — one engine call
+ * over every placed piece — and *Save Outfit to Lookbook* beside it, so what is stored is what the
+ * person saw. The button is disabled with its reason on a line beneath it, as *I wore this* is,
+ * until every slot holds a garment and while this outfit is already saved. Without a `lookbook`
+ * prop none of it is drawn, and the screen is the one it was.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -50,7 +59,7 @@ import {
   Text,
 } from '@irodora/ui';
 import { OUTFIT_SLOTS, type OutfitSlot } from '@irodora/recommendation';
-import type { StoredGarment } from '@irodora/store';
+import type { NewOutfit, OutfitEnvelope, StoredGarment } from '@irodora/store';
 import {
   place,
   regenerate,
@@ -67,8 +76,16 @@ import {
   type CostPerWearUnknown,
   type WearStore,
 } from '../wardrobe/cost';
+import {
+  draftKey,
+  isComplete,
+  outfitRecord,
+  scoreDraft,
+  shownScoreOfScore,
+} from '../outfit/lookbook';
 import { useMessages } from '../i18n/useMessages';
-import { isMessageKey, type MessageKey } from '../i18n/index';
+import type { MessageKey } from '../i18n/index';
+import { ScoreLines } from '../ScoreLines';
 import type { ScreenStates } from '../states';
 
 /**
@@ -97,6 +114,15 @@ const COST_UNKNOWN_KEYS = {
   neverWorn: 'outfit.costNeverWorn',
 } as const satisfies Record<CostPerWearUnknown, MessageKey>;
 
+/** What the Lab needs to save to the lookbook (F-238). The route supplies it from the provider. */
+export interface OutfitLookbook {
+  /** The versions a save is scored by, built by the route from the stored profile and the rules. */
+  readonly envelope: OutfitEnvelope;
+  /** The compositions already in the lookbook, so a saved outfit says so. */
+  readonly saved: ReadonlySet<string>;
+  readonly onSave: (outfit: NewOutfit) => void;
+}
+
 export interface OutfitBuilderProps {
   readonly wardrobe: readonly StoredGarment[];
   /** Everything `regenerate` needs that this screen does not own. */
@@ -122,6 +148,8 @@ export interface OutfitBuilderProps {
    * so pointing at the screen that can is the only honest way out of the empty state.
    */
   readonly onAddGarment?: (() => void) | undefined;
+  /** Save the whole outfit to the lookbook (F-238). Absent, no save is drawn. */
+  readonly lookbook?: OutfitLookbook;
 }
 
 export function OutfitBuilder({
@@ -130,6 +158,7 @@ export function OutfitBuilder({
   initialDraft,
   store,
   onAddGarment,
+  lookbook,
 }: OutfitBuilderProps): React.JSX.Element {
   const { t, script } = useMessages();
   const [draft, setDraft] = useState<OutfitDraft>(initialDraft ?? []);
@@ -149,6 +178,17 @@ export function OutfitBuilder({
     () => regenerate({ ...context, draft, wardrobe }),
     [context, draft, wardrobe],
   );
+
+  /*
+   * THE WHOLE OUTFIT'S SCORE, once every slot is filled (F-238). Derived like the proposals, so it
+   * cannot go stale against a lock or a swap; null while a slot is empty, because an outfit is one
+   * garment per slot and a partial one is not what would be saved.
+   */
+  const draftScore = useMemo(
+    () => (lookbook !== undefined && isComplete(draft) ? scoreDraft(draft, context) : null),
+    [lookbook, draft, context],
+  );
+  const alreadySaved = lookbook?.saved.has(draftKey(draft)) === true;
 
   const toggleLock = useCallback((slot: OutfitSlot, locked: boolean) => {
     setDraft((d) => setLocked(d, slot, locked));
@@ -332,34 +372,10 @@ export function OutfitBuilder({
                   {/*
                    * THE OVERALL BESIDE ITS COMPONENTS, NEVER INSTEAD OF THEM. F-031 built six
                    * component scores and could not show them — nothing rendered a score, and
-                   * its note said so. This is where they first reach a person.
+                   * its note said so. This is where they first reach a person. The lines are
+                   * `ScoreLines`, shared with the whole draft and the lookbook (F-238).
                    */}
-                  <Text size="body" color="foreground" numeric script={script}>
-                    {`${t('outfit.overall')}: ${String(Math.round(best.score.overall))}`}
-                  </Text>
-                  {/*
-                   * THE SENTENCE, NOT THE IDENTIFIER (F-124, FR-32).
-                   *
-                   * This rendered `${c.component}: ${score}` — 'corpusAffinity', in English, in
-                   * both locales, because none of the engine's eighteen keys was in either
-                   * catalogue. A Japanese reader saw six English words beside six numbers, and
-                   * an English one saw a variable name.
-                   *
-                   * `isMessageKey` narrows rather than casts, so a key the catalogue lacks
-                   * still renders — as the raw identifier, visibly wrong — instead of blanking
-                   * the line. That is how the gap was found in the first place (E-053).
-                   */}
-                  {best.score.components.map((c) => (
-                    <Text
-                      key={c.component}
-                      size="label"
-                      color="foreground.2"
-                      numeric
-                      script={script}
-                    >
-                      {`${isMessageKey(c.messageKey) ? t(c.messageKey) : c.messageKey} — ${String(Math.round(c.score))}`}
-                    </Text>
-                  ))}
+                  <ScoreLines score={shownScoreOfScore(best.score)} />
                 </Stack>
               )}
             </Stack>
@@ -400,6 +416,41 @@ export function OutfitBuilder({
               {t('outfit.woreDone')}
             </Text>
           ) : null}
+
+          {/*
+            SAVE OUTFIT TO LOOKBOOK (F-238, ADR-0136 D4). 13 draws it in the action bar; F-257 moves
+            it there. Disabled with its reason, never absent, for the reason *I wore this* gives.
+          */}
+          {lookbook === undefined ? null : (
+            <Stack gap="sm">
+              {draftScore === null ? null : (
+                <Stack gap="xs">
+                  <Text size="body" color="foreground" heading script={script}>
+                    {t('lookbook.wholeOutfit')}
+                  </Text>
+                  <ScoreLines score={shownScoreOfScore(draftScore)} />
+                </Stack>
+              )}
+              <Button
+                label={t('lab.saveToLookbook')}
+                disabled={draftScore === null || alreadySaved}
+                onPress={() => {
+                  if (draftScore !== null)
+                    lookbook.onSave(outfitRecord(draft, draftScore, lookbook.envelope));
+                }}
+                script={script}
+              />
+              {draftScore === null ? (
+                <Text size="body" color="foreground.2" script={script}>
+                  {t('lookbook.needsEverySlot')}
+                </Text>
+              ) : alreadySaved ? (
+                <Text size="body" color="foreground.2" script={script}>
+                  {t('lookbook.alreadySaved')}
+                </Text>
+              ) : null}
+            </Stack>
+          )}
         </Stack>
       </Surface>
     </Screen>
