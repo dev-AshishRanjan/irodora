@@ -13,6 +13,7 @@ import { deviceRepository } from '../src/store/repository';
 import { LaunchHost } from '../src/launch';
 import { TargetProvider, useTarget } from '../src/target';
 import { BookmarksProvider } from '../src/bookmarks';
+import { LookbookProvider } from '../src/lookbook';
 import { TargetBar } from '../src/TargetBar';
 
 /*
@@ -155,7 +156,13 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
           so it sits above every route. Read from the device repository once, at mount.
         */}
         <BookmarksProvider store={deviceRepository()}>
-          <Chrome />
+          {/*
+            THE LOOKBOOK (F-238, ADR-0136): saved on the Outfit Lab, read back on the Wardrobe, so it
+            too sits above every route, read once at mount.
+          */}
+          <LookbookProvider store={deviceRepository()}>
+            <Chrome />
+          </LookbookProvider>
         </BookmarksProvider>
       </TargetProvider>
       {/*
