@@ -703,7 +703,7 @@ Checked against the source on 2026-09-10 — each returned no implementation:
 | drawn in | capability | feature |
 |---|---|---|
 | `06` | bookmark a colour | `F-237` ✓ |
-| `13` | *"Save Outfit to Lookbook"* | `F-238` |
+| `13` | *"Save Outfit to Lookbook"* | `F-238` ✓ |
 | `15` | *Tabular Numeric Figures*, *Show Provenance Badges* switches (haptics exists, its switch does not) | `F-239` |
 | `15` | app-wide CVD preview — Standard · Protanopia · Deuteranopia · Tritanopia | `F-240` ✓ |
 | `23` | avatar | `F-241` |

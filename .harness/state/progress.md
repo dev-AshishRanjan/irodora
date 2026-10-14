@@ -8,6 +8,95 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-14 — F-238 An outfit can be saved to a lookbook
+
+**Done here, with the device half owed.** The Outfit Lab (13) saves an outfit; the Wardrobe (11)
+reads the lookbook back. It shipped in twelve commits, `1710353` through this one
+([ADR-0136](../../docs/adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md)).
+
+- **OQ-40, decided under the person's delegation of 2026-10-05.**
+  - The lookbook is read back on the Wardrobe through a *Garments · Lookbook* choice directly above
+    its grid. It is in the form 10 draws for *Curated Systems · My Custom Palettes*.
+  - It shares ADR-0135's rule: what a person saves is read back on the list screen of its domain.
+    ADR-0135's revisit is recorded: kept.
+  - Criterion 2 was amended in the open to name the place. R9 §4 E4 lists every departure.
+- **Criterion 1: a snapshot, never rescored.**
+  - Migration 11 adds `outfit`, `outfit_item` and `outfit_component`.
+  - Each slot keeps its garment's id *and* a copy of the colour that was scored, with its
+    provenance. The garment's row is shared and overwritable, and the profile keeps no history.
+  - The score is stored as computed, beside the versions that produced it: engine, scorer, corpus,
+    rules, occasion, and the profile's revision.
+  - An entry is rendered from storage alone, with the words *not recomputed* (rule 11).
+  - FR-10 replay is proven for every complete outfit of a fixture wardrobe. A save and a removal
+    are killed at every boundary (the force-quit harness, now shared with F-237's bookmarks).
+- **The Lab** shows the whole outfit's own score, which its proposals never asked for, under *The
+  whole outfit*. *Save Outfit to Lookbook* sits beside it, disabled with its reason until every
+  slot is filled and while the outfit is already saved. Saving is announced.
+- **The Wardrobe:**
+  - each entry is read-only, in 13's vocabulary, with *Remove*;
+  - an empty lookbook is 00's caption;
+  - the lookbook stays reachable with an empty wardrobe;
+  - one Arrival;
+  - no photograph is read.
+- **Records:**
+  - Effects: E-205 and E-206 new; E-023, E-139, E-053, E-199, E-073 and E-204 extended.
+  - Docs: data-model §5 and §6; PRD §10 and R9 §11 close OQ-40; R9 §9 ✓.
+  - Notes on F-242, F-248, F-255 (now blocked by F-238), F-257, F-263 and F-306.
+
+**Review (once): FAIL as delivered**, with 1 blocking, 7 significant and 7 minor findings. Every one
+is fixed or recorded; the plan's `review` row lists each.
+
+- **B1:** the entry and the Lab drew things E4 did not list, and the grouping line had moved for
+  every caller. The slot row is now 13's, the grouping line is back, and each remaining addition is
+  in E4 and ADR-0136.
+- **S1–S7, fixed:**
+  - the slot carried in each row's accessible name;
+  - the save announced;
+  - versions checked label by label;
+  - every snapshot column compared;
+  - the entry proven to read exactly as the Lab showed it;
+  - an unknown component still rendered;
+  - the label column allowed to shrink.
+- **M5, kept and recorded:** the store's tests get a measured package-wide 30 s budget. The full
+  parallel run slowed a 0.22 s migration case past 5 s, the third such timeout in two features.
+  F-306 still owes ten clean runs out of ten.
+
+**Gates run on the final tree:**
+
+On `7bbff8a`, each exit 0, run one at a time:
+
+- `node scripts/verify-state.mjs`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build`.
+- `pnpm turbo run test --force`, uncached: 35 of 35 tasks.
+- `pnpm test:a11y`, `pnpm test:contrast`, `pnpm test:cvd`, `pnpm test:content`.
+- The conformance sweep: 92 subjects, 8 conditions, 0 findings. The claims check read 25,356
+  paragraphs, 3,666 lines and 11,680 names, with 0 findings.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories, recounted: nine. F-238 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **35 of 38 green, none not run**. The three reds are exactly
+  the recorded ones: the iOS config half on win32, F-324 and F-322. No F-333 event, and no plant
+  journal left behind.
+- **The first Tier 2, on `ea48a84`, was red on `test`.** A 0.22 s store migration case timed out
+  under the full parallel run. It was fixed with a measured package budget (`70bc0a3`), not rerun
+  past.
+
+**Not run:** e2e (no Maestro or JDK here) and every device step. The attestation is the person's: an
+Android debug build, steps 1–6. The lookbook is in the same database file as every other row, so it
+is protected only once SQLCipher is built in (F-336).
+
+### Lessons
+
+[[a-replacement-string-is-a-pattern-not-text]] (new).
+
+### Next
+
+The loop: the surface features from F-242, lowest id first. F-243 waits on OQ-8 and F-258 on OQ-10,
+each to be decided when reached. F-336 (SQLCipher) and F-337 (Home's *Last reading*) are `todo` in R9.
+
+---
+
+
 ## 2026-10-13 — F-237 A colour can be bookmarked
 
 **Done here, with the device half and the encryption owed.** A colour's page (06) bookmarks it;
