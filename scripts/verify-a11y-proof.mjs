@@ -87,10 +87,19 @@ const CASES = [
     expect: 'font-scaling',
   },
   {
+    /*
+     * THE HIT AREA FORGOTTEN (F-324). A Button is drawn at its mockup's height and reaches the
+     * target only through `hitSlop` (ADR-0114, E-156), so the defect that matters is a control
+     * drawn at its size with no slop, which is how F-239's switch shipped. Without it the reach
+     * is BUTTON_HEIGHT square, 32 × 32, under both 44 and 48. This anchored on minWidth and
+     * minHeight of nativeTapTarget, which F-232 increment 4 removed, and was UNRUNNABLE from then
+     * until the person reported CI red on 2026-10-14. `hitArea(size, size)` is IconOnlyButton's;
+     * this one is LabelledButton's, the only one with these arguments.
+     */
     name: 'a tap target below the platform minimum',
     file: join(UI, 'Button.tsx'),
-    find: 'minWidth: nativeTapTarget,\n        minHeight: nativeTapTarget,',
-    replace: 'minWidth: 20,\n        minHeight: 20,',
+    find: 'hitSlop={hitArea(height, height)}',
+    replace: '',
     expect: 'tap-target',
   },
 ];
