@@ -5,7 +5,7 @@ created: 2026-10-14
 feature: F-340
 severity: high
 scope: [scripts]
-links: [[a-decoy-that-is-not-broken-proves-nothing]], [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]]
+links: [[a-decoy-that-is-not-broken-proves-nothing]], [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]], [[saying-not-run-here-is-necessary-and-it-is-not-sufficient]]
 ---
 
 # A proof must call the function the way the gate does, or it proves a different function
@@ -14,9 +14,10 @@ Gate 16 calls `brandResources(entries.keys(), dump)`. `entries` is a `Map`, so `
 **one-shot iterator**: the first read gets everything, and the second gets nothing.
 
 F-231's review added a second read. `brandResources` spread the input for its name scan, and then
-built `new Set(entryNames)` to skip the adaptive-icon XML. In the gate, that set was empty, so
-every file the resource table named was refused, and every shortened release APK reported "no
-launcher icon or splash logo". A debug-named APK still passed, because only the first read was
+built `new Set(entryNames)` to check that each file the table names is in the APK. That had been
+`entries.has(path)` inside the gate; the adaptive-icon XML is skipped by a type test beside it. In
+the gate, that set was empty, so every file the resource table named was refused, and every
+shortened release APK reported "no launcher icon or splash logo". A debug-named APK still passed, because only the first read was
 needed to find its files.
 
 The proof case written for that same fix passed an **array**. An array can be read any number of
@@ -42,6 +43,7 @@ because the defect can live in how the value behaves.
 
 The person reported the Android lane red at its artefact proof. The proof was reproduced on a
 workstation whose Android SDK had always been there: `ANDROID_HOME` named its parent, so the
-sessions before had recorded the SDK half as "not run here". Once the proof ran, `parseResourceDump`
-and `brandResources` were called by hand with an array of the APK's entry names and routed all seven
-rasters. `checkApk` routed none. The only difference left was the kind of value passed.
+sessions before had recorded the SDK half as "not run here" — a recurrence of
+[[saying-not-run-here-is-necessary-and-it-is-not-sufficient]], whose F-340 addendum has the
+details. Once the proof ran, `parseResourceDump` and `brandResources` were called by hand with an
+array of the APK's entry names and routed all seven rasters. `checkApk` routed none. The only difference left was the kind of value passed.

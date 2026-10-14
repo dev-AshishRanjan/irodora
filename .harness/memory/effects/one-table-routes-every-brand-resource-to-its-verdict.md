@@ -3,8 +3,9 @@
 **Link:** `scripts/brand-verdicts.mjs` (`kindOf`, `decodeResource`, `verdictFor`, the iOS verdicts) →
 `verify-native-assets.mjs` (the prebuild projects), `verify-apk.mjs` (gate 16, the APK)
 **Guard:** both proofs — `verify-native-assets --prove` (14 cases) and `verify-apk --prove` (the resource
-table reader, run on every machine; the aapt2-built branded fixtures, run where the SDK is: CI's
-`android-build.yml` and `release.yml`) **Severity:** high **Feature:** F-231
+table reader, which needs no SDK; the aapt2-built branded fixtures, which do), and both halves run only
+where a lane runs them: `android-build.yml`, dispatched by a person, and `release.yml`, at a tag. No pull
+request runs either until F-341 **Severity:** high **Feature:** F-231
 
 ---
 
@@ -28,8 +29,8 @@ In a shortened release table, `mipmap/ic_launcher` and `mipmap/ic_launcher_round
 ## F-340 (2026-10-14): the routing case passed an array, and the gate passed an iterator
 
 `checkApk` hands `brandResources` the ZIP's `entries.keys()`, which is a one-shot iterator. B2's fix
-above read that input twice: the name scan used it up, and the set that skips the XML was built from
-nothing. So every file the table named was refused, and **every shortened release APK reported no
+above read that input twice: the name scan used it up, and the set that checks each file is in the APK
+(it replaced `entries.has(path)`; the XML is skipped by the type test beside it) was built from nothing. So every file the table named was refused, and **every shortened release APK reported no
 launcher icon or splash logo**. The SDK-free case passed an array, which can be read twice, so it
 stayed green. The aapt2 shortened case did go red, but only in the Android lane, which a person
 dispatches. The person reported it from there.

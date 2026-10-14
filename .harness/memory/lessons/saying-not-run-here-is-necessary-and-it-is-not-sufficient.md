@@ -92,3 +92,17 @@ that is merely unlinked. All three were true here, and all three took under a mi
 
 **And re-read your own memory notes as claims to act on, not as background.** The one that said
 the toolchain was installed was sitting in context for the entire session.
+
+## F-340 (2026-10-14): an environment variable one level too high reads as "no SDK"
+
+Gate 16's proof builds its fixtures with the Android SDK's `aapt2`, and sessions recorded that half as
+"not run on a workstation without the SDK". **This workstation has the SDK**, at
+`%LOCALAPPDATA%\Android\Sdk` (build-tools 33.0.1, android-31 and -32). `ANDROID_HOME` names its
+parent, `%LOCALAPPDATA%\Android\`, so `findAapt2()` found no `build-tools` there and the proof said
+"COULD NOT RUN". With `ANDROID_HOME` set to the `Sdk` directory the proof runs in full here, needing
+no JDK — and it went red on a defect (F-340) that had waited six days for a person to build the
+Android lane.
+
+**Before writing "not run here" about a tool, look where its variable points, and one level down.**
+The rule above already says to check the disk; this is the shape it took this time. See
+[[a-proof-must-call-the-function-the-way-the-gate-does]].

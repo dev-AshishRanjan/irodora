@@ -8,6 +8,101 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-14 — F-340 Gate 16 finds no icon in a release APK: the entry names are read twice from a one-shot iterator
+
+**Done here, with criterion 3 owed (attested).** The person reported the Android lane red at
+*Artifact proof*: "the same, its resource paths SHORTENED (must stay GREEN) — expected GREEN, got: no
+launcher icon or splash logo in the artefact". The defect was in gate 16 itself, not only in its
+proof. Every release APK has shortened resource paths, so the lane's next step, *Gate 16 — artifact*,
+would have failed the same way, and so would `release.yml` at a tag. F-340 shipped in four commits,
+`c4a6386` through this one.
+
+- **Cause.**
+  - `checkApk` passes `entries.keys()`, a one-shot iterator, to `brandResources`.
+  - Since `508ea1d` (F-231's review, B2), that function read its input twice. The name scan drained
+    it, and the membership set was built from nothing.
+  - So every file the resource table names was refused. A debug-named APK passed, because the name
+    scan is the first read.
+  - The SDK-free routing case passed an array, which can be read twice, so it could not see this.
+- **Reproduced here, which earlier sessions had recorded as impossible.** This workstation's SDK is at
+  `%LOCALAPPDATA%\Android\Sdk` (build-tools 33.0.1). `ANDROID_HOME` names its parent. With it
+  pointed at the `Sdk`, the proof failed exactly as the person's log did.
+- **Criterion 1.**
+  - `brandResources` reads its input once.
+  - The routing case passes a `Map`'s `keys()`, as the gate does.
+  - **Watched failing first:** "0 routed", then 4.
+- **Criterion 2.** `pnpm verify:apk:prove` with the SDK: before, exit 1 on the SHORTENED case only,
+  with the person's message. After, exit 0, with all 26 cases discriminating.
+- **Criterion 3, attested and outstanding.** Gate 16 must pass on the lane's real release APK. That
+  needs a Gradle build, and there is no JDK here, plus a push, which is the person's call. The
+  attestation names the run and both steps.
+  - The closest model, from the review: the repository's real Expo prebuild `res/` (five densities),
+    compiled, linked and shortened by aapt2. On HEAD it has 0 failures; the old code fails it.
+  - **Not modelled:** AGP's own aapt2 from Maven, CI's build-tools 37, real signing and zipalign.
+- **Records.**
+  - E-184's guard and note.
+  - A lesson, *a proof must call the function the way the gate does*.
+  - The F-340 addendum to *saying "not run here" is necessary, and it is not sufficient*, whose index
+    line moves to Environment.
+  - **F-341, filed (backlog):** no pull request runs gate 16's proof. Only the two lanes a person
+    dispatches or tags run it, so `508ea1d`'s defect waited six days.
+
+**Review (once): PASS as delivered**, with 1 significant and 7 minor findings. Every one is fixed. The
+plan's `review` rows list each.
+
+- **S1, fixed.** E-184 said the proof "runs everywhere". It runs only where a lane runs it.
+- **M1, fixed.** Four records gave the set the XML's job. It is the membership check.
+- **M2, M3 and M7, fixed: three new discriminations in the proof, each watched catching.**
+  - The shortened case must print the SHORTENED note, and the named case must not.
+  - The fixtures print `.webp` lines with no `type=`, as aapt2 does.
+  - A table entry whose file is absent must not be routed.
+- **M4, fixed.** A green case's failures print their detail, which separates "empty route" from
+  "no aapt2" in a CI log. The plan no longer offers an inference as evidence.
+- **M5 and M6, fixed.** The existing lesson is updated rather than duplicated, and the SDK path is
+  findable from Environment.
+
+**Gates run on the final tree:**
+
+Each exit 0:
+
+- `node scripts/verify-state.mjs`, which lists F-340's owed attestation as a warning
+- `pnpm typecheck` · `pnpm format:check` · `pnpm build` · `pnpm lint`
+- `pnpm verify:apk:prove`, with `ANDROID_HOME` at the `Sdk` directory: all 26 cases discriminate
+  (build-tools 33.0.1, android-32)
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's nine advisories. F-340 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: **36 of 38 green, 1 not run** (the gitleaks install, a shell
+  block).
+  - **Two recorded reds:** the iOS config half on win32, and gate 15, which is F-322.
+  - **No plant journal was left**, and there was no F-333 event.
+  - `verify-ci` reads `ci.yml`, which does not run gate 16's proof (F-341). The proof's own run is
+    the line above.
+
+**Not run:**
+
+- the Android lane on GitHub (no push);
+- any Gradle build (no JDK);
+- CI's build-tools 37;
+- `e2e` (nothing a person can see changed).
+
+### Lessons
+
+[[a-proof-must-call-the-function-the-way-the-gate-does]] (new), and
+[[saying-not-run-here-is-necessary-and-it-is-not-sufficient]] (its F-340 addendum).
+
+### Next
+
+**Both of the person's reports are fixed, locally.** To see them green on GitHub:
+
+1. Push.
+2. CI's *Gate 8 — a11y mutation proof* should pass (F-324).
+3. Dispatch `android-build.yml`. Its *Artifact proof* and *Gate 16 — artifact* steps discharge F-340's
+   attestation.
+
+By the state file, the feature loop's lowest-id eligible feature is F-242 (Home is mockup 01).
+
 ## 2026-10-14 — F-324 The a11y mutation proof plants its tap-target case again
 
 **Done.** The person reported CI red at *Gate 8 — a11y mutation proof*: "a tap target below the

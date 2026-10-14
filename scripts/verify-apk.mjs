@@ -911,13 +911,16 @@ function prove() {
       '      (night-v8) #ff15171b',
       '  type mipmap id=0d entryCount=1',
       '    resource 0x7f0d0003 mipmap/ic_launcher_foreground',
-      '      (xxhdpi-v4) (file) res/xa.webp type=PNG',
+      // No `type=` on a .webp: aapt2 sets a file’s type from its name, and only .png and .xml have
+      // one (F-340’s review, M3; seen in build-tools 33.0.1’s dumps of real Expo resources).
+      '      (xxhdpi-v4) (file) res/xa.webp',
       '      (anydpi-v26) (file) res/Yb.xml type=XML',
     ].join('\n');
     const read = parseResourceDump(sample);
     const parsed =
       read.files.get('res/xa.webp')?.resource === 'mipmap/ic_launcher_foreground' &&
       read.files.get('res/xa.webp')?.config === 'xxhdpi-v4' &&
+      read.files.get('res/xa.webp')?.type === null &&
       colourFrom(read, 'splashscreen_background', false) === '#F6F5F2' &&
       colourFrom(read, 'splashscreen_background', true) === '#15171B' &&
       colourFrom(read, 'iconBackground', false) === '#15171B';
@@ -940,17 +943,24 @@ function prove() {
      * splash logo, AND the (anydpi-v26) adaptive-icon XML that `mipmap/ic_launcher` and
      * `mipmap/ic_launcher_round` also carry. The rasters are routed; the XML must not be — read as
      * an image it failed every real release APK (F-231's review, B2).
+     *
+     * The layers are `.webp` with NO `type=`, as aapt2 prints them, so routing takes the branch every
+     * real launcher layer takes (F-340's review, M3). And the table names one file the APK does not
+     * hold, `res/Ah.webp`: routed, it would fail to decode, so the membership check must refuse it
+     * (F-340's review, M7).
      */
     const shortTable = parseResourceDump(
       [
         'Package name=com.irodora.app id=7f',
-        '  type mipmap id=0d entryCount=2',
+        '  type mipmap id=0d entryCount=3',
         '    resource 0x7f0d0000 mipmap/ic_launcher',
-        '      (xxhdpi-v4) (file) res/Ab.webp type=PNG',
+        '      (xxhdpi-v4) (file) res/Ab.webp',
         '      (anydpi-v26) (file) res/Ac.xml type=XML',
         '    resource 0x7f0d0001 mipmap/ic_launcher_round',
-        '      (xxhdpi-v4) (file) res/Ad.webp type=PNG',
+        '      (xxhdpi-v4) (file) res/Ad.webp',
         '      (anydpi-v26) (file) res/Ae.xml type=XML',
+        '    resource 0x7f0d0002 mipmap/ic_launcher_monochrome',
+        '      (xxhdpi-v4) (file) res/Ah.webp',
         '  type drawable id=08 entryCount=1',
         '    resource 0x7f080000 drawable/splashscreen_logo',
         '      (xxhdpi-v4) (file) res/Af.png type=PNG',
@@ -980,7 +990,7 @@ function prove() {
     const routedOk =
       routed.shortened &&
       routed.resources.length === 4 &&
-      routed.resources.every((r) => !r.path.endsWith('.xml')) &&
+      routed.resources.every((r) => !r.path.endsWith('.xml') && r.path !== 'res/Ah.webp') &&
       routed.resources.some((r) => r.kind === 'legacyRound') &&
       routed.resources.some((r) => r.kind === 'splash' && r.night);
     console.log(
@@ -990,9 +1000,9 @@ function prove() {
     const naive = [...shortTable.files].filter(
       ([, f]) => kindOf(`${f.resource}.png`) !== null,
     ).length;
-    const naiveDiffers = naive === 6;
+    const naiveDiffers = naive === 7;
     console.log(
-      `  ${naiveDiffers ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — routing by resource name alone takes ${String(naive)} files, the two XML among them`,
+      `  ${naiveDiffers ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — routing by resource name alone takes ${String(naive)} files, the two XML and the absent one among them`,
     );
     console.log(
       `  ${refused ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — the old aapt's form reads as nothing, never as a pass`,
@@ -1395,12 +1405,16 @@ ${extra}
       apk: brandedApk,
       expected: BRANDED,
       mustFail: false,
+      // By NAME: green through the table instead would leave the name route untested.
+      mustNotNote: /SHORTENED/u,
     },
     {
       name: 'the same, its resource paths SHORTENED (must stay GREEN)',
       apk: shortApk,
       expected: BRANDED,
       mustFail: false,
+      // Through the TABLE (F-340's review, M2): green by name would mean nothing was shortened.
+      mustNote: /SHORTENED/u,
     },
     {
       name: 'a foreground replaced by a disc',
@@ -1460,7 +1474,19 @@ ${extra}
 
     const names = result.failures.map((f) => f.what);
     if (c.mustFail === false) {
-      if (names.length) wrong.push({ c, why: `expected GREEN, got: ${names.join(', ')}` });
+      /*
+       * WITH EACH FAILURE'S DETAIL (F-340's review, M4). "no launcher icon or splash logo" has two
+       * causes, an empty route and no aapt2, and only the detail tells a CI log which one it was.
+       */
+      if (names.length)
+        wrong.push({
+          c,
+          why: `expected GREEN, got: ${result.failures.map((f) => `${f.what} — ${f.detail}`).join('; ')}`,
+        });
+      else if (c.mustNote && !result.notes.some((n) => c.mustNote.test(n)))
+        wrong.push({ c, why: `green, but no note matches ${String(c.mustNote)}` });
+      else if (c.mustNotNote && result.notes.some((n) => c.mustNotNote.test(n)))
+        wrong.push({ c, why: `green, but a note matches ${String(c.mustNotNote)}` });
       else console.log(`  ${GREEN}✓${OFF} ${c.name}`);
       continue;
     }

@@ -11290,7 +11290,7 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "brandResources reads the entry names it is given once, whatever iterable they come in: verify-apk --prove’s SDK-free routing case passes them as checkApk does (`entries.keys()`, a one-shot iterator) and routes the four rasters — watched failing first",
@@ -11310,7 +11310,7 @@
         "lint",
         "format"
       ],
-      "notes": "REPORTED BY THE USER (2026-10-14): the Android lane red at “Artifact proof”: “the same, its resource paths SHORTENED (must stay GREEN) — expected GREEN, got: no launcher icon or splash logo in the artefact”. Reproduced on this workstation, whose SDK is at %LOCALAPPDATA%\\Android\\Sdk (build-tools 33.0.1, android-32) although ANDROID_HOME names its parent. CAUSE: checkApk passes `entries.keys()` — a one-shot Map iterator — to brandResources, which spreads it for the name scan (`[...entryNames]`) and then builds `new Set(entryNames)` from the drained iterator. The set is empty, so `names.has(path)` refuses every file the resource table names, and a shortened APK reports no icon. A debug-named APK passes, because the name scan reads the iterator first. Introduced by 508ea1d (F-231’s review, B2), which added the set to skip the adaptive-icon XML; its SDK-free routing case passes an ARRAY, which can be read twice, so the proof meant to cover the fix could not see it. The same defect fails gate 16 itself on every real release APK, so the lane’s next step would have failed for the same reason. Filed with F-324 at the person’s direction.",
+      "notes": "REPORTED BY THE USER (2026-10-14): the Android lane red at “Artifact proof”: “the same, its resource paths SHORTENED (must stay GREEN) — expected GREEN, got: no launcher icon or splash logo in the artefact”. Reproduced on this workstation, whose SDK is at %LOCALAPPDATA%\\Android\\Sdk (build-tools 33.0.1, android-32) although ANDROID_HOME names its parent. CAUSE: checkApk passes `entries.keys()` — a one-shot Map iterator — to brandResources, which spreads it for the name scan (`[...entryNames]`) and then builds `new Set(entryNames)` from the drained iterator. The set is empty, so `names.has(path)` refuses every file the resource table names, and a shortened APK reports no icon. A debug-named APK passes, because the name scan reads the iterator first. Introduced by 508ea1d (F-231’s review, B2), which moved the routing out of checkApk and replaced its `entries.has(path)` with that set, the check that a file the table names is in the APK (the XML is skipped by the type test beside it); its SDK-free routing case passes an ARRAY, which can be read twice, so the proof meant to cover the fix could not see it. The same defect fails gate 16 itself on every real release APK, so the lane’s next step would have failed for the same reason. Filed with F-324 at the person’s direction. DONE (2026-10-14), with criterion 3 attested and outstanding: brandResources reads its input once; verify-apk --prove passes all 26 cases on this workstation’s build-tools 33.0.1, and the SDK-free routing case passes the names as checkApk does. The review modelled the repository’s real Expo prebuild res/, shortened: 0 failures on HEAD, the old code failing.",
       "plan": "plans/F-340-gate-16-finds-no-icon-in-a-release-apk.md"
     },
     {

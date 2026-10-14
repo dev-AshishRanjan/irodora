@@ -94,6 +94,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Environment
 
+- [lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md](lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md) — three honest "not run here" notes, three real failures, and the missing module was one junction away all along; F-340: `ANDROID_HOME` here names the Sdk's parent, so set it to `%LOCALAPPDATA%\Android\Sdk` before calling gate 16's proof not run.
 - [lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md](lessons/a-jest-suite-that-fails-to-load-on-windows-is-io-and-the-gate-reruns-whole.md) — `UNKNOWN: unknown error, read` under turbo's parallel jest is a file read failing under load, a different suite each time; re-run the whole gate alone, never count passes past it.
 - [lessons/a-coloured-tool-output-hides-the-word-a-grep-looks-for.md](lessons/a-coloured-tool-output-hides-the-word-a-grep-looks-for.md) — `tsc | grep "error TS"` printed nothing over a real error, because the colour codes split the words; decide on the gate's exit code, or strip colour first.
 - [lessons/a-reading-of-one-drawn-instance-is-not-the-drawings-number.md](lessons/a-reading-of-one-drawn-instance-is-not-the-drawings-number.md) — every row-1 reading in F-235's plan moved once the test took the median over all drawn instances; the median is the number, the single reading the decoy.
@@ -107,7 +108,6 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md](lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md) — a gate carrying its own copy of the rule checks that two copies match; perturb the source of truth and require the verdict to follow.
 - [lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md](lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md) — F-099 was blocked by a hazard F-098 had already turned into a gate; the better the argument, the less likely anybody rechecks its premise.
 - [lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md](lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md) — crypto is real in Node and absent in Hermes; seventeen gates passed and the app died on the first screen that generated an id.
-- [lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md](lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md) — three honest "not run here" notes, three real failures, and the missing module was one junction away all along.
 - [lessons/a-green-gate-says-the-code-works-not-that-it-is-where-the-record-says.md](lessons/a-green-gate-says-the-code-works-not-that-it-is-where-the-record-says.md) — F-049 was built in the wrong package and every gate went green; nothing here checks that a feature landed where its own row says, so the plan header has to be re-derived rather than copied forward.
 
 ## Effects
