@@ -495,12 +495,18 @@ export function parseResourceDump(text) {
  */
 const RASTER_TYPE = /^(PNG|WEBP|JPG|JPEG|PNG9|NINE_PATCH)$/iu;
 export function brandResources(entryNames, dump) {
-  const byName = [...entryNames]
+  /*
+   * READ ONCE (F-340). `checkApk` passes `entries.keys()`, a one-shot iterator, and this read it
+   * twice: the name scan drained it, and the set below was built from nothing, so every file the
+   * table names was refused and every shortened release APK reported no icon.
+   */
+  const all = [...entryNames];
+  const byName = all
     .filter((n) => ICON_ENTRY.test(n))
     .map((path) => ({ path, kind: kindOf(path), night: /-night/u.test(path) }))
     .filter((r) => r.kind !== null);
   if (byName.length > 0 || dump === null) return { resources: byName, shortened: false };
-  const names = new Set(entryNames);
+  const names = new Set(all);
   const resources = [];
   for (const [path, { resource, config, type }] of dump.files) {
     if (/\.xml$/iu.test(path) || (type !== null && !RASTER_TYPE.test(type))) continue;
@@ -951,16 +957,24 @@ function prove() {
         '      (night-xxhdpi-v8) (file) res/Ag.png type=PNG',
       ].join('\n'),
     );
+    /*
+     * THE NAMES ARE PASSED AS `checkApk` PASSES THEM (F-340): `entries.keys()`, a one-shot
+     * iterator. This passed an array, which can be read twice, while `brandResources` read its
+     * input twice — so the second read was empty in the gate and full here, and every shortened
+     * release APK reported no icon with this case green.
+     */
     const routed = brandResources(
-      [
-        'res/Ab.webp',
-        'res/Ac.xml',
-        'res/Ad.webp',
-        'res/Ae.xml',
-        'res/Af.png',
-        'res/Ag.png',
-        'AndroidManifest.xml',
-      ],
+      new Map(
+        [
+          'res/Ab.webp',
+          'res/Ac.xml',
+          'res/Ad.webp',
+          'res/Ae.xml',
+          'res/Af.png',
+          'res/Ag.png',
+          'AndroidManifest.xml',
+        ].map((name) => [name, null]),
+      ).keys(),
       shortTable,
     );
     const routedOk =
@@ -984,7 +998,9 @@ function prove() {
       `  ${refused ? GREEN + '✓' : RED + '✗'}${OFF} DECOY — the old aapt's form reads as nothing, never as a pass`,
     );
     if (!parsed || !refused || !routedOk || !naiveDiffers) {
-      console.log(`\n${RED}${BOLD}The resource table's reader does not read aapt2's form.${OFF}\n`);
+      console.log(
+        `\n${RED}${BOLD}The resource table is not read, or not routed, as aapt2 prints it.${OFF}\n`,
+      );
       process.exit(1);
     }
   }
