@@ -44,7 +44,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable } from 'react-native';
+import { AccessibilityInfo, Pressable, View } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
@@ -435,20 +435,29 @@ export function OutfitBuilder({
                 label={t('lab.saveToLookbook')}
                 disabled={draftScore === null || alreadySaved}
                 onPress={() => {
-                  if (draftScore !== null)
-                    lookbook.onSave(outfitRecord(draft, draftScore, lookbook.envelope));
+                  if (draftScore === null) return;
+                  lookbook.onSave(outfitRecord(draft, draftScore, lookbook.envelope));
+                  /*
+                   * HEARD, NOT ONLY SHOWN (WCAG 4.1.3). The button disables and the line below
+                   * changes, and neither moves focus — so a screen-reader user would otherwise hear
+                   * nothing happen. Announced once, on the save, as the state card announces a refusal.
+                   */
+                  AccessibilityInfo.announceForAccessibility(t('lookbook.alreadySaved'));
                 }}
                 script={script}
               />
-              {draftScore === null ? (
-                <Text size="body" color="foreground.2" script={script}>
-                  {t('lookbook.needsEverySlot')}
-                </Text>
-              ) : alreadySaved ? (
-                <Text size="body" color="foreground.2" script={script}>
-                  {t('lookbook.alreadySaved')}
-                </Text>
-              ) : null}
+              {/* A polite live region: Android reads the reason when it changes. */}
+              <View accessibilityLiveRegion="polite">
+                {draftScore === null ? (
+                  <Text size="body" color="foreground.2" script={script}>
+                    {t('lookbook.needsEverySlot')}
+                  </Text>
+                ) : alreadySaved ? (
+                  <Text size="body" color="foreground.2" script={script}>
+                    {t('lookbook.alreadySaved')}
+                  </Text>
+                ) : null}
+              </View>
             </Stack>
           )}
         </Stack>

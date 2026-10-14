@@ -60,7 +60,10 @@ What was read before deciding:
 directly above its grid, in `10.source`'s form.**
 
 - It switches only the region below it: the garment grid, or the lookbook list. Title, actions,
-  coverage and gap stay where `11` draws them.
+  coverage and gap stay where `11` draws them. The one line that says how the gallery is grouped
+  is drawn with the gallery, so it is not shown under *Lookbook*.
+- Today's filter card, which `11` does not draw (F-255 removes it), filters garments only. It stays
+  where it is in both views; it narrows nothing in the lookbook.
 - It is screen state, defaulting to *Garments*, and is not stored (ADR-0135 D4's reason).
 - There is no new route.
 
@@ -74,9 +77,10 @@ of its own.
 
 **D2 — An entry is composed from 13's vocabulary, and is read-only.**
 
-- **Its slots**, in stored order: the sample, the hex, the garment's label, and 13's *Locked* badge
-  on a slot that was locked. There are no swap or lock controls. The slot's word is not printed,
-  because 13 prints none; the accessible name carries it.
+- **Its slots**, in stored order, each in 13's own order: the sample, then the hex above the
+  garment's label, then 13's *Locked* badge at the trailing edge on a slot that was locked. There
+  are no swap or lock controls. The slot's word is not printed, because 13 prints none; each row's
+  accessible name carries it, with the garment, the colour and *Locked*.
 - **Its score:** the stored overall and all six components (FR-32), then *Scored when it was saved,
   against your profile as it was then. Not recomputed.*
 - **The versions that scored it**, and *Remove from lookbook*, on its own line.
@@ -90,7 +94,10 @@ least one garment or one saved outfit, so the lookbook stays reachable with an e
 - Enabled when every slot holds a garment (an outfit is one garment per slot, FR-42) and that
   composition is not already in the lookbook.
 - Otherwise it is disabled, with the reason on a line beneath it, as *I wore this* is today.
-- The draft's own score is shown beside it, so what is stored is what the person saw.
+- The draft's own score is shown beside it, under a heading, *The whole outfit*, so it is not
+  read as one of the proposals' scores above. What is stored is what the person saw.
+- Saving is announced (WCAG 4.1.3), because the button disables and the line changes without
+  moving focus, and the reason line is a polite live region.
 
 **D5 — A saved outfit is a snapshot, rendered from storage only, and never rescored.**
 

@@ -9,9 +9,9 @@
   "claims": {
     "$comment": "F-221 (ADR-0134 D3): every tree rendered in every condition, read as paragraphs, visual lines (paragraphs side by side in a row) and accessible names, against the claims lint patterns. pnpm fidelity:capture reads a device capture the same way.",
     "textsRead": {
-      "paragraph": 25380,
-      "line": 3682,
-      "name": 11656
+      "paragraph": 25356,
+      "line": 3666,
+      "name": 11680
     },
     "patterns": 30,
     "findings": 0

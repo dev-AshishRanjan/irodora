@@ -219,6 +219,44 @@ describe('saving an outfit', () => {
         c.contribution,
       ]),
     );
+    /*
+     * EVERY SNAPSHOT COLUMN, VALUE BY VALUE (F-238's review, S4). The app replays a saved score from
+     * these values alone, so a column transposed in the INSERT or in the read — xyz_y into xyz_z, a
+     * lab channel swapped — would score a different colour under the same entry. Compared to what
+     * was written, field by field, for every slot.
+     */
+    for (const [i, item] of saved.items.entries()) {
+      const back = stored?.items[i]?.color;
+      const { conditions, ...values } = item.color;
+      expect({ slot: item.slot, ...values }).toStrictEqual({
+        slot: item.slot,
+        name: back?.name,
+        xyz_x: back?.xyz_x,
+        xyz_y: back?.xyz_y,
+        xyz_z: back?.xyz_z,
+        lab_l: back?.lab_l,
+        lab_a: back?.lab_a,
+        lab_b: back?.lab_b,
+        oklch_l: back?.oklch_l,
+        oklch_c: back?.oklch_c,
+        oklch_h: back?.oklch_h,
+        hex: back?.hex,
+        source: back?.source,
+        confidence: back?.confidence,
+        corpus_slug: back?.corpus_slug,
+      });
+      expect([
+        back?.capture_illuminant,
+        back?.capture_quality,
+        back?.capture_samples,
+        back?.capture_variance,
+      ]).toStrictEqual([
+        conditions?.illuminant ?? null,
+        conditions?.quality ?? null,
+        conditions?.sampleCount ?? null,
+        conditions?.variance ?? null,
+      ]);
+    }
     // The captured colour's four conditions come back exactly, as four columns.
     const shoe = stored?.items[2]?.color;
     expect([
@@ -307,6 +345,28 @@ describe('removing an outfit', () => {
     repo.close();
   });
 
+  it('removes only the outfit asked for: another keeps its slots and its score', () => {
+    const { repo, driver } = open();
+    const garments = wardrobe(repo);
+    const otherShoe = uuidv7();
+    repo.createGarment({ id: otherShoe, type: 'shoe', color: colour('Kuro', 'kuro') }, NOW);
+    const a = repo.saveOutfit(outfit(garments), NOW);
+    const b = repo.saveOutfit(outfit({ ...garments, shoe: otherShoe }), NOW + 1);
+    repo.removeOutfit(a.id, NOW + 2);
+
+    expect(
+      repo.listOutfits().map((o) => [o.id, o.items.length, o.components.length]),
+    ).toStrictEqual([[b.id, 3, 6]]);
+    for (const table of ['outfit_item', 'outfit_component']) {
+      const live = driver.query<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM ${table} WHERE outfit_id = ? AND deleted_at IS NULL`,
+        [b.id],
+      )[0]?.n;
+      expect({ [table]: live }).toStrictEqual({ [table]: table === 'outfit_item' ? 3 : 6 });
+    }
+    repo.close();
+  });
+
   it('a second removal, or an unknown id, writes nothing', () => {
     const { repo } = open();
     const { id } = repo.saveOutfit(outfit(wardrobe(repo)), NOW);
@@ -368,6 +428,7 @@ describe('a saved outfit does not move when what it was made from does', () => {
     repo.deleteGarment(garments.shoe, NOW + 2);
 
     expect(repo.listOutfits()).toStrictEqual(before);
+    repo.close();
   });
 
   it('DECOY: the garment rows themselves did change, so the case above could fail', () => {
@@ -532,6 +593,17 @@ describe('migration 11', () => {
       `INSERT INTO color_bookmark (id, created_at, updated_at, deleted_at, corpus_slug)
        VALUES ('kept', 1, 1, NULL, 'ai-nezumi')`,
     );
+    // And a garment, as a version-10 build wrote one: its colour row, then the garment.
+    driver.run(
+      `INSERT INTO saved_color (id, created_at, updated_at, deleted_at, name, xyz_x, xyz_y, xyz_z,
+         lab_l, lab_a, lab_b, oklch_l, oklch_c, oklch_h, hex, source, confidence, corpus_slug)
+       VALUES ('kept-colour', 1, 1, NULL, 'Ai-nezumi', 0.04, 0.04, 0.09, 24.8, 1.9, -15.4,
+         0.342, 0.046, 262.1, '#2F3B52', 'reference', 1, 'ai-nezumi')`,
+    );
+    driver.run(
+      `INSERT INTO garment (id, created_at, updated_at, deleted_at, type, primary_color_id, wear_count)
+       VALUES ('kept-garment', 1, 1, NULL, 'jumper', 'kept-colour', 0)`,
+    );
 
     expect(migrate(driver)).toBe(MIGRATIONS.filter((m) => m.version > 10).length);
     expect(driver.query<{ user_version: number }>('PRAGMA user_version')[0]?.user_version).toBe(
@@ -539,6 +611,7 @@ describe('migration 11', () => {
     );
     const repo = createRepository(driver, info);
     expect(repo.listBookmarks()).toStrictEqual(['ai-nezumi']);
+    expect(repo.listGarments().map((g) => g.id)).toStrictEqual(['kept-garment']);
     expect(repo.listOutfits()).toHaveLength(0);
     expect(repo.saveOutfit(outfit(wardrobe(repo)), NOW).written).toBe(true);
     repo.close();
@@ -652,6 +725,12 @@ describe('backup and restore (criterion 2)', () => {
 
   it('erasing everything empties all three tables', () => {
     const { repo, driver } = seeded();
+    // Not empty before, or "empty after" would be true of an erase that did nothing.
+    expect([
+      rows(driver, 'outfit'),
+      rows(driver, 'outfit_item'),
+      rows(driver, 'outfit_component'),
+    ]).toStrictEqual([2, 6, 12]);
     eraseEverything(driver, keys());
     expect([
       rows(driver, 'outfit'),

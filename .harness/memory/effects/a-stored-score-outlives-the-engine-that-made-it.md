@@ -26,10 +26,18 @@ A change to any of them in the engine reaches every entry already saved.
   needs no migration.
 - **The renderer rebuilds each sentence's key from the stored direction**, in the engine's own
   format, and a test pins the two together.
-- **The entry is rendered from storage alone.** The subjects use a HISTORICAL entry, scorer `0.4.0`
-  and rules `2026.07.1`, so a renderer that only understood this build's shape fails.
-- **The envelope records the scorer's own version** (`RECOMMENDATION_VERSION`), so two different
-  scores never carry identical versions.
+- **The entry is rendered from storage alone.** The tests render a HISTORICAL entry whose four
+  versions are none of this build's, and an entry with a component this build does not know, whose
+  line must stay, showing its raw key.
+- **The envelope records the scorer's own version** (`RECOMMENDATION_VERSION`). Two different
+  scores carry different versions only while every formula change bumps it. That is a discipline,
+  not a check.
+
+## What it does not hold still
+
+Each component's *sentence* comes from the current catalogue. A copy edit therefore changes how an
+old entry reads, never its figures. And the app's replay reads the snapshot through a mirror of the
+store's row; `outfit.test` is what proves the store returns every column exactly as written.
 
 ## What it does not decide
 

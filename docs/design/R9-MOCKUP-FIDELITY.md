@@ -314,18 +314,22 @@ Preserved, built from the mockup's own components, and listed here so it is visi
     the chosen segment filled with its leading dot (a shape and an announced selection, rule 13).
   - **What an entry shows.** *Lookbook* lists the saved outfits, newest first, each a full-width
     card in `13`'s vocabulary:
-    - its slots (sample, hex, garment name, and `13`'s *Locked* badge where a slot was locked);
+    - its slots, each in `13`'s order: the sample, the hex above the garment name, and `13`'s
+      *Locked* badge at the trailing edge where a slot was locked;
     - its stored overall with all six components (FR-32);
     - the versions that scored it, with the words *not recomputed* (rule 11);
     - *Remove from lookbook*.
 
     Each sample is the colour that was scored, with its stored provenance (rule 12).
-  - **What does not change.** Nothing above the grid moves. There is no route, and no section on Home
-    or in the profile.
+  - **What does not change.** Nothing above the choice moves, but the one line saying how the gallery
+    is grouped, which is drawn with the gallery. Today's filter card (`11` draws none; F-255) stays
+    and filters garments only. There is no route, and no section on Home or in the profile.
   - **Empty.** An empty lookbook is `00`'s caption (ADR-0128 D3): the Outfit Lab button is on the
     same screen.
-  - **The save.** On the Lab, *Save Outfit to Lookbook* is disabled, with its reason on a line beneath
-    it, until every slot holds a garment, and while the outfit is already saved.
+  - **The save.** On the Lab, the whole outfit's own score is drawn under a heading, *The whole
+    outfit*, with *Save Outfit to Lookbook* beneath it. The button is disabled, with its reason on a
+    line beneath it, until every slot holds a garment and while the outfit is already saved. Saving
+    is announced.
 
   F-255 and F-257 keep both.
 

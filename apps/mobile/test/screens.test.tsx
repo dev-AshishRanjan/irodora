@@ -799,7 +799,7 @@ const LOOKBOOK_OUTFIT: StoredOutfit = {
   envelope: {
     engine: '0.0.9',
     scorer: '0.4.0',
-    corpus: '2026.07.1',
+    corpus: '2026.06.2',
     rules: '2026.07.1',
     occasion: 'default',
     profile: 'p:1',

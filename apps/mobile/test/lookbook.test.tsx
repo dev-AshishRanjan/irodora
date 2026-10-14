@@ -10,11 +10,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { AccessibilityInfo, Text } from 'react-native';
+import { ENGINE_VERSION } from '@irodora/color-spaces';
+import type { Coverage } from '@irodora/optimization';
 import { parseWeightContent, RECOMMENDATION_VERSION } from '@irodora/recommendation';
 import type { NewOutfit, SavedColorRow, StoredGarment, StoredOutfit } from '@irodora/store';
 import { ThemeProvider } from '@irodora/ui';
-import { allEntries } from '../src/corpus';
+import { allEntries, CORPUS_LABEL } from '../src/corpus';
 import { t } from '../src/i18n';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
@@ -388,6 +390,99 @@ describe('the Lab saves the whole outfit (13, ADR-0136 D4)', () => {
     expect(disabled()).toBe(false);
   });
 
+  it('says, aloud, that the outfit was saved', () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    lab(COMPLETE);
+    // DECOY: drawing the Lab announces nothing.
+    expect(announce).not.toHaveBeenCalled();
+    fireEvent.press(save());
+    expect(announce).toHaveBeenCalledWith(t('en', 'lookbook.alreadySaved'));
+    announce.mockRestore();
+  });
+
+  it('re-renders identically: the saved entry reads exactly as the Lab showed it, whatever changes after', () => {
+    // Save from the Lab, keeping the lines it showed for the whole outfit.
+    const saves: NewOutfit[] = [];
+    lab(COMPLETE, new Set(), (o) => {
+      saves.push(o);
+    });
+    const scoreLines = () =>
+      screen
+        .getAllByText(new RegExp(` — \\d+$|^${t('en', 'outfit.overall')}: `))
+        .map((n) => String(n.props['children']));
+    const shown = scoreLines().slice(-7);
+    fireEvent.press(save());
+    screen.unmount();
+    const [record] = saves;
+    if (record === undefined) throw new Error('nothing was saved');
+
+    // The entry, from the stored record alone.
+    const stored: StoredOutfit = {
+      id: 'saved',
+      createdAt: 1,
+      overall: record.overall,
+      countsThreshold: record.countsThreshold,
+      envelope: record.envelope,
+      items: record.items.map((item, position) => ({
+        slot: item.slot,
+        position,
+        garmentId: item.garmentId,
+        garmentLabel: item.garmentLabel,
+        locked: item.locked,
+        color: {
+          ...item.color,
+          id: `saved:${item.slot}`,
+          created_at: 1,
+          updated_at: 1,
+          deleted_at: null,
+          capture_illuminant: null,
+          capture_quality: null,
+          capture_samples: null,
+          capture_variance: null,
+        },
+      })),
+      components: record.components.map((c, position) => ({ ...c, position })),
+    };
+    render(
+      <ThemeProvider theme="dark">
+        <Wardrobe
+          store={{
+            enrichGarment: () => undefined,
+            listGarments: () => WARDROBE,
+            getGarmentImageInfo: () => undefined,
+            getGarmentImage: () => undefined,
+          }}
+          lookbook={{ outfits: [stored], onRemove: () => undefined }}
+          initialView="lookbook"
+        />
+      </ThemeProvider>,
+    );
+    expect(scoreLines()).toStrictEqual(shown);
+    screen.unmount();
+
+    // DECOY: the Lab, for the same garments against a different profile, shows different lines —
+    // so the entry's agreement is with what was saved, not with whatever the Lab would say now.
+    render(
+      <ThemeProvider theme="dark">
+        <OutfitBuilder
+          wardrobe={WARDROBE}
+          context={{
+            ...context,
+            profile: {
+              ...context.profile,
+              temperatureBias: -0.9,
+              lightness: { min: 0.05, max: 0.25 },
+            },
+          }}
+          initialDraft={COMPLETE}
+          store={{ enrichGarment: () => undefined, listGarments: () => WARDROBE }}
+          lookbook={{ envelope: { ...ENVELOPE }, saved: new Set(), onSave: () => undefined }}
+        />
+      </ThemeProvider>,
+    );
+    expect(scoreLines().slice(-7)).not.toStrictEqual(shown);
+  });
+
   it('draws no save at all when the route supplies no lookbook', () => {
     render(
       <ThemeProvider theme="dark">
@@ -446,7 +541,7 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
     envelope: {
       engine: '0.0.9',
       scorer: '0.4.0',
-      corpus: '2026.07.1',
+      corpus: '2026.06.2',
       rules: '2026.07.1',
       occasion: 'default',
       profile: 'p:1',
@@ -545,6 +640,7 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
       garments?: readonly StoredGarment[];
       view?: 'garments' | 'lookbook';
       onRemove?: (id: string) => void;
+      coverage?: Coverage;
     } = {},
   ) =>
     render(
@@ -557,13 +653,21 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
             ? {}
             : { lookbook: { outfits, onRemove: options.onRemove ?? (() => undefined) } })}
           {...(options.view === undefined ? {} : { initialView: options.view })}
+          {...(options.coverage === undefined ? {} : { coverage: options.coverage })}
         />
       </ThemeProvider>,
     );
   const choice = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
 
   it('draws the choice, Garments chosen, and switching it changes only the region below', () => {
-    open([historical]);
+    const coverage: Coverage = {
+      valid: 0,
+      perGarment: new Map([['w-1', 0]]),
+      threshold: 60,
+      combinations: new Set(),
+    };
+    open([historical], { coverage });
+    expect(screen.getByText(t('en', 'browse.coverage'))).toBeTruthy();
     expect(
       (
         choice(t('en', 'wardrobe.view.garments')).props['accessibilityState'] as {
@@ -581,7 +685,8 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
       ).selected,
     ).toBe(true);
     expect(screen.getByText('Linen shirt')).toBeTruthy();
-    // What is above the choice stays: the add and the Outfit Lab.
+    // What is above the choice stays: the add, the Outfit Lab, and the coverage card.
+    expect(screen.getByText(t('en', 'browse.coverage'))).toBeTruthy();
     expect(screen.getByRole('button', { name: t('en', 'browse.add') })).toBeTruthy();
     expect(screen.getByRole('button', { name: t('en', 'browse.openOutfit') })).toBeTruthy();
   });
@@ -631,10 +736,50 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
     open([historical], { view: 'lookbook' });
     const versions = screen.getByText(new RegExp(`^${t('en', 'lookbook.versions')}: `));
     const text = String(versions.props['children']);
-    expect(text).toContain('2026.07.1');
-    expect(text).toContain('0.4.0');
-    // DECOY: the build's own scorer version is not what it prints.
-    expect(text).not.toContain(RECOMMENDATION_VERSION);
+    // Each stored version beside its own label — four different values, so a renderer that printed
+    // one in another's place, or the build's own, fails here.
+    expect(text).toContain(`${t('en', 'lookbook.versionRules')} 2026.07.1`);
+    expect(text).toContain(`${t('en', 'lookbook.versionCorpus')} 2026.06.2`);
+    expect(text).toContain(`${t('en', 'lookbook.versionEngine')} 0.0.9`);
+    expect(text).toContain(`${t('en', 'lookbook.versionScorer')} 0.4.0`);
+    // DECOY: none of this build's versions is what it prints.
+    for (const current of [
+      RECOMMENDATION_VERSION,
+      ENGINE_VERSION,
+      CORPUS_LABEL,
+      ruleSet().versionId,
+    ])
+      expect({ current, printed: text.includes(current) }).toStrictEqual({
+        current,
+        printed: false,
+      });
+  });
+
+  it('names each slot to a screen reader: the slot, the garment, its colour, and Locked', () => {
+    open([historical], { view: 'lookbook' });
+    const top = screen.getByLabelText(new RegExp(`^${t('en', 'outfit.top')}: Linen shirt, `));
+    expect(String(top.props['accessibilityLabel'])).toMatch(
+      new RegExp(`, ${t('en', 'lab.locked')}$`),
+    );
+    // DECOY: an unlocked slot's name does not say Locked.
+    const shoe = screen.getByLabelText(new RegExp(`^${t('en', 'outfit.shoe')}: Loafers, `));
+    expect(String(shoe.props['accessibilityLabel'])).not.toContain(t('en', 'lab.locked'));
+  });
+
+  it('renders a component this build does not know, visibly, rather than dropping it (E-206)', () => {
+    // An entry saved by a build with a component since renamed: its line stays, with the raw key,
+    // so a reader sees something is wrong instead of a score with a part missing.
+    const renamed: StoredOutfit = {
+      ...historical,
+      components: [
+        ...historical.components.slice(0, 5),
+        { ...historical.components[5]!, component: 'legacyBalance' },
+      ],
+    };
+    open([renamed], { view: 'lookbook' });
+    expect(screen.getByText(/^outfit\.legacyBalance\.supports — \d+$/)).toBeTruthy();
+    // The known ones still read as the catalogue's sentences, not as keys.
+    expect(screen.queryByText(/^outfit\.harmony\./)).toBeNull();
   });
 
   it('removes by id, from a control that names what it removes', () => {

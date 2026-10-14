@@ -542,7 +542,7 @@ export const ja: Record<MessageKey, string> = {
   'wardrobe.view.garments': '服',
   'wardrobe.view.lookbook': 'ルックブック',
   'lookbook.empty': 'ルックブックにはまだコーディネートがありません。',
-  'lookbook.emptyHint': 'コーディネートを組んで、ここに保存できます。',
+  'lookbook.emptyHint': 'コーディネートを組んで保存すると、ここに表示されます。',
   'lookbook.scoredWhenSaved':
     '保存したときの採点です。その時点のプロフィールに対するもので、再計算していません。',
   'lookbook.versions': '採点したバージョン',

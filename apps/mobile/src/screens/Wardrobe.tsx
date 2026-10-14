@@ -81,7 +81,7 @@ import { galleryImages, type GarmentImageStore, type GarmentImageUri } from '../
 import { costEntry, minorToMajor, type CostEntryProblem } from '../wardrobe/cost';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
+import { isMessageKey, type MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
 import { shownScoreOf } from '../outfit/lookbook';
 import { ScoreLines } from '../ScoreLines';
@@ -516,36 +516,49 @@ function LookbookEntry({
   return (
     <Card level="1" padding="sm">
       <Stack gap="sm">
-        {outfit.items.map((item) => (
-          <Row key={item.slot} gap="sm" align="center">
-            <Swatch
-              caption="name"
-              name={item.color.name}
-              hex={item.color.hex}
-              color={colorOf(item.color)}
-              size={48}
-            />
-            <Stack gap="xs">
-              <Text size="body" color="foreground" script={script}>
-                {item.garmentLabel}
-              </Text>
-              <Text size="label" color="foreground.2" numeric selectable>
-                {item.color.hex}
-              </Text>
-            </Stack>
-            {/* 13's Locked badge: a lock and a word, on a slot that was locked when it was saved. */}
-            {item.locked ? (
-              <Chip
-                form="badge"
-                icon="lock"
-                fill="surface.3"
-                radius="sm"
-                label={t('lab.locked')}
-                script={script}
-              />
-            ) : null}
-          </Row>
-        ))}
+        {outfit.items.map((item) => {
+          // The slot's word, from the engine's name for it: not printed, because 13 prints none,
+          // and carried in the row's accessible name instead (ADR-0136 D2).
+          const slotKey = `outfit.${item.slot}`;
+          const slot = isMessageKey(slotKey) ? t(slotKey) : item.slot;
+          const color = colorOf(item.color);
+          return (
+            <View
+              key={item.slot}
+              accessible
+              // One static element, read as one, as FactorRows and MetricTile read theirs.
+              accessibilityRole="text"
+              accessibilityLabel={`${slot}: ${item.garmentLabel}, ${swatchAccessibleName(item.color.name, item.color.hex, color)}${item.locked ? `, ${t('lab.locked')}` : ''}`}
+            >
+              {/*
+                13's SLOT, IN 13's ORDER: the sample, then the hex above the garment's name, then the
+                Locked badge at the trailing edge. The text column takes the room and shrinks, so a
+                long or Japanese label wraps rather than pushing the badge off the card.
+              */}
+              <Row gap="sm" align="center">
+                <Swatch name={item.color.name} hex={item.color.hex} color={color} size={48} />
+                <View style={{ flex: 1, flexShrink: 1, gap: nativeSpacing.xs }}>
+                  <Text size="label" color="foreground.2" numeric selectable>
+                    {item.color.hex}
+                  </Text>
+                  <Text size="body" color="foreground" script={script}>
+                    {item.garmentLabel}
+                  </Text>
+                </View>
+                {item.locked ? (
+                  <Chip
+                    form="badge"
+                    icon="lock"
+                    fill="surface.3"
+                    radius="sm"
+                    label={t('lab.locked')}
+                    script={script}
+                  />
+                ) : null}
+              </Row>
+            </View>
+          );
+        })}
         <ScoreLines score={shownScoreOf(outfit)} />
         <Text size="caption" color="foreground.2" script={script}>
           {t('lookbook.scoredWhenSaved')}
@@ -1080,6 +1093,18 @@ export function Wardrobe({
       ) : (
         <>
           {/*
+            Says what the grouping IS, rather than letting a reader infer that the app has decided
+            each garment's colour has a name. It has decided which published colours it sits
+            nearest to, which is a weaker and true claim (ADR-0031). Drawn with the gallery it
+            describes, so not under the lookbook (F-238).
+          */}
+          {lookbookShown ? null : (
+            <Text size="label" color="foreground.2" script={script}>
+              {t('browse.grouping')}
+            </Text>
+          )}
+
+          {/*
             COVERAGE AND GAPS (criterion 3) — the first chart in the product.
 
             `chart.1`–`chart.5` had been emitted and unread since F-048 with the reason "there is
@@ -1166,16 +1191,6 @@ export function Wardrobe({
             lookbookList
           ) : (
             <>
-              {/*
-            Says what the grouping IS, rather than letting a reader infer that the app has decided
-            each garment's colour has a name. It has decided which published colours it sits
-            nearest to, which is a weaker and true claim (ADR-0031). Below the choice since F-238,
-            because it describes the gallery and not the lookbook.
-          */}
-              <Text size="label" color="foreground.2" script={script}>
-                {t('browse.grouping')}
-              </Text>
-
               {/*
             THE GALLERY (F-150 criteria 1, 2 and 4).
 

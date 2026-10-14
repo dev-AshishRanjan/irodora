@@ -595,7 +595,7 @@ export const en = {
   'wardrobe.view.garments': 'Garments',
   'wardrobe.view.lookbook': 'Lookbook',
   'lookbook.empty': 'No outfits in your lookbook yet.',
-  'lookbook.emptyHint': 'Build an outfit, then save it here.',
+  'lookbook.emptyHint': 'Build an outfit and save it, and it appears here.',
   'lookbook.scoredWhenSaved':
     'Scored when it was saved, against your profile as it was then. Not recomputed.',
   'lookbook.versions': 'Scored by',
