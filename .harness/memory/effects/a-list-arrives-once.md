@@ -25,3 +25,9 @@ not detected; a rebuilt one keeps its entry.
 The Wardrobe's `SectionList` renders its first four items under jest, and a section header is one
 of them, so a second section's rows never draw. Its cross-section index is read by calling the list's
 own `renderItem` for the second section's first row.
+
+## F-238 (2026-10-14): the lookbook is a list surface, added by hand
+
+The Wardrobe's saved outfits are one `Arrival`, each in an `Appear` indexed 0…n−1, and
+`screens.test` has its own case for them. It was added by hand, because the registry's stated
+limit is that a new list without one goes undetected.

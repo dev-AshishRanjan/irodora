@@ -219,8 +219,11 @@ garment_color   garment_id · color_id · role (secondary|accent) · proportion
                 -- query needs it without a join
 garment_image   garment_id (UNIQUE) · bytes BLOB · byte_length · width · height · format
 
-outfit          id · name · occasion · created_at · updated_at · deleted_at
-outfit_item     outfit_id · slot · garment_id · locked
+outfit          overall · counts_threshold                        (the lookbook: F-238, migration 11)
+                envelope_engine · _scorer · _corpus · _rules · _occasion · _profile
+outfit_item     outfit_id · slot · position · garment_id · garment_label · locked
+                + saved_color's colour columns, copied as scored (a snapshot)
+outfit_component outfit_id · component · position · score · direction · weight · contribution
 
 recommendation  id · input_color · context
                 envelope_engine · envelope_corpus · envelope_rules · envelope_profile
@@ -281,6 +284,28 @@ person's *last reading* (F-337). `UNIQUE (corpus_slug)` gives a slug one row for
 tombstones it and bookmarking again revives the same id. It is in `SYNC_TABLES` and in
 `ARCHIVE_TABLES`, because a bookmark is something the person made.
 
+**A saved outfit is a snapshot, rendered from storage and never rescored** (F-238,
+[ADR-0136](../adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md)
+D5, D6). Nothing it was made from holds still:
+
+- a garment's colour is a shared `saved_color` row that a later write overwrites in place;
+- a garment can be removed;
+- the profile it was scored against is updated in place and keeps no history.
+
+So each slot keeps its garment's id *and* a copy of the colour that was scored: `saved_color`'s
+columns, with two table CHECKs migration 5 could not add (the four capture columns are all present
+or all absent, and present exactly for a capture). The outfit keeps its score as computed — the
+overall and each component's score, direction, weight and contribution — beside the envelope that
+names the engine, the scorer (`RECOMMENDATION_VERSION`), the corpus, the rules, the occasion and the
+profile's identity and revision. The envelope is how a saved figure says which versions made it
+(golden rule 11).
+
+`slot` and `component` are opaque text: the store keeps no copy of the engine's vocabulary, so a
+fourth slot or a seventh component needs no migration. A composition (its slot→garment pairs) is
+saved once while live. Removal tombstones all three tables explicitly, and a removed outfit is never
+revived: each save is its own record. All three tables are in `SYNC_TABLES` and `ARCHIVE_TABLES`,
+after `garment`, which an item references.
+
 The reproducibility envelope is stored as **four separate columns**, not one JSON blob, so
 "which recommendations used rule version 2026.08.4?" is an indexed query rather than a table
 scan — and that question gets asked every time a ranking change is investigated.
@@ -296,6 +321,7 @@ scan — and that question gets asked every time a ranking change is investigate
 | Perceptual nearest | Coarse index on `(lab_l, lab_a, lab_b)` buckets; exact ΔE00 in the engine over the shortlist |
 | Wardrobe listing | `(type, created_at DESC) WHERE deleted_at IS NULL` |
 | Recommendation replay | `(envelope_rules)`, `(envelope_corpus)` |
+| Lookbook replay (F-238) | `outfit_rules (envelope_rules)`, `outfit_corpus (envelope_corpus)`; `outfit_live` on the tombstone |
 
 **Perceptual nearest-neighbour is not a database problem.** ΔE00 is not a metric distance —
 it violates the triangle inequality — so no spatial index can answer it correctly. The

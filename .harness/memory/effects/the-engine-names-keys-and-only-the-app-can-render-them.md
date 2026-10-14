@@ -106,3 +106,10 @@ node --run test --workspace @irodora/mobile
 If it fails naming a key, the question is which side is wrong: a new engine key needs copy in
 **both** catalogues (and then the font subset — that is [[a-corpus-publish-can-outrun-the-font-that-renders-it]]),
 and a catalogue key the engine stopped emitting needs deleting, not exempting.
+
+## F-238 (2026-10-14): a third reader rebuilds the keys from stored directions
+
+A saved outfit stores each component's direction, never its sentence. The lookbook rebuilds
+`outfit.<component>.<direction>` when it renders. `lookbook-record.test` pins that to the engine's
+own `messageKey` and to `OUTFIT_MESSAGE_KEYS`, so a change of format in the engine fails there,
+not on a person's old entries.

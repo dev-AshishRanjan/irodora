@@ -35,3 +35,8 @@ missing. So the route assertions name both, and each feature's notes say what to
   device capture shows it.
 - **Encryption at rest.** The bookmark is in the database file with every other row, and that
   file is protected only when SQLCipher is built in (F-336).
+
+## F-238 (2026-10-14): the layout mounts a second provider beside it
+
+`LookbookProvider` (E-205) sits inside `BookmarksProvider`. The route assertions here still hold,
+and `lookbook.test` mirrors them.

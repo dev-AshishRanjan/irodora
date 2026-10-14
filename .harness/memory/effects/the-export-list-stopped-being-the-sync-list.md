@@ -65,3 +65,8 @@ answering?* If the answer is "whichever it was written for", split it before the
 
 [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]
 [[a-comment-that-mentions-a-forbidden-import-is-not-one]]
+
+## F-238 (2026-10-14): both lists grew by three
+
+The lookbook's three tables are in both lists, so the length relation still holds. `outfit.test`
+asserts each table's membership and that erase empties them.

@@ -59,3 +59,8 @@ only checks the picture appears passes on every implementation, including the on
 designed to prevent.
 
 Related: [[virtualisation-breaks-a-rendered-tree-proxy-not-the-property]]
+
+## F-238 (2026-10-14): the lookbook view reads no photograph
+
+An entry draws each slot from its stored colour snapshot. `lookbook.test` counts zero image calls
+with *Lookbook* chosen; its decoy shows the gallery does ask.

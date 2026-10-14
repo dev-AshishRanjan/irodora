@@ -71,3 +71,13 @@ erasure. `profile-avatar.test`'s length relation catches a table in one list and
 **SQLCipher, in the paragraph above, is not built in at all** (F-336). expo-sqlite links it only
 when its config plugin is given `useSQLCipher: true`, and the app never passes that. So the
 device's encryption has not merely been unproven so far: it has very likely been absent.
+
+## F-238 (2026-10-14): migration 11, the lookbook, and a snapshot where a pointer was not enough
+
+Three tables, `outfit`, `outfit_item` and `outfit_component`, in both lists after `garment`. An item
+copies the colour that was scored, because the garment's row is shared and overwritable and the
+profile keeps no history (ADR-0136 D5). A new table could carry the CHECKs migration 5 could not: the
+capture columns are all present or all absent, and present exactly for a capture.
+
+`outfit.test` covers the migration, the round trip and erase. `checkStore` gains two checks
+(floor 16), and the force-quit test cuts a three-table save at every boundary.

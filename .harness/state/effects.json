@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-13",
+  "updated": "2026-10-14",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -850,6 +850,10 @@
         {
           "kind": "test",
           "ref": "packages/store/test/bookmark.test.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/store/test/outfit.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -860,7 +864,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/a-migration-reaches-two-drivers-and-a-backup-format.md",
-      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply. MIGRATION 7 (F-053) ADDED `calibration` AND A NULLABLE `saved_color.calibration_id`. The table joins SYNC_TABLES, and because archive.ts reads `SELECT *` over that list, it joined the backup format and its canonical digest WITHOUT anybody editing archive.ts — which is this link predicting itself again, and is asserted deliberately in packages/store/test/calibration.test.ts rather than discovered from a restore that came back without its corrections. THE STAKES ARE DIFFERENT FROM THE USUAL TABLE: a `calibrated` colour is a CLAIM that a correction was applied, so a backup that dropped the corrections would leave every such claim unfalsifiable while looking intact. The new CHECK constraints are the other half — STRICT plus CHECK is what refuses a max residual below its own mean, or a space no correction can be applied in, both of which are silently meaningless rather than loudly broken and would only surface when F-063 read the numbers back. MIGRATION 10 (F-237) ADDED `color_bookmark`, AND THIS LINK’S EARLIER CLAIM STOPPED HOLDING. Since F-241 `ARCHIVE_TABLES` is an explicit list, not `[...SYNC_TABLES]` (ADR-0105), so a new table no longer joins the backup by construction: it joins only when it is added to that list by hand. `color_bookmark` was added to both, and packages/store/test/bookmark.test.ts asserts it is in each, round-trips it through the serialised file with tombstones and an identical digest, restores a schema-9 archive with no bookmarks, and erases it; profile-avatar.test’s length relation (ARCHIVE = SYNC − 1) is what catches a table added to one list and not the other. The conformance suite gained bookmark-durability and bookmark-atomicity, so the table is proven on the device driver’s path too when checkStore runs there.",
+      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply. MIGRATION 7 (F-053) ADDED `calibration` AND A NULLABLE `saved_color.calibration_id`. The table joins SYNC_TABLES, and because archive.ts reads `SELECT *` over that list, it joined the backup format and its canonical digest WITHOUT anybody editing archive.ts — which is this link predicting itself again, and is asserted deliberately in packages/store/test/calibration.test.ts rather than discovered from a restore that came back without its corrections. THE STAKES ARE DIFFERENT FROM THE USUAL TABLE: a `calibrated` colour is a CLAIM that a correction was applied, so a backup that dropped the corrections would leave every such claim unfalsifiable while looking intact. The new CHECK constraints are the other half — STRICT plus CHECK is what refuses a max residual below its own mean, or a space no correction can be applied in, both of which are silently meaningless rather than loudly broken and would only surface when F-063 read the numbers back. MIGRATION 10 (F-237) ADDED `color_bookmark`, AND THIS LINK’S EARLIER CLAIM STOPPED HOLDING. Since F-241 `ARCHIVE_TABLES` is an explicit list, not `[...SYNC_TABLES]` (ADR-0105), so a new table no longer joins the backup by construction: it joins only when it is added to that list by hand. `color_bookmark` was added to both, and packages/store/test/bookmark.test.ts asserts it is in each, round-trips it through the serialised file with tombstones and an identical digest, restores a schema-9 archive with no bookmarks, and erases it; profile-avatar.test’s length relation (ARCHIVE = SYNC − 1) is what catches a table added to one list and not the other. The conformance suite gained bookmark-durability and bookmark-atomicity, so the table is proven on the device driver’s path too when checkStore runs there. MIGRATION 11 (F-238) ADDED THE LOOKBOOK: outfit, outfit_item and outfit_component, in both lists after garment (an import runs the list forward with foreign keys on, erasure runs it backwards). An item is a SNAPSHOT — saved_color’s columns copied from the garment as scored, with two table CHECKs migration 5 could not add (the four capture columns all or none, and present exactly for a capture) — because the garment’s colour row is shared and overwritable and the profile is updated in place (ADR-0136 D5). packages/store/test/outfit.test.ts holds the migration from v10, the round trip, a schema-10 archive, a missing garment rolling an import back, and erase; outfit-durability and outfit-atomicity are in checkStore (floor 16); outfit-force-quit kills a save and a removal at every boundary.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -2079,6 +2083,14 @@
         {
           "kind": "symbol",
           "ref": "apps/mobile/src/i18n/index.ts#isMessageKey"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/outfit/lookbook.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/lookbook-record.test.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2087,7 +2099,7 @@
         "packages/recommendation"
       ],
       "severity": "high",
-      "guard": "test:apps/mobile/test/i18n.test.ts",
+      "guard": "test:apps/mobile/test/i18n.test.ts SINCE F-238 A THIRD READER REBUILDS THE KEYS: a saved outfit stores each component’s direction, and componentMessageKey (apps/mobile/src/outfit/lookbook.ts) rebuilds outfit.<component>.<direction>. lookbook-record.test pins it to the engine’s own messageKey for every component of every outfit in its sweep, and to OUTFIT_MESSAGE_KEYS for every component × direction.",
       "memory": "memory/effects/the-engine-names-keys-and-only-the-app-can-render-them.md",
       "rationale": "THE ENGINE EMITS MESSAGE KEYS AND HOLDS NO CATALOGUE, WHICH IS RIGHT AND WHICH LEAVES ONE END UNCHECKED. `scoreColor` returns a `FactorContribution.messageKey` and `scoreOutfit` returns component keys; rendering them is the app's job (FR-11, ADR-0056), because a sentence produced in the engine would have to be translated at scoring time and a stored recommendation would become a stored English string. The cost is that `messageKey` is a plain `string` on the engine's side of the boundary and a `MessageKey` only on the app's, so THE ENGINE CAN NAME A KEY THE CATALOGUE DOES NOT HAVE with typecheck green — and the app renders a blank line, or whatever `t()` does with a key it has never seen. E-016 is the reverse direction (en is the source of the key set and ja must match it) and cannot see this at all. IT WAS NOT A THEORETICAL GAP. Until F-052 NOTHING IN THE APP CALLED scoreColor: all twelve of its `explain.<factor>.<direction>` keys had been emitted since R3 and none had ever been in either catalogue. FR-29 asks for a per-factor explanation and the engine had been producing one for two releases into a catalogue that could not name it. The gap was invisible rather than absent, which is why the first consumer is where it had to be found. THE GUARD PINS THE SET IN BOTH DIRECTIONS AND THAT IS WHAT MAKES IT SAFE TO EXCLUDE THESE KEYS FROM THE UNUSED-KEY SCAN. `i18n.test.ts` asserts (a) every key `MESSAGE_KEYS` can produce exists in `en`, and (b) every `explain.*` key in `en` is one the engine emits. The second matters because these are rendered through a COMPUTED lookup — `t(f.messageKey)` — so no source literal exists and the existing 'has no key nobody renders' scan, which is a source-literal scan, cannot see the consumer. Without (b) the exclusion would open exactly the placeholder hole that scan exists to close. Both directions were proven by mutation: deleting `explain.chroma.neutral` failed (a) and (b); adding an `explain.sparkle.supports` the engine never emits failed (b) and three more. THE OUTFIT-COMPONENT KEYS ARE A DECLARED GAP, NOT AN EXCLUSION. `OUTFIT_MESSAGE_KEYS` have no catalogue entries — `OutfitBuilder` renders the raw component name beside each score — and the test asserts the missing set EXACTLY, so the existing gap stays visible and attributable while a NEW unrenderable key still fails. Filtering them out would have made the test quietly stop covering them. THE SCREEN NARROWS RATHER THAN CASTS. `t(key as MessageKey)` would compile and render nothing; `Shopping.tsx` checks membership and falls back to the raw key, so a miss is visible and reportable instead of blank. This guard is what stops that fallback ever being reached. F-124 CLOSED THE DECLARED GAP, ON THIS LINK’S SECOND SOURCE. `scoreOutfit` emits eighteen keys — six components × three directions — and NONE was in either catalogue, so `OutfitBuilder` rendered `${c.component}: ${score}`: a Japanese reader saw six English identifiers beside six numbers, and an English reader saw variable names. The eighteen sentences now exist in both catalogues and the builder renders them. THE GAP TEST WAS DELETED RATHER THAN SHORTENED. It had asserted the missing set EXACTLY, which is what kept it honest while the gap stood; keeping it alive with an empty expected set would have been a check passing because it is looking at nothing. Its replacement is the positive assertion, in the same shape as the `scoreColor` one. THE REVERSE PIN NEEDED A FILTER THAT IS NOT `startsWith`. Sixteen ordinary screen keys share the `outfit.` prefix — `outfit.title`, `outfit.overall`, `outfit.perWear` — and demanding the engine emit those would be absurd. The engine’s keys have THREE dot-segments and the screen copy has TWO, so the partition is on segment count, and a further test asserts BOTH SIDES ARE NON-EMPTY: a filter matching nothing would satisfy the reverse pin the day the engine stopped emitting anything, and that is the failure mode a prefix filter would have hidden. `isMessageKey` MOVED TO `i18n/index.ts`. It was local to Shopping.tsx and OutfitBuilder now needs it; two copies of a narrowing helper are two answers to one question. It is a Set lookup rather than an array scan, because it now runs once per component per render.",
       "confidence": 0.95,
@@ -2795,7 +2807,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:test — `gallery.test.ts` counts what the store was ASKED for, not only what it returned. Three assertions carry it: \"has a photograph\" reads metadata and never the BLOB (`blobCalls()` is 0); a garment is read once however often its cell re-renders; and a garment with NO photograph is remembered as an answer rather than re-queried. Plus the SectionList virtualises, which is what makes the cache bound the right bound rather than an arbitrary one.",
+      "guard": "gate:test — `gallery.test.ts` counts what the store was ASKED for, not only what it returned. Three assertions carry it: \"has a photograph\" reads metadata and never the BLOB (`blobCalls()` is 0); a garment is read once however often its cell re-renders; and a garment with NO photograph is remembered as an answer rather than re-queried. Plus the SectionList virtualises, which is what makes the cache bound the right bound rather than an arbitrary one. SINCE F-238 THE WARDROBE HAS A LOOKBOOK VIEW, and an entry draws each slot from its stored colour snapshot, never the garment’s photograph: lookbook.test counts zero getGarmentImage and getGarmentImageInfo calls with Lookbook chosen (DECOY: the garments view asks).",
       "memory": "memory/effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md",
       "rationale": "THE PHOTOGRAPHS HAD NEVER BEEN READ BACK. `garment_image` has existed since F-042 and `AddGarment` writes to it; nothing displayed one, so the wardrobe was a list of 44px swatches beside names. The schema comment explains the shape it was given: the bytes live in their own table so that the LIST QUERY IS CHEAP. A gallery is the first surface that could undo that decision WITHOUT EDITING IT — twelve visible cells in a wardrobe of forty, and the obvious implementation reads forty BLOBs and base64-encodes each one to draw twelve. The database would be unchanged, the comment would still be true, and the property it describes would be gone. SO THE COST IS PART OF THE INTERFACE. `galleryImages` splits the two questions the schema splits — \"is there a picture\" is metadata and asked for every cell; \"what are its bytes\" is the BLOB and asked only for a cell on screen — and the tests count the calls rather than trusting the shape. THE SECOND HALF IS VIRTUALISATION, and the two are one decision: a bounded cache in front of an unbounded render is a cache that thrashes, so `SectionList` is what makes twelve the right number to hold. THE GENERAL SHAPE: a performance decision recorded in one layer can be defeated by a caller that never touches it, and the only durable guard is a test that measures the COST rather than the RESULT.",
       "confidence": 0.85,
@@ -5668,7 +5680,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "THE ARCHIVE LIST IS NOW EXPLICIT AND THE ERASE LIST IS NOT THE SAME ONE, and profile-avatar.test.ts asserts both directions: the avatar is NOT in ARCHIVE_TABLES, garment_image still is, the avatar IS in SYNC_TABLES, ARCHIVE_TABLES is exactly one shorter — and a decoy that a setting is in neither, so \"not in the archive\" is not \"not in anything\". eraseEverything iterates SYNC_TABLES, because a table outside the export list would otherwise have survived erase-everything on a foreign key cascade that does not fire (every removal here is an UPDATE) — the same trap deleteProfile had already hit in this feature. REMOVING THE PICTURE BLANKS THE BYTES: three tests over both removal paths, with a decoy that a picture nobody removed still has its bytes, because the archive reads tombstones deliberately and a removed face would otherwise still be exported. THE PICTURE IS NEVER READ: both avatar modules are scanned by IMPORT SPECIFIER for colour, cvd, vision, face and ML packages with a decoy on the pattern, Avatar takes no Color (an EXHAUSTIVE prop-key assertion, `Record<keyof AvatarProps, true>` — a new prop is a missing-property error and a key that is not a prop is an excess-property error; F-241's review proved the first version, `readonly (keyof AvatarProps)[]`, could not fail, which was the same defect F-239's review had already caught once), the picker path asks pickFromLibrary and never captureWithCamera with a call counter proving the library WAS asked, and the roster assertion makes a new module in src/profile/ a failure rather than a file nobody scans. NOT GUARDED, AND RECORDED AS F-286: an imported archive writes blob columns straight past ingestImage, so the SanitisedImage brand is bypassed on that path — latent only because blobs do not survive the archive round trip at all, which is the other half of the same feature. NOT GUARDED: that a device encrypts the row (F-041 attestation), and the iOS usage-description string, which nothing asserts. ALSO GUARDED SINCE THE REVIEW: that a picture can be chosen AGAIN after it was removed — `profile_id` is UNIQUE and the row survives a removal, so `ON CONFLICT … DO UPDATE SET deleted_at = NULL` is the only thing that makes a second choice possible, and nothing crossed that branch until the review found it.",
+      "guard": "THE ARCHIVE LIST IS NOW EXPLICIT AND THE ERASE LIST IS NOT THE SAME ONE, and profile-avatar.test.ts asserts both directions: the avatar is NOT in ARCHIVE_TABLES, garment_image still is, the avatar IS in SYNC_TABLES, ARCHIVE_TABLES is exactly one shorter — and a decoy that a setting is in neither, so \"not in the archive\" is not \"not in anything\". eraseEverything iterates SYNC_TABLES, because a table outside the export list would otherwise have survived erase-everything on a foreign key cascade that does not fire (every removal here is an UPDATE) — the same trap deleteProfile had already hit in this feature. REMOVING THE PICTURE BLANKS THE BYTES: three tests over both removal paths, with a decoy that a picture nobody removed still has its bytes, because the archive reads tombstones deliberately and a removed face would otherwise still be exported. THE PICTURE IS NEVER READ: both avatar modules are scanned by IMPORT SPECIFIER for colour, cvd, vision, face and ML packages with a decoy on the pattern, Avatar takes no Color (an EXHAUSTIVE prop-key assertion, `Record<keyof AvatarProps, true>` — a new prop is a missing-property error and a key that is not a prop is an excess-property error; F-241's review proved the first version, `readonly (keyof AvatarProps)[]`, could not fail, which was the same defect F-239's review had already caught once), the picker path asks pickFromLibrary and never captureWithCamera with a call counter proving the library WAS asked, and the roster assertion makes a new module in src/profile/ a failure rather than a file nobody scans. NOT GUARDED, AND RECORDED AS F-286: an imported archive writes blob columns straight past ingestImage, so the SanitisedImage brand is bypassed on that path — latent only because blobs do not survive the archive round trip at all, which is the other half of the same feature. NOT GUARDED: that a device encrypts the row (F-041 attestation), and the iOS usage-description string, which nothing asserts. ALSO GUARDED SINCE THE REVIEW: that a picture can be chosen AGAIN after it was removed — `profile_id` is UNIQUE and the row survives a removal, so `ON CONFLICT … DO UPDATE SET deleted_at = NULL` is the only thing that makes a second choice possible, and nothing crossed that branch until the review found it. SINCE F-238 BOTH LISTS GREW BY THREE (outfit, outfit_item, outfit_component), so the length relation still holds and outfit.test asserts each table is in both lists and that erase empties all three.",
       "memory": "memory/effects/the-export-list-stopped-being-the-sync-list.md",
       "rationale": "F-241 added the first directly identifying datum this product holds — a photograph of the user's face — and it landed on a derived constant that had answered two questions with one array since the archive was built. ARCHIVE_TABLES was [...SYNC_TABLES]: carries the sync columns, and a person may read this. The avatar is the case that separated them. High severity because three things reach outward from one table: what an export discloses (a plaintext file, by ADR-0051's deliberate design), what erase-everything actually erases (a list that used to be the same array), and what a tombstone keeps. The security review reversed the plan's own call on the export and was right to — the deciding argument was a measurement rather than a principle: BLOB columns do not survive the archive's JSON round trip today, so inclusion would have paid the full disclosure cost for a restore that cannot happen.",
       "confidence": 0.9,
@@ -8430,7 +8442,7 @@
           "ref": ".harness/state/feature_list.json#F-259"
         }
       ],
-      "guard": "packages/ui/test/motion.test.tsx: the window recomputed from the scale; the stagger and its cap; a late row present at once (DECOY: outside an Arrival it enters); a row inside the window enters; the limit; a re-mount does not re-enter; reduced; a theme change moves nothing. apps/mobile/test/screens.test.tsx, \"every list surface arrives once\": one Arrival per surface with its rows indexed 0…n−1 (the Wardrobe's cross-section offset read off its own renderItem), a list without one named (DECOY), and the cited records present in the inventories. The ui registry subject `Arrival (a list arriving)`. Decoys for each other finding (two scopes, one row, a row out of order). LIMITS, STATED: a new list surface added without an Arrival is not detected, and neither is a record of a registered surface drawn outside an Appear.",
+      "guard": "packages/ui/test/motion.test.tsx: the window recomputed from the scale; the stagger and its cap; a late row present at once (DECOY: outside an Arrival it enters); a row inside the window enters; the limit; a re-mount does not re-enter; reduced; a theme change moves nothing. apps/mobile/test/screens.test.tsx, \"every list surface arrives once\": one Arrival per surface with its rows indexed 0…n−1 (the Wardrobe's cross-section offset read off its own renderItem), a list without one named (DECOY), and the cited records present in the inventories. The ui registry subject `Arrival (a list arriving)`. Decoys for each other finding (two scopes, one row, a row out of order). LIMITS, STATED: a new list surface added without an Arrival is not detected, and neither is a record of a registered surface drawn outside an Appear. SINCE F-238 THE LOOKBOOK IS A LIST SURFACE: the Wardrobe’s saved outfits are one Arrival with Appear index 0…n−1, and screens.test asserts it in its own case (“the Wardrobe’s lookbook arrives once, in order”) — added by hand, because this registry’s stated limit is that a new list without one is not detected.",
       "memory": "memory/effects/a-list-arrives-once.md",
       "rationale": "ADR-0133 §7: a list arrives once — rows mounting within the window of its first row stagger, and a row scrolled, windowed or re-keyed in later is simply there. Every list surface rebuilt by F-246 to F-259 keeps its Arrival and its entry in the registry; without it, a virtualised list re-enters every row it scrolls in."
     },
@@ -8650,9 +8662,110 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test.",
+      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test. SINCE F-238 the root layout mounts a second provider beside it (LookbookProvider, E-205); bookmarks.test’s route assertions still hold, and lookbook.test mirrors them.",
       "memory": "memory/effects/the-bookmark-set-is-written-on-06-and-read-on-05.md",
       "rationale": "A bookmark is written on 06 and read back on 05 through one provider, so a change to how the set is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to bookmark, or a write nothing reads (OQ-39). F-246 and F-247 rebuild both screens, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once because nothing else writes; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout inside the native header (a device capture), and encryption at rest, which depends on SQLCipher being built in (F-336)."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-238",
+      "id": "E-205",
+      "severity": "high",
+      "scope": [
+        "packages",
+        "mobile",
+        ".harness"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/lookbook.tsx#LookbookProvider"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/outfit.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/index.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/OutfitBuilder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/lookbook.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/lookbook.test.tsx: the provider reads once, saves then reads back, writes nothing for a composition already saved (decoy: a different one writes), and a throwing store leaves the list as stored (decoy); the Lab is disabled with its reason until every slot is filled, saves exactly outfitRecord of the outfit shown, and once saved is disabled and says where (decoy: another garment in one slot is saveable); the Wardrobe’s choice switches only the region below, lists newest first, shows each slot as stored, Locked on the locked slot only (decoy), all six components, the STORED versions (decoy: not this build’s scorer), removes by id, shows 00’s caption with none (decoy), and stays reachable with an empty wardrobe (decoy: nothing at all, no choice); and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the Lab route passes the envelope, saved set and save, the Wardrobe route passes the outfits and removal — with a decoy route. The screens registry renders the Lab with every slot filled and once saved, and the Wardrobe’s choice, lookbook, none saved, and empty-with-an-outfit, in every condition.",
+      "memory": "memory/effects/the-lookbook-is-written-on-13-and-read-on-11.md",
+      "rationale": "An outfit is saved on the Lab (13) and read back on the Wardrobe (11) through one provider, so a change to how the lookbook is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to save, or saves nothing reads (OQ-40). F-257 rebuilds 13 and F-255 rebuilds 11, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout on a device, and encryption at rest, which depends on SQLCipher being built in (F-336)."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-238",
+      "id": "E-206",
+      "severity": "high",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/outfit-score.ts#OutfitScore"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/schema.ts#outfit_component"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/outfit/lookbook.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/ScoreLines.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/lookbook-record.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "A STORED SCORE OUTLIVES THE ENGINE THAT MADE IT. lookbook-record.test replays every complete outfit of its wardrobe from the snapshot alone and requires the overall, every component’s score, direction, weight and contribution to be byte-identical (decoy: a different profile changes one); it pins componentMessageKey to the engine’s messageKey format and to OUTFIT_MESSAGE_KEYS. lookbook.test and the screens registry render a HISTORICAL entry — scorer 0.4.0, rules 2026.07.1, not this build’s — so a build whose renderer only understood its own shape fails. RECOMMENDATION_VERSION is recorded in every envelope, so two different scores never carry identical versions.",
+      "memory": "memory/effects/a-stored-score-outlives-the-engine-that-made-it.md",
+      "rationale": "A saved outfit keeps its score as computed and is never rescored (ADR-0136 D5), so the score’s SHAPE — six components by name, three directions, the factors’ weights and contributions, the message-key format — is now persisted data that every later build must render. A seventh component, a renamed one, or a new key format must still render old entries as stored: the slot and component columns are opaque text for exactly that reason, and the historical fixture is what notices a renderer that forgot. NOT GUARDED: whether a seventh component would be shown for old entries that lack it — they render the components they have, which is honest, and F-257 decides 13’s rows."
     }
   ]
 }

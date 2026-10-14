@@ -673,6 +673,56 @@ describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
     ).toBeNull();
   });
 
+  /*
+   * NO PHOTOGRAPH IS READ FOR THE LOOKBOOK (E-073). An entry draws each slot from its stored colour
+   * snapshot; the garment's photograph is a BLOB read and an encode, and a list of saved outfits
+   * has no reason to ask for one.
+   */
+  it('reads no garment photograph with Lookbook chosen', () => {
+    const calls = { info: 0, bytes: 0 };
+    const counting = {
+      ...browse(GARMENTS),
+      getGarmentImageInfo: () => {
+        calls.info += 1;
+        return undefined;
+      },
+      getGarmentImage: () => {
+        calls.bytes += 1;
+        return undefined;
+      },
+    };
+    render(
+      <ThemeProvider theme="dark">
+        <Wardrobe
+          store={counting}
+          lookbook={{ outfits: [historical], onRemove: () => undefined }}
+          initialView="lookbook"
+        />
+      </ThemeProvider>,
+    );
+    expect(calls).toStrictEqual({ info: 0, bytes: 0 });
+  });
+
+  it('DECOY: with Garments chosen, the gallery does ask', () => {
+    const calls = { info: 0 };
+    const counting = {
+      ...browse(GARMENTS),
+      getGarmentImageInfo: () => {
+        calls.info += 1;
+        return undefined;
+      },
+    };
+    render(
+      <ThemeProvider theme="dark">
+        <Wardrobe
+          store={counting}
+          lookbook={{ outfits: [historical], onRemove: () => undefined }}
+        />
+      </ThemeProvider>,
+    );
+    expect(calls.info).toBeGreaterThan(0);
+  });
+
   it('draws no choice when the route supplies no lookbook', () => {
     open(undefined);
     expect(
