@@ -590,6 +590,20 @@ export const en = {
   'lookbook.wholeOutfit': 'The whole outfit',
   'lookbook.needsEverySlot': 'Put a garment in every slot to save this outfit.',
   'lookbook.alreadySaved': 'This outfit is in your lookbook: on the Wardrobe, under Lookbook.',
+  'lab.locked': 'Locked',
+  'wardrobe.view': 'Show',
+  'wardrobe.view.garments': 'Garments',
+  'wardrobe.view.lookbook': 'Lookbook',
+  'lookbook.empty': 'No outfits in your lookbook yet.',
+  'lookbook.emptyHint': 'Build an outfit, then save it here.',
+  'lookbook.scoredWhenSaved':
+    'Scored when it was saved, against your profile as it was then. Not recomputed.',
+  'lookbook.versions': 'Scored by',
+  'lookbook.versionRules': 'rules',
+  'lookbook.versionCorpus': 'corpus',
+  'lookbook.versionEngine': 'engine',
+  'lookbook.versionScorer': 'scorer',
+  'lookbook.remove': 'Remove from lookbook',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   /*
    * F-180 — THE WORD A PERSON LOOKS FOR.

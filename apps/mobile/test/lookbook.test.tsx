@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import { parseWeightContent } from '@irodora/recommendation';
+import { parseWeightContent, RECOMMENDATION_VERSION } from '@irodora/recommendation';
 import type { NewOutfit, SavedColorRow, StoredGarment, StoredOutfit } from '@irodora/store';
 import { ThemeProvider } from '@irodora/ui';
 import { allEntries } from '../src/corpus';
@@ -19,6 +19,7 @@ import { t } from '../src/i18n';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
+import { Wardrobe } from '../src/screens/Wardrobe';
 import { colorOf } from '../src/wardrobe';
 import type { OutfitDraft } from '../src/outfit/builder';
 import {
@@ -402,6 +403,284 @@ describe('the Lab saves the whole outfit (13, ADR-0136 D4)', () => {
   });
 });
 
+describe('the Wardrobe reads the lookbook back (11, ADR-0136 D1–D3)', () => {
+  const row = (slug: string, overrides: Partial<SavedColorRow> = {}): SavedColorRow => {
+    const found = allEntries().find((e) => e.entry.slug === slug);
+    if (found === undefined) throw new Error(`no entry ${slug}`);
+    return {
+      id: `snap-${slug}`,
+      created_at: 1,
+      updated_at: 1,
+      deleted_at: null,
+      name: found.entry.name.en,
+      xyz_x: found.entry.color.xyz[0],
+      xyz_y: found.entry.color.xyz[1],
+      xyz_z: found.entry.color.xyz[2],
+      lab_l: found.derived.lab[0],
+      lab_a: found.derived.lab[1],
+      lab_b: found.derived.lab[2],
+      oklch_l: found.derived.oklch[0],
+      oklch_c: found.derived.oklch[1],
+      oklch_h: found.derived.oklch[2],
+      hex: found.derived.hex,
+      source: 'reference',
+      confidence: 1,
+      corpus_slug: slug,
+      capture_illuminant: null,
+      capture_quality: null,
+      capture_samples: null,
+      capture_variance: null,
+      ...overrides,
+    };
+  };
+  const slugs = allEntries()
+    .slice(0, 3)
+    .map((e) => e.entry.slug);
+
+  /** A saved outfit from an OLDER build: its versions are not this build's (rule 11 is what reads them). */
+  const historical: StoredOutfit = {
+    id: 'saved-old',
+    createdAt: 1_750_000_000_000,
+    overall: 63,
+    countsThreshold: 60,
+    envelope: {
+      engine: '0.0.9',
+      scorer: '0.4.0',
+      corpus: '2026.07.1',
+      rules: '2026.07.1',
+      occasion: 'default',
+      profile: 'p:1',
+    },
+    items: [
+      {
+        slot: 'top',
+        position: 0,
+        garmentId: 'g-top',
+        garmentLabel: 'Linen shirt',
+        locked: true,
+        color: row(slugs[0]!),
+      },
+      {
+        slot: 'trouser',
+        position: 1,
+        garmentId: 'g-trouser',
+        garmentLabel: 'trousers',
+        locked: false,
+        color: row(slugs[1]!),
+      },
+      {
+        slot: 'shoe',
+        position: 2,
+        garmentId: 'g-shoe',
+        garmentLabel: 'Loafers',
+        locked: false,
+        // A Lens capture, with its conditions: drawn from its stored provenance (rule 12).
+        color: row(slugs[2]!, {
+          source: 'estimated',
+          confidence: 0.6,
+          corpus_slug: null,
+          capture_illuminant: 'D65',
+          capture_quality: 'good',
+          capture_samples: 48,
+          capture_variance: 0.003,
+        }),
+      },
+    ],
+    components: (
+      [
+        'harmony',
+        'personalFit',
+        'contrast',
+        'corpusAffinity',
+        'versatility',
+        'cvdAccessibility',
+      ] as const
+    ).map((component, position) => ({
+      component,
+      position,
+      score: 50 + position * 4,
+      direction: position === 2 ? 'opposes' : 'supports',
+      weight: 1 / 6,
+      contribution: (50 + position * 4) / 6,
+    })),
+  };
+  const newer: StoredOutfit = {
+    ...historical,
+    id: 'saved-new',
+    createdAt: 1_760_000_000_000,
+    overall: 71,
+  };
+
+  const garment = (id: string, type: string, slug: string): StoredGarment => ({
+    id,
+    type,
+    color: row(slug),
+    name: null,
+    pattern: null,
+    material: null,
+    formality: null,
+    brand: null,
+    size: null,
+    purchaseDate: null,
+    costMinor: null,
+    currency: null,
+    wearCount: 0,
+    seasons: [],
+    colors: [],
+    createdAt: 1,
+    updatedAt: 1,
+    deletedAt: null,
+  });
+  const GARMENTS = [garment('w-1', 'jumper', slugs[0]!)];
+  const browse = (garments: readonly StoredGarment[]) => ({
+    enrichGarment: () => undefined,
+    listGarments: () => garments,
+    getGarmentImageInfo: () => undefined,
+    getGarmentImage: () => undefined,
+  });
+
+  const open = (
+    outfits: readonly StoredOutfit[] | undefined,
+    options: {
+      garments?: readonly StoredGarment[];
+      view?: 'garments' | 'lookbook';
+      onRemove?: (id: string) => void;
+    } = {},
+  ) =>
+    render(
+      <ThemeProvider theme="dark">
+        <Wardrobe
+          store={browse(options.garments ?? GARMENTS)}
+          onAddGarment={() => undefined}
+          onOpenOutfit={() => undefined}
+          {...(outfits === undefined
+            ? {}
+            : { lookbook: { outfits, onRemove: options.onRemove ?? (() => undefined) } })}
+          {...(options.view === undefined ? {} : { initialView: options.view })}
+        />
+      </ThemeProvider>,
+    );
+  const choice = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
+
+  it('draws the choice, Garments chosen, and switching it changes only the region below', () => {
+    open([historical]);
+    expect(
+      (
+        choice(t('en', 'wardrobe.view.garments')).props['accessibilityState'] as {
+          selected?: boolean;
+        }
+      ).selected,
+    ).toBe(true);
+    expect(screen.queryByText('Linen shirt')).toBeNull();
+    fireEvent.press(choice(t('en', 'wardrobe.view.lookbook')));
+    expect(
+      (
+        choice(t('en', 'wardrobe.view.lookbook')).props['accessibilityState'] as {
+          selected?: boolean;
+        }
+      ).selected,
+    ).toBe(true);
+    expect(screen.getByText('Linen shirt')).toBeTruthy();
+    // What is above the choice stays: the add and the Outfit Lab.
+    expect(screen.getByRole('button', { name: t('en', 'browse.add') })).toBeTruthy();
+    expect(screen.getByRole('button', { name: t('en', 'browse.openOutfit') })).toBeTruthy();
+  });
+
+  it('lists the outfits in the order the store gives them: newest first', () => {
+    open([newer, historical], { view: 'lookbook' });
+    const overalls = screen
+      .getAllByText(new RegExp(`^${t('en', 'outfit.overall')}: `))
+      .map((n) => String(n.props['children']));
+    expect(overalls).toStrictEqual([
+      `${t('en', 'outfit.overall')}: 71`,
+      `${t('en', 'outfit.overall')}: 63`,
+    ]);
+  });
+
+  it('shows each slot as stored: its colour, its hex and its label, in stored order', () => {
+    open([historical], { view: 'lookbook' });
+    const labels = screen
+      .getAllByText(/^(Linen shirt|trousers|Loafers)$/)
+      .map((n) => String(n.props['children']));
+    expect(labels).toStrictEqual(['Linen shirt', 'trousers', 'Loafers']);
+    for (const item of historical.items)
+      expect(screen.getAllByText(item.color.hex).length).toBeGreaterThan(0);
+  });
+
+  it('marks the locked slot, and only that one', () => {
+    open([historical], { view: 'lookbook' });
+    expect(screen.getAllByText(t('en', 'lab.locked'))).toHaveLength(1);
+  });
+
+  it('DECOY: an outfit saved with no lock shows no Locked badge', () => {
+    open([{ ...historical, items: historical.items.map((i) => ({ ...i, locked: false })) }], {
+      view: 'lookbook',
+    });
+    expect(screen.queryByText(t('en', 'lab.locked'))).toBeNull();
+  });
+
+  it('shows the stored overall beside all six components, and says it was not recomputed', () => {
+    open([historical], { view: 'lookbook' });
+    expect(screen.getByText(`${t('en', 'outfit.overall')}: 63`)).toBeTruthy();
+    for (const c of historical.components)
+      expect(screen.getByText(new RegExp(` — ${String(Math.round(c.score))}$`))).toBeTruthy();
+    expect(screen.getByText(t('en', 'lookbook.scoredWhenSaved'))).toBeTruthy();
+  });
+
+  it('prints the versions that scored it, not this build’s', () => {
+    open([historical], { view: 'lookbook' });
+    const versions = screen.getByText(new RegExp(`^${t('en', 'lookbook.versions')}: `));
+    const text = String(versions.props['children']);
+    expect(text).toContain('2026.07.1');
+    expect(text).toContain('0.4.0');
+    // DECOY: the build's own scorer version is not what it prints.
+    expect(text).not.toContain(RECOMMENDATION_VERSION);
+  });
+
+  it('removes by id, from a control that names what it removes', () => {
+    const onRemove = jest.fn();
+    open([historical], { view: 'lookbook', onRemove });
+    fireEvent.press(
+      screen.getByRole('button', {
+        name: `${t('en', 'lookbook.remove')}: Linen shirt, trousers, Loafers`,
+      }),
+    );
+    expect(onRemove).toHaveBeenCalledWith('saved-old');
+  });
+
+  it("with nothing saved, the lookbook is 00's caption", () => {
+    open([], { view: 'lookbook' });
+    expect(
+      screen.getByText(`${t('en', 'lookbook.empty')} ${t('en', 'lookbook.emptyHint')}`),
+    ).toBeTruthy();
+  });
+
+  it('DECOY: with an outfit saved, there is no caption', () => {
+    open([historical], { view: 'lookbook' });
+    expect(screen.queryByText(t('en', 'lookbook.empty'), { exact: false })).toBeNull();
+  });
+
+  it('stays reachable with an empty wardrobe and one saved outfit', () => {
+    open([historical], { garments: [] });
+    fireEvent.press(choice(t('en', 'wardrobe.view.lookbook')));
+    expect(screen.getByText('Linen shirt')).toBeTruthy();
+  });
+
+  it('DECOY: with no garment and no outfit, there is no choice — the empty wardrobe as it was', () => {
+    open([], { garments: [] });
+    expect(
+      screen.queryByRole('radio', { name: new RegExp(`^${t('en', 'wardrobe.view.lookbook')}`) }),
+    ).toBeNull();
+  });
+
+  it('draws no choice when the route supplies no lookbook', () => {
+    open(undefined);
+    expect(
+      screen.queryByRole('radio', { name: new RegExp(`^${t('en', 'wardrobe.view.lookbook')}`) }),
+    ).toBeNull();
+  });
+});
+
 describe('the routes carry the lookbook (E-205)', () => {
   const source = (path: string): string => readFileSync(join(__dirname, '..', path), 'utf8');
 
@@ -414,6 +693,14 @@ describe('the routes carry the lookbook (E-205)', () => {
     expect(route).toMatch(/useLookbook\(\)/);
     expect(route).toMatch(
       /lookbook=\{\{ envelope, saved: lookbook\.saved, onSave: lookbook\.save \}\}/,
+    );
+  });
+
+  it('the Wardrobe route reads the lookbook and hands the screen its outfits and removal', () => {
+    const route = source('app/(tabs)/wardrobe/index.tsx');
+    expect(route).toMatch(/useLookbook\(\)/);
+    expect(route).toMatch(
+      /lookbook=\{\{ outfits: lookbook\.outfits, onRemove: lookbook\.remove \}\}/,
     );
   });
 

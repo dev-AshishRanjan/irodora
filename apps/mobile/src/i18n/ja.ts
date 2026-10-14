@@ -537,6 +537,20 @@ export const ja: Record<MessageKey, string> = {
   'lookbook.needsEverySlot': 'すべての枠に服を入れると、このコーディネートを保存できます。',
   'lookbook.alreadySaved':
     'このコーディネートはルックブックにあります（ワードローブの「ルックブック」）。',
+  'lab.locked': '固定',
+  'wardrobe.view': '表示',
+  'wardrobe.view.garments': '服',
+  'wardrobe.view.lookbook': 'ルックブック',
+  'lookbook.empty': 'ルックブックにはまだコーディネートがありません。',
+  'lookbook.emptyHint': 'コーディネートを組んで、ここに保存できます。',
+  'lookbook.scoredWhenSaved':
+    '保存したときの採点です。その時点のプロフィールに対するもので、再計算していません。',
+  'lookbook.versions': '採点したバージョン',
+  'lookbook.versionRules': 'ルール',
+  'lookbook.versionCorpus': 'コーパス',
+  'lookbook.versionEngine': 'エンジン',
+  'lookbook.versionScorer': '採点',
+  'lookbook.remove': 'ルックブックから外す',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   // F-180 — see en.ts for why this screen is named twice.
   // F-241 — see en.ts for why the hint says what the picture is NOT used for.

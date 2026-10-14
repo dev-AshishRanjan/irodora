@@ -122,7 +122,7 @@ import {
   OUTFIT_MESSAGE_KEYS,
 } from '@irodora/recommendation';
 import { familyLabel } from '../src/corpus';
-import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import type { SavedColorRow, StoredGarment, StoredOutfit } from '@irodora/store';
 import type { ExportSubject } from '@irodora/export';
 import type { WardrobeStore } from '../src/wardrobe';
 import type { WearStore } from '../src/wardrobe/cost';
@@ -785,6 +785,69 @@ const LOOKBOOK_ENVELOPE = {
   occasion: 'default',
   profile: 'p:1',
 } as const;
+
+/**
+ * A saved outfit from an older build (F-238): a locked slot, a Lens-captured colour with its four
+ * conditions, all six components, and versions that are not this build's — so the subject renders
+ * what a lookbook entry actually holds, not what today's scorer would say.
+ */
+const LOOKBOOK_OUTFIT: StoredOutfit = {
+  id: 'lookbook-1',
+  createdAt: 1_750_000_000_000,
+  overall: 63,
+  countsThreshold: 60,
+  envelope: {
+    engine: '0.0.9',
+    scorer: '0.4.0',
+    corpus: '2026.07.1',
+    rules: '2026.07.1',
+    occasion: 'default',
+    profile: 'p:1',
+  },
+  items: [
+    {
+      slot: 'top',
+      position: 0,
+      garmentId: 'o-1',
+      garmentLabel: 'Linen shirt',
+      locked: true,
+      color: outfitRow(allEntries()[0]!.entry.slug),
+    },
+    {
+      slot: 'trouser',
+      position: 1,
+      garmentId: 'o-2',
+      garmentLabel: 'trousers',
+      locked: false,
+      color: outfitRow(allEntries()[1]!.entry.slug),
+    },
+    {
+      slot: 'shoe',
+      position: 2,
+      garmentId: 'o-3',
+      garmentLabel: 'shoes',
+      locked: false,
+      color: {
+        ...outfitRow(allEntries()[2]!.entry.slug),
+        source: 'estimated',
+        confidence: 0.6,
+        corpus_slug: null,
+        capture_illuminant: 'D65',
+        capture_quality: 'good',
+        capture_samples: 48,
+        capture_variance: 0.003,
+      },
+    },
+  ],
+  components: OUTFIT_COMPONENTS.map((component, position) => ({
+    component,
+    position,
+    score: 50 + position * 4,
+    direction: position === 2 ? 'opposes' : 'supports',
+    weight: 1 / 6,
+    contribution: (50 + position * 4) / 6,
+  })),
+};
 
 /**
  * The same wardrobe with a price and a wear history on the top (F-051).
@@ -1960,6 +2023,87 @@ const SCREENS: readonly ConformanceSubject[] = [
           store={fakeBrowseStore([])}
           onAddGarment={() => undefined}
           onScan={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE LOOKBOOK CHOICE, GARMENTS CHOSEN (F-238, ADR-0136 D1): `10.source`'s pill with its dot,
+     * directly above the grid, and the grid as it was. The choice is the one new thing here.
+     */
+    name: 'screens/Wardrobe (the lookbook choice)',
+    shows: showing(WARDROBE_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
+          onAddGarment={() => undefined}
+          onOpenOutfit={() => undefined}
+          onOpenShopping={() => undefined}
+          lookbook={{ outfits: [LOOKBOOK_OUTFIT], onRemove: () => undefined }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE LOOKBOOK (F-238, ADR-0136 D2): a saved outfit read back — a locked slot with 13's badge,
+     * a Lens-captured colour drawn from its stored provenance, the stored score with the words that
+     * say it was not recomputed, and the versions of an older build.
+     */
+    name: 'screens/Wardrobe (lookbook)',
+    shows: showing(WARDROBE_STATES),
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, ...LOOKBOOK_OUTFIT.items.map((i) => i.color.hex)],
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
+          onAddGarment={() => undefined}
+          onOpenOutfit={() => undefined}
+          lookbook={{ outfits: [LOOKBOOK_OUTFIT], onRemove: () => undefined }}
+          initialView="lookbook"
+        />,
+        theme,
+      ),
+  },
+  {
+    /* NOTHING SAVED (F-238, ADR-0136 D3): 00's caption; the Outfit Lab button is on the screen. */
+    name: 'screens/Wardrobe (lookbook, none saved)',
+    shows: showing(WARDROBE_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
+          onAddGarment={() => undefined}
+          onOpenOutfit={() => undefined}
+          lookbook={{ outfits: [], onRemove: () => undefined }}
+          initialView="lookbook"
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * AN EMPTY WARDROBE WITH A SAVED OUTFIT (F-238, ADR-0136 D3): the choice is drawn above 27's
+     * card, so the outfit stays reachable — and removable — with every garment gone.
+     */
+    name: 'screens/Wardrobe (nothing in it, a lookbook)',
+    shows: showing(WARDROBE_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore([])}
+          onAddGarment={() => undefined}
+          onScan={() => undefined}
+          lookbook={{ outfits: [LOOKBOOK_OUTFIT], onRemove: () => undefined }}
         />,
         theme,
       ),
@@ -5941,6 +6085,24 @@ describe('every list surface arrives once (F-266)', () => {
     expect(findings(capture(() => draw(<PaletteStudio store={store} />, 'dark')))).toStrictEqual(
       [],
     );
+  });
+
+  it('the Wardrobe’s lookbook arrives once, in order (F-238)', () => {
+    // A list of its own, undrawn by any mockup (ADR-0136): two saved outfits, under Lookbook.
+    const arrived = capture(() =>
+      draw(
+        <Wardrobe
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
+          lookbook={{
+            outfits: [{ ...LOOKBOOK_OUTFIT, id: 'lookbook-2' }, LOOKBOOK_OUTFIT],
+            onRemove: () => undefined,
+          }}
+          initialView="lookbook"
+        />,
+        'dark',
+      ),
+    );
+    expect(findings(arrived)).toStrictEqual([]);
   });
 
   it('DECOY — a list whose rows enter without an Arrival is named', () => {

@@ -48,6 +48,7 @@ import {
   Button,
   Card,
   Chip,
+  ChoiceGroup,
   EmptyState,
   Row,
   Screen,
@@ -59,7 +60,12 @@ import {
   Text,
   TextField,
 } from '@irodora/ui';
-import { GARMENT_SEASONS, type GarmentEnrichment, type StoredGarment } from '@irodora/store';
+import {
+  GARMENT_SEASONS,
+  type GarmentEnrichment,
+  type StoredGarment,
+  type StoredOutfit,
+} from '@irodora/store';
 import type { Coverage, Gap } from '@irodora/optimization';
 import {
   filterGarments,
@@ -77,6 +83,8 @@ import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
+import { shownScoreOf } from '../outfit/lookbook';
+import { ScoreLines } from '../ScoreLines';
 
 /**
  * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: nothing in
@@ -292,7 +300,19 @@ export interface WardrobeProps {
   readonly onOpenCombinations?: ((garmentId: string) => void) | undefined;
   readonly onOpenOutfit?: (() => void) | undefined;
   readonly onOpenShopping?: (() => void) | undefined;
+  /**
+   * The lookbook (F-238, ADR-0136): the saved outfits, read back under the *Lookbook* choice. The
+   * route reads them from the provider; absent, no choice is drawn and the screen is the one it was.
+   */
+  readonly lookbook?:
+    | { readonly outfits: readonly StoredOutfit[]; readonly onRemove: (id: string) => void }
+    | undefined;
+  /** The view as the screen opens, for the reason `initialFilter` exists. */
+  readonly initialView?: WardrobeView;
 }
+
+/** What the region below the choice shows: the garments, or the lookbook (ADR-0136 D1). */
+export type WardrobeView = 'garments' | 'lookbook';
 
 /**
  * How many cells fit across. Two, and the reason is the subject rather than the screen.
@@ -473,6 +493,77 @@ function GarmentCell({
  */
 const GRID_GUTTERS = nativeSpacing.sm * 2 + nativeSpacing.sm;
 
+/**
+ * One saved outfit, read-only (ADR-0136 D2), in `13`'s vocabulary.
+ *
+ * Every value is the stored record's: each slot's sample is the colour that was SCORED, with its
+ * stored provenance (rule 12), never the garment's row today; the score is the stored one, with the
+ * words that say it was not recomputed and the versions that made it (rule 11). No swap and no
+ * lock — what a lookbook keeps is what was saved.
+ */
+function LookbookEntry({
+  outfit,
+  script,
+  onRemove,
+}: {
+  readonly outfit: StoredOutfit;
+  readonly script: Script;
+  readonly onRemove: () => void;
+}): React.JSX.Element {
+  const { t } = useMessages();
+  const { envelope } = outfit;
+  const labels = outfit.items.map((item) => item.garmentLabel).join(', ');
+  return (
+    <Card level="1" padding="sm">
+      <Stack gap="sm">
+        {outfit.items.map((item) => (
+          <Row key={item.slot} gap="sm" align="center">
+            <Swatch
+              caption="name"
+              name={item.color.name}
+              hex={item.color.hex}
+              color={colorOf(item.color)}
+              size={48}
+            />
+            <Stack gap="xs">
+              <Text size="body" color="foreground" script={script}>
+                {item.garmentLabel}
+              </Text>
+              <Text size="label" color="foreground.2" numeric selectable>
+                {item.color.hex}
+              </Text>
+            </Stack>
+            {/* 13's Locked badge: a lock and a word, on a slot that was locked when it was saved. */}
+            {item.locked ? (
+              <Chip
+                form="badge"
+                icon="lock"
+                fill="surface.3"
+                radius="sm"
+                label={t('lab.locked')}
+                script={script}
+              />
+            ) : null}
+          </Row>
+        ))}
+        <ScoreLines score={shownScoreOf(outfit)} />
+        <Text size="caption" color="foreground.2" script={script}>
+          {t('lookbook.scoredWhenSaved')}
+        </Text>
+        <Text size="caption" color="foreground.2" numeric script={script}>
+          {`${t('lookbook.versions')}: ${t('lookbook.versionRules')} ${envelope.rules} · ${t('lookbook.versionCorpus')} ${envelope.corpus} · ${t('lookbook.versionEngine')} ${envelope.engine} · ${t('lookbook.versionScorer')} ${envelope.scorer}`}
+        </Text>
+        <Button
+          label={`${t('lookbook.remove')}: ${labels}`}
+          variant="secondary"
+          onPress={onRemove}
+          script={script}
+        />
+      </Stack>
+    </Card>
+  );
+}
+
 export function Wardrobe({
   store,
   coverage,
@@ -484,6 +575,8 @@ export function Wardrobe({
   onOpenCombinations,
   onOpenOutfit,
   onOpenShopping,
+  lookbook,
+  initialView = 'garments',
 }: WardrobeProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
 
@@ -491,6 +584,13 @@ export function Wardrobe({
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
   const [saved, setSaved] = useState(false);
   const [filter, setFilter] = useState<WardrobeFilter>(initialFilter);
+  /*
+   * THE LOOKBOOK CHOICE (F-238, ADR-0136 D1, D3). Screen state, never stored: a view that came back
+   * on Lookbook at the next launch would hide the wardrobe behind a choice nobody remembers making.
+   * Drawn whenever there is a garment OR a saved outfit, so the lookbook stays reachable — and its
+   * outfits removable — with an empty wardrobe.
+   */
+  const [view, setView] = useState<WardrobeView>(initialView);
 
   const selected = garments.find((g) => g.id === selectedId) ?? null;
 
@@ -726,6 +826,67 @@ export function Wardrobe({
       </Screen>
     );
 
+  const showChoice = lookbook !== undefined && (garments.length > 0 || lookbook.outfits.length > 0);
+  const lookbookShown = showChoice && view === 'lookbook';
+
+  /*
+   * THE CHOICE, DIRECTLY OVER THE REGION IT SWITCHES (ADR-0136 D1). `10.source`'s form: a pill,
+   * edged in `border`, the chosen segment filled with its leading dot — a shape and an announced
+   * selection (rule 13). It switches only what is below it; everything above stays.
+   */
+  const viewChoice = !showChoice ? null : (
+    <ChoiceGroup
+      label={t('wardrobe.view')}
+      options={[
+        { value: 'garments', label: t('wardrobe.view.garments') },
+        { value: 'lookbook', label: t('wardrobe.view.lookbook') },
+      ]}
+      value={view}
+      onChange={(next) => {
+        if (next !== null) setView(next);
+      }}
+      segmented={{
+        mark: 'dot',
+        selectedFill: 'surface.2',
+        edge: 'border',
+        radius: 'pill',
+        height: 33,
+      }}
+      script={script}
+    />
+  );
+
+  /*
+   * THE LOOKBOOK (ADR-0136 D2, D3): each saved outfit read-only, newest first, in one Arrival
+   * (E-199). Empty, `00`'s caption — the Outfit Lab button is on this screen, and the choice is
+   * only drawn with a garment to build from or an outfit to show.
+   */
+  const lookbookList =
+    lookbook === undefined ? null : lookbook.outfits.length === 0 ? (
+      <EmptyState
+        message={t('lookbook.empty')}
+        hint={t('lookbook.emptyHint')}
+        resolvedHere
+        script={script}
+      />
+    ) : (
+      <Arrival>
+        <Stack gap="md">
+          {lookbook.outfits.map((outfit, index) => (
+            <Appear key={outfit.id} index={index}>
+              <LookbookEntry
+                outfit={outfit}
+                script={script}
+                onRemove={() => {
+                  lookbook.onRemove(outfit.id);
+                }}
+              />
+            </Appear>
+          ))}
+        </Stack>
+      </Arrival>
+    );
+
   return (
     <Screen title={t('browse.title')} script={script}>
       {/*
@@ -860,7 +1021,11 @@ export function Wardrobe({
         </Card>
       )}
 
-      {garments.length === 0 ? (
+      {/* The choice above an empty wardrobe too, so its outfits stay reachable (ADR-0136 D3). */}
+      {garments.length === 0 ? viewChoice : null}
+      {garments.length === 0 && lookbookShown ? (
+        lookbookList
+      ) : garments.length === 0 ? (
         /*
           AN EMPTY WARDROBE NOW OFFERS THE WAY TO FILL IT (F-139). The hint said "add a garment"
           and there was nothing to press; the only route to `/wardrobe/add` was through the
@@ -891,7 +1056,7 @@ export function Wardrobe({
             resolvedHere
           />
         )
-      ) : groups.length === 0 ? (
+      ) : groups.length === 0 && !lookbookShown ? (
         /*
           NOTHING MATCHES IS NOT AN EMPTY WARDROBE (criterion 2). Two different situations with
           two different things to do about them — one is "add a garment", the other is "clear a
@@ -903,23 +1068,17 @@ export function Wardrobe({
           control the bar above already draws — offering "add a garment" here would send
           somebody to buy a coat they already own.
         */
-        <EmptyState
-          message={t('browse.filterNone')}
-          hint={t('browse.filterNoneHint')}
-          script={script}
-          resolvedHere
-        />
+        <>
+          {viewChoice}
+          <EmptyState
+            message={t('browse.filterNone')}
+            hint={t('browse.filterNoneHint')}
+            script={script}
+            resolvedHere
+          />
+        </>
       ) : (
         <>
-          {/*
-            Says what the grouping IS, rather than letting a reader infer that the app has decided
-            each garment's colour has a name. It has decided which published colours it sits
-            nearest to, which is a weaker and true claim (ADR-0031).
-          */}
-          <Text size="label" color="foreground.2" script={script}>
-            {t('browse.grouping')}
-          </Text>
-
           {/*
             COVERAGE AND GAPS (criterion 3) — the first chart in the product.
 
@@ -1001,7 +1160,23 @@ export function Wardrobe({
             </Card>
           )}
 
-          {/*
+          {viewChoice}
+
+          {lookbookShown ? (
+            lookbookList
+          ) : (
+            <>
+              {/*
+            Says what the grouping IS, rather than letting a reader infer that the app has decided
+            each garment's colour has a name. It has decided which published colours it sits
+            nearest to, which is a weaker and true claim (ADR-0031). Below the choice since F-238,
+            because it describes the gallery and not the lookbook.
+          */}
+              <Text size="label" color="foreground.2" script={script}>
+                {t('browse.grouping')}
+              </Text>
+
+              {/*
             THE GALLERY (F-150 criteria 1, 2 and 4).
 
             A `SectionList` OVER ROWS, which is the shape that keeps two things that pull in
@@ -1019,63 +1194,65 @@ export function Wardrobe({
             and a flat grid with the family word repeated on every cell would keep the word while
             losing the navigation.
           */}
-          {/*
+              {/*
             A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the rows the first frame draws stagger in,
             in reading order across the sections — each row's index counts the rows above it —
             and a row the list windows in later is simply there.
           */}
-          <Arrival>
-            <SectionList
-              sections={sections}
-              keyExtractor={(row) => row.map((g) => g.id).join('|')}
-              renderSectionHeader={({ section }) => (
-                <Stack gap="xs" padding="sm">
-                  <Text size="body" color="foreground" script={script} heading>
-                    {section.title}
-                  </Text>
-                  <Text size="label" color="foreground.2" script={script} numeric>
-                    {`${t('browse.count')}: ${String(section.count)}`}
-                  </Text>
-                </Stack>
-              )}
-              renderItem={({ item: row, index, section }) => (
-                <Appear index={(rowsBefore.get(section.family) ?? 0) + index}>
-                  <Row gap="sm" align="start">
-                    {row.map((garment) => (
-                      <GarmentCell
-                        key={garment.id}
-                        garment={garment}
-                        photoSize={photoSize}
-                        uri={images.uri(garment.id)}
-                        label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
-                          garment.color.name,
-                          garment.color.hex,
-                          colorOf(garment.color),
-                        )}`}
-                        script={script}
-                        onPress={() => {
-                          open(garment);
-                        }}
-                      />
-                    ))}
-                    {/*
+              <Arrival>
+                <SectionList
+                  sections={sections}
+                  keyExtractor={(row) => row.map((g) => g.id).join('|')}
+                  renderSectionHeader={({ section }) => (
+                    <Stack gap="xs" padding="sm">
+                      <Text size="body" color="foreground" script={script} heading>
+                        {section.title}
+                      </Text>
+                      <Text size="label" color="foreground.2" script={script} numeric>
+                        {`${t('browse.count')}: ${String(section.count)}`}
+                      </Text>
+                    </Stack>
+                  )}
+                  renderItem={({ item: row, index, section }) => (
+                    <Appear index={(rowsBefore.get(section.family) ?? 0) + index}>
+                      <Row gap="sm" align="start">
+                        {row.map((garment) => (
+                          <GarmentCell
+                            key={garment.id}
+                            garment={garment}
+                            photoSize={photoSize}
+                            uri={images.uri(garment.id)}
+                            label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
+                              garment.color.name,
+                              garment.color.hex,
+                              colorOf(garment.color),
+                            )}`}
+                            script={script}
+                            onPress={() => {
+                              open(garment);
+                            }}
+                          />
+                        ))}
+                        {/*
                       A ROW OF ONE STILL OCCUPIES TWO COLUMNS. Without this the last cell of an odd
                       section stretches to full width and reads as a different, larger kind of thing
                       — which is the single-garment state (criterion 4) arriving by accident in the
                       middle of a large wardrobe.
                     */}
-                    {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
-                  </Row>
-                </Appear>
-              )}
-              ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
-              SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
-              scrollEnabled={false}
-              initialNumToRender={4}
-              windowSize={5}
-              removeClippedSubviews
-            />
-          </Arrival>
+                        {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
+                      </Row>
+                    </Appear>
+                  )}
+                  ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+                  SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+                  scrollEnabled={false}
+                  initialNumToRender={4}
+                  windowSize={5}
+                  removeClippedSubviews
+                />
+              </Arrival>
+            </>
+          )}
         </>
       )}
     </Screen>

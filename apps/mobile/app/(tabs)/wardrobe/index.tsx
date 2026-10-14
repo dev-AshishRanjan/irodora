@@ -12,6 +12,7 @@ import { WEIGHTS_TEXT } from '../../../src/rules/generated/weights';
 import { activeProfile, toWorking } from '../../../src/profile/store';
 import { engineProfile } from '../../../src/outfit/builder';
 import { lexicon } from '../../../src/finder';
+import { useLookbook } from '../../../src/lookbook';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.
@@ -37,6 +38,8 @@ export default function WardrobeRoute(): React.JSX.Element {
   const router = useRouter();
   const repo = deviceRepository();
   const stored = activeProfile(repo);
+  // The saved outfits, read back under the Lookbook choice (F-238, ADR-0136).
+  const lookbook = useLookbook();
 
   /*
    * COVERAGE AND GAPS ARE ASSEMBLED HERE, NOT IN THE SCREEN (F-150 criterion 3).
@@ -106,6 +109,7 @@ export default function WardrobeRoute(): React.JSX.Element {
         onOpenShopping={() => {
           router.push('/wardrobe/shopping');
         }}
+        lookbook={{ outfits: lookbook.outfits, onRemove: lookbook.remove }}
       />
     </>
   );
