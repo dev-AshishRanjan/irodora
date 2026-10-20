@@ -246,7 +246,22 @@ describe('27’s hanger, the one tinted drawing', () => {
     const b = <Illustration name="hanger" color="foreground" />;
     // @ts-expect-error — the hanger's tint is its own token.
     const c = <Illustration name="hanger" color="foreground" tint="state.mark" />;
-    expect([a, b, c]).toHaveLength(3);
+    // @ts-expect-error — any other drawing in foreground at full strength (F-242).
+    const d = <Illustration name="plum-branch" color="foreground" tone="figure" />;
+    expect([a, b, c, d]).toHaveLength(4);
+  });
+
+  it('inks a backdrop in foreground at the declared opacity (F-242, R9 §5)', () => {
+    const tree = draw(<Illustration name="plum-branch" color="foreground" tone="backdrop" />);
+    expect(tree.UNSAFE_getByType(Svg).props['opacity']).toBe(nativeArtOpacity);
+    const inks = new Set(
+      [...all(tree), ...(tree.UNSAFE_queryAllByType(Line) as unknown as ReactElement<Props>[])]
+        .flatMap((e) => [e.props['fill'], e.props['stroke']])
+        .filter((v) => v !== undefined && v !== 'none'),
+    );
+    expect(inks).toStrictEqual(new Set([dark.foreground]));
+    // DECOY: the default ink is not foreground, so the set above is the prop's doing.
+    expect(dark['foreground.3']).not.toBe(dark.foreground);
   });
 });
 

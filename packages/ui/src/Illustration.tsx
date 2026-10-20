@@ -606,6 +606,19 @@ interface QuietIllustration extends IllustrationBase {
 }
 
 /**
+ * The drawing behind a screen's content in `foreground`, at the declared `opacity.art` (F-242):
+ * R9 §5 measures the backdrop art as *the `foreground` token at a declared opacity*, 0.15 of it,
+ * and `01`'s plum branches are drawn so. Only as a backdrop: in `foreground` at full strength a
+ * drawing is as loud as the sentence beside it, which the type above refuses.
+ */
+interface BackdropIllustration extends IllustrationBase {
+  readonly name: IllustrationName;
+  readonly color: 'foreground';
+  readonly tone: 'backdrop';
+  readonly tint?: never;
+}
+
+/**
  * `27`'s empty-wardrobe hanger, as `27` draws it (F-236, ADR-0128 §3): the picture of its state,
  * a figure — its body in the C10 tan, its hook and sprigs white. The one place an illustration
  * takes `foreground` at full strength, because `27` draws it so and the drawing is the state's
@@ -618,7 +631,7 @@ interface StateHanger extends IllustrationBase {
   readonly tone?: 'figure';
 }
 
-export type IllustrationProps = QuietIllustration | StateHanger;
+export type IllustrationProps = QuietIllustration | BackdropIllustration | StateHanger;
 
 export function Illustration(props: IllustrationProps): React.JSX.Element {
   const { name, width = 64, tone = 'figure', stroke, testID } = props;

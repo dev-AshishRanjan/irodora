@@ -211,6 +211,7 @@ export {
   TAB_GLYPH,
   TAB_GLYPH_TOP,
   TAB_INDICATOR,
+  TAB_INDICATOR_TEST_ID,
   TAB_LABEL_TOP,
   TAB_RULE,
   TAB_SIDE_INSET,
@@ -355,6 +356,14 @@ export {
   type FabricSwatchProps,
   type PinkedPoint,
 } from './FabricSwatch.js';
+export {
+  checkerPath,
+  TEXTURE_BADGE,
+  TEXTURE_BADGE_CELLS,
+  TextureBadge,
+  textureBadgeCorner,
+  type TextureBadgeProps,
+} from './TextureBadge.js';
 export {
   Swatch,
   SWATCH_KEYLINE,

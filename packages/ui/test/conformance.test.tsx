@@ -83,6 +83,7 @@ import {
   Tabs,
   Text,
   TextField,
+  TextureBadge,
   ThemeProvider,
   sampleEdge,
   useTheme,
@@ -2912,6 +2913,23 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     sampleValues: [hex],
     render: (_state, theme) =>
       draw(<FabricSwatch name="Kuri-iro" hex={hex} color={SAMPLE} />, theme),
+  })),
+  /*
+   * 01'S TEXTURE BADGE (F-242, ADR-0137), on the samples FabricSwatch is drawn on: a pale one, where
+   * the dark ink is taken, and a mid-tone, where the ink is the one text there takes. Drawn on a
+   * sample of its own, as it is on a tile, so its ink is judged against what it sits on.
+   */
+  ...(['#F0EDE6', '#87795D'] as const).map((hex): ConformanceSubject => ({
+    name: `TextureBadge (01, ${hex})`,
+    kind: 'static',
+    sampleValues: [hex],
+    render: (_state, theme) =>
+      draw(
+        <Swatch name="Kuri-iro" hex={hex} color={SAMPLE} size={52}>
+          <TextureBadge on={{ hex, color: SAMPLE }} />
+        </Swatch>,
+        theme,
+      ),
   })),
   {
     /*

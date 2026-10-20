@@ -49,6 +49,9 @@ export const TAB_RULE = 1;
 /** The active tab's indicator, in dp: `01.tabs.indicator`, directly under the rule. */
 export const TAB_INDICATOR = { width: 47.5, height: 2.5 } as const;
 
+/** The active indicator's test id: the one way `01.tabs.indicator`, which binds nothing, is found. */
+export const TAB_INDICATOR_TEST_ID = 'tab-bar.indicator';
+
 /**
  * The glyph's size in dp: the median drawn glyph (18 dp) over the 18-unit live area of the 24-unit
  * grid the set is drawn on (the atlas sphere and the camera span 3 → 21).
@@ -163,6 +166,9 @@ export function TabBar({
               style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' }}
             >
               <View
+                // Named on the active tab only (F-242): `01.tabs.indicator` is found by it, and an
+                // id on a transparent bar would name a node that draws nothing.
+                {...(on ? { testID: TAB_INDICATOR_TEST_ID } : {})}
                 style={{
                   width: TAB_INDICATOR.width,
                   height: TAB_INDICATOR.height,

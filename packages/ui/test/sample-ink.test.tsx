@@ -21,6 +21,7 @@ import {
   sampleEdge,
   sampleInk,
   Text,
+  TextureBadge,
   ThemeProvider,
   type Sample,
 } from '../src/index.js';
@@ -215,6 +216,30 @@ describe('the conformance rule sample-ink', () => {
     expect(checkSubject(misused, ['dark']).filter((f) => f.rule === 'colour-literal')).toHaveLength(
       1,
     );
+  });
+
+  it('exempts a moved ink as a mark drawn on the sample (01’s texture badge, F-242)', () => {
+    // The role ADR-0137 D2 gives it: a graphic in the sample's text ink. The decoy is the case
+    // above, the same value as a View's background, which stays a literal.
+    const badge: ConformanceSubject = {
+      name: 'MovedInkAsMark',
+      kind: 'static',
+      sampleValues: [MID],
+      render: (_state, theme) => {
+        const rendered = render(
+          <ThemeProvider theme={theme}>
+            <View style={{ backgroundColor: MID, width: 120, height: 80 }}>
+              <TextureBadge on={sample(MID)} />
+            </View>
+          </ThemeProvider>,
+        );
+        const json = rendered.toJSON() as TestNode;
+        rendered.unmount();
+        return json;
+      },
+    };
+    expect(sampleInk(MID, nativeColors.dark).moved).toBe(true);
+    expect(findings(badge, 'colour-literal')).toBe(0);
   });
 
   it('leaves a ground that is no declared sample to the colour-literal rule', () => {

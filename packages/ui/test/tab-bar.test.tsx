@@ -23,6 +23,7 @@ import {
   TAB_GLYPH,
   TAB_GLYPH_TOP,
   TAB_INDICATOR,
+  TAB_INDICATOR_TEST_ID,
   TAB_LABEL_TOP,
   TAB_RULE,
   TAB_SIDE_INSET,
@@ -171,6 +172,17 @@ describe('the active tab carries three channels', () => {
       }
     },
   );
+
+  it('names the active indicator, and only it, for 01.tabs.indicator to be found (F-242)', () => {
+    for (const key of KEYS) {
+      const named = nodes(draw(key)).filter((n) => n.props['testID'] === TAB_INDICATOR_TEST_ID);
+      expect(named).toHaveLength(1);
+      // DECOY: the named node is the one painted, so an id on a transparent bar would fail here.
+      expect(flattenStyle(named[0]?.props['style'])['backgroundColor']).toBe(
+        nativeColors.dark.foreground,
+      );
+    }
+  });
 
   it('fills the glyph only where the data says: Home, of 01’s five (OQ-47)', () => {
     const fills = (key: string): number =>
