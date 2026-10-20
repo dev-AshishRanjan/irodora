@@ -4,7 +4,7 @@
     {
       "route": "/",
       "file": "(tabs)/index.tsx",
-      "anchor": "home.what1"
+      "anchor": "home.onDevice"
     },
     {
       "route": "/lens",

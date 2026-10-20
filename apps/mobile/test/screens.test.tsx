@@ -482,13 +482,33 @@ const DRAFT: PaletteDraft = {
  * likely to skip — so it is the default here and the populated case is opt-in.
  */
 function fakeHome(populated = false): HomeStore {
-  const row = (id: string, created: number): SavedColorRow =>
-    ({
-      id,
-      created_at: created,
-      updated_at: created,
+  return { listGarments: () => (populated ? HOME_GARMENTS : []) };
+}
+
+/**
+ * 01's WARDROBE PREVIEW, FILLED (F-242): five garments, so every tile and badge `01` draws is on the
+ * tree. Four take a published colour and one a Lens reading (estimated, with its conditions), so the
+ * preview carries both provenances; four record a material and one does not, so a badge is drawn
+ * where one is recorded and absent where none is (ADR-0137). Home reads garments and nothing else
+ * (ADR-0138), so there is no colour row here but a garment's own.
+ */
+const HOME_GARMENT_HEXES = ['#4E5D6C', '#E8E4DA', '#5E7A5A', '#A8503E', '#5C4A64'] as const;
+const HOME_GARMENTS: readonly StoredGarment[] = HOME_GARMENT_HEXES.map((hex, i) => {
+  const read = i === 0;
+  return {
+    id: `g${String(i + 1)}`,
+    createdAt: 100 - i,
+    updatedAt: 100 - i,
+    deletedAt: null,
+    type: 'shirt',
+    name: null,
+    material: i === 2 ? null : ['Wool', 'Linen', null, 'Cotton', 'Silk'][i],
+    color: {
+      id: `c${String(i + 1)}`,
+      created_at: 100 - i,
+      updated_at: 100 - i,
       deleted_at: null,
-      name: id === 'r1' ? 'Ai-nezumi' : 'Kakishibu',
+      name: `Colour ${String(i + 1)}`,
       xyz_x: 0.1712,
       xyz_y: 0.1699,
       xyz_z: 0.2381,
@@ -498,27 +518,23 @@ function fakeHome(populated = false): HomeStore {
       oklch_l: 0.52,
       oklch_c: 0.03,
       oklch_h: 264,
-      hex: '#6E7480',
-      source: 'declared',
-      confidence: 1,
+      hex,
+      source: read ? 'estimated' : 'reference',
+      confidence: read ? 0.81 : 1,
       corpus_slug: null,
-    }) as unknown as SavedColorRow;
+      capture_illuminant: read ? 'daylight' : null,
+      capture_quality: read ? 'good' : null,
+      capture_samples: read ? 12 : null,
+      capture_variance: read ? 0.4 : null,
+    },
+  } as unknown as StoredGarment;
+});
 
-  const garment = (id: string, created: number): StoredGarment =>
-    ({
-      id,
-      createdAt: created,
-      updatedAt: created,
-      deletedAt: null,
-      type: 'shirt',
-      color: row(`${id}-c`, created),
-    }) as unknown as StoredGarment;
+/** The day the Home subjects are drawn on: 曇りガラス (#C5CFD4), fixed so it cannot rotate. */
+const HOME_DAY = Date.UTC(2026, 8, 3, 12);
 
-  return {
-    listColors: () => (populated ? [row('r1', 100), row('r2', 900)] : []),
-    listGarments: () => (populated ? [garment('g1', 10), garment('g2', 20)] : []),
-  };
-}
+/** Every sample a Home subject draws: the day's colour and the five garments' — data, not tokens. */
+const HOME_SAMPLES = ['#C5CFD4', ...HOME_GARMENT_HEXES];
 
 /**
  * The wardrobe port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device.
@@ -1095,48 +1111,64 @@ const SCREENS: readonly ConformanceSubject[] = [
      */
     kind: 'static',
     /*
-     * Two colours, both DATA rather than tokens, and both must be declared here in the registry
-     * rather than marked on the screen — so forgetting one is a failure rather than an exemption
-     * a component granted itself.
+     * The colours are DATA rather than tokens, and each is declared here in the registry rather
+     * than marked on the screen — so forgetting one is a failure rather than an exemption a
+     * component granted itself. `#C5CFD4` is 曇りガラス, the entry `colourOfTheDay` selects for
+     * the fixed date — stable only BECAUSE the date is fixed, which is why `now` is injected.
      *
-     * `#6E7480` is the stored reading the fixture returns. `#C5CFD4` is 曇りガラス, the corpus
-     * entry `colourOfTheDay` selects for the fixed date below — stable only BECAUSE the date is
-     * fixed. A live clock would rotate it and this list would go stale overnight with no source
-     * change, which is the whole reason `now` is injected.
-     *
-     * The two hexes that used to be here were F-017's hard-coded INDIGO and BLUE_BLACK. F-146
-     * removed them: the screen shows what is actually stored now, and inventing two colours to
-     * fill a front door was part of what made it read as a demo.
+     * 01 AS DRAWN (F-242): five garments, the pill counted against a profile, every action wired —
+     * the CTA is the page's one primary pill, and a subject omitting it would leave it unmeasured.
      */
-    sampleValues: ['#6E7480', '#C5CFD4'],
+    sampleValues: HOME_SAMPLES,
     render: (_state, theme) =>
       draw(
         <Home
           store={fakeHome(true)}
-          now={() => Date.UTC(2026, 8, 3, 12)}
-          // F-202: the accent action on the lead card. A subject omitting it would leave the
-          // page's ONE accent unmeasured, which is the token whose contrast matters most here.
+          now={() => HOME_DAY}
+          coverage={{ valid: 4, threshold: 60 }}
           onOpenCombinations={() => undefined}
+          onOpenGarment={() => undefined}
+          onOpenLens={() => undefined}
         />,
         theme,
       ),
   },
   {
     /*
-     * THE FIRST-RUN FRONT DOOR (F-202). A different tree: today's colour leads in the level-2
-     * card, the reading block is an invitation rather than a sample, and the wardrobe is empty.
-     * Registered because "unprofessional" was reported about THIS state — a new install — and it
-     * was measured by nothing.
+     * A WARDROBE WITH NO PROFILE (F-242, R9 §4 E2): the pill says the garment count alone, which
+     * is a different tree from the one above and the state every new wardrobe is in.
+     */
+    name: 'screens/Home (a wardrobe, no profile)',
+    shows: showing(HOME_STATES),
+    kind: 'static',
+    sampleValues: HOME_SAMPLES,
+    render: (_state, theme) =>
+      draw(
+        <Home
+          store={fakeHome(true)}
+          now={() => HOME_DAY}
+          onOpenCombinations={() => undefined}
+          onOpenGarment={() => undefined}
+          onOpenLens={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE FIRST-RUN FRONT DOOR (F-202): the day's colour and its card, and 27's empty-wardrobe card
+     * in the preview's place. Registered because "unprofessional" was reported about THIS state —
+     * a new install — and it was measured by nothing.
      */
     name: 'screens/Home (first run)',
     shows: showing(HOME_STATES, 'empty'),
     kind: 'static',
-    sampleValues: ['#6E7480', '#C5CFD4'],
+    sampleValues: HOME_SAMPLES,
     render: (_state, theme) =>
       draw(
         <Home
           store={fakeHome(false)}
-          now={() => Date.UTC(2026, 8, 3, 12)}
+          now={() => HOME_DAY}
           onOpenCombinations={() => undefined}
           onOpenLens={() => undefined}
         />,
@@ -3339,17 +3371,18 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
    */
   it('DECOY — a screen that asks for no tabular figures has none', () => {
     /*
-     * HOME IN ITS FIRST-RUN STATE, and the state matters since F-146.
-     *
-     * Home used to render no numbers at all, so any Home was a valid decoy. It now shows a hex
-     * and a wardrobe count — both correctly `numeric` — so the POPULATED screen has two tabular
-     * nodes and stopped being a screen that asks for none.
-     *
-     * The first-run state still asks for none: no reading, no count, and today's colour is a
-     * kanji, a reading and an English gloss. That is a real screen rendering real text without
-     * the prop, which is what this decoy needs to be worth anything.
+     * THE EMPTY WARDROBE (27's card), since F-242. Home was this decoy until its first run began
+     * printing 01's OKLCh line, which is correctly `numeric`. The empty wardrobe prints a heading,
+     * a sentence and an action and no figure — a real screen rendering real text without the
+     * prop, which is what this decoy needs to be worth anything. Its text is asserted first, so a
+     * tree that rendered nothing could not pass.
      */
-    expect(numericNodes(draw(<Home store={fakeHome(false)} />, 'light'))).toHaveLength(0);
+    const subject = SCREENS.find((s) => s.name === 'screens/Wardrobe (nothing in it)');
+    if (subject === undefined) throw new Error('the wardrobe empty subject is gone');
+    const tree = subject.render('default', 'light');
+    if (tree === null) throw new Error('the wardrobe empty subject rendered nothing');
+    expect(renderedTexts(tree).length).toBeGreaterThan(2);
+    expect(numericNodes(tree)).toHaveLength(0);
   });
 
   /*

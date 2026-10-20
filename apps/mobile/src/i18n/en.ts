@@ -36,20 +36,15 @@ export const en = {
   // HOME (F-146). The front door, after the ten buttons went.
   'home.what1': 'What colour is this.',
   'home.what2': 'What goes with it.',
-  'home.what3': 'Whether it suits you.',
-  'home.onDevice': 'All of it on your phone. Nothing is sent anywhere.',
-  'home.lastReading': 'Last reading',
-  'home.noReadings': 'No readings yet',
-  // F-236 — Home's no-readings card, in 27's form (a heading, what fills it).
-  'home.noReadingsTitle': 'No Readings Yet',
-  'home.noReadingsBody': 'Read a colour with the Lens and it appears here.',
-  'home.takeReading': 'Open the Lens',
-  'home.wardrobe': 'Wardrobe',
-  'home.wardrobeCount': 'pieces',
+  'home.what3': 'Does it suit me.',
+  'home.onDevice': '100% On-Device Engine • Offline',
+  // F-236 — Home's empty wardrobe as 00's caption, where Home is given no Lens to offer.
   'home.wardrobeEmpty': 'Nothing added yet',
-  'home.addGarment': 'Add a garment',
-  'home.today': 'Today',
-  'home.todayNote': 'One entry from the corpus, by the date. It changes tomorrow.',
+  // 01's three headings and its one action (F-242, ADR-0138). The colour card's heading keeps
+  // 01's place and about its length, and states the real classification: no entry is traditional.
+  'home.whatGoesWithThis': 'What Goes With This',
+  'home.wardrobePreview': 'Wardrobe Preview',
+  'home.colourCard': "Today's Japanese-Inspired Colour",
   // 01's count pill (F-242, ADR-0138 D6): a count beside a noun, and the singular its own key so
   // nobody reads "1 Garments". The outfits are coverage's valid ones, never the lookbook.
   'home.countGarment': 'Garment',
@@ -833,7 +828,6 @@ export const en = {
     'This capture was poor. Read the numbers below with that in mind, or take the reading again.',
   'against.what':
     'How far this reading sits from the colour you are comparing against, and which way. A distance, not a judgement about whether they are the same colour.',
-  'home.whatGoesWith': 'What goes with this',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

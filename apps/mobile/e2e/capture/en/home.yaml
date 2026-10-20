@@ -9,6 +9,6 @@ appId: com.irodora.app
 ---
 - launchApp:
     clearState: false
-- assertVisible: 'What colour is this\.'
+- assertVisible: '100% On-Device Engine • Offline'
 - waitForAnimationToEnd
 - takeScreenshot: capture

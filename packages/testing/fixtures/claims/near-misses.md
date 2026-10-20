@@ -65,6 +65,8 @@ condition, and a person entering values from their own instrument.
 - safe for machine washing
 - Data is 100% safe on your device
 - CVD simulation: 100% of palettes previewed
+- 100% On-Device Engine • Offline
+- 100%端末内エンジン • オフライン
 - Harmony score 82
 - Master the harmony of kasane layering
 - Perfect for autumn

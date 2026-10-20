@@ -1,76 +1,79 @@
 /**
- * The front door (F-146, F-164, FR-71).
+ * The front door, as mockup `01` draws it (F-242; FR-71, FR-73).
  *
- * ## The audit, because this is the second rewrite
+ * ## What `01` draws, top to bottom
  *
- * F-146 replaced ten identical secondary buttons with three editorial sections. That was the
- * right direction and it was reported again as *"unprofessional, not organised… unattractive"*,
- * which is worth taking at face value. What was actually wrong:
+ * - **The lockup** (`01.header.lockup`): the mark beside the name, one figure (F-230, ADR-0123).
+ * - **Three proposition lines** in the serif (`01.header.tagline`) — the brief's own questions —
+ *   with the on-device pill beside the third (`01.header.chip`).
+ * - **The hero** (`01.hero`): the day's corpus colour at full width, its kanji, kana, name and
+ *   OKLCh set on the sample (C8), and *What Goes With This →* beneath it.
+ * - **The Wardrobe Preview** (`01.wardrobe`): a count pill and the five newest garments, each with
+ *   its texture badge where a material is recorded (ADR-0137).
+ * - **The colour card** (`01.colour-card`): the same colour's classification and provenance, its
+ *   sample at the right.
+ * - **Plum-blossom line-art**, top right and down each side.
  *
- * | | |
- * |---|---|
- * | **It never said what the product is for** | The wordmark reads *Irodora*, a name nobody knows, and the only sentence about the product sat at the FOOT in `xs` grey: *"The engine is running on this device."* Developer copy, in a footnote slot |
- * | **Three sections, identical in shape** | `Section` title, content; three times. The sameness moved from ten buttons to three blocks rather than leaving |
- * | **The hierarchy contradicted the content** | *Last reading* led unconditionally, so a new install opened on an EMPTY STATE with a second one under it. The first impression was two apologies and a footnote |
- * | **Boldness was spent twice** | The 140px samples, and a bare integer at `display.2` — the second-largest thing on the page was the number of garments |
+ * The tab bar under it is the tab layout's (F-234).
  *
- * ## What it is now
+ * ## What it binds, and what it does not draw
  *
- * **The wordmark, then what the product does, in three fragments.** They are the brief's own
- * questions — *what colour is this, what goes with it, does it suit me* — and three short lines
- * is not a paragraph. Under them, the differentiator that was buried in the footer: all of it
- * happens on the phone.
+ * Nothing on this page is copied from the drawing (R9 §4 E1): the colour is the corpus's, the
+ * figures the engine's, the garments the store's. `01` draws no reading, so this screen reads no
+ * colour row but a garment's own (ADR-0138): the newest `saved_color` row of any source was shown
+ * here as *Last reading* until F-242, which is how a palette's corpus colour came to be presented
+ * as a measurement (F-337). A colour the Lens read is shown as its garment's tile.
  *
- * **Then a colour, at photographic scale, whichever one there is to show.** [`homeLead`](../home.ts)
- * decides: a person with readings gets theirs; a person with none gets today's corpus colour,
- * because the corpus is never empty and there is always a colour to lead with. Leading with an
- * absence was a choice, and it was the wrong one.
+ * ## The rules live in `../home.ts`
  *
- * **Then two quiet blocks** — the wardrobe as a strip, and whichever of the two colours did not
- * lead. Three different shapes, largest first, which is the rhythm the single column lacked.
- *
- * ## Where the boldness is spent
- *
- * On one colour, at size. `visual-taste` names that as the one place to spend it on this
- * product, and *a page with three bold moves has none* — so the wardrobe count is a label beside
- * its swatches rather than a number at `display.2`, and the footer is gone.
- *
- * ## What it does not decide
- *
- * Which colour appears anywhere, and which block leads. [`../home.ts`](../home.ts) works both out
- * and it is pure — so the rules are written where somebody can disagree with them rather than
- * buried in a render.
+ * Which colour, how many garments, what the pill says, what a tile is called: worked out there,
+ * pure, so the rules are written where somebody can disagree with them rather than in JSX.
  */
 
 import { useMemo } from 'react';
-import { Pressable } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
+import type { Coverage } from '@irodora/optimization';
+import { nativeSpacing } from '@irodora/design-tokens';
 import {
-  Appear,
   Button,
   Card,
+  Chip,
   EmptyState,
+  Illustration,
   Row,
   Screen,
   Stack,
   Swatch,
   Text,
+  TextureBadge,
   Wordmark,
 } from '@irodora/ui';
-import { entrySwatch, homeContent, homeLead } from '../home';
+import {
+  entrySwatch,
+  garmentTileName,
+  heroName,
+  HOME_HERO,
+  HOME_TILES,
+  homeContent,
+  oklchLine,
+  recordedMaterial,
+  wardrobeCountLabel,
+  wardrobeCountName,
+  wardrobeTileSize,
+} from '../home';
 import { colorOf } from '../wardrobe';
 import { useMessages } from '../i18n/useMessages';
-import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import type { StoredGarment } from '@irodora/store';
 import type { ScreenStates } from '../states';
 
 /**
- * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: no reading
- * yet, and an empty wardrobe.
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: an empty
+ * wardrobe — the one panel `01` draws that can be empty. The day's colour is always there.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
-/** What this screen needs from the repository, and nothing else, so a test can supply it. */
+/** What this screen needs from the repository, and nothing else: the garments (ADR-0138 D2). */
 export interface HomeStore {
-  listColors(): readonly SavedColorRow[];
   listGarments(): readonly StoredGarment[];
 }
 
@@ -78,361 +81,291 @@ export interface HomeProps {
   readonly store: HomeStore;
   /** Injected so a conformance subject can render a fixed day rather than the machine's. */
   readonly now?: () => number;
-  /** Open the Lens. Supplied by the route; the tab bar is the other way there. */
-  readonly onOpenLens?: () => void;
-  /** Open the Atlas — specifically, today's colour. */
-  readonly onOpenColour?: (slug: string) => void;
   /**
-   * Open what goes with the colour this page is leading with (F-202, criterion 3).
-   *
-   * **Two shapes, because the lead has two.** Today's colour is a corpus entry and carries a
-   * slug; a reading has none and never will — `SavedColorRow.corpus_slug` is `null` for a Lens
-   * capture, *"its origin is a camera, which is what `source` already says"*. So the reading
-   * case carries the ROW ID, and the route resolves it.
-   *
-   * A slug-only version would have satisfied the criterion on a new install and quietly failed
-   * on every phone that had ever been used.
+   * The wardrobe's valid outfits against the stored profile (`coverage()`, FR-42), worked out by
+   * the route (`src/wardrobe/coverage.ts`). Absent without a profile, and the pill then says the
+   * garment count alone (R9 §4 E2).
    */
-  readonly onOpenCombinations?:
-    | ((
-        subject:
-          | { readonly kind: 'entry'; readonly slug: string }
-          | { readonly kind: 'reading'; readonly id: string },
-      ) => void)
-    | undefined;
-  /** Add a garment, from the first-run wardrobe block. */
-  readonly onAddGarment?: () => void;
+  readonly coverage?: Pick<Coverage, 'valid' | 'threshold'> | undefined;
+  /** *What Goes With This →*: the day's colour's combinations, by its slug (F-202). */
+  readonly onOpenCombinations?: ((slug: string) => void) | undefined;
+  /** A garment tile: that garment's combinations, by its id (ADR-0138 D5). */
+  readonly onOpenGarment?: ((id: string) => void) | undefined;
+  /** 27's *Scan First Garment*, on an empty wardrobe. */
+  readonly onOpenLens?: (() => void) | undefined;
 }
 
 /**
- * The size the LEADING colour is shown at.
- *
- * 180px, and it is the one bold move on the page. A swatch at 72 beside three lines of 13px type
- * — which is what this screen had before F-146 — makes the artefact the product exists to show
- * the smallest considered thing on it.
- *
- * `visual-taste`: *spend boldness in one place*, and here it is the colour. Everything below it
- * holds still.
+ * `01`'s three plum branches, in the frame's dp (2 px per dp), measured from its inventory. Each is
+ * drawn at its box's height in the drawing's own proportion, and the two on the sides run on past
+ * the screen's edge, as `01` draws them, where the art layer clips them.
  */
-const LEAD_SAMPLE = 180;
+export const HOME_ART = {
+  /** `01.header.line-art`: x 235.5–384, y 7.5, 148.5 wide. */
+  header: { right: 0, top: 7.5, width: 148.5 },
+  /** `01.side-art-right`: 36 dp of a branch 104 tall, from y 140. */
+  right: { right: -84, top: 140, width: 120 },
+  /** `01.side-art`: 36 dp of a branch 189 tall, from y 421. */
+  left: { left: -182, top: 421, width: 218 },
+} as const;
 
-/** The size a colour is shown at in a block that is not leading. Quiet, and still legible. */
-const QUIET_SAMPLE = 96;
-
-/** A wardrobe colour in the strip. Small enough to read as a set rather than as five things. */
-const STRIP_SAMPLE = 40;
+/** `01.hero.cta`: a full-width pill, drawn 35.5 dp tall. */
+const CTA_HEIGHT = 35.5;
+/** `01.header.chip`: drawn 20 dp tall. */
+const ON_DEVICE_HEIGHT = 20;
+/** `01.wardrobe.count`: drawn 18 dp tall. */
+const COUNT_HEIGHT = 18;
+/** `01.hero.sample`'s line, 5 px across at 2 px per dp (raw.keylinePx, C20). */
+const HERO_KEYLINE = 2.5;
+/** `01.colour-card.sample`: 52 × 40 dp. */
+const CARD_SAMPLE = { width: 52, height: 40 } as const;
 
 export function Home({
   store,
   now = () => Date.now(),
-  onOpenLens,
-  onOpenColour,
+  coverage,
   onOpenCombinations,
-  onAddGarment,
+  onOpenGarment,
+  onOpenLens,
 }: HomeProps): React.JSX.Element {
   const { t, script } = useMessages();
+  const { width } = useWindowDimensions();
 
-  // The store is read once per render and the selection is pure, so this memo is about not
-  // re-scanning the wardrobe on every re-render rather than about correctness.
-  const content = useMemo(
-    () => homeContent(store.listColors(), store.listGarments(), now()),
-    [store, now],
-  );
-  const lead = homeLead(content);
-
-  /*
-   * WHAT THE LEAD IS, AS THE COMBINATIONS SCREEN TAKES IT (F-202, criterion 3).
-   *
-   * Resolved here rather than in the handler so the button is ABSENT when there is nothing to
-   * open, rather than present and inert. A control that does nothing is worse than one that is
-   * not there — the first looks broken and the second looks like a state.
-   */
-  const leadSubject:
-    | { readonly kind: 'entry'; readonly slug: string }
-    | { readonly kind: 'reading'; readonly id: string }
-    | null =
-    lead === 'today' && content.today !== null
-      ? { kind: 'entry', slug: content.today.entry.slug }
-      : lead === 'reading' && content.lastReading !== null
-        ? { kind: 'reading', id: content.lastReading.id }
-        : null;
-
-  /** The reading block, at whichever size its position calls for. */
-  const readingBlock = (size: number): React.JSX.Element | null =>
-    content.lastReading === null ? null : (
-      <Row gap="md" align="start">
-        {/*
-          The Swatch requires a `Color`, so a reading with no provenance cannot be drawn
-          (ADR-0005). The row carries its own — `source` and `confidence` are NOT NULL columns
-          precisely so this is always true.
-        */}
-        <Swatch
-          caption="name"
-          name={content.lastReading.name}
-          hex={content.lastReading.hex}
-          color={colorOf(content.lastReading)}
-          size={size}
-        />
-        <Stack gap="xs">
-          {/*
-            ONE SIZE NOW, AND THAT IS A LOSS RECORDED RATHER THAN HIDDEN. The lead sample's name was
-            `display.2` (34) and the quieter one's `title` (22); board 00's scale has no 34 step, so
-            both are `title` (ADR-0113). F-242 rebuilds Home to 01 and decides the lead from it.
-          */}
-          <Text size="title" color="foreground" script={script}>
-            {content.lastReading.name}
-          </Text>
-          <Text size="label" color="foreground.2" numeric selectable>
-            {content.lastReading.hex}
-          </Text>
-          {/*
-            The source, always. A reading's origin is what makes it checkable, and hiding it
-            behind a tap is what ADR-0005 and FR-24 exist to prevent.
-          */}
-          <Text size="caption" color="foreground.2" script={script}>
-            {content.lastReading.source}
-          </Text>
-        </Stack>
-      </Row>
-    );
-
-  /** Today's colour, likewise. Pressable at both sizes — it goes to the corpus entry. */
-  const todayBlock = (size: number): React.JSX.Element | null =>
-    content.today === null ? null : (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={content.today.entry.name.en}
-        onPress={() => {
-          if (content.today !== null) onOpenColour?.(content.today.entry.slug);
-        }}
-      >
-        <Row gap="md" align="start">
-          <Swatch
-            caption="name"
-            name={content.today.entry.name.en}
-            {...entrySwatch(content.today)}
-            size={size}
-          />
-          <Stack gap="xs">
-            {/*
-              The kanji leads, with the reading beneath it. That order is the corpus's own — the
-              entry is a Japanese colour and its name is the Japanese one; the English is a gloss.
-            */}
-            <Text size="title" color="foreground" script="japanese">
-              {content.today.entry.name.kanji}
-            </Text>
-            <Text size="label" color="foreground.2" script="japanese">
-              {content.today.entry.name.kana}
-            </Text>
-            <Text size="label" color="foreground.2" script={script}>
-              {content.today.entry.name.en}
-            </Text>
-          </Stack>
-        </Row>
-      </Pressable>
-    );
+  // Read once per render and selected purely; the memo saves re-reading the wardrobe on a re-render.
+  const content = useMemo(() => homeContent(store.listGarments(), now()), [store, now]);
+  const today = content.today;
+  const sample = today === null ? null : entrySwatch(today);
+  const tile = wardrobeTileSize(width);
+  const garments = content.wardrobe.garments;
+  const countLabel = wardrobeCountLabel(content.wardrobe.count, coverage, t, script);
 
   return (
-    <Screen script={script}>
+    <Screen padding="xl" script={script}>
       {/*
-        THE PROPOSITION, and it is the whole of criterion 1.
-
-        `01`'s lockup — the mark beside the name at the `wordmark` step, 31.6 dp, as `01` draws it
-        (F-230; it led at `display.1`, 72 px, until then, and F-242 rebuilds the rest of Home). Then
-        three fragments at `title`, which are the brief's own questions rather than a slogan
-        somebody wrote: what colour is this, what goes with it, does it suit me.
-
-        NO CLAIM ABOUT ACCURACY anywhere in it. A front door is where an overstatement would be
-        least noticed and most damaging, and NFR-21's lint is binding here like everywhere else.
+        THE ART LAYER, behind everything and touching nothing. It spans the frame, not the content:
+        it starts at the screen's top-left (the inset taken back) and clips what runs past the edge.
       */}
-      <Stack gap="md">
-        <Wordmark form="app" heading />
-        <Stack gap="xs">
-          <Text size="title" color="foreground" script={script}>
-            {t('home.what1')}
-          </Text>
-          <Text size="title" color="foreground" script={script}>
-            {t('home.what2')}
-          </Text>
-          <Text size="title" color="foreground.2" script={script}>
-            {t('home.what3')}
-          </Text>
-        </Stack>
-        {/*
-          MOVED UP OUT OF THE FOOTER. It was two lines of `xs` grey at the foot of the page,
-          which is where a technical note goes — and it is not a technical note. Nothing else in
-          this category can say it.
-        */}
-        <Text size="label" color="foreground.2" script={script}>
-          {t('home.onDevice')}
-        </Text>
-      </Stack>
-
-      {/*
-        THE LEAD: one colour, at size, in a card that says so (F-202).
-
-        `level="2"` — the only one on this page. The other two blocks are level 1, and the
-        difference is what the three identical `Section`s could not express: F-164 differentiated
-        the CONTENT of the three blocks and its own docblock says so, but at the container level
-        they were the same shape, because `Card` did not exist until F-184.
-
-        THE SAMPLE GOES IN `media`, which escapes the card's padding — a colour at photographic
-        scale inset by a gutter is a colour at slightly less than photographic scale, and the
-        whole argument of F-164 is that this page spends its boldness here.
-
-        `Appear index={0}` keeps F-188's stagger. The motion was already here; the container
-        changed under it.
-      */}
-      {lead === 'none' ? null : (
-        <Appear index={0}>
-          <Card
-            level="2"
-            header={
-              <Text size="caption" color="foreground.2" script={script}>
-                {lead === 'reading' ? t('home.lastReading') : t('home.today')}
-              </Text>
-            }
-            media={lead === 'reading' ? readingBlock(LEAD_SAMPLE) : todayBlock(LEAD_SAMPLE)}
-            footer={
-              /*
-                ONE ACCENT ON THE PAGE, and it is here (criterion 1, F-175).
-
-                `visual-taste`'s rule is that a page with three bold moves has none. The boldness
-                is already spent on one colour at size; the accent is the second signal and it
-                goes on the one thing this page most wants somebody to do with that colour —
-                which is criterion 3.
-              */
-              leadSubject === null || onOpenCombinations === undefined ? null : (
-                <Button
-                  label={t('home.whatGoesWith')}
-                  onPress={() => {
-                    // Non-null inside this branch — the guard above is what makes the control
-                    // absent rather than inert when there is nothing to open.
-                    onOpenCombinations(leadSubject);
-                  }}
-                  script={script}
-                />
-              )
-            }
-          >
-            {lead === 'today' ? (
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('home.todayNote')}
-              </Text>
-            ) : null}
-          </Card>
-        </Appear>
-      )}
-
-      {/*
-        THE WARDROBE, as a strip.
-
-        The count was a bare integer at `display.2` — the second-biggest thing on the page, spent
-        on a number, while the colours it was about sat at 44px. It is a label beside its swatches
-        now, which is what it always was.
-      */}
-      {/*
-        THE SECTIONS ARRIVE IN THE ORDER THEY ARE READ (F-188).
-
-        Indices rather than nothing, because this screen HAS an order — the lead colour, then
-        the wardrobe, then whichever colour did not lead — and F-146’s whole argument was that
-        the rhythm of largest-first is what the single column lacked. A stagger states that
-        rhythm in time as well as in size.
-
-        The delay is capped inside `Appear` after six rows, which is more sections than this
-        screen will ever have.
-      */}
-      <Appear index={1}>
-        {content.wardrobe.count === 0 ? (
-          /*
-            THE EMPTY WARDROBE IS 27'S CARD (F-236): the same data condition as the Wardrobe
-            screen's, so the same heading, body and way out — Scan First Garment opens the Lens.
-            F-242 places it in 01's composition.
-          */
-          onOpenLens !== undefined ? (
-            <EmptyState
-              title={t('wardrobe.empty.title')}
-              body={t('wardrobe.empty.body')}
-              action={{ label: t('wardrobe.empty.scan'), onPress: onOpenLens }}
-              script={script}
-            />
-          ) : onAddGarment !== undefined ? (
-            <EmptyState
-              title={t('wardrobe.empty.title')}
-              body={t('browse.emptyHint')}
-              action={{ label: t('home.addGarment'), onPress: onAddGarment }}
-              script={script}
-            />
-          ) : (
-            <EmptyState message={t('home.wardrobeEmpty')} resolvedHere script={script} />
-          )
-        ) : (
-          <Card
-            level="1"
-            header={
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('home.wardrobe')}
-              </Text>
-            }
-          >
-            {
-              <Stack gap="sm">
-                <Row gap="sm" wrap>
-                  {content.wardrobe.colors.map((c) => (
-                    <Swatch
-                      caption="name"
-                      key={c.id}
-                      name={c.name}
-                      hex={c.hex}
-                      color={colorOf(c)}
-                      size={STRIP_SAMPLE}
-                    />
-                  ))}
-                </Row>
-                <Text size="caption" color="foreground.2" script={script} numeric>
-                  {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
-                </Text>
-              </Stack>
-            }
-          </Card>
-        )}
-      </Appear>
-
-      {/*
-        WHICHEVER COLOUR DID NOT LEAD, quietly. On a new install this is where the Lens is
-        offered — one line and one action, rather than the two lines of grey it had: a person who
-        has taken no readings does not need the mechanism explained twice.
-      */}
-      <Appear index={2}>
-        {lead === 'reading' ? (
-          <Card
-            level="1"
-            header={
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('home.today')}
-              </Text>
-            }
-          >
-            {todayBlock(QUIET_SAMPLE)}
-            <Text size="caption" color="foreground.2" script={script}>
-              {t('home.todayNote')}
-            </Text>
-          </Card>
-        ) : /*
-            NO READINGS YET IS 27'S CARD (F-236): a heading, what fills it, and the way to the Lens.
-            F-242 places it in 01's composition.
-          */
-        onOpenLens !== undefined ? (
-          <EmptyState
-            title={t('home.noReadingsTitle')}
-            body={t('home.noReadingsBody')}
-            action={{ label: t('home.takeReading'), onPress: onOpenLens }}
-            script={script}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: -nativeSpacing.xl,
+          left: -nativeSpacing.xl,
+          right: -nativeSpacing.xl,
+          bottom: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <View style={{ position: 'absolute', ...HOME_ART.header }}>
+          <Illustration
+            name="plum-branch"
+            tone="backdrop"
+            color="foreground"
+            width={HOME_ART.header.width}
           />
-        ) : (
-          <EmptyState message={t('home.noReadings')} resolvedHere script={script} />
-        )}
-      </Appear>
+        </View>
+        <View style={{ position: 'absolute', ...HOME_ART.right }}>
+          <Illustration
+            name="plum-branch"
+            tone="backdrop"
+            color="foreground"
+            width={HOME_ART.right.width}
+          />
+        </View>
+        <View style={{ position: 'absolute', ...HOME_ART.left }}>
+          <Illustration
+            name="plum-branch"
+            tone="backdrop"
+            color="foreground"
+            width={HOME_ART.left.width}
+          />
+        </View>
+      </View>
+
+      <Stack gap="md">
+        {/*
+          THE HEADER: the lockup in a column of its own (E-173), then the proposition and the pill
+          beside its last line. NO CLAIM ABOUT ACCURACY in either: the pill says where the engine
+          runs, which is true by construction (ADR-0051), and nothing about how well.
+        */}
+        <Stack gap="md">
+          <Wordmark form="app" heading />
+          <Row align="end" gap="md" wrap>
+            <Text size="body" face="serif" color="foreground" script={script} heading>
+              {`${t('home.what1')}\n${t('home.what2')}\n${t('home.what3')}`}
+            </Text>
+            <View>
+              <Chip
+                form="badge"
+                label={t('home.onDevice')}
+                height={ON_DEVICE_HEIGHT}
+                size="caption"
+                // "100%" is a figure, so it is set as one (FR-48, C9).
+                numeric
+                script={script}
+              />
+            </View>
+          </Row>
+        </Stack>
+
+        {/* The three cards, at `01`'s interval between them: 7.5 and 5.5 dp, a tie, so `xs` (§2). */}
+        <Stack gap="xs">
+          {today === null || sample === null ? null : (
+            <Card level="1" testID="home.hero">
+              <Stack gap="sm">
+                <Swatch
+                  width="fill"
+                  height={HOME_HERO}
+                  keylineWidth={HERO_KEYLINE}
+                  name={today.entry.name.en}
+                  hex={sample.hex}
+                  color={sample.color}
+                >
+                  {/*
+                    THE NAMES ON THE SAMPLE (C8): each set with `on`, which takes the ink that
+                    clears 4.5:1 on this colour (ADR-0116). The kanji leads, as the corpus orders
+                    them; the line under it is the engine's derivation, never `01`'s figures (E1).
+                  */}
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      paddingHorizontal: nativeSpacing.md,
+                      paddingBottom: nativeSpacing.sm,
+                    }}
+                  >
+                    <Text size="title" on={sample} script="japanese">
+                      {today.entry.name.kanji}
+                    </Text>
+                    <Text size="label" on={sample} script="japanese">
+                      {today.entry.name.kana}
+                    </Text>
+                    <Text size="label" on={sample} weight={500}>
+                      {heroName(today.entry.name)}
+                    </Text>
+                    <Text size="label" on={sample} numeric>
+                      {oklchLine(today.derived.oklch, t('coord.oklch'))}
+                    </Text>
+                  </View>
+                </Swatch>
+                {onOpenCombinations === undefined ? null : (
+                  <Button
+                    label={t('home.whatGoesWithThis')}
+                    glyph="arrow-right"
+                    height={CTA_HEIGHT}
+                    script={script}
+                    onPress={() => {
+                      onOpenCombinations(today.entry.slug);
+                    }}
+                  />
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {content.wardrobe.count === 0 ? (
+            /*
+              THE EMPTY WARDROBE IS 27'S CARD (F-236), in `01.wardrobe`'s place: the same data
+              condition as the Wardrobe screen's, so the same heading, body and way out. Without the
+              Lens it is 00's caption, which offers nothing it cannot do.
+            */
+            onOpenLens !== undefined ? (
+              <EmptyState
+                title={t('wardrobe.empty.title')}
+                body={t('wardrobe.empty.body')}
+                action={{ label: t('wardrobe.empty.scan'), onPress: onOpenLens }}
+                script={script}
+              />
+            ) : (
+              <EmptyState message={t('home.wardrobeEmpty')} resolvedHere script={script} />
+            )
+          ) : (
+            <Card level="1" testID="home.wardrobe">
+              <Stack gap="md">
+                <Row justify="between" gap="sm">
+                  <Text size="body" weight={500} color="foreground" script={script} heading>
+                    {t('home.wardrobePreview')}
+                  </Text>
+                  <View>
+                    <Chip
+                      form="badge"
+                      label={countLabel}
+                      name={wardrobeCountName(countLabel, coverage, t)}
+                      height={COUNT_HEIGHT}
+                      size="caption"
+                      numeric
+                      script={script}
+                    />
+                  </View>
+                </Row>
+                {/* `01`'s row of five, spread across the card; fewer start at the left. */}
+                <Row {...(garments.length === HOME_TILES ? { justify: 'between' as const } : {})}>
+                  {garments.map((g) => {
+                    const hex = g.color.hex;
+                    const color = colorOf(g.color);
+                    return (
+                      <Swatch
+                        key={g.id}
+                        size={tile}
+                        name={garmentTileName(g, t)}
+                        hex={hex}
+                        color={color}
+                        {...(onOpenGarment === undefined
+                          ? {}
+                          : {
+                              onPress: () => {
+                                onOpenGarment(g.id);
+                              },
+                            })}
+                      >
+                        {recordedMaterial(g) === null ? null : (
+                          <View
+                            style={{
+                              position: 'absolute',
+                              right: nativeSpacing.xs,
+                              bottom: nativeSpacing.xs,
+                            }}
+                          >
+                            <TextureBadge on={{ hex, color }} />
+                          </View>
+                        )}
+                      </Swatch>
+                    );
+                  })}
+                </Row>
+              </Stack>
+            </Card>
+          )}
+
+          {today === null || sample === null ? null : (
+            <Card level="1" testID="home.colourCard">
+              <Row align="start" gap="md">
+                <View style={{ flex: 1 }}>
+                  {/*
+                    THE CLASSIFICATION, TRUE (E1, FR-23): `01` heads this card "traditional", and no
+                    entry is. The note is the entry's own provenance, printed as the colour page
+                    prints it: a citation, in the script it is written in.
+                  */}
+                  <Text size="body" weight={500} color="foreground" script={script} heading>
+                    {t('home.colourCard')}
+                  </Text>
+                  {/* A citation carries its year, a figure (FR-48, C9). */}
+                  <Text size="label" color="foreground.2" script="latin" numeric>
+                    {today.entry.provenance.source}
+                  </Text>
+                </View>
+                <Swatch
+                  width={CARD_SAMPLE.width}
+                  height={CARD_SAMPLE.height}
+                  name={today.entry.name.en}
+                  hex={sample.hex}
+                  color={sample.color}
+                />
+              </Row>
+            </Card>
+          )}
+        </Stack>
+      </Stack>
     </Screen>
   );
 }

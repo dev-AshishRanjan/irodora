@@ -1,5 +1,5 @@
 /**
- * What Home selects (F-146).
+ * What Home selects (F-146; rebuilt to 01 by F-242).
  *
  * The screen draws these answers and does not work them out, so this is where the rules are
  * checked — without rendering anything, and without a store.
@@ -11,9 +11,7 @@ import {
   heroName,
   HOME_TILE,
   homeContent,
-  homeLead,
-  isFirstRun,
-  lastReading,
+  HOME_TILES,
   oklchLine,
   recordedMaterial,
   wardrobeCountLabel,
@@ -49,51 +47,34 @@ const garment = (id: string, created: number, deleted: number | null = null): St
     color: reading(`${id}-c`, created),
   }) as unknown as StoredGarment;
 
-describe('the last reading', () => {
-  it('is the newest by created_at, not the last in the array', () => {
-    // Deliberately out of order: a function that returned `rows.at(-1)` would pass a sorted
-    // fixture and be wrong on a real store, which returns rows in whatever order it likes.
-    const picked = lastReading([reading('a', 300), reading('b', 900), reading('c', 100)]);
-    expect(picked?.id).toBe('b');
-  });
-
-  it('IGNORES a deleted row, even when it is the newest', () => {
-    /*
-     * The case that would be wrong for a year. A soft-deleted reading is still a row, and Home
-     * shows exactly one — so a person deletes a reading and the front door keeps presenting it
-     * as their last.
-     */
-    const picked = lastReading([reading('kept', 100), reading('gone', 999, 1_000)]);
-    expect(picked?.id).toBe('kept');
-  });
-
-  it('is null on an empty store rather than throwing', () => {
-    expect(lastReading([])).toBeNull();
-    expect(lastReading([reading('gone', 5, 6)])).toBeNull();
-  });
-});
-
 describe('the wardrobe summary', () => {
   it('counts only live garments', () => {
     const s = wardrobeSummary([garment('a', 1), garment('b', 2, 3), garment('c', 4)]);
     expect(s.count).toBe(2);
   });
 
-  it('takes at most five colours, newest first', () => {
+  it('takes at most five garments, newest first: 01’s row (F-242)', () => {
     const many = Array.from({ length: 9 }, (_, i) => garment(`g${String(i)}`, i));
     const s = wardrobeSummary(many);
-    expect(s.colors).toHaveLength(5);
+    expect(s.garments.map((g) => g.id)).toStrictEqual(['g8', 'g7', 'g6', 'g5', 'g4']);
+    expect(s.garments).toHaveLength(HOME_TILES);
     expect(s.count).toBe(9);
   });
 
+  it('DECOY — a deleted garment is neither counted nor shown, even when it is the newest', () => {
+    const s = wardrobeSummary([garment('kept', 1), garment('gone', 99, 100)]);
+    expect(s.garments.map((g) => g.id)).toStrictEqual(['kept']);
+    expect(s.count).toBe(1);
+  });
+
   it('is a count of zero rather than an absence', () => {
-    // `count: 0` and `colors: []` — not `null`. The screen renders a first-run block from the
+    // `count: 0` and `garments: []` — not `null`. The screen renders a first-run block from the
     // zero; a null would make it render nothing, which is the state it is trying to replace.
     const s = wardrobeSummary([]);
     expect(s.count).toBe(0);
     // `toHaveLength(0)` rather than `toEqual([])`: the latter accepts an array holding
     // `undefined`, so it does not assert emptiness at all (F-133). Emptiness is the claim here.
-    expect(s.colors).toHaveLength(0);
+    expect(s.garments).toHaveLength(0);
   });
 });
 
@@ -135,54 +116,20 @@ describe("today's colour", () => {
   });
 });
 
-describe('first run', () => {
-  it('is true when nothing has been read and nothing is owned', () => {
-    expect(isFirstRun(homeContent([], [], Date.now()))).toBe(true);
-  });
-
-  it('is false once EITHER exists — the decoy for a check that only looked at one', () => {
-    expect(isFirstRun(homeContent([reading('a', 1)], [], Date.now()))).toBe(false);
-    expect(isFirstRun(homeContent([], [garment('g', 1)], Date.now()))).toBe(false);
-  });
-
-  it("does not depend on today's colour, which is always there", () => {
-    // A first-run store still has a corpus. If `isFirstRun` consulted `today`, it would be false
-    // on a brand-new install and the state most people see would never render.
-    const content = homeContent([], [], Date.now());
-    expect(content.today).not.toBeNull();
-    expect(isFirstRun(content)).toBe(true);
-  });
-});
-
-/**
- * F-164 — which block leads.
- *
- * Home led with the last reading unconditionally, so a new install opened on an empty state with
- * a second empty state under it. The corpus is never empty, so there is always a colour to lead
- * with; leading with an absence was a choice, and this is the rule that replaces it.
- */
-describe('the lead is whichever block has something to show (F-164)', () => {
+describe('what Home has (F-242, ADR-0138)', () => {
   const FIXED = Date.UTC(2026, 8, 6);
-  const empty = homeContent([], [], FIXED);
 
-  it('leads with the reading when there is one', () => {
-    expect(homeLead(homeContent([reading('a', 100)], [], FIXED))).toBe('reading');
+  it("always has the day's colour, with or without a wardrobe", () => {
+    expect(homeContent([], FIXED).today).not.toBeNull();
+    expect(homeContent([garment('g', 1)], FIXED).today).not.toBeNull();
   });
 
-  it("leads with today's colour when there is not", () => {
-    // The case the old screen answered with two lines of grey and a button.
-    expect(homeLead(empty)).toBe('today');
-  });
-
-  it("DECOY — today's colour is always there, which is what makes the rule total", () => {
-    /*
-     * Without this the case above could be passing because `homeLead` returns `'today'` for
-     * anything, and the screen would then have no lead on an install where the corpus failed to
-     * load. `'none'` exists for that, and it is a broken bundle rather than a new install.
-     */
-    expect(empty.today).not.toBeNull();
-    expect(empty.lastReading).toBeNull();
-    expect(homeLead({ ...empty, today: null })).toBe('none');
+  it('carries the wardrobe it was given, and nothing else', () => {
+    const content = homeContent([garment('g', 1)], FIXED);
+    expect(Object.keys(content).sort()).toStrictEqual(['today', 'wardrobe']);
+    expect(content.wardrobe.count).toBe(1);
+    // DECOY: an empty wardrobe is a zero, which is what the screen's absent state reads.
+    expect(homeContent([], FIXED).wardrobe.count).toBe(0);
   });
 });
 

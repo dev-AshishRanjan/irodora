@@ -9,6 +9,6 @@ appId: com.irodora.app
 ---
 - launchApp:
     clearState: false
-- assertVisible: 'この色は何か。'
+- assertVisible: '100%端末内エンジン • オフライン'
 - waitForAnimationToEnd
 - takeScreenshot: capture

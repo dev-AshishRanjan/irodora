@@ -1,7 +1,13 @@
 {
   "$comment": "Routes the app serves that no interaction reaches, each naming the feature that will reach it. `scripts/verify-reachability.mjs` fails on an orphan that is NOT listed here, AND on a listing that IS reachable or whose feature is already done — both directions, because a dead exemption is how a live one gets waved through later. Same shape and same reason as unreached-tokens.json (ADR-0088). THE WHOLE LIST PRINTS ON EVERY RUN: an exemption nobody reads is an exemption nobody weighs.",
   "version": 1,
-  "updated": "2026-09-08",
-  "$readingComment": "THE LIST IS EMPTY, AND IT WAS EIGHT ENTRIES LONG ON 2026-09-08. Eight finished screens — each with a conformance subject, accessibility coverage and tests — that a person holding the phone could not open: the finder, the comparison, the palette studio, settings, the measurement readouts, export, the outfit builder and the shopping check. F-180, F-181 and F-182 closed them over three features, and the gate reported each expiry the moment the wiring landed rather than waiting for somebody to notice. An empty list is the state to keep it in; an entry here is a promise with a date on it.",
-  "unreachable": []
+  "updated": "2026-10-20",
+  "$readingComment": "EMPTY FROM 2026-09-08 (F-180, F-181 and F-182 closed eight orphans) UNTIL 2026-10-20, when F-242 rebuilt Home to mockup 01. 01 draws no reading (ADR-0138), so Home's way into a reading's combinations went with the block that held it; the way 03 draws (Wear It, 03.actions.wear) is F-244's. An entry here is a promise with a date on it.",
+  "unreachable": [
+    {
+      "url": "/atlas/with/reading/[id]",
+      "closedBy": "F-244",
+      "why": "A reading's combinations (24, C16). Home pushed it from its last-reading block, which ADR-0138 removed because 01 draws no reading and the block presented the newest colour row of any source as a measurement (F-337). The navigation 03 draws to it is Wear It on the Lens reading sheet (03.actions.wear), which F-244 builds; this entry fails the day F-244 closes with it still standing."
+    }
+  ]
 }

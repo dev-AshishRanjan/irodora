@@ -279,8 +279,10 @@ and its provenance are read back from the pinned corpus — the way `profile_dim
 holds one. `saved_color` would have been wrong four ways: a bookmark could not be told from a
 palette's or a garment's colour; `reusableColorId` shares one row by slug, so removing a
 bookmark would tombstone a palette's colour; `upsertColor` never clears `deleted_at`, so a
-colour bookmarked twice would not come back; and Home reads the newest `saved_color` row as the
-person's *last reading* (F-337). `UNIQUE (corpus_slug)` gives a slug one row for life: removal
+colour bookmarked twice would not come back; and Home read the newest `saved_color` row as the
+person's *last reading* (F-337) — until F-242, since when Home reads no colour row but a garment's
+own ([ADR-0138](../adr/0138-home-leads-with-the-days-corpus-colour-as-01-binds-it-and-draws-no-reading.md)).
+`UNIQUE (corpus_slug)` gives a slug one row for life: removal
 tombstones it and bookmarking again revives the same id. It is in `SYNC_TABLES` and in
 `ARCHIVE_TABLES`, because a bookmark is something the person made.
 

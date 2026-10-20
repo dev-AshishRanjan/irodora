@@ -1,5 +1,5 @@
 /**
- * What Home shows, decided here (F-146).
+ * What Home shows, decided here (F-146; rebuilt to `01` by F-242).
  *
  * ## Why the screen does not decide this
  *
@@ -8,36 +8,35 @@
  * reasoned about without a store, and — the part that matters most on a front door — the rule for
  * *which* colour appears is written somewhere a person can disagree with it.
  *
+ * ## No reading is selected here (ADR-0138)
+ *
+ * `lastReading` picked the newest live `saved_color` row, whatever wrote it, and Home called it
+ * *Last reading* — so a palette saved after a reading put a corpus value where a measurement was
+ * announced (F-337, golden rule 11). `01` draws no reading: its hero and its colour card are the
+ * day's corpus colour. So Home reads garments and nothing else, and a colour the Lens read appears
+ * as its garment's tile, with its own provenance.
+ *
  * Nothing here touches React, the repository, or the clock. Every input is an argument.
  */
 
 import { nativeSpacing } from '@irodora/design-tokens';
 import { allEntries, colorFor, type PublishedEntry } from './corpus';
 import type { MessageKey } from './i18n';
-import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import type { StoredGarment } from '@irodora/store';
 
-/** The most recent reading, or `null` on a store nobody has used yet. */
-export function lastReading(rows: readonly SavedColorRow[]): SavedColorRow | null {
-  /*
-   * `deleted_at` IS CHECKED, and it is the kind of thing that is wrong for a year.
-   *
-   * The repository's rows carry a soft-delete column, so a deleted reading is still a row. Home
-   * is the one surface that shows exactly ONE of them, which makes it the one surface where
-   * showing a deleted row is not a small error — a person deletes a reading and the front door
-   * keeps presenting it as their last.
-   */
-  const live = rows.filter((r) => r.deleted_at === null);
-  if (live.length === 0) return null;
+/** `01.wardrobe.tile-N`: each garment sample is drawn 52 dp square at 384 dp. */
+export const HOME_TILE = 52;
 
-  // Reduce rather than sort: sorting copies an array to read one element from it, and this runs
-  // on every render of the first screen.
-  return live.reduce((newest, row) => (row.created_at > newest.created_at ? row : newest));
-}
+/** `01.hero.sample`: the day's colour, full width, drawn 172 dp tall. */
+export const HOME_HERO = 172;
+
+/** How many garments the preview draws: `01`'s five tiles. */
+export const HOME_TILES = 5;
 
 export interface WardrobeSummary {
   readonly count: number;
-  /** Up to five garment colours, newest first — enough to read as a wardrobe, not a gallery. */
-  readonly colors: readonly SavedColorRow[];
+  /** Up to five live garments, newest first: `01`'s preview row. */
+  readonly garments: readonly StoredGarment[];
 }
 
 /** What the wardrobe block says. An empty wardrobe is a count of zero, never an absence. */
@@ -53,7 +52,7 @@ export function wardrobeSummary(garments: readonly StoredGarment[]): WardrobeSum
   const newest = [...live].sort((a, b) => b.createdAt - a.createdAt);
   return {
     count: live.length,
-    colors: newest.slice(0, 5).map((g) => g.color),
+    garments: newest.slice(0, HOME_TILES),
   };
 }
 
@@ -101,32 +100,23 @@ export function colourOfTheDay(
 }
 
 export interface HomeContent {
-  readonly lastReading: SavedColorRow | null;
   readonly wardrobe: WardrobeSummary;
+  /** The day's corpus colour: `01`'s hero and its colour card. `null` only for an empty corpus. */
   readonly today: PublishedEntry | null;
 }
 
 /**
- * Everything Home draws, from everything Home has.
+ * Everything Home draws, from everything Home has: the garments, and the day.
  *
- * One call so the screen makes one decision — whether it has content — rather than three, and so
- * the first-run state is a property of the whole page rather than of each block separately.
+ * No colour row is read here but a garment's own (ADR-0138 D2). `today` is `null` only if the
+ * corpus failed to load — a broken bundle rather than a new install — and the screen then draws
+ * the wardrobe alone rather than a hero with nothing in it.
  */
-export function homeContent(
-  rows: readonly SavedColorRow[],
-  garments: readonly StoredGarment[],
-  now: number,
-): HomeContent {
+export function homeContent(garments: readonly StoredGarment[], now: number): HomeContent {
   return {
-    lastReading: lastReading(rows),
     wardrobe: wardrobeSummary(garments),
     today: colourOfTheDay(now),
   };
-}
-
-/** Is this a store nobody has used yet? Both blocks empty; today's colour is always there. */
-export function isFirstRun(content: HomeContent): boolean {
-  return content.lastReading === null && content.wardrobe.count === 0;
 }
 
 /** A published entry as the swatch needs it: a hex, and a `Color` that carries provenance. */
@@ -139,48 +129,7 @@ export function entrySwatch(entry: PublishedEntry): {
   return { hex: entry.derived.hex, color: colorFor(entry.entry) };
 }
 
-/**
- * Which block leads the page (F-164).
- *
- * ## Why this is a decision and not a layout detail
- *
- * Home led with the last reading, unconditionally. On a new install that block is an **empty
- * state** — and the wardrobe below it is a second one — so the first thing anybody saw was two
- * absences and a footnote. Reported as *"unprofessional, not organised… unattractive"*, which is
- * what a page made of apologies looks like.
- *
- * **There is always a colour to lead with.** The corpus is never empty, so `today` exists on
- * every install from the first second; a person with readings gets theirs, and a person with none
- * gets a real Japanese colour at photographic scale rather than a sentence about not having one.
- *
- * It lives here rather than in the render for the reason the rest of this file does: the rule is
- * something somebody can disagree with, and a rule buried in JSX is one nobody can find to
- * disagree with.
- */
-export type HomeLead = 'reading' | 'today' | 'none';
-
-/**
- * What leads, given what there is.
- *
- * `'none'` is reachable only if the corpus failed to load — `colourOfTheDay` returns `null` for an
- * empty corpus, which is a broken bundle rather than a new install. The screen still has to draw
- * something, so the case is named rather than left to a non-null assertion.
- */
-export function homeLead(content: HomeContent): HomeLead {
-  if (content.lastReading !== null) return 'reading';
-  return content.today !== null ? 'today' : 'none';
-}
-
 /* ------------------------------------------------------------- 01, element by element (F-242) */
-
-/** `01.wardrobe.tile-N`: each garment sample is drawn 52 dp square at 384 dp. */
-export const HOME_TILE = 52;
-
-/** `01.hero.sample`: the day's colour, full width, drawn 172 dp tall. */
-export const HOME_HERO = 172;
-
-/** How many garments the preview draws: `01`'s five tiles. */
-export const HOME_TILES = 5;
 
 /**
  * A garment's material as recorded, trimmed — or `null` when none is (ADR-0137 D1).
