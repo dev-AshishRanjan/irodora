@@ -36,3 +36,8 @@ of their own (the cards by `home.*` ids, the hero's names and figures and the co
 own functions, the tab bar's active indicator by the id `TabBar` now gives it, and the tab words by
 `tab.*`, which the inventory read as `tabs.*`). `25.screen` stays not whole: its layout is `01`'s, swept
 as `01.screen` in Washi as well as Sumi.
+
+Enrolling `01.screen` broke the check's own proof: two of its cases planted on F-242 and `01.screen`,
+and a plant on a swept surface plants nothing, so they stopped discriminating (Tier 2's
+`verify:mockups:prove`). The cases now take their example from the state — the first screen still
+owed by exactly one feature — so each surface feature that enrolls its own leaves the proof working.

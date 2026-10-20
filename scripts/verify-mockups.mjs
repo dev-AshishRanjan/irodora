@@ -533,6 +533,30 @@ if (process.argv.includes('--prove')) {
     if (!hit) for (const p of problems) console.log(`      ${DIM}${p.what}${OFF}`);
   };
 
+  /*
+   * THE EXAMPLE IS READ FROM THE STATE, NOT NAMED (F-242). These two cases used 01.screen and F-242,
+   * and stopped discriminating the day F-242 enrolled 01: a plant on a swept surface plants nothing.
+   * Every surface feature enrolls its own, so any named example expires; the first screen still owed
+   * by exactly one feature is one these cases can always plant on, until none is left.
+   */
+  const owed = (() => {
+    const table = JSON.parse(readFileSync(SURFACE_TABLE, 'utf8'));
+    const swept = new Set([...(table.enrolled ?? []), ...Object.keys(table.notWhole ?? {})]);
+    const features = JSON.parse(original[FEATURES]).features;
+    for (const mockup of Object.keys(JSON.parse(original[INDEX]).mockups ?? {}).sort()) {
+      const file = join(MOCKUPS, 'inventory', `${mockup}.json`);
+      if (!existsSync(file)) continue;
+      const surface = JSON.parse(readFileSync(file, 'utf8')).frame?.screens?.[0]?.id;
+      if (typeof surface !== 'string' || swept.has(surface)) continue;
+      const builders = features.filter(
+        (f) => (f.mockups ?? []).includes(mockup) && (f.blockedBy ?? []).includes('F-221'),
+      );
+      if (builders.length === 1 && builders[0].status !== 'done')
+        return { surface, mockup, feature: builders[0].id };
+    }
+    throw new Error('proof: no surface is owed by exactly one feature — the two cases need one');
+  })();
+
   try {
     const cases = [
       /* ---- every surface is swept, owed, or not whole (F-221) ---- */
@@ -540,18 +564,20 @@ if (process.argv.includes('--prove')) {
         name: 'a surface feature done, with its surface not enrolled',
         plant: () =>
           withFeatures((f) => {
-            f['F-242'].status = 'done';
+            f[owed.feature].status = 'done';
           }),
-        expect: '01.screen: built by F-242 (done), and not enrolled',
+        expect: `${owed.surface}: built by ${owed.feature} (done), and not enrolled`,
       },
       {
         name: 'a surface no feature builds',
-        // 01's builders are F-242 alone among the features waiting on F-221; without it, nobody.
+        // The surface's one builder among the features waiting on F-221; without it, nobody.
         plant: () =>
           withFeatures((f) => {
-            f['F-242'].mockups = (f['F-242'].mockups ?? []).filter((m) => m !== '01');
+            f[owed.feature].mockups = (f[owed.feature].mockups ?? []).filter(
+              (m) => m !== owed.mockup,
+            );
           }),
-        expect: '01.screen: no feature builds it',
+        expect: `${owed.surface}: no feature builds it`,
       },
       {
         name: 'a surface table row naming no surface',
