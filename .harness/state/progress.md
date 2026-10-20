@@ -8,6 +8,97 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-20 — F-242 Home is mockup 01, element for element
+
+**Done here, with two criteria owed (attested): the person's capture and comparison.** Home is
+rebuilt to `01` in eleven commits, `1beb9d8` through this one. It is the first whole screen in the
+inventory sweep.
+
+- **Three decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0137 closes OQ-11.** The checkered badge on a garment tile marks a garment whose material
+    is recorded, and is absent where none is. It is one mark (`TextureBadge`, new in `@irodora/ui`),
+    in the ink text on that sample takes; the tile's name says the material in words.
+  - **ADR-0138: Home binds as `01` does.** The hero and the colour card are the day's corpus colour,
+    and Home draws no reading. That removes the block that showed the newest colour row of any source
+    as the *Last reading* — F-337's defect — and amends F-337 in the open: it now waits on F-242,
+    writes no code, and closes on its gates and F-242's decoys. `/atlas/with/reading/[id]` lost its
+    only way in and is declared unreachable, `closedBy: F-244` (03's *Wear It*).
+  - **ADR-0139 closes OQ-14.** A screen's page inset is its own mockup's, snapped: Home's is `xl`.
+- **What Home draws.** The lockup; the three serif questions with the on-device pill; the hero (kanji,
+  kana, *Romaji (English)* and the OKLCh line set on the sample, then *What Goes With This →*); the
+  Wardrobe Preview (a count pill and the five newest garments, badged where a material is recorded);
+  the colour card (*Today's Japanese-Inspired Colour* and the entry's own provenance); three plum
+  branches behind it all. Every value is the corpus's, the engine's or the store's.
+- **Departures, each listed:** E1 ×3 (`01`'s figures, *Traditional*, the Heian note); a new E2 row
+  (without a profile the pill says the garment count alone); §2's scroll cut; and, from the review,
+  E3's *a line that does not fit wraps, never clips*.
+- **Built alongside:** one coverage context for Home's pill and the Wardrobe's dial
+  (`src/wardrobe/coverage.ts`, E-208); a named active tab indicator; backdrop art in `foreground`
+  at `opacity.art` (E-209); the sample-ink exemption admits a moved ink as a mark's SVG fill; the
+  route re-reads on focus.
+- **Criterion 1:** the sweep finds all 44 of `01`'s elements on `01.screen` in both themes and both
+  languages; `home-fidelity.test` holds order, grouping and proportion — sizes, rendered weights,
+  inks, Screen's padding and every Stack gap — against `01.json` through §2's snap.
+- **Records:** E-207, E-208, E-209 new; E-016, E-017, E-086, E-108, E-157, E-165, E-174, E-203
+  extended; three new effect notes and F-242 sections in eight more; R9 §2, §4 E2 and E3, §11; PRD §10; data-model; F-342 (Screen's
+  gap) and F-343 (a sample with no action is announced as a button) filed; notes on F-146, F-164,
+  F-202, F-244, F-255, F-256, F-258, F-259 and F-268.
+
+**Review (once): FAIL as delivered**, with 1 blocking, 7 significant and 8 minor findings. Every one
+is fixed or recorded; the plan's review table lists each.
+
+- **B1, fixed:** the hero's kanji rendered at the Japanese title step's 600 where `01` records 400.
+  `home-fidelity` now asserts every element's rendered weight, with the 600 step as its decoy.
+- **S1–S7:** the count row wraps instead of clipping (S1); `home-fidelity` reads what the screen
+  passes, and the attestation says exactly that (S2); every published entry is held
+  japanese-inspired, so the static heading is true on every day (S3); the hero's name carries all its
+  printed text, and the component-wide button role is F-343 (S4); the coverage guard reads Home's
+  route (S5); the 200 % check joins the person's attestation (S6); Home re-reads on focus (S7).
+- **M1–M8:** wraps named in E3; 点 for the Japanese garment counter; a test title narrowed and the
+  inert-tile decoy added; limits stated in E-086; four links annotated; the coverage memo keyed on
+  the last writes, its launch cost on F-268; 01's name binding corrected.
+
+**Gates run on the final tree (`a4519f6`), each exit 0:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`: 35 of 35 tasks (ui 1,387, mobile 1,489)
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The conformance sweep: 93 subjects, 8 conditions; claims findings 0; the inventory block
+  `enrolled` now includes `01.screen`, `elementsAsserted` 75, `renders` 24, `owed` 22.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's advisories. F-242 changed no dependency.
+- `node scripts/verify-ci.mjs --all`: the iOS config half on win32 and gate 15 (F-322), the two
+  recorded reds; and **an F-333 event**. The contrast mutation proof's restore hit win32's transient
+  `UNKNOWN` (`verify-contrast-proof.mjs:297`), so the manifest kept its plant and the content, bench
+  and no-inference proofs refused over the journal, as they should. The journal's bytes equalled
+  HEAD; `node scripts/plant.mjs --recover` restored the file, and each of the four proofs then exited
+  0 on its own (content 28 cases, bench 10, no-inference 5).
+- **The first Tier 2, on `6d6879a`, had two reds F-242 caused:** the Japanese font subset was stale
+  (Home's copy changed the required set; re-cut), and `verify:mockups:prove`'s two surface cases
+  planted on F-242 and stopped discriminating once it enrolled 01 (they now read their example from
+  the state). Both fixed in increment 8 (`098260f`).
+
+**Not run:**
+
+- e2e and the fidelity capture (no Maestro or JDK here). The attestation is the person's: an Android
+  release build, `pnpm fidelity:capture -- --erase-app-data`, the four `/` pages compared with 01, one
+  badge compared by hand (the flow records no material), and Home at 200 % text in both languages.
+- Measured layout of the type on a device (the colour card's heading and the pills may wrap; E3
+  names it).
+
+### Lessons
+
+[[a-proofs-example-must-be-read-from-the-state-or-the-fix-disables-it]] (new).
+
+### Next
+
+The loop: F-246 (the Atlas is mockup 05), the lowest-id eligible feature. F-337 is eligible now and
+closes on its gates and F-242's tests; it is reached in id order.
+
+---
+
 ## 2026-10-14 — F-340 Gate 16 finds no icon in a release APK: the entry names are read twice from a one-shot iterator
 
 **Done here, with criterion 3 owed (attested).** The person reported the Android lane red at
