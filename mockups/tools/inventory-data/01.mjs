@@ -133,10 +133,12 @@ export default {
       binding: 'corpus:entry.name.kana',
       copy: { shape: 'label', script: 'japanese' },
     }),
+    // 01 draws the romaji with the English in brackets — "Romaji (English)" — so the line binds the
+    // entry's names, both of them (F-242's review, M8; ADR-0138 D1). It read `name.en` until then.
     el('01.hero.sample.name', 'ui:Text', B(127, 634, 331, 31), {
       parent: '01.hero.sample',
       type: text('sans', 'label', 500),
-      binding: 'corpus:entry.name.en',
+      binding: 'corpus:entry.name.romaji+en',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('01.hero.sample.oklch', 'ui:Text', B(127, 674, 305, 19), {

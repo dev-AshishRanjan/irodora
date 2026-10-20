@@ -247,6 +247,13 @@ smallest lightness move (ADR-0116).
 **Tap targets** meet 44 dp (iOS) / 48 dp (Android) through the hit area, not the drawn size — the
 chip stays the size the mockup draws.
 
+**A line that does not fit wraps; it is never clipped** (`F-242`). NFR-8 (WCAG 2.2 SC 1.4.4) allows no
+loss of content, and a mockup draws one language at one width at 1× text. Where a row it draws on one
+line holds more than that line — in Japanese, on a 360 or 320 dp phone, or at 200 % text — its last
+element wraps below the first, keeping its own size: on `01`, the on-device pill under the tagline, the
+count pill under *Wardrobe Preview*, and the colour card's heading onto a second line. Truncation is
+OQ-49's separate question for the tab bar's words.
+
 ### E4 — A required capability no mockup draws
 
 Preserved, built from the mockup's own components, and listed here so it is visible:

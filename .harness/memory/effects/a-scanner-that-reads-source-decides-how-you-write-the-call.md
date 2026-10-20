@@ -54,3 +54,8 @@ no reading, so ADR-0138 removed the block, and the route went with it. It is dec
 builds it; `verify-reachability` fails the day F-244 closes with the declaration still standing.
 Home's route now pushes three literals — the day's colour's combinations, a garment's, and the Lens —
 each one `verify-route-targets` can read.
+
+F-242's review (S7) found Home did not read the store again when its tab came back into view: a tab
+stays mounted and React Navigation holds a screen still, so a garment added on the Wardrobe tab did
+not reach Home's preview. The route now re-renders on focus (`useFocusEffect`), and
+`wardrobe-coverage.test` reads that from source with the route's other wires.

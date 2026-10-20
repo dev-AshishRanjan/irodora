@@ -179,6 +179,16 @@ describe('no route assembles a context of its own (E-208)', () => {
       expect(route).not.toContain(own);
   });
 
+  it('Home’s route takes it from there too, and reads again whenever Home is shown (F-242)', () => {
+    const route = source('app/(tabs)/index.tsx');
+    expect(route).toContain('coverageContext(');
+    expect(route).toContain('placeableGarments(');
+    for (const own of ['engineProfile(', 'referenceSet(', 'parseWeightContent('])
+      expect(route).not.toContain(own);
+    // A tab stays mounted, so a garment added elsewhere reaches Home only when it renders again.
+    expect(route).toContain('useFocusEffect(');
+  });
+
   it('DECOY — the shopping route still assembles its own, so the read can see one', () => {
     expect(source('app/(tabs)/wardrobe/shopping.tsx')).toContain('referenceSet(');
   });

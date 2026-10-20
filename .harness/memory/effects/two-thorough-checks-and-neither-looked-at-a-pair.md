@@ -96,3 +96,6 @@ mid-tone that ink is moved (ADR-0116), so it is no token, and the colour-literal
 ink only as a text colour. The exemption now also admits it as a drawn mark's SVG `fill` on its
 sample — still by value, derived from the declared samples. The same value painted as a View's
 background is still a literal, and the existing decoy in `sample-ink.test` proves it.
+
+The review (M5) noted the limit this keeps: the `fill` exemption, like the text one, admits the moved
+ink anywhere in a subject that declares the sample, not only inside that sample (F-233's review, M10).

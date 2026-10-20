@@ -148,7 +148,7 @@ describe('the hero and the colour card are the day’s corpus colour', () => {
     expect(TODAY.entry.classification).toBe('japanese-inspired');
   });
 
-  it('DECOY — no value from 01’s drawing reaches the screen, in either language or palette', () => {
+  it('DECOY — no value from 01’s drawing reaches the screen, in English, in either palette', () => {
     const SAMPLE_CONTENT = [
       'Ai-nezumi',
       '藍鼠',
@@ -289,6 +289,13 @@ describe('every drawn action works, and is absent where nothing is wired', () =>
       .find((s) => (s.props as { hex: string }).hex === '#E8E4DA');
     (tile?.props as { onPress?: () => void }).onPress?.();
     expect(onOpenGarment).toHaveBeenCalledWith('g-2');
+  });
+
+  it('DECOY — with no handler a tile is given no press at all', () => {
+    const { tree } = draw(WARDROBE);
+    const tiles = tree.UNSAFE_queryAllByType(Swatch).slice(1, -1);
+    expect(tiles).toHaveLength(WARDROBE.length);
+    for (const tile of tiles) expect((tile.props as { onPress?: unknown }).onPress).toBeUndefined();
   });
 
   it('the empty wardrobe offers to scan the first garment — 27’s card (F-236)', () => {

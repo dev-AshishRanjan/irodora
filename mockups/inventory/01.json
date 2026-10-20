@@ -409,7 +409,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.name.en",
+      "binding": "corpus:entry.name.romaji+en",
       "action": null,
       "copy": {
         "shape": "label",

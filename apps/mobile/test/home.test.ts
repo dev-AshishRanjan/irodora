@@ -9,6 +9,7 @@ import {
   colourOfTheDay,
   garmentTileName,
   heroName,
+  heroSpoken,
   HOME_TILE,
   homeContent,
   HOME_TILES,
@@ -155,6 +156,36 @@ describe('what 01’s elements print (F-242)', () => {
     );
   });
 
+  it('speaks every line printed on the hero, in reading order (WCAG 1.3.1)', () => {
+    const today = allEntries()[0];
+    if (today === undefined) throw new Error('the corpus is empty');
+    const spoken = heroSpoken(today, 'OKLCh');
+    const parts = [
+      heroName(today.entry.name),
+      today.entry.name.kanji,
+      today.entry.name.kana,
+      oklchLine(today.derived.oklch, 'OKLCh'),
+    ];
+    expect(spoken).toBe(parts.join(', '));
+    // DECOY: the name alone, which a Swatch announces by default, carries none of the rest.
+    expect(today.entry.name.en).not.toContain(today.entry.name.kanji);
+  });
+
+  /**
+   * THE COLOUR CARD'S HEADING IS STATIC, so it must be true of every entry a day can draw (FR-23,
+   * ADR-0138 D4). It says Japanese-inspired; the day's entry rotates through the whole corpus, so
+   * one entry of another classification would make the heading false on its day.
+   */
+  it('heads the colour card truly on every day: every published entry is japanese-inspired', () => {
+    const headed = (entries: readonly { readonly entry: { readonly classification: string } }[]) =>
+      entries.filter((e) => e.entry.classification !== 'japanese-inspired').length;
+    expect(allEntries().length).toBeGreaterThan(0);
+    expect(headed(allEntries())).toBe(0);
+    // DECOY: one planted traditional entry is caught by the same count.
+    expect(headed([...allEntries(), { entry: { classification: 'traditional' } }])).toBe(1);
+    expect(message('en', 'home.colourCard')).toContain('Japanese-Inspired');
+  });
+
   it('prints the OKLCh line at 3, 3 and 1 decimals, with the space’s name and 01’s bullets', () => {
     expect(oklchLine([0.849, 0.013, 228], 'OKLCh')).toBe('OKLCh 0.849 • 0.013 • 228.0°');
   });
@@ -192,7 +223,7 @@ describe('what 01’s elements print (F-242)', () => {
     );
     expect(wardrobeCountLabel(1, { valid: 1 }, t, 'latin')).toBe('1 Garment • 1 Valid Outfit');
     expect(wardrobeCountLabel(14, { valid: 38 }, tJa, 'japanese')).toBe(
-      '14着 • 38通りの有効なコーディネート',
+      '14点 • 38通りの有効なコーディネート',
     );
   });
 

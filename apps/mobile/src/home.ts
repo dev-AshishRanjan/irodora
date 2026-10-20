@@ -162,6 +162,16 @@ export function oklchLine(oklch: readonly [number, number, number], unit: string
 }
 
 /**
+ * The hero's name, as a screen reader hears it: every line printed on the sample, in the order a
+ * sighted person reads them after the name (WCAG 1.3.1). The sample is one control, so the text
+ * drawn on it reaches assistive technology only through this (F-242's review, S4).
+ */
+export function heroSpoken(today: PublishedEntry, unit: string): string {
+  const { name } = today.entry;
+  return `${heroName(name)}, ${name.kanji}, ${name.kana}, ${oklchLine(today.derived.oklch, unit)}`;
+}
+
+/**
  * `01.wardrobe.count`: *N Garments • M Valid Outfits* (ADR-0138 D6).
  *
  * - **M is `coverage().valid`**, the outfits that clear the threshold against the person's profile

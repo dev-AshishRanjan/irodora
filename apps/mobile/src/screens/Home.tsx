@@ -52,6 +52,7 @@ import {
   entrySwatch,
   garmentTileName,
   heroName,
+  heroSpoken,
   HOME_HERO,
   HOME_TILES,
   homeContent,
@@ -217,7 +218,9 @@ export function Home({
                   width="fill"
                   height={HOME_HERO}
                   keylineWidth={HERO_KEYLINE}
-                  name={today.entry.name.en}
+                  // EVERYTHING PRINTED ON IT, IN ITS NAME (WCAG 1.3.1): a Swatch is one control, so
+                  // the text drawn on it is heard only through its name (F-242's review, S4).
+                  name={heroSpoken(today, t('coord.oklch'))}
                   hex={sample.hex}
                   color={sample.color}
                 >
@@ -234,10 +237,11 @@ export function Home({
                       paddingBottom: nativeSpacing.sm,
                     }}
                   >
-                    <Text size="title" on={sample} script="japanese">
+                    {/* At 400, as 01 records it: the Japanese title step is 600 (F-242's review, B1). */}
+                    <Text size="title" on={sample} script="japanese" weight={400}>
                       {today.entry.name.kanji}
                     </Text>
-                    <Text size="label" on={sample} script="japanese">
+                    <Text size="label" on={sample} script="japanese" weight={400}>
                       {today.entry.name.kana}
                     </Text>
                     <Text size="label" on={sample} weight={500}>
@@ -282,7 +286,12 @@ export function Home({
           ) : (
             <Card level="1" testID="home.wardrobe">
               <Stack gap="md">
-                <Row justify="between" gap="sm">
+                {/*
+                  ONE LINE AS 01 DRAWS IT, AND TWO WHERE IT WILL NOT FIT (F-242's review, S1): in
+                  Japanese, on a narrow phone or at 200 % text the pill would be clipped by the card,
+                  and content may not be lost (WCAG 1.4.4, NFR-8). So the pill wraps below the title.
+                */}
+                <Row justify="between" gap="sm" wrap>
                   <Text size="body" weight={500} color="foreground" script={script} heading>
                     {t('home.wardrobePreview')}
                   </Text>

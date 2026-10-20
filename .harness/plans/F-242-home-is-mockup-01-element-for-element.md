@@ -202,7 +202,7 @@ Every one is taken under R9 §11's 2026-10-05 delegation: *"For all OQ, when nee
 Checked against the code before adoption (2026-10-20): `layout.tsx` wraps `{header}{children}` in one `<Appear>` (F-342's cause, confirmed by reading); `saveColor` has no caller under `apps/mobile/src` or `app/`; the Wardrobe route returns no coverage without a stored profile; the splash already ships *"100% On-Device & Offline"* (`brand.splashSubline`). Adopted as written, with two edits:
 
 1. **The shared coverage helper is a context, not a result.** The Wardrobe route needs the same context for `gaps()` as for `coverage()`, so `src/wardrobe/coverage.ts` exports `placeableGarments(garments)` and `coverageContext(stored)` (`undefined` without a profile). Both routes call them: Home's route calls `coverage(placeableGarments(…), ctx)`, and the Wardrobe route keeps its `coverage` and `gaps` calls over the shared context. E-208's guard reads that neither route assembles a context of its own (no `engineProfile(` or `referenceSet(` in either route file). `shopping.tsx` is left as it is (out of scope).
-2. **The Japanese count is composed without a space.** `wardrobeCountLabel` joins a figure to its counter with no space in Japanese (「14着 • 38通りの有効なコーデ」) and with one in English, through the `script` the screen already has; the tests cover both.
+2. **The Japanese count is composed without a space.** `wardrobeCountLabel` joins a figure to its counter with no space in Japanese (「14点 • 38通りの有効なコーディネート」 as built — 点, the general counter, since the review's M3: 着 does not count shoes or trousers) and with one in English, through the `script` the screen already has; the tests cover both.
 
 Everything else — D-1 … D-10, the increments, the tests and the attestations — is the design below.
 
@@ -1111,3 +1111,31 @@ The script reads `url` and `closedBy`. The `why` field is assumed; match the sha
 - `motion.tsx:350`'s `Animated.View` has no gap.
 
 So the container's gap separates a single child, and every screen relying on `Screen gap` draws its blocks touching unless its children space themselves. Since F-188. F-242 composes Home's rhythm with `Stack` and does not depend on it. Surface features F-243 onward should not rely on `Screen gap` until this lands.
+
+---
+
+## Review (once, 2026-10-20): FAIL as delivered — 1 blocking, 7 significant, 8 minor
+
+The evaluator re-ran state, typecheck, lint, format, `turbo run test --force`, build, test:a11y,
+test:contrast, test:cvd, test:content and `verify:mockups:prove`, all green on `098260f`; it did not
+run e2e (no device), fidelity:capture (attested), security or `verify-ci --all`. Each finding is fixed
+in the feature or recorded:
+
+| # | finding | resolution |
+|---|---|---|
+| B1 | the hero kanji rendered at the Japanese title step's 600; 01 records 400 | **fixed**: `weight={400}` on the kanji and kana; home-fidelity now asserts every element's RENDERED weight against 01.json, with the 600 step as its decoy |
+| S1 | the Wardrobe Preview row could not wrap, so the count pill was clipped in Japanese, at 360/320 dp and at 200 % | **fixed**: the row wraps; R9 §4 E3 names "a line that does not fit wraps, never clips" (WCAG 1.4.4) |
+| S2 | home-fidelity read only 01.json for the inset, intervals and tokens; the attestation claimed more | **fixed**: it asserts Screen's padding, every Stack gap, the text inks, the cards' level and edge, the pills' outline and the primary action against 01's values; the attestation's text says exactly what runs |
+| S3 | the colour card's static heading had no all-entries guard | **fixed**: `home.test` asserts every published entry is japanese-inspired, with a planted traditional entry as the decoy |
+| S4 | the hero's printed names and OKLCh were not heard; a Swatch without an action is announced as a button | **fixed for Home**: the hero's name carries every printed line (`heroSpoken`, tested); **recorded** the component-wide role as **F-343** (backlog) |
+| S5 | E-208's guard read only the Wardrobe route | **fixed**: `wardrobe-coverage.test` reads Home's route too |
+| S6 | 200 % text never checked on the rebuilt surface (A7 is e2e) | **recorded**: the capture attestation now includes the person's 200 % check in both languages, with a profile stored; S1's wrap is the structural fix |
+| S7 | Home did not re-read the store when its tab came back into view | **fixed**: the route re-renders on focus (`useFocusEffect`), read from source by `wardrobe-coverage.test` |
+| M1 | the colour card's heading probably wraps | **named**: E3's wrap row lists it |
+| M2 | in Japanese the on-device pill wraps under the tagline | **named**: E3's wrap row lists it |
+| M3 | 着 does not count shoes or trousers | **fixed**: 点 |
+| M4 | a test title claimed both languages; the inert-tile decoy was missing | **fixed**: the title says English; the decoy is added |
+| M5 | the fill exemption is not tied to its sample | **recorded**: E-086's guard and note state the limit (as M10 did for text) |
+| M6 | E-165, E-017/E-174 and E-203 not annotated | **fixed**: each link's guard names F-242's change |
+| M7 | the route's coverage memo recomputed every render; unmeasured on launch | **fixed**: keyed on the profile's and each garment's last write; **recorded** the launch-time cost on F-268 |
+| M8 | 01.json bound the name line to `name.en`; F-146's attestation reads against a Home with no reading | **fixed**: the binding is `corpus:entry.name.romaji+en`; F-146 carries a note |

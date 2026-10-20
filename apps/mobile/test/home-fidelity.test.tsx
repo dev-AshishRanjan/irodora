@@ -18,13 +18,16 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
+import { StyleSheet, type StyleProp, type TextStyle } from 'react-native';
+import { nativeSpacing, nativeType } from '@irodora/design-tokens';
 import {
   Button,
   Card,
   Chip,
   illustrationBox,
   Illustration,
+  Screen,
+  Stack,
   STATE_TEST_IDS,
   Swatch,
   Text,
@@ -307,38 +310,103 @@ describe('proportion: each size the screen passes is 01’s, recomputed', () => 
       ['01.colour-card.title', find((s) => s === en['home.colourCard'])],
       ['01.colour-card.note', find((s) => s === TODAY.entry.provenance.source)],
     ];
+    /*
+     * THE WEIGHT AS RENDERED, NOT AS PASSED (F-242's review, B1): a step carries its own weight —
+     * the Japanese title's is 600 — so a Text that passes none is drawn at the step's, and only the
+     * host node's style says what a person sees.
+     */
+    const renderedWeight = (node: Instance): string => {
+      const host = node.findAll((n) => (n.type as unknown) === 'Text')[0];
+      const style = StyleSheet.flatten(host?.props['style'] as StyleProp<TextStyle>);
+      return String(style.fontWeight ?? '400');
+    };
     for (const [id, node] of cases) {
       const type = el(id).type;
       expect({ [id]: node.props['size'] as unknown }).toStrictEqual({ [id]: type?.size });
       const face =
         (node.props['face'] as string | undefined) ?? (id.includes('kan') ? 'gothic' : 'sans');
       expect({ [id]: face }).toStrictEqual({ [id]: type?.face });
-      if (type?.weight === 500)
-        expect({ [id]: node.props['weight'] as unknown }).toStrictEqual({ [id]: 500 });
+      expect({ [id]: renderedWeight(node) }).toStrictEqual({ [id]: String(type?.weight) });
     }
+    // DECOY: the Japanese title step is 600, so a kanji passed no weight would be drawn at 600 —
+    // which 01 records as 400 — and the check above would say so.
+    expect(nativeType.japanese.title.fontWeight).toBe('600');
+    expect(el('01.hero.sample.kanji').type?.weight).toBe(400);
   });
 
-  it('the page inset, the cards’ padding and the intervals, through §2’s snap', () => {
+  it('each ink 01 records, as the token the screen passes', () => {
     const { tree } = setup();
-    // The inset: 01's content starts 36.5–37 dp in (ADR-0139).
-    expect(snap(el('01.hero').dp.x)).toBe('xl');
+    // The README's names, as the manifest's tokens (R9 §5).
+    const TOKEN: Readonly<Record<string, string>> = {
+      'text.primary': 'foreground',
+      'text.secondary': 'foreground.2',
+    };
+    const texts = tree.UNSAFE_getAllByType(Text);
+    const color = (s: string): unknown =>
+      texts.find((n) => textOf(n) === s || textOf(n).startsWith(s))?.props['color'];
+    for (const [id, words] of [
+      ['01.header.tagline', en['home.what1']],
+      ['01.wardrobe.title', en['home.wardrobePreview']],
+      ['01.colour-card.title', en['home.colourCard']],
+      ['01.colour-card.note', TODAY.entry.provenance.source],
+    ] as const)
+      expect({ [id]: color(words) }).toStrictEqual({ [id]: TOKEN[el(id).tokens['fg'] ?? ''] });
+    // The three cards are level 1 with their resting edge, as 01 records (bg level1, border).
+    for (const card of tree.UNSAFE_getAllByType(Card)) {
+      expect(card.props['level']).toBe(el('01.hero').tokens['bg']?.replace('level', ''));
+      expect(card.props['edge'] ?? true).toBe(true);
+    }
+    // The pills are outlined, not filled (border.subtle, no bg); the action is the primary pill.
+    for (const chip of tree.UNSAFE_getAllByType(Chip)) expect(chip.props['fill']).toBeUndefined();
+    expect(tree.UNSAFE_getByType(Button).props['variant'] ?? 'primary').toBe('primary');
+  });
+
+  it('the page inset, the cards’ padding and the intervals: 01’s, snapped, as the screen passes them', () => {
+    const { tree } = setup();
+    // The inset: 01's content starts 36.5–37 dp in (ADR-0139) — and the Screen is given it.
+    expect(tree.UNSAFE_getByType(Screen).props['padding']).toBe(snap(el('01.hero').dp.x));
     // A card's padding: the hero's sample sits 13 dp inside its card.
-    expect(snap(el('01.hero.sample').dp.x - el('01.hero').dp.x)).toBe('md');
+    const cardPad = snap(el('01.hero.sample').dp.x - el('01.hero').dp.x);
+    expect(cardPad).toBe('md');
     for (const card of tree.UNSAFE_getAllByType(Card))
-      expect(card.props['padding'] ?? 'md').toBe('md');
-    // Between the cards: 7.5 and 5.5 dp, siblings drawn alike, a tie, so the smaller.
+      expect(card.props['padding'] ?? 'md').toBe(cardPad);
+
     const hero = el('01.hero');
     const wardrobe = el('01.wardrobe');
     const card = el('01.colour-card');
-    expect(
+    const chip = el('01.header.chip');
+    const lockup = el('01.header.lockup');
+    const tagline = el('01.header.tagline');
+    const sample = el('01.hero.sample');
+    const cta = el('01.hero.cta');
+    const count = el('01.wardrobe.count');
+    const tile = el('01.wardrobe.tile-1');
+    /*
+     * The tagline's box is its ink. Its line box starts above the ink by about half the leading
+     * the body step adds, (lineHeight − em) / 2, so that much of the drawn gap is the text's own
+     * (ADR-0128 D2's method); every other box here is a drawn shape, and its gap is the interval.
+     */
+    const leadingAbove = (nativeType.latin.body.lineHeight - nativeType.latin.body.fontSize) / 2;
+    const expected = [
+      // The page: the header, then the cards — from the pill's foot to the hero (16.5).
+      snap(hero.dp.y - (chip.dp.y + chip.dp.h)),
+      // The header: the lockup, then the tagline (21.5 ink, less the leading above it).
+      snap(tagline.dp.y - (lockup.dp.y + lockup.dp.h) - leadingAbove),
+      // Between the cards: 7.5 and 5.5, siblings drawn alike, a tie, so the smaller (§2).
       snapSiblings([
         wardrobe.dp.y - (hero.dp.y + hero.dp.h),
         card.dp.y - (wardrobe.dp.y + wardrobe.dp.h),
       ]),
-    ).toBe('xs');
-    // From the pill to the hero: 16.5 dp.
-    const chip = el('01.header.chip');
-    expect(snap(hero.dp.y - (chip.dp.y + chip.dp.h))).toBe('md');
+      // Inside the hero: the sample, then the action (11.5).
+      snap(cta.dp.y - (sample.dp.y + sample.dp.h)),
+      // Inside the preview: the title row, then the tiles (13).
+      snap(tile.dp.y - (count.dp.y + count.dp.h)),
+    ];
+    expect(expected).toStrictEqual(['md', 'md', 'xs', 'sm', 'md']);
+    // The Stacks, in tree order: the page, the header, the cards, the hero, the preview.
+    expect(tree.UNSAFE_getAllByType(Stack).map((s) => s.props['gap'] as unknown)).toStrictEqual(
+      expected,
+    );
   });
 
   it('three plum branches, where 01 draws them, at the drawing’s own proportion', () => {
