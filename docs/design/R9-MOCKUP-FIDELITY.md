@@ -52,7 +52,9 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
   season pills"*, *"Interactive 4-slott canvas"*, route strings printed under titles;
 - misspellings and garbled text (*"Toggle Switche"*, *"Sutions"*, *"Formall"*, *"palalettes"*,
   *"coliurs"*, *"Teaser for iur typography"*, the unreadable lines in `18`'s report preview);
-- line-art drawn **outside** a device frame. Line-art **inside** the screen is design.
+- line-art drawn **outside** a device frame. Line-art **inside** the screen is design;
+- a page cut off by the tab bar where it scrolls on — `01`'s colour card: the render is one scroll
+  position, the page scrolls, and nothing is cut (`F-242`).
 
 **Pixels and tokens agree.** The README token table is the declared value; the rendered pixels
 were measured (dominant colours, 6-bit quantised) and match it within JPEG noise:
@@ -133,6 +135,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `02` `27` | *"色の測定"*, *"Measurement Refused"* | a camera estimate is never called a measurement (golden rule 11, E-089): the Lens is an estimate in both languages, and the refused state names a reading. Outside `F-219`’s five classes; held by this row, `F-243` and `F-236` |
 | `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
 | `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps (claims-ok: quotes the drawn construction this row resolves) |
+| `01` | *"14 Garments • 38 Valid Outfits"*, on a wardrobe with no stored profile | the valid outfits are `coverage().valid`, which needs a profile to score against; without one the pill prints the garment count alone and invents no figure. With a profile it prints both, as drawn (`F-242`, [ADR-0138](../adr/0138-home-leads-with-the-days-corpus-colour-as-01-binds-it-and-draws-no-reading.md) D6) |
 
 **A claim composed on the screen is held too (`F-221`).** The claims lint reads source lines, so a
 figure and a label kept in two places reach the screen as one claim it never saw. The conformance
@@ -740,8 +743,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-7** | `profile/measure` has no mockup. Generate one, or compose it from `08`'s readout table and `12`'s form? | `F-261` |
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
-| **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
-| **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
 | **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
 | **OQ-18** | `05`'s fourth card has no OKLCh line. Does every card carry it? | `F-246` |
@@ -773,6 +774,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-11** | The checkered badge on a garment tile marks a garment whose material is recorded, and is absent where none is: one mark as `01` draws it, in the ink text on that sample takes, hidden from assistive technology; the tile's name says the material in words | [ADR-0137](../adr/0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md) |
+| **OQ-14** | Each screen's page inset is its own mockup's, snapped to the scale: `01`'s 36.5 dp is `xl`, 18–20 dp is `md`; each surface feature applies its own, and `Screen`'s default does not move | [ADR-0139](../adr/0139-each-screens-page-inset-is-its-own-mockups-snapped-and-homes-is-xl.md) |
 | **OQ-40** | Saved outfits are read back on the Wardrobe (`11`), through a *Garments · Lookbook* choice directly above its grid in `10.source`'s form; an entry is read-only, in `13`'s vocabulary, and its score is stored and never recomputed | [ADR-0136](../adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md) |
 | **OQ-39** | The bookmarked colours are read back on the Atlas (`05`), through a toggle at the trailing end of its search field in `06`'s glyph; on is the glyph filled and an announced *selected*, it combines with the query and filters, and an empty set is `00`'s caption | [ADR-0135](../adr/0135-the-bookmarked-colours-are-read-back-on-the-atlas-through-a-toggle-in-its-search-field.md) |
 | **OQ-9** | Each figure is a defined computation and none is a match: 03's percentage is FR-7's similarity percentage with *Similar*; 13's label says whether the outfit counts toward the valid outfits (≥ 60); 23's line is a profile concordance, its title *Garment Concordance*; 22's pairings count the owned garments the candidate forms a valid outfit with. The ΔE00 words are one cited table (ADR-0125) | [ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md) |

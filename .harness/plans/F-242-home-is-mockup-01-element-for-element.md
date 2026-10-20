@@ -571,8 +571,8 @@ Ids are E-207 onward; check the maximum at write time. Each needs its memory not
 ### Golden
 
 - **Check:** `oklchLine` over all 120 entries against each entry's own derivation sentence ("Specified in OKLCh as L …, C …, h …°").
-  - L and C must match the printed digits.
-  - h must match within 0.1°, only where C ≥ 0.02, because hue is ill-conditioned at low chroma.
+  - L and C must equal the printed digits.
+  - h must agree to within 0.1°, only where C ≥ 0.02, because hue is ill-conditioned at low chroma.
 - **Source:** `content/colors/*.json` `provenance.derivation` (ADR-0065).
 - **If a digit differs** because of the six-decimal XYZ rounding, the test lists the entries and why. Neither value changes: §8 prints the derivation, and a golden change needs an ADR.
 

@@ -36,12 +36,15 @@ const tile = (n, box, badge, photo, name, size, emDp) => {
     // card's border too, in the light palette's border.subtle (#E5E3DE), as 01 draws it in the dark.
     el(p, 'ui:Card', box, {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
-      action: 'navigate:/wardrobe/[id]',
+      // F-242 (ADR-0138 D5): `/wardrobe/[id]` names no route; a garment opens 24's.
+      action: 'navigate:/wardrobe/with/[id]',
     }),
+    // The badge marks a garment whose material is recorded (OQ-11, closed by ADR-0137). 25 governs
+    // only the light palette (P2), so its circle is not built; 01's mark is.
     el(`${p}.badge`, 'new:TextureBadge', badge, {
       parent: p,
       tokens: { radius: 'pill' },
-      binding: 'oq:OQ-11',
+      binding: `store:garments.${n - 1}.material`,
     }),
     el(`${p}.photo`, 'app:GarmentPhoto', photo, {
       parent: p,

@@ -587,7 +587,7 @@
       "icon": null,
       "illustration": null,
       "binding": null,
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -616,7 +616,7 @@
       "icon": null,
       "illustration": null,
       "binding": null,
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -645,7 +645,7 @@
       "icon": null,
       "illustration": null,
       "binding": null,
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -671,7 +671,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.0.material",
       "action": null,
       "copy": null
     },
@@ -723,7 +723,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.1.material",
       "action": null,
       "copy": null
     },
@@ -775,7 +775,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.2.material",
       "action": null,
       "copy": null
     },

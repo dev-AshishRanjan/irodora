@@ -211,7 +211,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:home.onDevice",
@@ -595,7 +599,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:coverage",
@@ -630,7 +638,7 @@
       "icon": null,
       "illustration": null,
       "binding": "store:garments.0.colour",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "raw": {
         "cornerPx": 14
       },
@@ -661,7 +669,7 @@
       "icon": null,
       "illustration": null,
       "binding": "store:garments.1.colour",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "raw": {
         "cornerPx": 14
       },
@@ -692,7 +700,7 @@
       "icon": null,
       "illustration": null,
       "binding": "store:garments.2.colour",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "raw": {
         "cornerPx": 14
       },
@@ -723,7 +731,7 @@
       "icon": null,
       "illustration": null,
       "binding": "store:garments.3.colour",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "raw": {
         "cornerPx": 14
       },
@@ -754,7 +762,7 @@
       "icon": null,
       "illustration": null,
       "binding": "store:garments.4.colour",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "raw": {
         "cornerPx": 14
       },
@@ -781,8 +789,11 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.0.material",
       "action": null,
+      "raw": {
+        "cells": 12
+      },
       "copy": null
     },
     {
@@ -806,8 +817,11 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.1.material",
       "action": null,
+      "raw": {
+        "cells": 12
+      },
       "copy": null
     },
     {
@@ -831,8 +845,11 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.2.material",
       "action": null,
+      "raw": {
+        "cells": 12
+      },
       "copy": null
     },
     {
@@ -856,8 +873,11 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.3.material",
       "action": null,
+      "raw": {
+        "cells": 12
+      },
       "copy": null
     },
     {
@@ -881,8 +901,11 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-11",
+      "binding": "store:garments.4.material",
       "action": null,
+      "raw": {
+        "cells": 12
+      },
       "copy": null
     },
     {

@@ -97,8 +97,12 @@ export default {
       copy: { shape: 'heading', script: 'latin', lines: 3 },
       raw: { emDp: 18.5 },
     }),
+    // F-242: its text runs x 391–678 px, 287 px for 31 characters — about 9.3 dp an em at a sans's
+    // 0.5 em mean advance, so the caption step. The em is kept in this comment rather than as
+    // raw.emDp: an estimate from an advance, not a line box, and the caption's own census reads raw.emDp.
     el('01.header.chip', 'ui:Chip', B(378, 280, 320, 40), {
       tokens: { border: 'border.subtle', radius: 'pill' },
+      type: text('sans', 'caption'),
       binding: 'static:home.onDevice',
       copy: { shape: 'badge', script: 'latin' },
     }),
@@ -169,9 +173,12 @@ export default {
       raw: { emDp: 15.8 },
       copy: { shape: 'heading', script: 'latin' },
     }),
+    // F-242: its text runs x 392–658 px, 266 px for 30 characters — about 8.9 dp an em, the caption
+    // step (the em is kept here, not as raw.emDp, for the reason the header's chip gives).
     el('01.wardrobe.count', 'ui:Chip', B(382, 894, 287, 36), {
       parent: '01.wardrobe',
       tokens: { border: 'border.subtle', radius: 'pill' },
+      type: text('sans', 'caption'),
       binding: 'engine:coverage',
       copy: { shape: 'badge', script: 'mixed' },
     }),
@@ -180,15 +187,20 @@ export default {
         parent: '01.wardrobe',
         tokens: { keyline: 'keyline', radius: 'sm' },
         binding: `store:garments.${i}.colour`,
-        action: 'navigate:/wardrobe/[id]',
+        // F-242 (ADR-0138 D5): read as `/wardrobe/[id]` until then, which names no route. The one
+        // route keyed by a garment id is 24's, and it is where the Wardrobe's own garments go.
+        action: 'navigate:/wardrobe/with/[id]',
         raw: { cornerPx: 14 },
       }),
     ),
-    // The badge's meaning is drawn and defined nowhere — OQ-11 asks a person, so it binds to the question.
+    // The badge marks a garment whose material is recorded (OQ-11, closed by ADR-0137). One ink over
+    // the sample, a checker of about twelve cells a side: each cell reads about 2 px across in the
+    // five 28 px crops, light on the dark tiles and dark on the cream one.
     ...tiles.map(([, , , , b], i) =>
       el(`01.wardrobe.tile-${i + 1}.badge`, 'new:TextureBadge', B(...b), {
         parent: `01.wardrobe.tile-${i + 1}`,
-        binding: 'oq:OQ-11',
+        binding: `store:garments.${i}.material`,
+        raw: { cells: 12 },
       }),
     ),
     // ---- today's colour card — it runs on under the tab bar (the page scrolls)
