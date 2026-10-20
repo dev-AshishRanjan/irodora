@@ -11,7 +11,9 @@
  * Nothing here touches React, the repository, or the clock. Every input is an argument.
  */
 
+import { nativeSpacing } from '@irodora/design-tokens';
 import { allEntries, colorFor, type PublishedEntry } from './corpus';
+import type { MessageKey } from './i18n';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 
 /** The most recent reading, or `null` on a store nobody has used yet. */
@@ -167,4 +169,109 @@ export type HomeLead = 'reading' | 'today' | 'none';
 export function homeLead(content: HomeContent): HomeLead {
   if (content.lastReading !== null) return 'reading';
   return content.today !== null ? 'today' : 'none';
+}
+
+/* ------------------------------------------------------------- 01, element by element (F-242) */
+
+/** `01.wardrobe.tile-N`: each garment sample is drawn 52 dp square at 384 dp. */
+export const HOME_TILE = 52;
+
+/** `01.hero.sample`: the day's colour, full width, drawn 172 dp tall. */
+export const HOME_HERO = 172;
+
+/** How many garments the preview draws: `01`'s five tiles. */
+export const HOME_TILES = 5;
+
+/**
+ * A garment's material as recorded, trimmed — or `null` when none is (ADR-0137 D1).
+ *
+ * The texture badge is drawn when this is a string and not otherwise, and the tile's name says it in
+ * words. A blank field is no material: an absent badge is an absent fact, never a placeholder.
+ */
+export function recordedMaterial(garment: Pick<StoredGarment, 'material'>): string | null {
+  const material = garment.material?.trim() ?? '';
+  return material === '' ? null : material;
+}
+
+/**
+ * `01.hero.sample.name`, in the form `01` draws it: the romaji, its first letter capitalised, then
+ * the English in brackets — *Kumori-garasu (Frosted Glass)*. Both halves are the entry's own names.
+ */
+export function heroName(name: { readonly romaji: string; readonly en: string }): string {
+  const romaji = name.romaji.charAt(0).toUpperCase() + name.romaji.slice(1);
+  return `${romaji} (${name.en})`;
+}
+
+/**
+ * `01.hero.sample.oklch`: the space's name, then L, C and h from the entry's derivation, at the
+ * precision the corpus is authored at and the Lens prints (3, 3 and 1 decimals), separated as `01`
+ * separates them. `01`'s own figures are sample content (R9 §4 E1).
+ */
+export function oklchLine(oklch: readonly [number, number, number], unit: string): string {
+  const [l, c, h] = oklch;
+  return `${unit} ${l.toFixed(3)} • ${c.toFixed(3)} • ${h.toFixed(1)}°`;
+}
+
+/**
+ * `01.wardrobe.count`: *N Garments • M Valid Outfits* (ADR-0138 D6).
+ *
+ * - **M is `coverage().valid`**, the outfits that clear the threshold against the person's profile
+ *   (FR-42) — coverage, not the lookbook (ADR-0136).
+ * - **Without a profile there is no M**, and the pill says the garment count alone rather than
+ *   printing a figure nobody computed (R9 §4 E2).
+ * - **English takes its singular**, so nobody reads *1 Garments*; Japanese joins a figure to its
+ *   counter with no space, and its counter does not inflect.
+ */
+export function wardrobeCountLabel(
+  count: number,
+  coverage: { readonly valid: number } | undefined,
+  t: (key: MessageKey) => string,
+  script: 'latin' | 'japanese',
+): string {
+  const join = script === 'japanese' ? '' : ' ';
+  const garments = `${String(count)}${join}${t(count === 1 ? 'home.countGarment' : 'home.countGarments')}`;
+  if (coverage === undefined) return garments;
+  const outfits = `${String(coverage.valid)}${join}${t(
+    coverage.valid === 1 ? 'home.countOutfit' : 'home.countOutfits',
+  )}`;
+  return `${garments} • ${outfits}`;
+}
+
+/**
+ * The pill's accessible name: what it prints, and the threshold the outfits were counted at, which
+ * the drawing has no room for and a valid outfit means nothing without (FR-42).
+ */
+export function wardrobeCountName(
+  label: string,
+  coverage: { readonly threshold: number } | undefined,
+  t: (key: MessageKey) => string,
+): string {
+  return coverage === undefined
+    ? label
+    : `${label}. ${t('shopping.countedAt')}: ${String(coverage.threshold)}`;
+}
+
+/**
+ * A tile's name, as the Wardrobe names a garment (`name ?? type — colour`), with its material where
+ * one is recorded (ADR-0137 D3): the texture badge says it by shape, and this says it in words.
+ * The swatch adds the value and the provenance.
+ */
+export function garmentTileName(
+  garment: Pick<StoredGarment, 'name' | 'type' | 'material' | 'color'>,
+  t: (key: MessageKey) => string,
+): string {
+  const material = recordedMaterial(garment);
+  const base = `${garment.name ?? garment.type} — ${garment.color.name}`;
+  return material === null ? base : `${base}, ${t('browse.material')} ${material}`;
+}
+
+/**
+ * The tiles' side on a phone of this width: `01`'s 52 dp, shrunk only where five would not fit in a
+ * single row inside Home's inset and the card's padding with at least `xs` between them — so `01`'s
+ * one row of five holds at 360 and 320 dp. Floored to the half dp, never above the drawn size.
+ */
+export function wardrobeTileSize(windowWidth: number): number {
+  const room =
+    windowWidth - 2 * nativeSpacing.xl - 2 * nativeSpacing.md - (HOME_TILES - 1) * nativeSpacing.xs;
+  return Math.min(HOME_TILE, Math.floor((room / HOME_TILES) * 2) / 2);
 }

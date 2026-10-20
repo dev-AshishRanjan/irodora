@@ -46,6 +46,10 @@ export const ja: Record<MessageKey, string> = {
   'home.addGarment': '衣服を追加',
   'home.today': '今日の色',
   'home.todayNote': '日付で選ばれた色図鑑の一色です。明日は変わります。',
+  'home.countGarment': '着',
+  'home.countGarments': '着',
+  'home.countOutfit': '通りの有効なコーディネート',
+  'home.countOutfits': '通りの有効なコーディネート',
   'colour.hex': '16進',
   'colour.differenceUnit': 'ΔE00',
 

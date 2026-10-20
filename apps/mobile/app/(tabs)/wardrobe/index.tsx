@@ -1,16 +1,10 @@
 import { useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
-import { outfitWeights, parseWeightContent } from '@irodora/recommendation';
-import { coverage, gaps, type CoverageGarment } from '@irodora/optimization';
+import { coverage, gaps } from '@irodora/optimization';
 import { Wardrobe } from '../../../src/screens/Wardrobe';
 import { deviceRepository } from '../../../src/store/repository';
-import { referenceSet } from '../../../src/wardrobe/reference';
-import { colorOf } from '../../../src/wardrobe';
-import { slotFor } from '../../../src/outfit/builder';
-import { ruleSet } from '../../../src/rules';
-import { WEIGHTS_TEXT } from '../../../src/rules/generated/weights';
-import { activeProfile, toWorking } from '../../../src/profile/store';
-import { engineProfile } from '../../../src/outfit/builder';
+import { coverageContext, placeableGarments } from '../../../src/wardrobe/coverage';
+import { activeProfile } from '../../../src/profile/store';
 import { lexicon } from '../../../src/finder';
 import { useLookbook } from '../../../src/lookbook';
 
@@ -49,31 +43,21 @@ export default function WardrobeRoute(): React.JSX.Element {
    * rendered by the conformance suite, which is the same reason `deviceRepository()` is
    * imported here rather than there.
    *
-   * `shopping.tsx` assembles the same context, and `referenceSet()` is now shared between them
-   * rather than written out twice: it is twenty fields per corpus entry, most of them the nulls
-   * that say "this is a published reference, not something we measured".
+   * The context itself is assembled once, in `src/wardrobe/coverage.ts`, for this dial and Home's
+   * count pill (F-242, E-208), so the two cannot disagree. `shopping.tsx` still assembles its own,
+   * sharing the one reference set: twenty fields per corpus entry, most of them the nulls that say
+   * "this is a published reference, not something we measured".
    *
    * WITHOUT A PROFILE THERE IS NOTHING TO COUNT AGAINST, and the screen omits the section rather
    * than drawing it empty. That is a real state — a wardrobe is useful before anybody has
    * answered a single trial — not a loading condition.
    */
   const analysis = useMemo(() => {
-    if (stored === null) return { coverage: undefined, gaps: undefined };
+    // One context for this dial and Home's count pill (F-242, E-208): src/wardrobe/coverage.ts.
+    const context = coverageContext(stored);
+    if (context === undefined) return { coverage: undefined, gaps: undefined };
 
-    const placeable = repo
-      .listGarments()
-      .map((g): CoverageGarment | null => {
-        const slot = slotFor(g);
-        return slot === null ? null : { id: g.id, slot, color: colorOf(g.color) };
-      })
-      .filter((g): g is CoverageGarment => g !== null);
-
-    const context = {
-      profile: engineProfile(toWorking(stored)),
-      rules: ruleSet(),
-      weights: outfitWeights(parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json')),
-      reference: referenceSet(),
-    };
+    const placeable = placeableGarments(repo.listGarments());
 
     return {
       coverage: coverage(placeable, context),

@@ -50,6 +50,12 @@ export const en = {
   'home.addGarment': 'Add a garment',
   'home.today': 'Today',
   'home.todayNote': 'One entry from the corpus, by the date. It changes tomorrow.',
+  // 01's count pill (F-242, ADR-0138 D6): a count beside a noun, and the singular its own key so
+  // nobody reads "1 Garments". The outfits are coverage's valid ones, never the lookbook.
+  'home.countGarment': 'Garment',
+  'home.countGarments': 'Garments',
+  'home.countOutfit': 'Valid Outfit',
+  'home.countOutfits': 'Valid Outfits',
   'colour.hex': 'Hex',
   /** The unit is a name, not a claim — ΔE00 is a defined quantity, not an accuracy statement. */
   'colour.differenceUnit': 'ΔE00',
