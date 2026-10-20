@@ -9,6 +9,43 @@ appId: com.irodora.app
 ---
 - launchApp:
     clearState: false
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'aki-batake'
+- tapOn: 'Red Earth'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'asa-moya'
+- tapOn: 'Green Paddy'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'asa-kawa'
+- tapOn: 'Rain Sky'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'ame-iwa'
+- tapOn: 'Hemp Sack'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: 'Add a garment'
+- tapOn: 'Jumper, coat, scarf'
+- inputText: 'asa-nawa'
+- tapOn: 'Autumn Dusk'
+- tapOn:
+    id: 'wardrobe\.save'
+- tapOn:
+    id: 'tab-index'
 - assertVisible: '100% On-Device Engine • Offline'
 - waitForAnimationToEnd
 - takeScreenshot: capture

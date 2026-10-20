@@ -46,3 +46,10 @@ A measured step leads at the nearest board step's ratio, **or its face's own lin
 taller**. iOS centres a line only at or above its face's own and otherwise clips a tall line's top
 (ADR-0121, amended). Each bundled face's `ownLine` is in the manifest, and the font test reads it
 back.
+
+## F-242 (2026-10-20): two pills recorded at the caption, with no em
+
+`01`'s on-device pill and count pill draw their text at about 9 dp an em, so their inventory records
+now carry the caption step. Their ems were estimated from an advance (characters across a run), not a
+line box, so they are kept in a comment in `01.mjs` rather than as `raw.emDp`: an estimate of another
+kind would have moved the median this step is measured from.

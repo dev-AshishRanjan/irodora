@@ -27,3 +27,12 @@ green after the list changed. The table both read is a small data file, declared
 
 It does not decide whether an enrolled surface looks right: that is the capture, beside its mockup,
 and a person (ADR-0134).
+
+## F-242 (2026-10-20): the first screen enrolled
+
+`01.screen` is the first whole screen in the sweep: Home over the tab bar its layout puts under it,
+in both themes and both languages, all 44 elements found by what they draw. Seventeen needed a locator
+of their own (the cards by `home.*` ids, the hero's names and figures and the count by the screen's
+own functions, the tab bar's active indicator by the id `TabBar` now gives it, and the tab words by
+`tab.*`, which the inventory read as `tabs.*`). `25.screen` stays not whole: its layout is `01`'s, swept
+as `01.screen` in Washi as well as Sumi.

@@ -4,6 +4,142 @@
     {
       "route": "/",
       "file": "(tabs)/index.tsx",
+      "steps": [
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "aki-batake",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "aka-tsuchi",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "asa-moya",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "ao-ta",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "asa-kawa",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "ame-zora",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "ame-iwa",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "asa-bukuro",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "openRoute",
+          "route": "(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "do": "assertVisible",
+          "key": "wardrobe.title"
+        },
+        {
+          "do": "tap",
+          "key": "wardrobe.typeHint"
+        },
+        {
+          "do": "inputText",
+          "colour": "asa-nawa",
+          "field": "romaji"
+        },
+        {
+          "do": "tap",
+          "colour": "aki-yu",
+          "field": "en"
+        },
+        {
+          "do": "tap",
+          "testID": "wardrobe.save"
+        },
+        {
+          "do": "tap",
+          "testID": "tab-index"
+        }
+      ],
       "anchor": "home.onDevice"
     },
     {

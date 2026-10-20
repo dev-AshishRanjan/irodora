@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-14",
+  "updated": "2026-10-20",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -570,6 +570,14 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/EmptyState.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/home.ts#wardrobeCountLabel"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/capture/routes.json"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -577,7 +585,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see)",
+      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue.",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
       "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves. F-091 ADDED A READER THAT IS NOT THE APP AND THAT `tsc` CANNOT SEE. The Atlas journey selects on the strings the app renders, so its spec names MESSAGE KEYS and scripts/generate-e2e-flows.mjs resolves them through this file — imported, not parsed, under Node 24 type stripping, so it is the object the app renders from rather than a regex’s opinion of it. The completeness mechanism that makes this link safe cannot reach a JSON spec: a renamed key breaks `ja` and every call site at compile time, and the journey silently not at all. So the guard here is a SECOND one — `generate-e2e-flows.mjs --check`, in `lint` — and it matters more than usual because the journey CANNOT BE RUN on this workstation (no JDK, no emulator; F-091 criteria 2 to 4 are attested). A hand-written flow would have gone wrong at the first rename with every gate green, which is why ADR-0086 generates it instead. F-139 ADDED TWO KEYS THAT ARE CONTROLS RATHER THAN PROSE — `browse.add` and `export.buildPalette`. A missing one is still a `tsc` failure, which is this link working; what is new is that the string is now an ACCESSIBLE NAME as well as a label, so a wrong or absent translation is an unusable control rather than an untranslated sentence. `browse.add` is deliberately reused by three screens (wardrobe, outfit builder, shopping check) because they point at ONE destination: three labels for one action would drift, and somebody who learned the word on one screen would meet a different one on the next.",
       "confidence": 0.95,
@@ -3272,6 +3280,10 @@
         {
           "kind": "symbol",
           "ref": "packages/ui/src/sampleInk.ts#sampleInk"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/TextureBadge.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -3281,7 +3293,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared. F-233: the `sample-ink` rule measures text on a declared sample (sample-ink.test.tsx), the one pair `pair-undeclared` cannot see. SINCE F-237 A FIFTH TREATMENT, `glyph`: a selectable glyph toggle must fill a shape in `active` AND fill none in `default`, so the fill is the change. Two decoys in packages/ui/test/conformance.test.tsx (an outline in active, a fill in default), and two registry subjects use it (IconButton (bookmark toggle), SearchField (05, with its bookmark toggle)).",
+      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared. F-233: the `sample-ink` rule measures text on a declared sample (sample-ink.test.tsx), the one pair `pair-undeclared` cannot see. SINCE F-237 A FIFTH TREATMENT, `glyph`: a selectable glyph toggle must fill a shape in `active` AND fill none in `default`, so the fill is the change. Two decoys in packages/ui/test/conformance.test.tsx (an outline in active, a fill in default), and two registry subjects use it (IconButton (bookmark toggle), SearchField (05, with its bookmark toggle)). F-242: the ink sampleInk moves for a sample is exempt as a text colour AND as a drawn mark’s SVG fill on that sample (01’s texture badge, ADR-0137 D2) — sample-ink.test proves a TextureBadge on a mid-tone is no colour literal, and its existing decoy proves the same value as a View’s background still is.",
       "memory": "memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md",
       "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro. F-232 (2026-09-28): new painted pairs — a selection dot in foreground or accent.foreground on its fill, thumbs on tracks — all resolve to tokens and pass `pair-undeclared`. Text ON A SAMPLE (24's tinted ΔE00 badge) is invisible to that rule, so its ink is chosen by `inkOnSample`, which has its own tests and reports \"neither\" on a mid-tone (E-158).",
       "confidence": 0.94,
@@ -4296,15 +4308,31 @@
         },
         {
           "kind": "file",
-          "ref": "apps/mobile/app/(tabs)/atlas/with/reading/[id].tsx"
+          "ref": "apps/mobile/app/(tabs)/wardrobe/with/[id].tsx"
         },
         {
           "kind": "file",
+          "ref": ".harness/verification/unreachable-routes.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-244"
+        },
+        {
+          "kind": "test",
           "ref": "apps/mobile/test/home-states.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/home-fidelity.test.tsx"
         },
         {
           "kind": "file",
           "ref": "scripts/verify-route-targets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-reachability.mjs"
         },
         {
           "kind": "gate",
@@ -4324,9 +4352,9 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THIS IS THE THIRD REWRITE OF THIS SCREEN, AND WHAT THE SECOND ACHIEVED IS NOW ASSERTED RATHER THAN REMEMBERED: the three fragments render in both install states, the on-device line sits under the proposition rather than in a footnote, and today’s colour leads on a new install — that last one by ORDER, with a decoy proving a reading still leads when there is one, because a presence check would have passed before F-164 changed anything. THE LEAD’S ACTION IS ASSERTED FOR BOTH LEADS, because they are different KINDS of colour and a slug-only implementation satisfies the criterion on a new install and fails on every phone that has ever been used. Its decoy: with nothing wired the control is ABSENT, not present and inert. WHAT IS NOT GUARDED: whether it looks professional. That was the report, it is a judgement, and it is attested — three rewrites in, it is also the only thing that has ever actually been wrong with this screen.",
+      "guard": "THIS IS THE THIRD REWRITE OF THIS SCREEN, AND WHAT THE SECOND ACHIEVED IS NOW ASSERTED RATHER THAN REMEMBERED: the three fragments render in both install states, the on-device line sits under the proposition rather than in a footnote, and today’s colour leads on a new install — that last one by ORDER, with a decoy proving a reading still leads when there is one, because a presence check would have passed before F-164 changed anything. THE LEAD’S ACTION IS ASSERTED FOR BOTH LEADS, because they are different KINDS of colour and a slug-only implementation satisfies the criterion on a new install and fails on every phone that has ever been used. Its decoy: with nothing wired the control is ABSENT, not present and inert. WHAT IS NOT GUARDED: whether it looks professional. That was the report, it is a judgement, and it is attested — three rewrites in, it is also the only thing that has ever actually been wrong with this screen. F-242 (ADR-0138): Home is rebuilt to 01 and draws no reading, so its route pushes /atlas/with/[slug], /wardrobe/with/[id] and /lens, and /atlas/with/reading/[id] is declared unreachable with closedBy F-244 — verify-reachability fails on the declaration once F-244 closes, and on any undeclared orphan. home-states.test holds each drawn action (and its absence without a handler), and F-337’s decoys: a palette saved after a reading appears nowhere, and the measured colour only as its garment’s tile, announced as estimated. Home’s test ids (home.hero, home.wardrobe, home.colourCard) are the inventory sweep’s locators for 01’s cards.",
       "memory": "memory/effects/a-scanner-that-reads-source-decides-how-you-write-the-call.md",
-      "rationale": "REPORTED AS \"the homepage is unprofessional\", for the third time. THE AUDIT CAME FIRST AND CHANGED THE SCOPE: criterion 2 — says what the product is for without a paragraph, leads with a colour at size — was ALREADY TRUE, delivered by F-164, so the work was to pin it rather than redo it. Criterion 1 was still literally true at the CONTAINER level: F-164 differentiated the content of the three blocks and its docblock says so, but all three were `Section`, because `Card` did not exist until F-184. And motion was already present via `Section index` → `Appear` (F-188); claiming it as new work would have been claiming F-188’s. THE ACCENT IS SPENT ONCE, on the lead card’s action — `visual-taste`’s rule is that a page with three bold moves has none, and the boldness is already on one colour at size. A READING HAS NO SLUG AND NEVER WILL, so criterion 3 needed the colour subject F-197 built plus a route that carries the ROW ID — the same shape and the same reasoning as `/wardrobe/with/[id]`.",
+      "rationale": "REPORTED AS \"the homepage is unprofessional\", for the third time. THE AUDIT CAME FIRST AND CHANGED THE SCOPE: criterion 2 — says what the product is for without a paragraph, leads with a colour at size — was ALREADY TRUE, delivered by F-164, so the work was to pin it rather than redo it. Criterion 1 was still literally true at the CONTAINER level: F-164 differentiated the content of the three blocks and its docblock says so, but all three were `Section`, because `Card` did not exist until F-184. And motion was already present via `Section index` → `Appear` (F-188); claiming it as new work would have been claiming F-188’s. THE ACCENT IS SPENT ONCE, on the lead card’s action — `visual-taste`’s rule is that a page with three bold moves has none, and the boldness is already on one colour at size. A READING HAS NO SLUG AND NEVER WILL, so criterion 3 needed the colour subject F-197 built plus a route that carries the ROW ID — the same shape and the same reasoning as `/wardrobe/with/[id]`. F-242 (2026-10-20): the third rewrite’s reading-led order is superseded — 01 binds its hero to the day’s corpus colour and draws no reading (ADR-0138), so the link to the reading route moved to F-244.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -6527,6 +6555,10 @@
         {
           "kind": "file",
           "ref": "packages/ui/src/brand.tsx#LOCKUP_SPLASH"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/TextureBadge.tsx#TEXTURE_BADGE"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6538,7 +6570,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart).",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart). F-242: texture-badge.test (TEXTURE_BADGE 14, the median of the ten sides of 01’s five badges, and TEXTURE_BADGE_CELLS from each badge’s raw.cells).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -8774,6 +8806,144 @@
       "guard": "A STORED SCORE OUTLIVES THE ENGINE THAT MADE IT. lookbook-record.test replays every complete outfit of its wardrobe from the snapshot and requires the overall and every component’s score, direction, weight and contribution to be byte-identical (decoy: a different profile changes one) — through a read-back mirror of the store’s row; outfit.test is what proves the store returns every snapshot column exactly as written. It pins componentMessageKey to the engine’s messageKey format and to OUTFIT_MESSAGE_KEYS. lookbook.test renders an entry with a component this build does not know and requires its line to stay, showing the raw key, and renders a HISTORICAL entry whose four versions are not this build’s. Two limits, stated: each component’s SENTENCE comes from the current catalogue, so a copy edit changes how an old entry reads (never its figures); and “two different scores never carry identical versions” holds only while every formula change bumps RECOMMENDATION_VERSION, which is a discipline, not a check.",
       "memory": "memory/effects/a-stored-score-outlives-the-engine-that-made-it.md",
       "rationale": "A saved outfit keeps its score as computed and is never rescored (ADR-0136 D5), so the score’s SHAPE — six components by name, three directions, the factors’ weights and contributions, the message-key format — is now persisted data that every later build must render. A seventh component, a renamed one, or a new key format must still render old entries as stored: the slot and component columns are opaque text for exactly that reason, and the historical fixture is what notices a renderer that forgot. NOT GUARDED: whether a seventh component would be shown for old entries that lack it — they render the components they have, which is honest, and F-257 decides 13’s rows."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-242",
+      "id": "E-207",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile",
+        "mockups"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/home.ts#recordedMaterial"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/TextureBadge.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Home.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-256"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory/01.json"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory/25.json"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/home.test.ts: recordedMaterial trims, and blank, spaces and null are no material (decoys); apps/mobile/test/home-states.test.tsx: a TextureBadge exactly where a material is recorded, the tile’s name carrying \"Material <value>\", and none for a garment without one or a wardrobe without any (decoys); the inventory sweep finds five badges on 01.screen, with a decoy that one gone is one finding naming all five; packages/ui/test/texture-badge.test.tsx holds the mark to 01’s inventory.",
+      "memory": "memory/effects/a-badge-is-the-shape-of-a-recorded-fact.md",
+      "rationale": "ADR-0137 gives 01’s woven mark a meaning: the garment’s material is recorded. So whatever writes material decides whether the badge shows and what the tile announces. Today that is the Wardrobe editor’s free text; F-256 builds 12’s chips, and a chip that stores a code or a placeholder would change Home silently. NOT GUARDED: how a sighted person reads the mark, and its look on a device (F-242’s capture attestation asks for one badge by hand)."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-242",
+      "id": "E-208",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/wardrobe/coverage.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/index.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/index.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Home.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-258"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/wardrobe-coverage.test.ts: a count through coverageContext equals one through a context written out by hand (the oracle, with outfits to count so equality is not two zeros); undefined without a profile; a garment with no slot is left out (decoy); the Wardrobe route calls the helpers and assembles no context of its own, read from source, with shopping.tsx as the decoy that still does. home-states.test.tsx holds the pill with coverage and without (R9 §4 E2).",
+      "memory": "memory/effects/one-coverage-context-for-the-pill-and-the-dial.md",
+      "rationale": "01’s count pill and 11’s coverage dial print the same count of valid outfits, so they are assembled from one context: a second inline copy would let the front door and the Wardrobe disagree the first time the profile, rules, weights or reference set moved. shopping.tsx still assembles its own; F-258 moves it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-242",
+      "id": "E-209",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/Illustration.tsx#IllustrationProps"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Home.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json#opacity.art"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/illustrations.test.tsx: a backdrop in foreground inks every shape in foreground at nativeArtOpacity (decoy: the default ink is not foreground), and a figure in foreground without the hanger’s tint does not compile (@ts-expect-error).",
+      "memory": "memory/effects/the-backdrop-ink-is-foreground-at-the-art-opacity.md",
+      "rationale": "R9 §5 measures the backdrop art as the foreground token at the declared opacity (0.15). Home is the first surface to draw it so; every backdrop from F-243 on can. opacity.art (E-136) is what keeps a foreground drawing faint, so a change to it moves every such backdrop at once. NOT GUARDED: the drawing’s orientation in each placement, which is for the capture’s comparison."
     }
   ]
 }

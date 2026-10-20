@@ -9,6 +9,43 @@ appId: com.irodora.app
 ---
 - launchApp:
     clearState: false
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: '服を追加する'
+- tapOn: 'セーター、コート、スカーフ'
+- inputText: 'aki-batake'
+- tapOn: 'Red Earth'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: '服を追加する'
+- tapOn: 'セーター、コート、スカーフ'
+- inputText: 'asa-moya'
+- tapOn: 'Green Paddy'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: '服を追加する'
+- tapOn: 'セーター、コート、スカーフ'
+- inputText: 'asa-kawa'
+- tapOn: 'Rain Sky'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: '服を追加する'
+- tapOn: 'セーター、コート、スカーフ'
+- inputText: 'ame-iwa'
+- tapOn: 'Hemp Sack'
+- tapOn:
+    id: 'wardrobe\.save'
+- openLink: 'irodora://wardrobe/add'
+- assertVisible: '服を追加する'
+- tapOn: 'セーター、コート、スカーフ'
+- inputText: 'asa-nawa'
+- tapOn: 'Autumn Dusk'
+- tapOn:
+    id: 'wardrobe\.save'
+- tapOn:
+    id: 'tab-index'
 - assertVisible: '100%端末内エンジン • オフライン'
 - waitForAnimationToEnd
 - takeScreenshot: capture

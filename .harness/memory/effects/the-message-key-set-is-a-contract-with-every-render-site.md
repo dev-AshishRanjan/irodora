@@ -61,3 +61,14 @@ passes silently."*
 A new Japanese string can introduce a codepoint the bundled font lacks. That is
 [[a-corpus-publish-can-outrun-the-font-that-renders-it]] (E-017), and `ja.ts` is a trigger for
 both links.
+
+## F-242 (2026-10-20): Home's keys, and an anchor that stopped matching
+
+Home was rebuilt to `01`, and its catalogue moved with it: the reading block's eleven keys went,
+`01`'s three headings and the count keys came in both catalogues, and `home.what3` and `home.onDevice`
+took `01`'s words. The unused-key scan is what made the removal complete rather than partial.
+
+The e2e anchors moved too. `home.what1` is now one line of a three-line heading, and a Maestro text
+selector matches an element's whole text, so the anchor would have stopped matching on a device with
+every gate here green. The capture flow and the Atlas journey anchor on `home.onDevice` instead, which
+is one element on its own.

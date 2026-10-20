@@ -35,3 +35,9 @@ It is not worth writing for five keys. It becomes worth writing the first time s
 tell by reading whether a key is live.
 
 Related: [[an-unreached-token-is-unfinished-work]]
+
+## F-242 (2026-10-20): the reading block, removed with its words
+
+ADR-0138 removed Home's last-reading block, its no-readings card and its *Today* card. Their eleven
+keys left both catalogues in the same change, and the unused-key scan was the check that the
+removal was whole: a key left behind fails `i18n.test` as unused.

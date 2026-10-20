@@ -88,3 +88,11 @@ Related: [[an-unreached-token-is-unfinished-work]] ·
 A glyph toggle has no ground to paint, so the chooser's `accent.muted`/`accent` cannot apply.
 `glyph` reads the picture off the tree in both states: a filled shape in `active`, and none in
 `default`, so the fill is what changes. Each half has its own decoy.
+
+## F-242 (2026-10-20): a moved ink drawn as a mark
+
+`01`'s texture badge is a checker inked in the colour text on that sample takes (ADR-0137 D2). On a
+mid-tone that ink is moved (ADR-0116), so it is no token, and the colour-literal rule exempted a moved
+ink only as a text colour. The exemption now also admits it as a drawn mark's SVG `fill` on its
+sample — still by value, derived from the declared samples. The same value painted as a View's
+background is still a literal, and the existing decoy in `sample-ink.test` proves it.

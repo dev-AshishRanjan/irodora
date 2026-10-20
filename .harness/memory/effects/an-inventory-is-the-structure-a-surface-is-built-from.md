@@ -66,3 +66,11 @@ screen, another part's look-alike stood in). For an ENROLLED surface, a changed 
 test` red: every element needs a locator, and every locator an element. A decoy for each kind of
 locator shows it. The composer also
 reads each framed inventory's screen box to crop the mockup it shows.
+
+## F-242 (2026-10-20): a closed question moves its bindings
+
+Closing OQ-11 (ADR-0137) forced the inventory to follow its answer: `01`'s five badges and `25`'s three
+bound `oq:OQ-11`, which the gate refuses once the question is closed, so they bind
+`store:garments.N.material`. Two readings were corrected in the same change: the tiles' action
+`/wardrobe/[id]` named no route and now names `/wardrobe/with/[id]`, and `01`'s two pills record the
+caption step their text is drawn at.

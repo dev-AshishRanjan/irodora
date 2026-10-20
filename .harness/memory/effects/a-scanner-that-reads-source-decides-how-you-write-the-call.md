@@ -45,3 +45,12 @@ check — and the check keeps printing its cheerful summary over a smaller subje
 yesterday.
 
 [[a-check-that-gets-quieter-is-worse-than-one-that-fails]]
+
+## F-242 (2026-10-20): the reading route lost its only way in
+
+Home was the one route that pushed `/atlas/with/reading/[id]`, from its last-reading block. `01` draws
+no reading, so ADR-0138 removed the block, and the route went with it. It is declared in
+`unreachable-routes.json` with `closedBy: F-244`, because `03`'s *Wear It* draws the way in and F-244
+builds it; `verify-reachability` fails the day F-244 closes with the declaration still standing.
+Home's route now pushes three literals — the day's colour's combinations, a garment's, and the Lens —
+each one `verify-route-targets` can read.

@@ -46,3 +46,8 @@ Related: [[an-inventory-is-the-structure-a-surface-is-built-from]],
 `MARK`'s fields are recomputed from `14.splash.mark`'s readings, and `LOCKUP_APP` and
 `LOCKUP_SPLASH` from `01`'s and `14`'s, as ratios of the name's em (ADR-0123). Each has decoys:
 F-165's mark, and F-226's lockup and the snapped intervals where the instrument can tell them apart.
+
+## F-242 (2026-10-20): the texture badge
+
+`TextureBadge`'s 14 dp is the median of the ten sides of `01`'s five badge boxes, and its twelve cells
+are each badge's `raw.cells`. `texture-badge.test` recomputes both from `01.json`.
