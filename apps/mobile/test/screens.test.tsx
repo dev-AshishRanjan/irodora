@@ -43,7 +43,10 @@ import {
   Glyph,
   Illustration,
   STATE_TEST_IDS,
+  TAB_INDICATOR_TEST_ID,
+  TabBar,
   Text,
+  TextureBadge,
   ThemeProvider,
   VisionPreviewProvider,
   swatchAccessibleName,
@@ -52,6 +55,9 @@ import {
   type VisionMode,
   Wordmark,
 } from '@irodora/ui';
+import { colourOfTheDay, heroName, oklchLine, wardrobeCountLabel } from '../src/home';
+import { AppTabBar } from '../src/tabBar';
+import { TABS } from '../src/tabs';
 import {
   brokenFlexChains,
   carriesFigure,
@@ -488,9 +494,9 @@ function fakeHome(populated = false): HomeStore {
 /**
  * 01's WARDROBE PREVIEW, FILLED (F-242): five garments, so every tile and badge `01` draws is on the
  * tree. Four take a published colour and one a Lens reading (estimated, with its conditions), so the
- * preview carries both provenances; four record a material and one does not, so a badge is drawn
- * where one is recorded and absent where none is (ADR-0137). Home reads garments and nothing else
- * (ADR-0138), so there is no colour row here but a garment's own.
+ * preview carries both provenances. Each records a material, so each of 01's five badges is drawn
+ * (ADR-0137); a garment with none, and its absent badge, is home-states.test's case. Home reads
+ * garments and nothing else (ADR-0138), so there is no colour row here but a garment's own.
  */
 const HOME_GARMENT_HEXES = ['#4E5D6C', '#E8E4DA', '#5E7A5A', '#A8503E', '#5C4A64'] as const;
 const HOME_GARMENTS: readonly StoredGarment[] = HOME_GARMENT_HEXES.map((hex, i) => {
@@ -502,7 +508,7 @@ const HOME_GARMENTS: readonly StoredGarment[] = HOME_GARMENT_HEXES.map((hex, i) 
     deletedAt: null,
     type: 'shirt',
     name: null,
-    material: i === 2 ? null : ['Wool', 'Linen', null, 'Cotton', 'Silk'][i],
+    material: ['Wool', 'Linen', 'Cotton', 'Denim', 'Silk'][i],
     color: {
       id: `c${String(i + 1)}`,
       created_at: 100 - i,
@@ -535,6 +541,16 @@ const HOME_DAY = Date.UTC(2026, 8, 3, 12);
 
 /** Every sample a Home subject draws: the day's colour and the five garments' — data, not tokens. */
 const HOME_SAMPLES = ['#C5CFD4', ...HOME_GARMENT_HEXES];
+
+/** The populated subjects' coverage: counted against a profile, at FR-42's threshold. */
+const HOME_COVERAGE = { valid: 4, threshold: 60 } as const;
+
+/** The day's entry the Home subjects draw — the screen's own selection, never restated. */
+const homeToday = () => {
+  const today = colourOfTheDay(HOME_DAY);
+  if (today === null) throw new Error('the corpus is empty');
+  return today;
+};
 
 /**
  * The wardrobe port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device.
@@ -1125,7 +1141,7 @@ const SCREENS: readonly ConformanceSubject[] = [
         <Home
           store={fakeHome(true)}
           now={() => HOME_DAY}
-          coverage={{ valid: 4, threshold: 60 }}
+          coverage={HOME_COVERAGE}
           onOpenCombinations={() => undefined}
           onOpenGarment={() => undefined}
           onOpenLens={() => undefined}
@@ -5504,6 +5520,77 @@ const ENROLLED: readonly Enrolled[] = [
     },
   },
   {
+    /*
+     * 01, HOME (F-242), drawn as a person sees it: the screen over the tab bar its layout puts
+     * under it, so 01's tab elements are found on the same tree. The wardrobe is five garments with
+     * a material each, the pill counted against a profile, every action wired — 01 as drawn.
+     */
+    surface: '01.screen',
+    root: 'home.surface',
+    render: (theme) =>
+      draw(
+        <View testID="home.surface">
+          <Home
+            store={fakeHome(true)}
+            now={() => HOME_DAY}
+            coverage={HOME_COVERAGE}
+            onOpenCombinations={() => undefined}
+            onOpenGarment={() => undefined}
+            onOpenLens={() => undefined}
+          />
+          <AppTabBar
+            state={{ index: 0, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: {
+      // The product's name, which the Wordmark sets in Latin in both locales (ADR-0112).
+      '01.header.wordmark': { by: 'value', text: () => 'Irodora' },
+      // 01's three lines are one heading (ADR-0138 D7): the inventory's `home.tagline` is their join.
+      '01.header.tagline': {
+        by: 'value',
+        text: (locale) =>
+          (['home.what1', 'home.what2', 'home.what3'] as const)
+            .map((key) => message(locale, key))
+            .join('\n'),
+      },
+      // The cards are generic components, so each is found by its own id.
+      '01.hero': { by: 'testID', id: 'home.hero' },
+      '01.wardrobe': { by: 'testID', id: 'home.wardrobe' },
+      '01.colour-card': { by: 'testID', id: 'home.colourCard' },
+      // The hero's names and figures: the day's entry, through the screen's own functions.
+      '01.hero.sample.kanji': { by: 'value', text: () => homeToday().entry.name.kanji },
+      '01.hero.sample.kana': { by: 'value', text: () => homeToday().entry.name.kana },
+      '01.hero.sample.name': { by: 'value', text: () => heroName(homeToday().entry.name) },
+      '01.hero.sample.oklch': {
+        by: 'value',
+        text: (locale) => oklchLine(homeToday().derived.oklch, message(locale, 'coord.oklch')),
+      },
+      '01.wardrobe.count': {
+        by: 'value',
+        text: (locale) =>
+          wardrobeCountLabel(
+            HOME_GARMENTS.length,
+            HOME_COVERAGE,
+            (key) => message(locale, key),
+            locale === 'ja' ? 'japanese' : 'latin',
+          ),
+      },
+      '01.colour-card.note': { by: 'value', text: () => homeToday().entry.provenance.source },
+      // The indicator binds nothing and is no component: the bar names the active one (F-242).
+      '01.tabs.indicator': { by: 'testID', id: TAB_INDICATOR_TEST_ID },
+      // The inventory read the keys as `tabs.*`; the catalogue's are `tab.*` (F-145).
+      '01.tabs.home.label': { by: 'text', key: 'tab.home' },
+      '01.tabs.atlas.label': { by: 'text', key: 'tab.atlas' },
+      '01.tabs.lens.label': { by: 'text', key: 'tab.lens' },
+      '01.tabs.wardrobe.label': { by: 'text', key: 'tab.wardrobe' },
+      '01.tabs.profile.label': { by: 'text', key: 'tab.profile' },
+    },
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -5670,7 +5757,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
     };
 
     it('the real surfaces are clean as drawn, so each decoy below changes one thing', () => {
-      for (const surface of ['14.splash', '27.lens-working', '27.lens-refused']) {
+      for (const surface of ['01.screen', '14.splash', '27.lens-working', '27.lens-refused']) {
         const { json, live } = drawnAs(surface);
         expect({ [surface]: findingsFor(surface, json, live) }).toStrictEqual({ [surface]: [] });
       }
@@ -5744,6 +5831,38 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
           live.filter((n) => !(n.type === Glyph && n.name === 'glare')),
         ),
         '27.lens-refused.icon',
+      );
+    });
+
+    it('01: one badge gone is a finding naming all five, found four times of five (F-242)', () => {
+      const { json, live } = drawnAs('01.screen');
+      const first = live.findIndex((n) => n.type === TextureBadge);
+      expect(first).toBeGreaterThanOrEqual(0);
+      const found = findingsFor(
+        '01.screen',
+        json,
+        live.filter((_, i) => i !== first),
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain('01.wardrobe.tile-1.badge');
+      expect(found[0]).toContain('01.wardrobe.tile-5.badge');
+      expect(found[0]).toContain('found 4 time(s), needed 5');
+    });
+
+    it('01: the hero’s kanji is found by what it says, and the tab bar as itself (F-242)', () => {
+      const { json, live } = drawnAs('01.screen');
+      expectOnly(
+        findingsFor('01.screen', withoutText(json, homeToday().entry.name.kanji), live),
+        '01.hero.sample.kanji',
+      );
+      // A tab's word is also its accessible name, so it is the bar that is taken away here.
+      expectOnly(
+        findingsFor(
+          '01.screen',
+          json,
+          live.filter((n) => n.type !== TabBar),
+        ),
+        '01.tabs',
       );
     });
 
