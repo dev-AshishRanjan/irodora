@@ -65,6 +65,15 @@ export function t(locale: Locale, key: MessageKey): string {
 }
 
 /**
+ * A Japanese run a mockup sets beside the English in both locales: `05`'s *Colour Atlas •
+ * 日本に着想を得た色*, a season pill's *Spring 春*. It is the Japanese catalogue's own value, so the
+ * words are written once and the Japanese locale prints the same run (ADR-0142 D5, OQ-48's interim).
+ */
+export function japaneseRun(key: MessageKey): string {
+  return CATALOGUES.ja[key];
+}
+
+/**
  * Whether the engine named a key this catalogue has.
  *
  * A **narrowing rather than a cast**, so a key the catalogue lacks renders as a visible raw

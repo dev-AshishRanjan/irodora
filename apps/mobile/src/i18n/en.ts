@@ -64,10 +64,6 @@ export const en = {
    * the palette studio. The Atlas offered exactly one thing — a list — and the other three
    * ways of using a corpus were unreachable.
    */
-  'atlas.more': 'More ways in',
-  'atlas.openFinder': 'Search by name, hex or phrase',
-  'atlas.openCompare': 'Compare two colours',
-  'atlas.openPalettes': 'Build a palette',
   'detail.compareWith': 'Compare this with another colour',
   'detail.bookmark': 'Bookmark this colour',
   'compare.title': 'Compare two colours',
@@ -102,13 +98,23 @@ export const en = {
   'separation.severity':
     'Machado tabulates eleven steps; anything between two of them is interpolated.',
   'atlas.corpus': 'Corpus',
-  'atlas.colours': 'colours',
   // 05's count pill (F-246, ADR-0142 D2): "Original" is the catalogue's word for both classifications the
   // corpus holds (Irodora original); "Sourced" claimed a source it does not have.
   'atlas.countNoun': 'Original Colours',
-  'atlas.palettes': 'palettes',
+  // 05's header, field, filters and heading (F-246, ADR-0142, ADR-0143). The title's Japanese run is
+  // read from the Japanese catalogue in both locales (japaneseRun), so its words are written once.
+  'atlas.titleJa': 'Japanese-Inspired Colours',
+  'atlas.compare': 'Compare',
+  'atlas.finder': 'Finder',
+  'atlas.searchPlaceholder': 'Search kanji, romaji, family or #hex…',
+  'atlas.family': 'Colour Family',
+  'atlas.heading': 'Atlas',
+  'atlas.moreFilters': 'More filters',
+  'atlas.facetsClose': 'Close the filters and go back to the Atlas',
+  'atlas.facetsHandle': 'Filters panel',
+  'atlas.facetsHandleHint': 'Makes the filters panel larger or smaller',
+  'atlas.palettes': 'Palettes',
   'atlas.search': 'Search by name or reading',
-  'atlas.filters': 'Filters',
   'atlas.all': 'All',
   'atlas.clear': 'Clear',
   'atlas.showing': 'Showing',

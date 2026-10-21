@@ -150,7 +150,7 @@
     {
       "route": "/atlas",
       "file": "(tabs)/atlas/index.tsx",
-      "anchor": "atlas.title"
+      "anchor": "atlas.family"
     },
     {
       "route": "/atlas/[slug]",

@@ -9,6 +9,8 @@
 #
 # STEP 3 WALKS THE TAB BAR, not a button on Home. It used to tap `home.openAtlas`, one of the ten buttons Home carried until F-146 rewrote it as an editorial surface; F-145 had already made the Atlas a TAB. The journey kept tapping a control that no longer existed, and the generator caught it — the key was not in the catalogue. That is the point of a journey being generated from keys rather than from strings: a removed control fails the build instead of failing on a device.
 #
+# F-246 REBUILT THE ATLAS TO 05, AND THE ANCHORS MOVED WITH IT. The title is now one node holding *Colour Atlas • 日本に着想を得た色*, which a whole-text selector cannot find by its English alone, so the Atlas is recognised by *Colour Family*, a node of its own; the filters heading is gone, so its place is taken by *Compare*, one of 05's three pills; the field is found by 05's placeholder; and a card prints no English (ADR-0140), so the colour is found and opened by its kanji.
+#
 # Selectors resolved against corpus 2026.09.3 and the English catalogue.
 appId: com.irodora.app
 ---
@@ -17,15 +19,15 @@ appId: com.irodora.app
 - assertVisible: '100% On-Device Engine • Offline'
 - tapOn:
     id: 'tab-atlas'
-- assertVisible: 'Colour Atlas'
-- assertVisible: 'Filters'
-- tapOn: 'Search by name or reading'
+- assertVisible: 'Colour Family'
+- assertVisible: 'Compare'
+- tapOn: 'Search kanji, romaji, family or #hex…'
 - inputText: 'aki-batake'
-- assertVisible: 'Autumn Field'
-- tapOn: 'Autumn Field'
+- assertVisible: '秋畑'
+- tapOn: '秋畑'
 - assertVisible: '秋畑'
 - assertVisible: 'Where this colour came from'
 - assertVisible: 'Source'
 - assertVisible: 'Coordinates'
 - back
-- assertVisible: 'Colour Atlas'
+- assertVisible: 'Colour Family'

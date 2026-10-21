@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas'
-- assertVisible: 'Colour Atlas'
+- assertVisible: 'Colour Family'
 - waitForAnimationToEnd
 - takeScreenshot: capture

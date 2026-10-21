@@ -20,7 +20,9 @@ import {
   type BookmarkStore,
   type BookmarksValue,
 } from '../src/bookmarks';
-import { allEntries, familyLabel } from '../src/corpus';
+import { atlasCardName, atlasMatches, familyGroups } from '../src/atlas';
+import { allEntries, groupOf } from '../src/corpus';
+import { find } from '../src/finder';
 import { Atlas } from '../src/screens/Atlas';
 import { t } from '../src/i18n';
 
@@ -208,11 +210,24 @@ describe('the routes carry the controls ADR-0135 places (E-204)', () => {
 });
 
 describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
+  /*
+   * TIME HELD STILL, as screens.test.tsx holds it (F-158): since F-246 the Atlas mounts 05's *More
+   * filters* sheet, and a gorhom sheet's mapper ticks after the render and walks React Native's lazy
+   * native getters under this harness. Nothing here is about a frame, so no timer is ever advanced.
+   */
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   const entries = allEntries();
   const first = entries[0]!;
   const third = entries[2]!;
+  // A card is one control, named with everything it prints (ADR-0143 D8).
   const label = (e: (typeof entries)[number]): string =>
-    `${e.entry.name.kanji} ${e.entry.name.romaji} ${e.entry.name.en}`;
+    atlasCardName(e, (key) => t('en', key), 'latin');
   const count = (n: number): string =>
     `${t('en', 'atlas.showing')} ${String(n)} / ${String(entries.length)}`;
   const toggle = () => screen.getByRole('button', { name: t('en', 'atlas.bookmarkedOnly') });
@@ -220,7 +235,12 @@ describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
   const open = (bookmarked: ReadonlySet<string> | undefined, extra: object = {}) =>
     render(
       <ThemeProvider theme="dark">
-        <Atlas {...(bookmarked === undefined ? {} : { bookmarked })} {...extra} />
+        <Atlas
+          // Each card is a control only with a destination (ADR-0143 D8), so the route's is given.
+          onSelect={() => undefined}
+          {...(bookmarked === undefined ? {} : { bookmarked })}
+          {...extra}
+        />
       </ThemeProvider>,
     );
 
@@ -244,9 +264,10 @@ describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
    * than one entry, only one of them bookmarked: then the count is 1 with the toggle on and the
    * query's own count with it off, and a screen that ignored the toggle once a query was typed
    * fails one of the two. The word is chosen from the bundle, and the test says so if it stops
-   * holding.
+   * holding. It is a NAME and nothing else: 05's field also answers a family's words and a hex
+   * (ADR-0143 D1), and *midori*, the word this used, is now a family chip's too.
    */
-  const QUERY = 'midori';
+  const QUERY = 'kage';
   const matchingQuery = entries.filter((e) =>
     [
       e.entry.name.kanji,
@@ -262,10 +283,19 @@ describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
     expect(matchingQuery.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('has a query that is only a name: no family word, no phrase, no hex', () => {
+    // Everything the field matches is what the names match, so the counts below are the names'.
+    expect(entries.filter((e) => atlasMatches(e, QUERY))).toStrictEqual(matchingQuery);
+    for (const g of familyGroups())
+      for (const word of [g.romaji, g.kanji, g.en]) expect(word.toLowerCase()).not.toContain(QUERY);
+    // The Finder reads it as a name too: not a term of its lexicon, and not a hex.
+    expect(find(QUERY).kind).toBe('name');
+  });
+
   it('combines with the query: one of its matches bookmarked, one listed', () => {
     const kept = matchingQuery[1]!;
     open(new Set([kept.entry.slug, notMatching.entry.slug]), { initialBookmarkedOnly: true });
-    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), QUERY);
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.searchPlaceholder')), QUERY);
     expect(screen.getByText(count(1))).toBeTruthy();
     expect(screen.getByLabelText(label(kept))).toBeTruthy();
     expect(screen.queryByLabelText(label(matchingQuery[0]!))).toBeNull();
@@ -273,25 +303,26 @@ describe('the Atlas reads the set back (05, ADR-0135 D1, D3, D4)', () => {
 
   it('DECOY: toggled off, the same query lists every match, not only the bookmarked one', () => {
     open(new Set([matchingQuery[1]!.entry.slug, notMatching.entry.slug]));
-    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.search')), QUERY);
+    fireEvent.changeText(screen.getByLabelText(t('en', 'atlas.searchPlaceholder')), QUERY);
     expect(screen.getByText(count(matchingQuery.length))).toBeTruthy();
   });
 
   it('combines with a filter: two bookmarks in two families, one family chosen, one listed', () => {
-    // A family with more than one colour, so the filter alone would list more than the bookmark.
-    const inFamily = (e: (typeof entries)[number]) =>
-      entries.filter((x) => x.entry.taxonomy.family === e.entry.taxonomy.family).length;
-    const one = entries.find((e) => inFamily(e) >= 2)!;
-    expect(inFamily(one)).toBeGreaterThanOrEqual(2);
-    const other = entries.find((e) => e.entry.taxonomy.family !== one.entry.taxonomy.family)!;
+    // A family chip with more than one colour, so the chip alone would list more than the bookmark.
+    const group = (e: (typeof entries)[number]) => groupOf(e.entry.taxonomy.family);
+    const inGroup = (e: (typeof entries)[number]) =>
+      entries.filter((x) => group(x).group === group(e).group).length;
+    const one = entries.find((e) => inGroup(e) >= 2)!;
+    expect(inGroup(one)).toBeGreaterThanOrEqual(2);
+    const other = entries.find((e) => group(e).group !== group(one).group)!;
     open(new Set([one.entry.slug, other.entry.slug]), { initialBookmarkedOnly: true });
     expect(screen.getByText(count(2))).toBeTruthy();
-    const family = familyLabel(one.entry.taxonomy.family, 'en');
-    const radio = screen
-      .getAllByRole('radio')
-      .find((r) => String(r.props['accessibilityLabel']).startsWith(`${family} `));
-    if (radio === undefined) throw new Error(`no family filter for ${family}`);
-    fireEvent.press(radio);
+    // 05's family chips (ADR-0143 D3): a button each, named by its words.
+    const chip = screen
+      .getAllByRole('button')
+      .find((b) => String(b.props['accessibilityLabel']).startsWith(`${group(one).romaji} `));
+    if (chip === undefined) throw new Error(`no family chip for ${group(one).romaji}`);
+    fireEvent.press(chip);
     expect(screen.getByText(count(1))).toBeTruthy();
     expect(screen.getByLabelText(label(one))).toBeTruthy();
     expect(screen.queryByLabelText(label(other))).toBeNull();

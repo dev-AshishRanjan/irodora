@@ -1,80 +1,111 @@
 /**
- * The Colour Atlas — every published entry, reachable without a filter (FR-20).
+ * The Colour Atlas, as mockup `05` draws it (F-246; FR-20, FR-47).
  *
- * ## The acceptance criterion that shapes the layout
+ * ## What `05` draws, top to bottom
+ *
+ * - **The bar** (`05.header`): *Colour Atlas • 日本に着想を得た色* at the leading edge and the
+ *   overflow (`05.more`); under it the count pill (`05.count`) and three pills — *Compare*, *Finder*,
+ *   *Palettes* — then the bar's rule.
+ * - **The search** (`05.search`): one outlined field with its glyph, its placeholder the promise of
+ *   what it answers (ADR-0143 D1), and the bookmark toggle at its end (ADR-0135).
+ * - **The season pills** (`05.filters.season.*`): *All* and the four seasons, the chosen one filled
+ *   and led by its dot (ADR-0141).
+ * - **The family chips** (`05.filters.family.*`) under *Colour Family*: ADR-0108's order, each with
+ *   its group's dot, in a row that runs off the right edge (ADR-0143 D3, D4).
+ * - **The heading** *Atlas*, and the grid: two cards to a row, each a sample over its kanji and hex,
+ *   its romaji, its OKLCh line and the season it was authored with (ADR-0140).
+ *
+ * The tab bar under it is the tab layout's (C1).
+ *
+ * ## The acceptance criterion that shapes the list
  *
  * > Every corpus entry reachable in 3 interactions or fewer from the atlas root.
  *
- * So the root lists **the whole corpus**, and filters narrow it rather than reveal it. A
- * design where a family has to be chosen before anything appears would put every entry at two
- * interactions and would make the corpus feel smaller than it is — but the real objection is
- * that "reachable" would then depend on a filter set nobody enumerated. Listing everything
- * makes the criterion checkable by walking the rendered tree, which is what `screens.test.tsx`
+ * So the grid lists **the whole corpus**, and the field and the filters narrow it rather than reveal
+ * it. That makes the criterion checkable by reading the list's data, which is what `screens.test.tsx`
  * does.
  *
  * ## Every number here came from the bundle
  *
- * `hex` is `derived.hex`, computed by the engine at publish time and frozen. Nothing on this
- * screen converts a colour, and `verify-guards.mjs` boundary #24 is what stops that from being
- * a promise — recomputing a bundled value would look identical, pass every test, and return
- * *today's* engine's answer for a published version.
+ * `hex`, `oklch` and every dot are the engine's answers at publish time, frozen. Nothing on this
+ * screen converts a colour, and `verify-guards.mjs` boundary #24 is what stops that from being a
+ * promise — recomputing a bundled value would look identical, pass every test, and return *today's*
+ * engine's answer for a published version.
  *
- * ## Filters are values from the data, not a hand-written list
+ * ## The rules live in `../atlas.ts`
  *
- * `families()` reads the corpus. A family added by a future publish appears in the filter
- * without anyone editing this file; a hand-written list would silently omit it and the entries
- * would be unreachable by that route.
- *
- * **Family is shown as the corpus authored it**, in both locales. The corpus has no translated
- * taxonomy vocabulary and inventing one here would be putting words in the editor's mouth —
- * recorded as F-090 rather than papered over with a lookup table.
- *
- * ## The chips and the search field are components, not controls written here
- *
- * They started as a `Pressable` and a `TextInput` in this file, and the conformance suite
- * caught it: an interactive control built inside a screen is checked by nothing. `Chip` and
- * `SearchField` now live in `@irodora/ui` where the suite asks them to render focus, active,
- * disabled and loading differently — and this screen stays `static`, which is what a screen
- * composed of checked components should be.
+ * What the field matches, what the filters keep, what a card and the count say, which colour a chip's
+ * dot is: worked out there, pure, so the rules are written where somebody can disagree with them
+ * rather than in JSX.
  *
  * ## The bookmarked colours are read back here (F-237, ADR-0135)
  *
- * `06` bookmarks a corpus colour, so every bookmark is an entry this list already holds. The
- * search field carries a bookmark toggle at its trailing end: on, the list narrows to the
- * bookmarked entries, together with the query and every filter, and *Clear* turns it off with the
- * rest. It is screen state, never stored — a filter that narrowed the Atlas at the next launch would
- * hide the corpus behind a choice nobody remembers making. With nothing bookmarked it says so, in
- * `00`'s caption, because the way out is the toggle on this screen.
+ * `06` bookmarks a corpus colour, so every bookmark is an entry this list already holds. The search
+ * field carries a bookmark toggle at its trailing end: on, the list narrows to the bookmarked
+ * entries, together with the query and every filter, and *Clear* turns it off with the rest. It is
+ * screen state, never stored — a filter that narrowed the Atlas at the next launch would hide the
+ * corpus behind a choice nobody remembers making. With nothing bookmarked it says so, in `00`'s
+ * caption, because the way out is the toggle on this screen.
  */
 
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, View } from 'react-native';
-import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { FlatList, ScrollView, View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import {
   Appear,
   Arrival,
   Button,
+  Card,
+  Chip,
   ChoiceGroup,
   EmptyState,
   Row,
   Screen,
   SearchField,
+  Sheet,
   Stack,
   Swatch,
   Text,
+  useTheme,
 } from '@irodora/ui';
 import {
+  APP_BAR,
+  ATLAS_MEDIA_INSET,
+  ATLAS_SAMPLE,
+  atlasCardName,
+  atlasCountLabel,
+  atlasNarrowed,
+  atlasOklch,
+  atlasShown,
+  capitalisedRomaji,
+  CHROMA_KEYS,
+  COUNT_PILL,
+  FAMILY_CHIP,
+  familyDot,
+  familyGroups,
+  LIGHTNESS_KEYS,
+  MORE_GLYPH,
+  NAV_PILL,
+  NO_FILTERS,
+  SEARCH_FIELD,
+  SEARCH_GLYPH,
+  SEASON_KEYS,
+  SEASON_PILL,
+  SEASONS,
+  seasonLine,
+  TEMPERATURE_KEYS,
+  type AtlasFilters,
+  type Season,
+} from '../atlas';
+import {
   allEntries,
-  familyLabel,
   colorFor,
-  families,
   CORPUS_ENTRY_COUNT,
   CORPUS_LABEL,
-  CORPUS_PALETTE_COUNT,
   type PublishedEntry,
 } from '../corpus';
+import { japaneseRun, type MessageKey } from '../i18n/index';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
 
 /**
@@ -87,61 +118,13 @@ export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
  * Corpus vocabulary → catalogue key: written once, in `../atlas` (F-246), and re-exported here for
  * the screens that read them from the Atlas (the colour page).
  */
-import { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS } from '../atlas';
 export { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS };
-
-/** What the filter bar can narrow by. `family` is data-driven and handled separately. */
-interface Filters {
-  readonly family: string | null;
-  readonly temperature: keyof typeof TEMPERATURE_KEYS | null;
-  readonly lightness: keyof typeof LIGHTNESS_KEYS | null;
-  readonly chroma: keyof typeof CHROMA_KEYS | null;
-  readonly season: keyof typeof SEASON_KEYS | null;
-}
-
-const NO_FILTERS: Filters = {
-  family: null,
-  temperature: null,
-  lightness: null,
-  chroma: null,
-  season: null,
-};
-
-/**
- * Search across every form of the name, plus the slug.
- *
- * All four name forms, because a reader may know a colour by its kanji, its reading, its
- * romanisation or its English name, and a search that only matched one of them would be a
- * search that works in one language.
- */
-function matchesQuery(entry: PublishedEntry, query: string): boolean {
-  if (query.trim() === '') return true;
-  const q = query.trim().toLowerCase();
-  const { name, slug } = entry.entry;
-  return [name.kanji, name.kana, name.romaji, name.en, slug].some((v) =>
-    v.toLowerCase().includes(q),
-  );
-}
-
-function matchesFilters(entry: PublishedEntry, f: Filters): boolean {
-  const { taxonomy } = entry.entry;
-  if (f.family !== null && taxonomy.family !== f.family) return false;
-  if (f.temperature !== null && taxonomy.temperature !== f.temperature) return false;
-  if (f.lightness !== null && taxonomy.lightnessBand !== f.lightness) return false;
-  if (f.chroma !== null && taxonomy.chromaBand !== f.chroma) return false;
-  if (f.season !== null && !(taxonomy.season ?? []).includes(f.season)) return false;
-  return true;
-}
 
 export interface AtlasProps {
   /** The route supplies navigation. Absent, the screen still renders — which is how it is checked. */
   readonly onSelect?: (slug: string) => void;
   /**
-   * The three other ways of using a corpus (F-181).
-   *
-   * Each is a finished screen that sat on a route **nothing navigated to** — the finder, the
-   * comparison and the palette studio. The Atlas offered a list and nothing else, so a person
-   * could browse a corpus and could not search it, compare within it, or build from it.
+   * `05`'s three pills: *Compare*, *Finder*, *Palettes* (F-181, ADR-0143 D7).
    *
    * Optional and supplied by the route, like every destination here: a screen that called
    * `router.push` itself could not be rendered by the conformance suite.
@@ -162,103 +145,96 @@ export interface AtlasProps {
   readonly bookmarked?: ReadonlySet<string>;
   /** The toggle as the screen opens, for the reason `initialQuery` exists. */
   readonly initialBookmarkedOnly?: boolean;
+  /** The season pill chosen as the screen opens: the chosen pill's form, rendered (ADR-0141). */
+  readonly initialSeason?: Season;
+  /** *More filters* open as the screen opens: the sheet's tree, rendered (ADR-0143 D5). */
+  readonly initialFacetsOpen?: boolean;
 }
 
 /**
- * One entry, at photograph scale (F-147).
+ * One entry, as `05` draws a card (ADR-0140).
  *
- * ## What this replaces
+ * **One control** (ADR-0143 D8): the card is the button, and its name carries everything it prints
+ * and the English it does not. The sample inside takes the same action, so a tap on the colour is
+ * not swallowed by its own pressable, and is hidden from assistive technology so the card is
+ * announced once. Without a destination it is no control at all: a button that goes nowhere is
+ * worse than a card that is read.
  *
- * A 56px swatch beside three lines of CONCATENATED text — `${kanji} ${en}` on one line and
- * `${family} · ${temperature} · ${hex}` on another. Concatenation is the tell: five fields
- * flattened into two `Text` nodes because nothing had decided their relative weight. Giving each
- * its own node is what makes a hierarchy possible at all, and it is why the type scale had
- * nowhere to apply on this screen.
- *
- * ## The colour is the element, not an adornment on a row
- *
- * A full-width band, 180px tall, on the card the mockups draw a sample on (C11), its line moved per
- * sample where it must (F-233, ADR-0116).
- * The `Swatch` component is unchanged — it was never the defect. What was wrong is that the
- * artefact the product exists to show was the smallest considered thing on the screen.
- *
- * ## The name leads in Japanese
- *
- * Kanji at `title` (it was `display.2` until F-226, ADR-0113), the kana beneath it, and the romaji and English subordinate to both.
- * That order is the corpus's own: these are Japanese colours and the English is a gloss. The hex
- * is `numeric` — tabular, so a column of them scans — and deliberately the smallest thing here.
+ * **The kanji leads**, in the sans `05` draws (C6), with the hex beside it; the romaji under them,
+ * then the engine's OKLCh line, on every card; and the season the entry was authored with, or
+ * nothing where none was — never an era, which no entry holds.
  */
-function AtlasEntry({
+function AtlasCard({
   item,
-  locale,
+  index,
   script,
   t,
   onSelect,
 }: {
   readonly item: PublishedEntry;
-  readonly locale: 'en' | 'ja';
+  readonly index: number;
   readonly script: 'latin' | 'japanese';
   readonly t: (key: MessageKey) => string;
-  readonly onSelect: () => void;
+  readonly onSelect: (() => void) | undefined;
 }): React.JSX.Element {
   const { entry, derived } = item;
+  const season = seasonLine(item, t, script);
+  const press = onSelect === undefined ? {} : { onPress: onSelect };
   return (
-    <Pressable
-      accessibilityRole="button"
-      /*
-        The accessible name carries what a sighted reader gets from the hierarchy above: the
-        Japanese name, its reading, and the English. Without the reading a screen reader
-        announces kanji it may not voice correctly, and the romaji is what makes the entry
-        findable by somebody who cannot read the character.
-      */
-      accessibilityLabel={`${entry.name.kanji} ${entry.name.romaji} ${entry.name.en}`}
-      onPress={onSelect}
-      style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+    <Card
+      level="1"
+      radius="sm"
+      padding="sm"
+      fill
+      mediaInset={ATLAS_MEDIA_INSET}
+      {...(onSelect === undefined
+        ? {}
+        : { onPress: onSelect, label: atlasCardName(item, t, script) })}
+      testID={`atlas.card.${String(index)}`}
+      media={
+        <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          {/*
+            `derived.hex` — the engine's answer AT PUBLISH TIME, not recomputed here. The Color
+            comes from the entry's own authored XYZ, so this path converts nothing at all.
+          */}
+          <Swatch
+            width="fill"
+            height={ATLAS_SAMPLE}
+            corner="sm"
+            keyline
+            name={entry.name.en}
+            hex={derived.hex}
+            color={colorFor(entry)}
+            {...press}
+          />
+        </View>
+      }
     >
-      <Stack gap="md">
-        {/*
-          `derived.hex` — the engine's answer AT PUBLISH TIME, not recomputed here. The Color
-          comes from the entry's own authored XYZ, so this path converts nothing at all.
-        */}
-        <Swatch
-          caption="name"
-          name={entry.name.en}
-          hex={derived.hex}
-          color={colorFor(entry)}
-          size={ENTRY_HEIGHT}
-        />
-        <Stack gap="xs">
-          <Text size="title" color="foreground" script="japanese">
+      <Stack gap="xs">
+        {/* A long kanji and the hex share a narrow card: the row wraps, never clips (§4 E3). */}
+        <Row justify="between" align="start" wrap>
+          <Text size="body" face="gothic" weight={400} color="foreground" script="japanese">
             {entry.name.kanji}
           </Text>
-          <Text size="body" color="foreground.2" script="japanese">
-            {entry.name.kana}
+          <Text size="caption" color="foreground.2" numeric>
+            {derived.hex}
           </Text>
-          <Text size="label" color="foreground.2" script={script}>
-            {`${entry.name.romaji} · ${entry.name.en}`}
+        </Row>
+        <Text size="label" weight={500} color="foreground" script="latin">
+          {capitalisedRomaji(entry.name.romaji)}
+        </Text>
+        <Text size="caption" color="foreground.2" numeric>
+          {atlasOklch(derived.oklch, t('coord.oklch'))}
+        </Text>
+        {season === null ? null : (
+          <Text size="caption" color="foreground.3.card" script={script}>
+            {season}
           </Text>
-          <Row gap="sm">
-            <Text size="caption" color="foreground.2" numeric selectable>
-              {derived.hex}
-            </Text>
-            <Text size="caption" color="foreground.2" script={script}>
-              {`${familyLabel(entry.taxonomy.family, locale)} · ${t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}`}
-            </Text>
-          </Row>
-        </Stack>
+        )}
       </Stack>
-    </Pressable>
+    </Card>
   );
 }
-
-/**
- * How tall a colour is drawn in the list.
- *
- * Enough to judge, which is the criterion — a colour is judged by area, and 56px of it beside
- * three lines of text is a label rather than a sample. Not the full viewport either: browsing
- * 120 entries has to stay browsing.
- */
-const ENTRY_HEIGHT = 180;
 
 export function Atlas({
   onSelect,
@@ -268,334 +244,426 @@ export function Atlas({
   initialQuery = '',
   bookmarked,
   initialBookmarkedOnly = false,
+  initialSeason,
+  initialFacetsOpen = false,
 }: AtlasProps): React.JSX.Element {
-  const { t, script, locale } = useMessages();
+  const { t, script } = useMessages();
+  const { colors } = useTheme();
   const [query, setQuery] = useState(initialQuery);
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [filters, setFilters] = useState<AtlasFilters>(
+    initialSeason === undefined ? NO_FILTERS : { ...NO_FILTERS, season: initialSeason },
+  );
   const [bookmarkedOnly, setBookmarkedOnly] = useState(initialBookmarkedOnly);
+  const [facetsOpen, setFacetsOpen] = useState(initialFacetsOpen);
 
   const entries = useMemo(() => allEntries(), []);
-  const familyOptions = useMemo(() => families(), []);
+  const groups = useMemo(() => familyGroups(), []);
   // Only when the route supplied a set: a toggle that is not drawn narrows nothing.
   const onlyBookmarked = bookmarked !== undefined && bookmarkedOnly;
-  const shown = entries.filter(
-    (e) =>
-      matchesQuery(e, query) &&
-      matchesFilters(e, filters) &&
-      (!onlyBookmarked || bookmarked.has(e.entry.slug)),
-  );
+  const shown = atlasShown(entries, query, filters, onlyBookmarked ? bookmarked : null);
   /*
    * NONE BOOKMARKED IS NOT NOTHING MATCHING. Counted over this corpus's entries, not the set: a
    * bookmark for a slug the pinned corpus lacks (only a restore from another version can make one)
    * is kept, and never listed, so it does not make the list any less empty.
    */
   const noneBookmarked = onlyBookmarked && !entries.some((e) => bookmarked.has(e.entry.slug));
+  const narrowed = atlasNarrowed(query, filters, onlyBookmarked);
 
-  const active =
-    query.trim() !== '' || Object.values(filters).some((v) => v !== null) || onlyBookmarked;
+  const clearAll = (): void => {
+    setFilters(NO_FILTERS);
+    setQuery('');
+    setBookmarkedOnly(false);
+  };
+  const toggleGroup = (group: (typeof groups)[number]['group']): void => {
+    const next = new Set(filters.groups);
+    if (next.has(group)) next.delete(group);
+    else next.add(group);
+    setFilters({ ...filters, groups: next });
+  };
+
+  /** A heading in `05`'s form: the family label's caption at 500. The facets sheet heads its rows so. */
+  const label = (words: string): React.JSX.Element => (
+    <Text size="caption" weight={500} color="foreground" script={script} heading>
+      {words}
+    </Text>
+  );
 
   /**
-   * One filter, as a GROUP rather than as a row of buttons (F-186).
-   *
-   * These were five rows of `Chip`s. Each chip is a `button` carrying `selected` and a tick
-   * in its name, so a screen reader heard *"Warm, button, selected. Cool, button. Neutral,
-   * button."* — three unrelated buttons, one of which happens to be on. The group, the count
-   * and the position were all missing, and none of them can be put on a chip: they are
-   * properties of the SET.
-   *
-   * `ChoiceGroup` is `role="radiogroup"` with `role="radio"` items, so the same five rows
-   * now announce *"Temperature, radio group. Warm, radio button, selected, 1 of 3."*
-   *
-   * **The horizontal scroll is gone with it**, and that is a gain rather than a loss: the group
-   * wraps, so an option is never off-screen with nothing to say it is there. A horizontally
-   * scrolling row of filters hides its own contents, which is the shape somebody reports as
-   * "the filter does not have X" when X is two swipes to the right.
+   * One facet in the season row's form (ADR-0143 D5): a single choice with *All*, the chosen pill
+   * filled in `accent` and led by its dot (ADR-0141).
    */
-  function FilterRow<K extends string>({
-    label,
-    options,
-    selected,
-    onChange,
-  }: {
-    readonly label: string;
-    readonly options: readonly {
-      readonly value: K;
-      readonly label: string;
-      readonly numeric?: boolean;
-    }[];
-    readonly selected: K | null;
-    readonly onChange: (value: K | null) => void;
-  }): React.JSX.Element {
-    return (
-      <ChoiceGroup
-        label={label}
-        clearLabel={t('atlas.all')}
-        options={options}
-        value={selected}
-        onChange={onChange}
+  const pills = {
+    height: SEASON_PILL,
+    selectedFill: 'accent',
+    selectedEdge: false,
+    size: 'caption',
+    gap: 'xs',
+  } as const;
+
+  /** The three pills under the bar, as `05` draws them: outlined, 18.5 dp, the words at caption. */
+  const nav = (key: MessageKey, onPress: (() => void) | undefined): React.JSX.Element | null =>
+    onPress === undefined ? null : (
+      <Button
+        label={t(key)}
+        variant="secondary"
+        edge="border"
+        height={NAV_PILL}
+        step="caption"
+        inset="sm"
         script={script}
+        onPress={onPress}
       />
     );
-  }
+
+  const countLabel = atlasCountLabel(CORPUS_ENTRY_COUNT, t, script);
 
   /**
-   * Everything above the entries: the corpus line, the search field, the filters, the count.
+   * Everything above the grid: the field, the seasons, the families, the rule and the heading.
    *
    * It is the FlatList's HEADER rather than a sibling, and that is the whole reason this screen
    * can virtualise. A `VirtualizedList` inside a plain `ScrollView` is a documented React
    * Native error — so `Screen` stops scrolling and the list scrolls instead, header and all.
    */
   const header = (
-    <Stack gap="lg">
-      {/*
-        The version is on the root screen rather than buried in a settings page. Which corpus
-        the app holds is what makes every value on every detail screen reproducible (FR-25).
-      */}
-      <Text size="label" color="foreground.2" script={script} numeric>
-        {`${t('atlas.corpus')} ${CORPUS_LABEL} · ${String(CORPUS_ENTRY_COUNT)} ${t('atlas.colours')} · ${String(CORPUS_PALETTE_COUNT)} ${t('atlas.palettes')}`}
-      </Text>
-
+    <Stack gap="sm">
       {/*
         THE BOOKMARKED COLOURS, READ BACK (F-237, ADR-0135 D1): a toggle at the field's trailing
         end, in 06's glyph. On is the glyph filled and an announced `selected` (D2).
       */}
-      <SearchField
-        label={t('atlas.search')}
-        value={query}
-        onChangeText={setQuery}
-        {...(bookmarked === undefined
-          ? {}
-          : {
-              trailing: {
-                glyph: 'bookmark',
-                label: t('atlas.bookmarkedOnly'),
-                selected: bookmarkedOnly,
-                onPress: () => {
-                  setBookmarkedOnly(!bookmarkedOnly);
+      <View style={{ paddingHorizontal: nativeSpacing.md }}>
+        <SearchField
+          label={t('atlas.searchPlaceholder')}
+          value={query}
+          onChangeText={setQuery}
+          height={SEARCH_FIELD}
+          icon="search"
+          iconSize={SEARCH_GLYPH}
+          size="caption"
+          {...(bookmarked === undefined
+            ? {}
+            : {
+                trailing: {
+                  glyph: 'bookmark',
+                  label: t('atlas.bookmarkedOnly'),
+                  selected: bookmarkedOnly,
+                  onPress: () => {
+                    setBookmarkedOnly(!bookmarkedOnly);
+                  },
+                  testID: 'atlas.bookmarked',
                 },
-                testID: 'atlas.bookmarked',
-              },
-            })}
+              })}
+        />
+      </View>
+
+      {/*
+        THE SEASONS (ADR-0143 D2): a single choice with *All*. In English each pill carries its
+        season's kanji, as 05 draws *Spring 春*; in Japanese the word is already the kanji.
+      */}
+      <View style={{ paddingHorizontal: nativeSpacing.md }}>
+        <ChoiceGroup
+          label={t('filter.season')}
+          clearLabel={t('atlas.all')}
+          options={SEASONS.map((s) => ({
+            value: s,
+            label: t(SEASON_KEYS[s]),
+            ...(script === 'latin' ? { kanji: japaneseRun(SEASON_KEYS[s]) } : {}),
+          }))}
+          value={filters.season}
+          onChange={(season) => {
+            setFilters({ ...filters, season });
+          }}
+          pills={pills}
+          script={script}
+        />
+      </View>
+
+      <View style={{ paddingHorizontal: nativeSpacing.md }}>{label(t('atlas.family'))}</View>
+
+      {/*
+        THE FAMILIES (ADR-0143 D3, D4): filter chips, any number on — OR within the row, AND with
+        everything else. The row runs off the right edge, as 05 draws it, so it scrolls; each dot is
+        its group's medoid, a corpus colour with its own provenance (rule 12).
+      */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: nativeSpacing.md, gap: nativeSpacing.xs }}
+      >
+        {groups.map((g) => (
+          <Chip
+            key={g.group}
+            label={g.romaji}
+            kanji={g.kanji}
+            dot={familyDot(g, entries)}
+            ground="surface.1"
+            height={FAMILY_CHIP}
+            size="caption"
+            selected={filters.groups.has(g.group)}
+            onPress={() => {
+              toggleGroup(g.group);
+            }}
+            testID={`atlas.family.${g.group}`}
+          />
+        ))}
+      </ScrollView>
+
+      <View
+        testID="atlas.filters.rule"
+        style={{
+          height: 1,
+          marginHorizontal: nativeSpacing.md,
+          backgroundColor: colors.border,
+        }}
       />
 
       {/*
-        THE OTHER THREE WAYS OF USING A CORPUS (F-181).
-
-        Under the search field rather than above the filters, because they are alternatives to
-        browsing rather than refinements of it — and a person who has started typing has already
-        told us which one they wanted.
-
-        Each renders only when the route supplies it, so the block is absent rather than dead in
-        the conformance suite. The subject supplies all three, which is what puts them inside
-        every accessibility and contrast run.
+        THE HEADING, AND WHAT NARROWS THE LIST BESIDE IT (ADR-0143 D6): *Showing n / N* and *Clear*
+        sit at its trailing end only while anything narrows the list — empty space in 05's drawn state.
       */}
-      {onOpenFinder === undefined &&
-      onOpenCompare === undefined &&
-      onOpenPalettes === undefined ? null : (
-        <Stack gap="sm">
-          <Text size="caption" color="foreground.2" script={script} heading>
-            {t('atlas.more')}
+      <View style={{ paddingHorizontal: nativeSpacing.md }}>
+        <Row justify="between" align="center" gap="sm" wrap>
+          <Text size="label" weight={600} color="foreground" script={script} heading>
+            {t('atlas.heading')}
           </Text>
-          {onOpenFinder === undefined ? null : (
-            <Button
-              label={t('atlas.openFinder')}
-              variant="secondary"
-              onPress={onOpenFinder}
-              script={script}
-            />
-          )}
-          {onOpenCompare === undefined ? null : (
-            <Button
-              label={t('atlas.openCompare')}
-              variant="secondary"
-              onPress={onOpenCompare}
-              script={script}
-            />
-          )}
-          {onOpenPalettes === undefined ? null : (
-            <Button
-              label={t('atlas.openPalettes')}
-              variant="secondary"
-              onPress={onOpenPalettes}
-              script={script}
-            />
-          )}
-        </Stack>
-      )}
-
-      <Text size="caption" color="foreground.2" script={script} heading>
-        {t('atlas.filters')}
-      </Text>
-
-      <FilterRow
-        label={t('filter.family')}
-        options={familyOptions.map((f) => ({
-          value: f.family,
-          label: `${familyLabel(f.family, locale)} ${String(f.count)}`,
-          numeric: true,
-        }))}
-        selected={filters.family}
-        onChange={(family) => {
-          setFilters({ ...filters, family });
-        }}
-      />
-      <FilterRow
-        label={t('filter.temperature')}
-        options={(Object.keys(TEMPERATURE_KEYS) as (keyof typeof TEMPERATURE_KEYS)[]).map((v) => ({
-          value: v,
-          label: t(TEMPERATURE_KEYS[v]),
-        }))}
-        selected={filters.temperature}
-        onChange={(temperature) => {
-          setFilters({ ...filters, temperature });
-        }}
-      />
-      <FilterRow
-        label={t('filter.lightness')}
-        options={(Object.keys(LIGHTNESS_KEYS) as (keyof typeof LIGHTNESS_KEYS)[]).map((v) => ({
-          value: v,
-          label: t(LIGHTNESS_KEYS[v]),
-        }))}
-        selected={filters.lightness}
-        onChange={(lightness) => {
-          setFilters({ ...filters, lightness });
-        }}
-      />
-      <FilterRow
-        label={t('filter.chroma')}
-        options={(Object.keys(CHROMA_KEYS) as (keyof typeof CHROMA_KEYS)[]).map((v) => ({
-          value: v,
-          label: t(CHROMA_KEYS[v]),
-        }))}
-        selected={filters.chroma}
-        onChange={(chroma) => {
-          setFilters({ ...filters, chroma });
-        }}
-      />
-      <FilterRow
-        label={t('filter.season')}
-        options={(Object.keys(SEASON_KEYS) as (keyof typeof SEASON_KEYS)[]).map((v) => ({
-          value: v,
-          label: t(SEASON_KEYS[v]),
-        }))}
-        selected={filters.season}
-        onChange={(season) => {
-          setFilters({ ...filters, season });
-        }}
-      />
-
-      {active ? (
-        <Row gap="sm">
-          <Text size="label" color="foreground.2" script={script} numeric>
-            {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('atlas.clear')}
-            onPress={() => {
-              setFilters(NO_FILTERS);
-              setQuery('');
-              setBookmarkedOnly(false);
-            }}
-            style={{ minHeight: 44, justifyContent: 'center' }}
-          >
-            <Text size="label" color="link" script={script}>
-              {t('atlas.clear')}
-            </Text>
-          </Pressable>
+          {narrowed ? (
+            <Row align="center" gap="sm">
+              <Text size="caption" color="foreground.2" script={script} numeric>
+                {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
+              </Text>
+              <Button
+                label={t('atlas.clear')}
+                variant="plain"
+                step="caption"
+                script={script}
+                onPress={clearAll}
+              />
+            </Row>
+          ) : null}
         </Row>
-      ) : null}
-
-      {shown.length === 0 ? (
-        // 00's empty (F-236): the search and the filters that would change it are on this screen —
-        // and with nothing bookmarked, the toggle that would (ADR-0135 D3).
-        noneBookmarked ? (
-          <EmptyState
-            message={t('atlas.bookmarkedNone')}
-            hint={t('atlas.bookmarkedNoneHint')}
-            resolvedHere
-            script={script}
-          />
-        ) : (
-          <EmptyState
-            message={t('atlas.empty')}
-            hint={t('atlas.emptyHint')}
-            resolvedHere
-            script={script}
-          />
-        )
-      ) : null}
+      </View>
     </Stack>
   );
 
   return (
     /*
-      `scroll={false}` — and this is F-104's shape, so it is worth being explicit.
-
-      That defect was a fixed `View` whose content below the fold could not be reached at all.
-      This is not that: the FlatList below scrolls, and it scrolls the header with it. What
-      would reproduce F-104 is turning scrolling off here and NOT giving the list the height to
-      scroll in, which is why the list carries `flex: 1` rather than inheriting a size.
+      `scroll={false}` and `bleed` — F-104's shape, so it is worth being explicit. That defect was a
+      fixed `View` whose content below the fold could not be reached at all. This is not that: the
+      FlatList below scrolls, header and all, and carries `flex: 1` rather than inheriting a size.
+      The frame takes no inset because 05's family row runs to the right edge and its grid to the
+      tab bar: each block pads itself.
     */
-    <Screen title={t('atlas.title')} script={script} scroll={false} gap="md">
+    <Screen
+      scroll={false}
+      bleed
+      script={script}
+      appBar={{
+        height: APP_BAR,
+        inset: nativeSpacing.md,
+        gap: nativeSpacing.xs,
+        rule: true,
+        script,
+        title: {
+          text: t('atlas.title'),
+          ja: japaneseRun('atlas.titleJa'),
+          layout: 'inline',
+          align: 'leading',
+          placement: 'bar',
+          size: 'body',
+          weight: 600,
+        },
+        trailing: {
+          icons: [
+            {
+              glyph: 'more',
+              label: t('atlas.moreFilters'),
+              size: MORE_GLYPH,
+              onPress: () => {
+                setFacetsOpen(true);
+              },
+            },
+          ],
+        },
+        below: (
+          /* The count and the three pills share a line as 05 draws it, and wrap where they cannot (E3). */
+          <Row justify="between" align="center" gap="xs" wrap>
+            <View>
+              <Chip
+                form="badge"
+                fill="surface.2"
+                icon="list"
+                label={countLabel}
+                // WHICH CORPUS, ONE SWIPE FROM THE ROOT (FR-25, ADR-0142): 05 draws no version line.
+                name={`${countLabel}, ${t('atlas.corpus')} ${CORPUS_LABEL}`}
+                height={COUNT_PILL}
+                size="caption"
+                numeric
+                script={script}
+                testID="atlas.count"
+              />
+            </View>
+            <Row align="center" gap="xs" wrap>
+              {nav('atlas.compare', onOpenCompare)}
+              {nav('atlas.finder', onOpenFinder)}
+              {nav('atlas.palettes', onOpenPalettes)}
+            </Row>
+          </Row>
+        ),
+      }}
+    >
       {/*
-        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the entries the first frame draws stagger in;
-        an entry scrolled into view, or re-mounted by the list's windowing, is simply there.
-        The scope draws no view, so the list's `flex: 1` chain is untouched.
+        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the cards the first frame draws stagger in; a card
+        scrolled into view, or re-mounted by the list's windowing, is simply there. The scope draws
+        no view, so the list's `flex: 1` chain is untouched.
       */}
       <Arrival>
         <FlatList
           data={shown}
+          numColumns={2}
           keyExtractor={(item) => item.entry.slug}
           ListHeaderComponent={header}
-          /*
-            THE EDITORIAL RHYTHM, and the two steps whose exemption named this feature.
-
-            IT WAS TWO INTERVALS AND IS NOW ONE. `xl5` (96) separated the CONTROLS from the WORK
-            — a break rather than a gap — and `xl4` (56) separated one entry from the next. F-227
-            replaced the scale with the mockups' own (ADR-0103), whose top step is 48, and both
-            snapped onto it: the break and the gap are the same size until `05` is built to its
-            mockup (F-246), which is where this screen's rhythm comes from.
-          */
-          ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xxl }}
-          ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xxl }} />}
+          ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.md }}
+          ListEmptyComponent={
+            // 00's empty (F-236): the search and the filters that would change it are on this
+            // screen — and with nothing bookmarked, the toggle that would (ADR-0135 D3).
+            <View style={{ paddingHorizontal: nativeSpacing.md }}>
+              {noneBookmarked ? (
+                <EmptyState
+                  message={t('atlas.bookmarkedNone')}
+                  hint={t('atlas.bookmarkedNoneHint')}
+                  resolvedHere
+                  script={script}
+                />
+              ) : (
+                <EmptyState
+                  message={t('atlas.empty')}
+                  hint={t('atlas.emptyHint')}
+                  resolvedHere
+                  script={script}
+                />
+              )}
+            </View>
+          }
+          columnWrapperStyle={{ paddingHorizontal: nativeSpacing.md }}
+          ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
           renderItem={({ item, index }) => (
             /*
-              THE ENTRANCE (F-144). Each entry fades and rises, staggered behind the one above it
-              for the first few rows and then together — 120 rows staggered individually would
-              take seven seconds, which is a loading screen rather than an entrance.
-
-              `Appear` WRAPS the entry rather than animating it. The colour itself is never
-              interpolated: the wrapper's opacity moves and the sample underneath is either drawn
-              or not. A transition applied to the `Swatch` would cross two colours the engine
-              never produced, and `verify-motion` rejects exactly that shape.
+              TWO TO A ROW, `sm` APART (05's 10 dp): each cell padded `xs` on its inner side. A CELL
+              FLEXES ACROSS THE ROW, AT MOST HALF OF IT: its width is the row's share (a lone last card
+              stays half), and its height is the row's by stretch, which the card fills — so both cards
+              in a row are one height, as 05 draws them (195.5 and 195.5, 184 and 184), whether or not
+              each prints a season.
+              THE ENTRANCE (F-144) wraps the card rather than animating it: the colour itself is
+              never interpolated, and `verify-motion` rejects a transition on a sample.
             */
-            <Appear index={index}>
-              <AtlasEntry
-                item={item}
-                locale={locale}
-                script={script}
-                t={t}
-                onSelect={() => {
-                  onSelect?.(item.entry.slug);
-                }}
-              />
-            </Appear>
+            <View
+              style={{
+                flex: 1,
+                maxWidth: '50%',
+                ...(index % 2 === 0
+                  ? { paddingRight: nativeSpacing.xs }
+                  : { paddingLeft: nativeSpacing.xs }),
+              }}
+            >
+              <Appear index={index} fill>
+                <AtlasCard
+                  item={item}
+                  index={index}
+                  script={script}
+                  t={t}
+                  onSelect={
+                    onSelect === undefined
+                      ? undefined
+                      : () => {
+                          onSelect(item.entry.slug);
+                        }
+                  }
+                />
+              </Appear>
+            </View>
           )}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: nativeSpacing.xl }}
+          contentContainerStyle={{
+            paddingTop: nativeSpacing.xl,
+            paddingBottom: nativeSpacing.md,
+          }}
           showsVerticalScrollIndicator={false}
           /*
-            Tuned for the device criterion 4 names rather than left at the defaults. A full-width
-            entry is ~260px tall, so a 640px viewport holds between two and three: rendering ten
-            ahead is roughly four screens of runway, which is what keeps a fast flick from hitting
-            blank cells on a four-year-old mid-range phone.
+            Tuned for the device criterion 4 names rather than left at the defaults: three rows of
+            cards fill a 640 dp viewport, so six is the first screen and ten windows ahead is the
+            runway that keeps a fast flick from hitting blank cells on a four-year-old phone.
           */
           initialNumToRender={6}
           windowSize={10}
           removeClippedSubviews
         />
       </Arrival>
+
+      {/*
+        MORE FILTERS (ADR-0143 D5): FR-20's facets 05 does not draw, behind its overflow, in 03's
+        floating sheet and 05's own parts — each a heading and a single choice in the season row's form.
+      */}
+      <Sheet
+        form="floating"
+        open={facetsOpen}
+        onOpenChange={setFacetsOpen}
+        title={t('atlas.moreFilters')}
+        closeLabel={t('atlas.facetsClose')}
+        handleLabel={t('atlas.facetsHandle')}
+        handleHint={t('atlas.facetsHandleHint')}
+        testID="atlas.facets"
+      >
+        <Stack gap="md">
+          <Stack gap="sm">
+            {label(t('filter.temperature'))}
+            <ChoiceGroup
+              label={t('filter.temperature')}
+              clearLabel={t('atlas.all')}
+              options={(Object.keys(TEMPERATURE_KEYS) as (keyof typeof TEMPERATURE_KEYS)[]).map(
+                (v) => ({ value: v, label: t(TEMPERATURE_KEYS[v]) }),
+              )}
+              value={filters.temperature}
+              onChange={(temperature) => {
+                setFilters({ ...filters, temperature });
+              }}
+              pills={pills}
+              script={script}
+            />
+          </Stack>
+          <Stack gap="sm">
+            {label(t('filter.lightness'))}
+            <ChoiceGroup
+              label={t('filter.lightness')}
+              clearLabel={t('atlas.all')}
+              options={(Object.keys(LIGHTNESS_KEYS) as (keyof typeof LIGHTNESS_KEYS)[]).map(
+                (v) => ({ value: v, label: t(LIGHTNESS_KEYS[v]) }),
+              )}
+              value={filters.lightness}
+              onChange={(lightness) => {
+                setFilters({ ...filters, lightness });
+              }}
+              pills={pills}
+              script={script}
+            />
+          </Stack>
+          <Stack gap="sm">
+            {label(t('filter.chroma'))}
+            <ChoiceGroup
+              label={t('filter.chroma')}
+              clearLabel={t('atlas.all')}
+              options={(Object.keys(CHROMA_KEYS) as (keyof typeof CHROMA_KEYS)[]).map((v) => ({
+                value: v,
+                label: t(CHROMA_KEYS[v]),
+              }))}
+              value={filters.chroma}
+              onChange={(chroma) => {
+                setFilters({ ...filters, chroma });
+              }}
+              pills={pills}
+              script={script}
+            />
+          </Stack>
+        </Stack>
+      </Sheet>
     </Screen>
   );
 }

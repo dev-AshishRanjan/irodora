@@ -45,6 +45,18 @@ function textOf(node: TestNode, out: string[] = []): string[] {
 
 const shown = (node: React.JSX.Element): string => textOf(draw(node)).join(' ');
 
+/*
+ * TIME HELD STILL, as screens.test.tsx holds it (F-158): since F-246 the Atlas mounts 05's *More
+ * filters* sheet, and a gorhom sheet's mapper ticks after the render and walks React Native's lazy
+ * native getters under this harness. Nothing here is about a frame, so no timer is ever advanced.
+ */
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 /** Every authoring slug a published entry uses. Read from the corpus, never listed. */
 const SLUGS = [...new Set(allEntries().map((e) => e.entry.taxonomy.family))];
 const ENTRY = allEntries()[0]!;
@@ -58,7 +70,7 @@ describe('the app is actually rendering in Japanese', () => {
   it('proves the locale mock took effect', () => {
     // Without this, "no English slug appears" would also be true of a screen rendering nothing,
     // and of a mock that silently failed to apply.
-    expect(shown(<Atlas />)).toContain('色の一覧');
+    expect(shown(<Atlas />)).toContain('色図鑑');
   });
 });
 

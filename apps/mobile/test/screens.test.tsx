@@ -1195,7 +1195,8 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Atlas',
     shows: showing(ATLAS_STATES),
     // `static`, like Home — and it took a rewrite to earn that. The screen's interactive parts
-    // are Chip, SearchField and Swatch, each registered in packages/ui where the suite asks
+    // are Card, Chip, ChoiceGroup, Button, SearchField and Swatch, each registered in packages/ui
+    // where the suite asks
     // them to render focus, active, disabled and loading differently. A SCREEN has none of
     // those states; its controls do.
     kind: 'static',
@@ -1208,6 +1209,8 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <Atlas
+          // Each card a control (ADR-0143 D8), so its name and target are inside every run.
+          onSelect={() => undefined}
           onOpenFinder={() => undefined}
           onOpenCompare={() => undefined}
           onOpenPalettes={() => undefined}
@@ -1227,6 +1230,28 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Atlas bookmarked={BOOKMARKED} initialBookmarkedOnly />, theme),
+  },
+  {
+    /*
+     * A SEASON CHOSEN (F-246, ADR-0141): the chosen pill filled in `accent` and led by its dot, the
+     * list narrowed, and *Showing* and *Clear* on the heading row (ADR-0143 D6).
+     */
+    name: 'screens/Atlas (a season chosen)',
+    shows: showing(ATLAS_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Atlas initialSeason="autumn" />, theme),
+  },
+  {
+    /*
+     * MORE FILTERS OPEN (F-246, ADR-0143 D5): the overflow's sheet, its three facets in the season
+     * row's form, so every one of them is inside the accessibility and contrast runs.
+     */
+    name: 'screens/Atlas (more filters open)',
+    shows: showing(ATLAS_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Atlas initialFacetsOpen />, theme),
   },
   {
     /*

@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas'
-- assertVisible: '色の一覧'
+- assertVisible: '色の系統'
 - waitForAnimationToEnd
 - takeScreenshot: capture
