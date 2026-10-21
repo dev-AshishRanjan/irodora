@@ -67,7 +67,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 600
       },
       "icon": null,
@@ -75,7 +75,7 @@
       "binding": "static:atlas.title",
       "action": null,
       "raw": {
-        "emDp": 26
+        "emDp": 17.8
       },
       "copy": {
         "shape": "heading",
@@ -104,7 +104,7 @@
       "icon": "more",
       "illustration": null,
       "binding": null,
-      "action": "open:atlas.menu",
+      "action": "open:atlas.facets",
       "copy": null
     },
     {
@@ -127,7 +127,11 @@
       "tokens": {
         "bg": "level2"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "list",
       "illustration": null,
       "binding": "corpus:entries.count",
@@ -157,7 +161,11 @@
       "tokens": {
         "border": "border.subtle"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.compare",
@@ -187,11 +195,15 @@
       "tokens": {
         "border": "border.subtle"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.finder",
-      "action": "navigate:/atlas/finder",
+      "action": "navigate:/atlas/find",
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -217,7 +229,11 @@
       "tokens": {
         "border": "border.subtle"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.palettes",
@@ -275,7 +291,11 @@
         "border": "border.subtle",
         "radius": "md"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "search",
       "illustration": null,
       "binding": "static:atlas.searchPlaceholder",
@@ -309,7 +329,11 @@
         "bg": "action.primary",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.season.all",
@@ -340,7 +364,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.season.spring",
@@ -374,7 +402,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.season.summer",
@@ -405,7 +437,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.season.autumn",
@@ -436,7 +472,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.season.winter",
@@ -505,7 +545,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.ao",
@@ -543,7 +587,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.aka",
@@ -578,7 +626,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.midori",
@@ -610,7 +662,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.murasaki",
@@ -642,7 +698,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.cha",
@@ -674,7 +734,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:family.kuro",
@@ -883,13 +947,16 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 600
       },
       "icon": null,
       "illustration": null,
       "binding": "static:atlas.heading",
       "action": null,
+      "raw": {
+        "emDp": 14.4
+      },
       "copy": {
         "shape": "heading",
         "script": "latin"
@@ -1339,7 +1406,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-17",
+      "binding": "corpus:entry.taxonomy.season",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1376,7 +1443,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-17",
+      "binding": "corpus:entry.taxonomy.season",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1783,7 +1850,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-17",
+      "binding": "corpus:entry.taxonomy.season",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1851,7 +1918,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-17",
+      "binding": "corpus:entry.taxonomy.season",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -2036,6 +2103,46 @@
         "w": 360,
         "h": 20
       }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around the button label \"Compare\": notation, not copy",
+      "box": {
+        "x": 429,
+        "y": 93,
+        "w": 80,
+        "h": 17
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around the button label \"Finder\": notation, not copy",
+      "box": {
+        "x": 544,
+        "y": 93,
+        "w": 64,
+        "h": 17
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around the button label \"Palettes\": notation, not copy",
+      "box": {
+        "x": 642,
+        "y": 93,
+        "w": 78,
+        "h": 17
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "\"Color\" in an en-GB screen that spells \"Colour\" twice",
+      "box": {
+        "x": 36,
+        "y": 342,
+        "w": 58,
+        "h": 22
+      }
     }
   ],
   "departures": [
@@ -2058,6 +2165,36 @@
       "rule": "E1",
       "element": "05.card-3.oklch",
       "why": "#F4A7B9 is printed as OKLCh 0.74 / 0.08 / 15°; it is 0.808 / 0.093 / 4.1° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "05.count",
+      "why": "“Sourced” is a provenance claim the corpus does not make: every entry is an Irodora original (ADR-0065); the pill says “Original”, the catalogue’s word for both classifications it holds (ADR-0142 D2)"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-4",
+      "why": "card 4 draws no OKLCh line; no entry lacks one, and the fourth card is whatever the filters leave, so every card prints it (OQ-18, ADR-0140 D1)"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-1.era",
+      "why": "“Heian Era”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-3.era",
+      "why": "“Heian”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-4.era",
+      "why": "“Edo Era”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)"
+    },
+    {
+      "rule": "E3",
+      "element": "05.filters.season.all",
+      "why": "the chosen pill is drawn as a fill swap with no mark; the product’s accessibility standard and the blocking selection-treatment rule give a chosen pill its leading dot (OQ-43, ADR-0141)"
     },
     {
       "rule": "E1",

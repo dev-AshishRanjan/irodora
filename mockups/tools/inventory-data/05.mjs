@@ -20,6 +20,9 @@ const season = (key, box, selected = false) =>
     tokens: selected
       ? { bg: 'action.primary', radius: 'pill' }
       : { border: 'border.subtle', radius: 'pill' },
+    // F-246: "Spring 春" inks 21 px with descenders and a kanji — about 10.5 dp an em by the line-box
+    // rule, so the caption step (the reading stays here, not as raw.emDp: the caption's census).
+    type: text('sans', 'caption'),
     binding: `static:atlas.season.${key}`,
     action: `select:filter.season.${key}`,
     copy: { shape: 'label', script: key === 'all' ? 'latin' : 'mixed' },
@@ -32,6 +35,8 @@ const family = (key, box, measuredBg) => [
   el(`05.filters.family.${key}`, 'ui:Chip', box, {
     tokens: { bg: 'level1', border: 'border.subtle', radius: 'pill' },
     ...(measuredBg ? { measured: { bg: measuredBg } } : {}),
+    // F-246: "Ao 青" inks 19 px with its kanji — about 10.8 dp an em, the caption step.
+    type: text('sans', 'caption'),
     binding: `corpus:family.${key}`,
     action: `select:filter.family.${key}`,
     copy: { shape: 'label', script: 'mixed' },
@@ -129,8 +134,9 @@ const cardParts = cards.map(([card, swatch, kanji, hex, romaji, oklch, era], i) 
     era: part(n, 'era', era, {
       tokens: { fg: 'text.tertiary' },
       type: text('sans', 'caption'),
-      // era is empty for all 120 entries (§8); what this line shows is OQ-17's to answer
-      binding: 'oq:OQ-17',
+      // era is empty for all 120 entries (§8): the line is the entry's authored season, and absent
+      // where none is (OQ-17, closed by ADR-0140)
+      binding: 'corpus:entry.taxonomy.season',
       copy: { shape: 'caption', script: 'latin' },
       raw: { emDp: 10.3 },
     }),
@@ -152,26 +158,36 @@ export default {
     el('05.title', 'ui:Text', B(35, 27, 392, 48), {
       parent: '05.header',
       tokens: { fg: 'text.primary' },
-      type: text('sans', 'title', 600),
+      // F-246 re-measured it: "Colour Atlas" inks 26 px tall (C, l and t, ascender height ≈ 0.73 em,
+      // so 17.8 dp) and its six kanji 30 px tall over 172 px wide (≈ 17 dp an em, 14.3 dp each).
+      // F-220's 26 was the line box read as the em; the drawn width cannot hold six kanji at 26.
+      type: text('sans', 'body', 600),
       binding: 'static:atlas.title',
       copy: { shape: 'heading', script: 'mixed' },
-      raw: { emDp: 26 },
+      raw: { emDp: 17.8 },
     }),
     el('05.more', 'ui:Button', B(704, 45, 24, 6), {
       parent: '05.header',
       icon: 'more',
-      action: 'open:atlas.menu',
+      // F-246 (ADR-0143 D5): the overflow opens the facets 05 does not draw.
+      action: 'open:atlas.facets',
     }),
     el('05.count', 'ui:Chip', B(35, 77, 211, 42), {
       parent: '05.header',
       tokens: { bg: 'level2' },
       icon: 'list',
+      // F-246: "120 Sourced Colours" inks 17 px (caps and digits, ≈ 0.73 em) — about 11.6 dp by
+      // height and 8.5 by width; the caption step either way.
+      type: text('sans', 'caption'),
       binding: 'corpus:entries.count',
       copy: { shape: 'badge', script: 'latin' },
     }),
     el('05.compare', 'ui:Button', B(412, 79, 112, 40), {
       parent: '05.header',
       tokens: { border: 'border.subtle' },
+      // F-246: "[Compare]" inks 17 px, brackets spanning the descender — about 8.5 dp an em, the
+      // caption step. The brackets are notation, not copy (ADR-0142 D3; notDesign below).
+      type: text('sans', 'caption'),
       binding: 'static:atlas.compare',
       action: 'navigate:/atlas/compare',
       copy: { shape: 'label', script: 'latin' },
@@ -179,13 +195,19 @@ export default {
     el('05.finder', 'ui:Button', B(534, 82, 88, 37), {
       parent: '05.header',
       tokens: { border: 'border.subtle' },
+      // F-246: "[Compare]" inks 17 px, brackets spanning the descender — about 8.5 dp an em, the
+      // caption step. The brackets are notation, not copy (ADR-0142 D3; notDesign below).
+      type: text('sans', 'caption'),
       binding: 'static:atlas.finder',
-      action: 'navigate:/atlas/finder',
+      action: 'navigate:/atlas/find',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('05.palettes', 'ui:Button', B(628, 82, 105, 37), {
       parent: '05.header',
       tokens: { border: 'border.subtle' },
+      // F-246: "[Compare]" inks 17 px, brackets spanning the descender — about 8.5 dp an em, the
+      // caption step. The brackets are notation, not copy (ADR-0142 D3; notDesign below).
+      type: text('sans', 'caption'),
       binding: 'static:atlas.palettes',
       action: 'navigate:/atlas/palettes',
       copy: { shape: 'label', script: 'latin' },
@@ -198,6 +220,8 @@ export default {
     el('05.search', 'ui:SearchField', B(35, 203, 698, 53), {
       tokens: { border: 'border.subtle', radius: 'md' },
       icon: 'search',
+      // F-246: the placeholder inks 20 px with ascenders and descenders — about 10 dp an em, caption.
+      type: text('sans', 'caption'),
       binding: 'static:atlas.searchPlaceholder',
       action: 'adjust:filter.query',
       copy: { shape: 'placeholder', script: 'latin' },
@@ -225,9 +249,11 @@ export default {
     el('05.filters-rule', null, B(35, 435, 698, 2), { tokens: { fg: 'border.subtle' } }),
     el('05.heading', 'ui:Text', B(35, 462, 65, 23), {
       tokens: { fg: 'text.primary' },
-      type: text('sans', 'body', 600),
+      // F-246 measured it: "Atlas" inks 21 px (A, t and l, ≈ 0.73 em), so about 14.4 dp: label.
+      type: text('sans', 'label', 600),
       binding: 'static:atlas.heading',
       copy: { shape: 'heading', script: 'latin' },
+      raw: { emDp: 14.4 },
     }),
     // ---- the grid, first row
     c1.card,
@@ -301,6 +327,27 @@ export default {
       note: 'a prompt label printed as a section title',
       box: B(36, 165, 360, 20),
     },
+    // F-246 (ADR-0142 D3, D4): notation and a misspelling, inside elements that are design.
+    {
+      what: 'garbled-text',
+      note: 'square brackets around the button label "Compare": notation, not copy',
+      box: B(429, 93, 80, 17),
+    },
+    {
+      what: 'garbled-text',
+      note: 'square brackets around the button label "Finder": notation, not copy',
+      box: B(544, 93, 64, 17),
+    },
+    {
+      what: 'garbled-text',
+      note: 'square brackets around the button label "Palettes": notation, not copy',
+      box: B(642, 93, 78, 17),
+    },
+    {
+      what: 'garbled-text',
+      note: '"Color" in an en-GB screen that spells "Colour" twice',
+      box: B(36, 342, 58, 22),
+    },
   ],
   departures: [
     {
@@ -322,6 +369,36 @@ export default {
       rule: 'E1',
       element: '05.card-3.oklch',
       why: '#F4A7B9 is printed as OKLCh 0.74 / 0.08 / 15°; it is 0.808 / 0.093 / 4.1° (§4 E1) — the line shows the engine’s conversion',
+    },
+    {
+      rule: 'E1',
+      element: '05.count',
+      why: '“Sourced” is a provenance claim the corpus does not make: every entry is an Irodora original (ADR-0065); the pill says “Original”, the catalogue’s word for both classifications it holds (ADR-0142 D2)',
+    },
+    {
+      rule: 'E1',
+      element: '05.card-4',
+      why: 'card 4 draws no OKLCh line; no entry lacks one, and the fourth card is whatever the filters leave, so every card prints it (OQ-18, ADR-0140 D1)',
+    },
+    {
+      rule: 'E1',
+      element: '05.card-1.era',
+      why: '“Heian Era”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)',
+    },
+    {
+      rule: 'E1',
+      element: '05.card-3.era',
+      why: '“Heian”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)',
+    },
+    {
+      rule: 'E1',
+      element: '05.card-4.era',
+      why: '“Edo Era”: no entry holds an era (ADR-0065); the line is the authored season, absent where none is (OQ-17, ADR-0140)',
+    },
+    {
+      rule: 'E3',
+      element: '05.filters.season.all',
+      why: 'the chosen pill is drawn as a fill swap with no mark; the product’s accessibility standard and the blocking selection-treatment rule give a chosen pill its leading dot (OQ-43, ADR-0141)',
     },
     {
       rule: 'E1',

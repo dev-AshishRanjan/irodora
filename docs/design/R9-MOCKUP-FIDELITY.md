@@ -53,8 +53,13 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
 - misspellings and garbled text (*"Toggle Switche"*, *"Sutions"*, *"Formall"*, *"palalettes"*,
   *"coliurs"*, *"Teaser for iur typography"*, the unreadable lines in `18`'s report preview);
 - line-art drawn **outside** a device frame. Line-art **inside** the screen is design;
-- a page cut off by the tab bar where it scrolls on — `01`'s colour card: the render is one scroll
-  position, the page scrolls, and nothing is cut (`F-242`).
+- a page cut off by the tab bar where it scrolls on — `01`'s colour card, `05`'s second row of cards:
+  the render is one scroll position, the page scrolls, and nothing is cut (`F-242`, `F-246`);
+- square brackets inside an outlined pill — `05`'s *[Compare] [Finder] [Palettes]*: the outline already
+  says "button", and a bracket inside it is the wireframe's placeholder notation, as `06`'s bracketed
+  names are (`F-246`, ADR-0142 D3). OQ-23 still asks the same of `13 16 17 18`'s headings and roles;
+- *"Color"* on a screen that spells *"Colour"* twice (`05`'s family label): the catalogue is en-GB
+  (`F-246`, ADR-0142 D4).
 
 **Pixels and tokens agree.** The README token table is the declared value; the rendered pixels
 were measured (dominant colours, 6-bit quantised) and match it within JPEG noise:
@@ -107,6 +112,11 @@ rule 3 make this non-negotiable, and the mockups show why:
   (it is `44.37 / -2.85 / -9.23`) and OKLCh `0.490 / 0.035 / 240.2°` (it is `0.519 / 0.028 /
   242.7°`); its "Display-P3" triplet is the sRGB values ÷ 255, not a P3 conversion; `05` renders
   `#EB6EA5`, a light pink, as deep crimson.
+- **`05`'s count and its cards' last line**: *"120 Sourced Colours"* claims a source the corpus does
+  not have — every entry is an Irodora original, so the pill says *Original* (ADR-0142 D2). *"Heian Era"*
+  and *"Edo Era"* name eras no entry holds: the line is the season the entry was authored with, and is
+  absent where none is; and every card prints its OKLCh line, which 05's fourth card omits
+  (ADR-0140).
 - **Texture drawn inside a sample**: `12`'s fabric sample carries a woven texture. The sample is the
   colour (or the stored photograph where the binding is a photo), so `FabricSwatch` draws the colour
   and its pinked edge, not the weave (`F-233`).
@@ -247,12 +257,18 @@ smallest lightness move (ADR-0116).
 **Tap targets** meet 44 dp (iOS) / 48 dp (Android) through the hit area, not the drawn size — the
 chip stays the size the mockup draws.
 
+**A chosen pill carries its mark** (`F-246`, ADR-0141, OQ-43). `05` draws its chosen season pill as a
+fill swap with no mark. WCAG 2.2's own note would let an inversion pass, but ACCESSIBILITY §4 asks a
+highlight **and** a mark, and the blocking `selection-treatment` rule reports a fill alone, so the
+chosen pill takes the leading dot `12`, `15` and `17` draw — about 10.5 dp wider than drawn.
+
 **A line that does not fit wraps; it is never clipped** (`F-242`). NFR-8 (WCAG 2.2 SC 1.4.4) allows no
 loss of content, and a mockup draws one language at one width at 1× text. Where a row it draws on one
 line holds more than that line — in Japanese, on a 360 or 320 dp phone, or at 200 % text — its last
 element wraps below the first, keeping its own size: on `01`, the on-device pill under the tagline, the
-count pill under *Wardrobe Preview*, and the colour card's heading onto a second line. Truncation is
-OQ-49's separate question for the tab bar's words.
+count pill under *Wardrobe Preview*, and the colour card's heading onto a second line; on `05`, the
+title, the count and pills row, the season row, a card's kanji and hex, and the heading row
+(`F-246`). Truncation is OQ-49's separate question for the tab bar's words.
 
 ### E4 — A required capability no mockup draws
 
@@ -342,6 +358,13 @@ Preserved, built from the mockup's own components, and listed here so it is visi
     is announced.
 
   F-255 and F-257 keep both.
+- **The facets `05` does not draw** (FR-20; `F-246`,
+  [ADR-0143](../adr/0143-the-atlas-controls-do-what-05-draws-and-its-overflow-holds-the-facets-05-does-not-draw.md)).
+  FR-20 filters by family, season, temperature, lightness, chroma and era; `05` draws season and
+  family. Its overflow *…* (`05.more`) opens *More filters*: `03`'s floating sheet holding
+  temperature, lightness and chroma, each a single choice in `05`'s pill form (no era while no entry
+  holds one). *Showing n / N* and *Clear* sit at the trailing end of the *Atlas* heading row, and only
+  while anything narrows the list, so `05`'s drawn state is unchanged (ADR-0135 D4's line, moved).
 
 ---
 
@@ -682,6 +705,7 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `03` | Hex · OKLCh · CIELAB; *"95% Confidence"* | the reading; `provenance.confidence` ∈ [0,1], printed by `confidenceText` — one format, with what the number means ([ADR-0124](../adr/0124-every-printed-figure-is-a-defined-computation-and-none-of-them-is-a-match.md)) | `F-222` |
 | `03` | *"97% Match"* | `similarityPercent` (FR-7, ADR-0048), floored, with *Similar* — the drawn word does not ship (ADR-0124) | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | `04` | ΔE00, ΔL\*, ΔC\*, ΔH and their readings | the FR-48 metric set (FR-74); the readings `deltaE00Band` and `axisReading` over `deltaE00Terms` — one table ([ADR-0125](../adr/0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md)) | `F-222` |
+| `05` | the count; each card's hex, OKLCh and last line; the family chips' dots | `CORPUS_ENTRY_COUNT`; engine derivation at 3, 3, 1 decimals; the authored season, or nothing (ADR-0140); each family group's medoid entry, a corpus colour with its provenance (ADR-0143 D4) | `F-246` |
 | `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season | engine conversions — P3 is a real conversion; taxonomy, where era is empty for all 120 | exists |
 | `07` | personal fit %, CVD separation %, contrast | FR-29, FR-5, FR-3 (ratio and Lc apart) | exists |
 | `08` | ΔE00 · ΔEok · ΔL\* · ΔC\* · ΔH · WCAG · APCA · three separations | FR-48, FR-3, FR-5; the four readings beside ΔE00 and its components, ADR-0125's table | exists; readings `F-222` |
@@ -751,8 +775,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
-| **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
-| **OQ-18** | `05`'s fourth card has no OKLCh line. Does every card carry it? | `F-246` |
 | **OQ-19** | `06` draws two screen widths (479 px above, 667 px below). Which is the screen? | `F-247` |
 | **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
 | **OQ-23** | `13 16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-257` `F-260` `F-263` |
@@ -771,7 +793,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-47** | `01`, the governing tab bar (C1), draws only Home active, its glyph filled. What does an active Atlas, Lens, Wardrobe or Profile tab draw: (a) its outline glyph with `01`'s indicator and ink; (b) a filled glyph — lens and profile have filled drawings only on the tab bars C1 supersedes (`02`, `15`, `18`), and atlas and wardrobe have none; or (c) no fill on any tab, Home included, departing from `01`? (a) ships until it is answered (F-234). | `F-267` |
 | **OQ-46** | The line around a sample rests on the product's own promise (ACCESSIBILITY.md §5), not on WCAG, and ADR-0116 keeps it per sample. It draws **a line where the mockups draw none**: where an element binds no keyline (19, 21, 09, 17, 23, 15, three of five strips) a line appears on 44 · 57 · 58 · 42 of 120 corpus colours. And its direction follows the step count: on the heroes' own colour it moves **dark** where `01` and `06` draw a light line. Keep the promise as ADR-0116 applies it, drop it where the mockup draws no line, or move the line toward the drawn lightness? | `F-267` |
 | **OQ-45** | `04`, `10` and `23` draw their joined samples 46.5, 60 and 45.5 dp tall, under ADR-0095's 77 dp floor for a pair a person judges (a sample must subtend the observer its ΔE00 was fit for). Follow the drawn height (golden rule 14), keep the floor (rule 11: never overstate accuracy), or keep it only where a figure is shown beside the pair? F-233 leaves `Strip`'s height as it is until this is answered. **Extended by F-233's review:** `04` also draws a light seam between its two members (#B7C1CA) and a bright outline on the right member only (#CAD1D9), where `Strip` draws no line where members meet (ADR-0095's argument) and treats both alike. Follow the seam and the one-sided outline, or keep ADR-0095's rule? | `F-245` `F-251` `F-260` |
-| **OQ-43** | `05` draws its selected season chip as a fill swap with no mark; ACCESSIBILITY §4 asks for a highlight + checkmark, and `12 15 17` mark a chosen pill with a leading dot. Does golden rule 13 force the dot onto `05`'s chip? A segmented row is a different case — an unchosen segment draws no shape, so its fill is a shape appearing (F-232) | `F-246` |
 | **OQ-42** | No mockup draws a font that failed to load: fall back to the platform face silently, say so, or something else? Today the splash would never hide | `F-302` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
 | **OQ-38** | `18`'s report envelope draws a signature — the word *Signed*, written in a script face (`18.report.preview.envelope.signature`). It is TYPE, not a drawing: traced into paths it is a word pretending to be a picture, and set as text it needs a script face the product does not bundle (ADR-0057 bundles a Japanese subset; `F-226` ships the serif). It is also the one drawing that makes a claim about a person having signed something. Trace it, set it in a bundled face, or drop the element? | `F-229` `F-263` |
@@ -781,6 +802,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-17**, **OQ-18** | Every Atlas card prints its OKLCh line; its last line is the season the entry was authored with, absent where none is; no era is printed | [ADR-0140](../adr/0140-every-atlas-card-prints-its-oklch-line-ends-in-its-authored-season-and-prints-no-era.md) |
+| **OQ-43** | The chosen pill carries its leading dot, as `12`, `15` and `17` draw a choice | [ADR-0141](../adr/0141-the-chosen-season-pill-on-05-carries-its-leading-dot.md) |
 | **OQ-11** | The checkered badge on a garment tile marks a garment whose material is recorded, and is absent where none is: one mark as `01` draws it, in the ink text on that sample takes, hidden from assistive technology; the tile's name says the material in words | [ADR-0137](../adr/0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md) |
 | **OQ-14** | Each screen's page inset is its own mockup's, snapped to the scale: `01`'s 36.5 dp is `xl`, 18–20 dp is `md`; each surface feature applies its own, and `Screen`'s default does not move | [ADR-0139](../adr/0139-each-screens-page-inset-is-its-own-mockups-snapped-and-homes-is-xl.md) |
 | **OQ-40** | Saved outfits are read back on the Wardrobe (`11`), through a *Garments · Lookbook* choice directly above its grid in `10.source`'s form; an entry is read-only, in `13`'s vocabulary, and its score is stored and never recomputed | [ADR-0136](../adr/0136-the-lookbook-is-read-back-on-the-wardrobe-through-a-garments-lookbook-choice-and-a-saved-outfit-is-never-rescored.md) |

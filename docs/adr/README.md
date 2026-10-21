@@ -155,6 +155,11 @@ Two rules that matter more than the format:
 | [0137](0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md) | The texture badge marks a garment whose material is recorded, and is absent where none is | Accepted |
 | [0138](0138-home-leads-with-the-days-corpus-colour-as-01-binds-it-and-draws-no-reading.md) | Home leads with the day's corpus colour as `01` binds it, and draws no reading | Accepted |
 | [0139](0139-each-screens-page-inset-is-its-own-mockups-snapped-and-homes-is-xl.md) | Each screen's page inset is its own mockup's, snapped; Home's is `xl` | Accepted |
+| [0140](0140-every-atlas-card-prints-its-oklch-line-ends-in-its-authored-season-and-prints-no-era.md) | Every Atlas card prints its OKLCh line, ends in the season it was authored with, and prints no era | Accepted |
+| [0141](0141-the-chosen-season-pill-on-05-carries-its-leading-dot.md) | The chosen season pill on 05 carries its leading dot | Accepted |
+| [0142](0142-the-atlas-says-what-05-says-made-true.md) | The Atlas says what 05 says, made true | Accepted |
+| [0143](0143-the-atlas-controls-do-what-05-draws-and-its-overflow-holds-the-facets-05-does-not-draw.md) | The Atlas's controls do what 05 draws, and its overflow holds the facets 05 does not draw | Accepted |
+| [0144](0144-the-sweep-reads-an-element-a-conflict-replaces-as-declared.md) | The sweep reads an element a conflict replaces as declared, against the inventory's own record | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
