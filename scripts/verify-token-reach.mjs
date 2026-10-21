@@ -680,6 +680,36 @@ function withoutStep(overrides, file, step) {
   return overrides;
 }
 
+/**
+ * Every spelling of one token as a quoted literal (F-246). The check reads a literal in any of the
+ * three quotes (`stripComments` keeps all three) — `colors['surface.1']`, a JSX prop's
+ * `ground="surface.1"`, a template — so a plant that removed one spelling left the token reached,
+ * and the "last reader removed" half failed while the check was right. It is `withoutStep`'s second
+ * point for colour tokens: F-246's Atlas is the first surface to read `surface.1` as a JSX prop,
+ * which is how the map case below found it.
+ */
+const quoted = (name) =>
+  new RegExp(
+    String.raw`(['"` + '`' + String.raw`])${name.replaceAll('.', String.raw`\.`)}\1`,
+    'gu',
+  );
+
+function withoutQuoted(overrides, file, name) {
+  const path = join(ROOT, file);
+  const source = overrides.get(file) ?? stripComments(readFileSync(path, 'utf8'));
+  if (!quoted(name).test(source))
+    throw new Error(`the plant is stale: ${file} does not quote ${name}`);
+  overrides.set(file, source.replace(quoted(name), 'REMOVED_BY_PROVE'));
+  return overrides;
+}
+
+/** Every reader file of a token as a quoted literal, in any of the three quotes. */
+function readersOfQuoted(name) {
+  return sources()
+    .filter((f) => quoted(name).test(f.source))
+    .map((f) => rel(f.path));
+}
+
 /** Every reader file of a literal, so a token can be removed from all of them at once. */
 function readersOfLiteral(needle) {
   return sources()
@@ -759,9 +789,9 @@ const PLANT = <Text size="wordmark" color="foreground">x</Text>;
 
   // The decoy, and the half that matters: five components read `border.strong`. Removing ONE
   // must NOT fire. A check that reported a token while a reader remained would be switched off.
-  const readers = readersOfLiteral(`'border.strong'`);
+  const readers = readersOfQuoted('border.strong');
   let one = new Map();
-  one = without(one, readers[0], `'border.strong'`);
+  one = withoutQuoted(one, readers[0], 'border.strong');
   const partial = await run(one);
   say(
     !named(partial, 'colour token', 'border.strong') && readers.length > 1,
@@ -770,7 +800,7 @@ const PLANT = <Text size="wordmark" color="foreground">x</Text>;
   );
 
   let all = new Map();
-  for (const file of readers) all = without(all, file, `'border.strong'`);
+  for (const file of readers) all = withoutQuoted(all, file, 'border.strong');
   const removed = await run(all);
   say(
     named(removed, 'colour token', 'border.strong'),
@@ -823,10 +853,10 @@ const PLANT = <Text size="wordmark" color="foreground">x</Text>;
   const MAP_SYMBOL = 'nativeElevation';
   const VIA_MAP = 'surface.1';
   const mapFiles = readersOfLiteral(MAP_SYMBOL);
-  const literalReaders = readersOfLiteral(`'${VIA_MAP}'`).filter((f) => !mapFiles.includes(f));
+  const literalReaders = readersOfQuoted(VIA_MAP).filter((f) => !mapFiles.includes(f));
 
   let literalsGone = new Map();
-  for (const file of literalReaders) literalsGone = without(literalsGone, file, `'${VIA_MAP}'`);
+  for (const file of literalReaders) literalsGone = withoutQuoted(literalsGone, file, VIA_MAP);
   const throughMapOnly = await run(new Map(literalsGone));
   say(
     !named(throughMapOnly, 'colour token', VIA_MAP) && !named(base, 'colour token', VIA_MAP),

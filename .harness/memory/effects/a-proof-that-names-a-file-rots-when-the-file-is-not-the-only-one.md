@@ -41,4 +41,11 @@ for a reason that looks nothing like its cause.
 again.** The question is not "what broke it this time" but "what is this plant assuming, and what
 could make that untrue".
 
+**And a third axis (F-246): how the reader is SPELLED.** The plant found a token's literal readers by
+`'surface.1'` in single quotes, while the check reads all three quotes. The Atlas reads it as a JSX
+prop, `ground="surface.1"`, so after every single-quoted reader and the map were removed the token was
+still reached, and the map half went red in CI. The colour cases now discover and plant every
+spelling the check itself reads (`readersOfQuoted`, `withoutQuoted`) — the plant asks the question
+the check asks, rather than a narrower one.
+
 [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]]
