@@ -71,6 +71,9 @@ export const APP_BAR_INSET = 15.5;
 /** The rule under the bar, and the divider in it, in dp: one dp of `border`, as the tab bar's. */
 export const APP_BAR_RULE = 1;
 
+/** The rule's test id: the one way an inventory's header rule (`05.header-rule`) is found (F-246). */
+export const APP_BAR_RULE_TEST_ID = 'app-bar.rule';
+
 interface TitleBase {
   readonly text: string;
   /** Centred on the bar, or after the leading control. */
@@ -249,7 +252,6 @@ export function AppBar({
       style={{
         paddingTop: topInset,
         ...(fill === undefined ? {} : { backgroundColor: colors[fill] }),
-        ...(rule ? { borderBottomWidth: APP_BAR_RULE, borderBottomColor: colors.border } : {}),
       }}
     >
       <View
@@ -268,6 +270,16 @@ export function AppBar({
         {title?.placement === 'below' ? heading : null}
         {below ?? null}
       </View>
+      {/*
+        THE RULE IS A NODE OF ITS OWN (F-246), drawn where the border was: one dp of `border` under the
+        bar. As a border it was a property of the bar, so nothing could find `05.header-rule` as itself.
+      */}
+      {rule ? (
+        <View
+          testID={APP_BAR_RULE_TEST_ID}
+          style={{ height: APP_BAR_RULE, backgroundColor: colors.border }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -307,7 +319,12 @@ function Title({
       weight={title.weight}
       color="foreground"
       script={script}
-      numberOfLines={1}
+      /*
+        A CENTRED TITLE TRUNCATES, A LEADING ONE WRAPS (F-246). A centred title is held between two
+        sides and OQ-49 asks what a word that does not fit does there; a leading title has the row to
+        itself, and content may not be lost (R9 §4 E3, WCAG 1.4.4), so it takes a second line.
+      */
+      {...(title.align === 'centre' ? { numberOfLines: 1 } : {})}
     />
   );
 }

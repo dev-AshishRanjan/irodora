@@ -92,6 +92,11 @@ export interface Choice<V extends string> {
   readonly disabled?: boolean;
   /** The label carries a figure (a count beside a name), set in tabular digits (C9, F-226). */
   readonly numeric?: boolean;
+  /**
+   * A Japanese run after the label, as `05`'s season pills draw *Spring 春* (F-246): set in the
+   * bundled gothic, and part of the option's name, so it is heard as it is seen.
+   */
+  readonly kanji?: string;
 }
 
 /**
@@ -133,6 +138,18 @@ export interface Segmented {
 export interface Pills {
   /** The drawn height in dp: the screen's own reading. Defaults to {@link CHIP_HEIGHT}. */
   readonly height?: number;
+  /**
+   * The chosen pill's fill (F-246): `15`'s `surface.2` by default; `05` fills its chosen season in
+   * `accent`, its white primary, and the ink turns to `accent.foreground`. The dot leads it either way
+   * (ADR-0141).
+   */
+  readonly selectedFill?: PillFill;
+  /** `15` edges its chosen pill in `foreground` as well as filling it; `05` does not. Default `true`. */
+  readonly selectedEdge?: boolean;
+  /** The label's step: `label` by default; `05` draws its pills' words at `caption`. */
+  readonly size?: 'label' | 'caption';
+  /** Between the pills, as the screen draws it. Defaults to `xs`. */
+  readonly gap?: 'xs' | 'sm';
 }
 
 /** One layout or the other, never both: the type makes the choice a decision. */
@@ -344,6 +361,8 @@ function Pill({
   script,
   numeric = false,
   height,
+  form = {},
+  kanji,
 }: {
   readonly value: string;
   readonly label: string;
@@ -353,17 +372,25 @@ function Pill({
   readonly script: Script;
   readonly numeric?: boolean;
   readonly height: number;
+  readonly form?: Pills;
+  readonly kanji?: string | undefined;
 }): React.JSX.Element {
   const { colors } = useTheme();
   const press = usePress();
-  const tone = pillTone(chosen, 'surface.2', true, colors);
+  const tone = pillTone(
+    chosen,
+    form.selectedFill ?? 'surface.2',
+    form.selectedEdge ?? true,
+    colors,
+  );
+  const size = form.size ?? 'label';
   return (
     <HeroRadioGroup.Item
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
       value={value}
       isDisabled={disabled}
-      accessibilityLabel={label}
+      accessibilityLabel={kanji === undefined ? label : `${label} ${kanji}`}
       accessibilityState={{ selected: chosen, disabled }}
       // Drawn at the pill's height; the rest of the target is in the hit area (ADR-0114).
       hitSlop={hitArea(height, height)}
@@ -383,9 +410,14 @@ function Pill({
       }}
     >
       <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
-      <Text size="label" color={tone.ink} script={script} numeric={numeric} numberOfLines={1}>
+      <Text size={size} color={tone.ink} script={script} numeric={numeric} numberOfLines={1}>
         {label}
       </Text>
+      {kanji === undefined ? null : (
+        <Text size={size} color={tone.ink} script="japanese" numberOfLines={1}>
+          {kanji}
+        </Text>
+      )}
       <FocusRing visible={focused} radius={nativeRadius.pill} />
     </HeroRadioGroup.Item>
   );
@@ -404,6 +436,7 @@ interface Entry {
   readonly chosen: boolean;
   readonly focused: boolean;
   readonly numeric: boolean;
+  readonly kanji?: string | undefined;
 }
 
 export function ChoiceGroup<V extends string>({
@@ -442,6 +475,7 @@ export function ChoiceGroup<V extends string>({
       chosen: o.value === value,
       focused: focused !== undefined && focused === o.value,
       numeric: o.numeric ?? false,
+      kanji: o.kanji,
     })),
   ];
   const onValueChange = (next: string): void => {
@@ -519,7 +553,7 @@ export function ChoiceGroup<V extends string>({
           accessibilityLabel={label}
           isDisabled={inert}
           accessibilityState={{ disabled: inert, busy: loading }}
-          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: nativeSpacing.xs }}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: nativeSpacing[pills.gap ?? 'xs'] }}
         >
           {all.map((o) => (
             <Pill
@@ -532,6 +566,8 @@ export function ChoiceGroup<V extends string>({
               script={script}
               numeric={o.numeric}
               height={height}
+              form={pills}
+              kanji={o.kanji}
             />
           ))}
         </HeroRadioGroup>

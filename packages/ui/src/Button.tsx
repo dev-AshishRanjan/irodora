@@ -181,6 +181,13 @@ type LabelledBase = Shared & {
    * name that does not is refused at render. Without it the label is the name.
    */
   readonly name?: string;
+  /**
+   * The label's step: board 00's `body` by default. `05` draws its three outlined pills' words at
+   * `caption` (F-246), as a screen beats the board for how a component looks on it (P3).
+   */
+  readonly step?: 'body' | 'label' | 'caption';
+  /** The side padding: `md` by default; `05`'s pills draw `sm`. */
+  readonly inset?: 'sm' | 'md';
   readonly icon?: never;
   readonly plate?: never;
   readonly shape?: never;
@@ -236,6 +243,8 @@ type IconOnlyProps = Shared & {
   readonly radius?: never;
   readonly script?: never;
   readonly name?: never;
+  readonly step?: never;
+  readonly inset?: never;
 };
 
 export type ButtonProps = LabelledProps | IconOnlyProps;
@@ -322,6 +331,8 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     edge,
     level,
     ink,
+    step = 'body',
+    inset = 'md',
     ...rest
   } = props;
   const { colors } = useTheme();
@@ -337,7 +348,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
       <Glyph
         name={glyph}
         color={colors[paint.ink]}
-        size={glyphSize ?? nativeType[script].body.fontSize}
+        size={glyphSize ?? nativeType[script][step].fontSize}
       />
     );
 
@@ -366,7 +377,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
         // The focus ring is drawn outside the box; HeroUI's root would clip it (see the header).
         overflow: 'visible',
         borderRadius: nativeRadius[radius],
-        ...(paint.padded ? { paddingHorizontal: nativeSpacing.md } : {}),
+        ...(paint.padded ? { paddingHorizontal: nativeSpacing[inset] } : {}),
         flexDirection: 'row',
         ...(glyph === undefined ? {} : { gap: nativeSpacing.xs }),
         justifyContent: 'center',
@@ -393,7 +404,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
         type scale, the bundled face for Japanese (F-152), Dynamic Type, and the weight board 00
         draws — body at 500 on the primary, 400 on the others.
       */}
-      <Text size="body" weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
+      <Text size={step} weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
         {loading ? `${label}…` : label}
       </Text>
       {side === 'trailing' ? glyphNode : null}

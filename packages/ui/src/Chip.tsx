@@ -126,6 +126,8 @@ type ChipControlProps = Omit<
     readonly dot?: Sample;
     /** `05`: the family's kanji, set after the label in the bundled gothic. Part of the name. */
     readonly kanji?: string;
+    /** The label's step: `label` by default; `05` draws its chips' words at `caption` (F-246). */
+    readonly size?: 'label' | 'caption';
   };
 
 /** A chip nobody presses: a badge beside a reading (F-232). */
@@ -271,6 +273,7 @@ function ChipControl({
   ground,
   dot,
   kanji,
+  size = 'label',
   ...rest
 }: ChipControlProps): React.JSX.Element {
   const { colors, paint } = useTheme();
@@ -316,7 +319,9 @@ function ChipControl({
       <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
       {dot === undefined ? null : (
         <View
-          // The family's colour, as data: decorative to a screen reader, named in the label.
+          // The family's colour, as data: decorative to a screen reader, named in the label. Named by
+          // the chip's own id where it has one, so a sweep can find the dot as itself (F-246).
+          {...(typeof rest.testID === 'string' ? { testID: `${rest.testID}.dot` } : {})}
           pointerEvents="none"
           style={{
             width: SAMPLE_DOT,
@@ -327,11 +332,11 @@ function ChipControl({
         />
       )}
       <View style={{ flexDirection: 'row', gap: nativeSpacing.xs }}>
-        <Text size="label" color={tone.ink} script={script} numberOfLines={1}>
+        <Text size={size} color={tone.ink} script={script} numberOfLines={1}>
           {loading ? `${label}…` : label}
         </Text>
         {kanji === undefined ? null : (
-          <Text size="label" color={tone.ink} script="japanese" numberOfLines={1}>
+          <Text size={size} color={tone.ink} script="japanese" numberOfLines={1}>
             {kanji}
           </Text>
         )}

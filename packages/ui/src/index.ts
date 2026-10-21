@@ -235,6 +235,7 @@ export {
   APP_BAR_HEIGHT,
   APP_BAR_INSET,
   APP_BAR_RULE,
+  APP_BAR_RULE_TEST_ID,
   APP_BAR_STACKED,
   type AppBarBack,
   type AppBarIcon,

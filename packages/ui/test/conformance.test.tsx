@@ -1229,6 +1229,37 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   })),
   {
     /*
+     * 05'S SEASON PILLS (F-246, ADR-0141): one radio group with All; the chosen pill filled in accent
+     * with its leading dot and no foreground edge, the words at caption, each with its Japanese run.
+     */
+    name: 'ChoiceGroup (pills, 05)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['option', 'choice', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <ChoiceGroup
+          label="Season"
+          clearLabel="All"
+          value={state === 'active' ? 'spring' : null}
+          options={[
+            { value: 'spring', label: 'Spring', kanji: '春' },
+            { value: 'summer', label: 'Summer', kanji: '夏' },
+            { value: 'autumn', label: 'Autumn', kanji: '秋', disabled: state === 'disabled' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 21, selectedFill: 'accent', selectedEdge: false, size: 'caption' }}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          focused={state === 'focus' ? 'summer' : undefined}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * 05'S FAMILY CHIP (F-232): filled at rest, led by the family's colour, the kanji after the
      * romaji. The colour dot is a sample, so it is declared as one, and the selection rule does
      * not count it as the chosen mark.
@@ -1251,6 +1282,72 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           disabled={state === 'disabled'}
           loading={state === 'loading'}
           testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * 05'S FAMILY CHIP AT ITS DRAWN STEP (F-246): the words at caption, the dot named by the chip's id.
+     */
+    name: 'Chip (05, family, caption)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['chip', 'filter'],
+    sampleValues: ['#526A6B'],
+    render: (state, theme) =>
+      draw(
+        <Chip
+          label="Ao"
+          kanji="青"
+          size="caption"
+          height={20}
+          dot={{ hex: '#526A6B', color: SAMPLE }}
+          ground="surface.1"
+          selected={state === 'active'}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * 05'S DRAWN FIELD (F-246): outlined, 26.5 dp, a search glyph, its words at caption, the bookmark
+     * toggle at its trailing end — and its touch the platform's target.
+     */
+    name: 'SearchField (05, drawn)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'glyph',
+    forbiddenNames: ['search', 'field', 'input', 'bookmark'],
+    render: (state, theme) =>
+      draw(
+        <SearchField
+          label="Search kanji, romaji, family or #hex…"
+          value={state === 'active' ? 'ao' : ''}
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          height={26.5}
+          icon="search"
+          iconSize={15}
+          size="caption"
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+          trailing={{
+            glyph: 'bookmark',
+            label: 'Show only bookmarked colours',
+            selected: state === 'active',
+            onPress: () => {
+              /* the suite renders; it does not drive */
+            },
+          }}
         />,
         theme,
       ),
@@ -2686,6 +2783,38 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           },
           rule: true,
           height: 50,
+        },
+      ],
+      [
+        '05 (a leading title that wraps, an overflow, a row below, a rule)',
+        {
+          title: {
+            text: 'Colour Atlas',
+            ja: '日本に着想を得た色',
+            layout: 'inline',
+            align: 'leading',
+            placement: 'bar',
+            size: 'body',
+            weight: 600,
+          },
+          trailing: {
+            icons: [{ glyph: 'more', label: 'More filters', size: 17.5, onPress: () => undefined }],
+          },
+          below: (
+            <Button
+              variant="secondary"
+              edge="border"
+              label="Compare"
+              height={18.5}
+              step="caption"
+              inset="sm"
+              onPress={() => undefined}
+            />
+          ),
+          rule: true,
+          height: 69.5,
+          inset: 16,
+          gap: 4,
         },
       ],
       [

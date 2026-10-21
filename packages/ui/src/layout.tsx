@@ -335,6 +335,13 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
    * `scroll={false}` and says so at the call site.
    */
   readonly scroll?: boolean;
+  /**
+   * The frame takes no padding, and the screen's own scroller pads what it holds (F-246). Only a
+   * screen that owns its viewport (`scroll={false}`) may ask: `05`'s grid runs down to the tab bar
+   * and its family row off the right edge, which a padded frame would cut 16 dp short. A screen
+   * that scrolls in `Screen`'s own scroller has nowhere else for its inset to go.
+   */
+  readonly bleed?: boolean;
   /** Page inset. `lg` (24) is the editorial default; a dense surface may take less. */
   readonly padding?: SpacingStep;
   /** Rhythm between top-level blocks. `xl` (32) is the editorial default. */
@@ -393,10 +400,15 @@ export function Screen({
   script = 'latin',
   appBar,
   actionBar,
+  bleed = false,
   children,
   ...rest
 }: ScreenProps): React.JSX.Element {
   const { colors } = useTheme();
+  if (bleed && scroll)
+    throw new TypeError(
+      'Screen: bleed is for a screen that owns its viewport (scroll={false}); a scrolling screen has nowhere else for its inset to go',
+    );
 
   const words =
     eyebrow === undefined && title === undefined ? null : (
@@ -550,7 +562,10 @@ export function Screen({
     return (
       <View style={ground}>
         {bar}
-        <View {...rest} style={{ flex: 1, flexDirection: 'column', ...rhythm }}>
+        <View
+          {...rest}
+          style={{ flex: 1, flexDirection: 'column', ...(bleed ? { gap: rhythm.gap } : rhythm) }}
+        >
           {content}
         </View>
         {actions}

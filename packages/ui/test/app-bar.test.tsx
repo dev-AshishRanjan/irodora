@@ -23,6 +23,7 @@ import {
   APP_BAR_HEIGHT,
   APP_BAR_INSET,
   APP_BAR_RULE,
+  APP_BAR_RULE_TEST_ID,
   APP_BAR_STACKED,
   Screen,
   Text,
@@ -145,6 +146,32 @@ describe('a title is one heading node, holding both scripts', () => {
     let inside = false;
     for (let n = japanese.parent; n !== null; n = n.parent) if (n === heading) inside = true;
     expect(inside).toBe(true);
+  });
+
+  it('inline and LEADING: the title wraps rather than truncating (F-246, R9 §4 E3)', () => {
+    draw(
+      <AppBar
+        title={{
+          text: 'Colour Atlas',
+          ja: '日本に着想を得た色',
+          layout: 'inline',
+          align: 'leading',
+          placement: 'bar',
+          size: 'body',
+          weight: 600,
+        }}
+      />,
+    );
+    const [heading] = headings();
+    expect(heading?.props['numberOfLines']).toBeUndefined();
+    // DECOY: the centred title above keeps its one line (OQ-49's question), so this is the align.
+  });
+
+  it('draws its rule as a node of its own, and none without one (F-246)', () => {
+    draw(<AppBar rule />);
+    expect(screen.getAllByTestId(APP_BAR_RULE_TEST_ID)).toHaveLength(1);
+    draw(<AppBar />);
+    expect(screen.queryAllByTestId(APP_BAR_RULE_TEST_ID)).toHaveLength(0);
   });
 
   it('stacked: the Japanese under the English, in its own step and in foreground.2', () => {
@@ -338,7 +365,11 @@ describe('Screen pins it above the scroller, and the inset moves into it (E-084)
     expect(style['paddingTop']).toBe(INSET.top);
     // On the SAME node as the inset, so the fill runs behind the status bar (18 19 24).
     expect(style['backgroundColor']).toBe(nativeColors.dark['surface.1']);
-    expect(style['borderBottomWidth']).toBe(APP_BAR_RULE);
+    // The rule is a node of its own under the bar since F-246, so a sweep can find it as itself.
+    const rule = screen.getByTestId(APP_BAR_RULE_TEST_ID);
+    expect(flattenStyle(rule.props['style'])['height']).toBe(APP_BAR_RULE);
+    expect(flattenStyle(rule.props['style'])['backgroundColor']).toBe(nativeColors.dark.border);
+    expect(style['borderBottomWidth']).toBeUndefined();
   });
 
   it('DECOY: a bar handed to the page as content scrolls away', () => {
