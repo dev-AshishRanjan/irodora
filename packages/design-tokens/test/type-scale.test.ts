@@ -170,10 +170,21 @@ describe('type drawn off the scale (ADR-0121)', () => {
   const elements = allElements();
   const byId = new Map(elements.map((e) => [e.id, e]));
 
-  it('declares the measured steps F-230 binds, and the serif sets them', () => {
-    expect(measured.map(([name]) => name).sort()).toStrictEqual(['wordmark', 'wordmarkSplash']);
-    const serif = manifest.typography.faces['serif'];
-    for (const [name] of measured) expect(serif?.steps).toContain(name);
+  it('declares the measured steps F-230 and F-247 bind, and the face each is drawn in sets it', () => {
+    expect(measured.map(([name]) => name).sort()).toStrictEqual([
+      'kanjiHero',
+      'kanjiHeroJa',
+      'wordmark',
+      'wordmarkSplash',
+    ]);
+    for (const [name, step] of measured)
+      for (const id of step.elements ?? []) {
+        const face = manifest.typography.faces[FACE_OF[byId.get(id)?.type?.face ?? ''] ?? ''];
+        // The serif lists its steps; the gothic sets every step ('all').
+        expect({
+          [name]: face?.steps === 'all' || (face?.steps ?? []).includes(name),
+        }).toStrictEqual({ [name]: true });
+      }
   });
 
   /** The manifest face each inventory face is set in (ADR-0112): the gothic is the bundled jp. */

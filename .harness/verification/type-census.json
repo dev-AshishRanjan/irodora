@@ -1,18 +1,8 @@
 {
   "$comment": "ADR-0121's census: every governing element drawn more than 4 dp from every board type step is bound to a measured step in the manifest, or owed here by the feature that builds it. packages/design-tokens/test/type-scale.test.ts requires the census and this list to agree both ways (no off-scale element unaccounted, no owed row that is in band or already bound), and scripts/verify-token-reach.mjs fails once an owner is done while its row is still owed, the closedBy pattern of unreached-tokens.json.",
   "version": 1,
-  "updated": "2026-10-06",
+  "updated": "2026-10-21",
   "owed": [
-    {
-      "element": "06.kanji",
-      "feature": "F-247",
-      "why": "06's hero kanji, drawn at 53 dp: a measured step when F-247 builds the colour page."
-    },
-    {
-      "element": "26.hero.kanji",
-      "feature": "F-247",
-      "why": "26's hero kanji, drawn at 40.4 dp in the Japanese typography 26 governs (P2): a measured step when F-247 builds it."
-    },
     {
       "element": "20.card.kanji",
       "feature": "F-253",

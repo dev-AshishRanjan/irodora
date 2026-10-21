@@ -105,7 +105,7 @@ export default {
       // F-247 re-measured it from NotoSansJP's outlines (serif-weight --em, calibrated within 1 %): 50.7 px,
       // 39.2 dp an em; its stems read 382–430 on the axis — the regular cut, 400. The recorded title 600
       // was the step's default, not a reading.
-      type: text('gothic', 'title', 400),
+      type: text('gothic', 'kanjiHeroJa'),
       copy: { shape: 'heading', script: 'japanese' },
       raw: { emDp: 39.2 },
     }),

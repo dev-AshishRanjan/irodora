@@ -61,6 +61,7 @@
   --color-state-refused-edge: var(--irodora-color-state-refused-edge);
   --color-state-refused-glyph: var(--irodora-color-state-refused-glyph);
   --color-state-lock: var(--irodora-color-state-lock);
+  --color-glyph-seal: var(--irodora-color-glyph-seal);
   --radius-sm: var(--irodora-radius-sm);
   --radius-md: var(--irodora-radius-md);
   --radius-lg: var(--irodora-radius-lg);

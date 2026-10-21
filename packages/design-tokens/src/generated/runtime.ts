@@ -713,6 +713,18 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "glyph.seal": {
+        "oklch": {
+          "l": 0.6287233731784929,
+          "c": 0.12085442215777102,
+          "h": 150.3642708801575
+        },
+        "srgb": "#4B9D61",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     },
     "light": {
@@ -1410,6 +1422,18 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "glyph.seal": {
+        "oklch": {
+          "l": 0.6287233731784929,
+          "c": 0.12085442215777102,
+          "h": 150.3642708801575
+        },
+        "srgb": "#4B9D61",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     }
   },
@@ -1561,6 +1585,13 @@ export const runtimeManifest: CheckableManifest = {
       "reason": "C10 (R9-MOCKUP-FIDELITY §6), minted by F-236 (ADR-0128 section 4): 27's state art is drawn tan, amber-brown and purple — the hanger's body, the refusal's plate, edge and glyph, the padlock, and the working mark with its glow, the one place the mark takes a tint. Six tints read off the board (the core of each drawing, ΔE00 ≈ 2), the same in every palette. Each sits in a picture beside the words that carry its state, so colour is never the only channel (golden rule 13).",
       "owner": "design",
       "recordedAt": "2026-10-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.seal",
+      "reason": "ADR-0110, minted by F-247 (ADR-0149): 06's editorial-review seal is drawn green (#4B9D61) over its one-ink silhouette. Its meaning is carried by its shape and by the review line beside it; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-10-21"
     },
     {
       "rule": "chromaCeiling",

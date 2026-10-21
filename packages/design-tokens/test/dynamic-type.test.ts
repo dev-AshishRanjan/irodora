@@ -69,6 +69,9 @@ describe('THE PIN — the emitted table, asserted literally', () => {
       label: 'subheadline',
       caption: 'caption2',
       wordmarkSplash: 'largeTitle',
+      // F-247 (ADR-0121): 06's and 26's hero kanji, 50.5 and 39.2, past the largest style.
+      kanjiHero: 'largeTitle',
+      kanjiHeroJa: 'largeTitle',
     });
   });
 

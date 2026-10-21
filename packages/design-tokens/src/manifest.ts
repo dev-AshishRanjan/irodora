@@ -434,8 +434,11 @@ export interface Manifest {
   };
   readonly typography: Typography;
   readonly elevation: Elevation;
-  /** How strongly a drawing is inked, where full ink is the theme's `foreground` (F-229). */
-  readonly opacity: { readonly art: number };
+  /**
+   * How strongly a drawing is inked, where full ink is the theme's `foreground` (F-229): `art` behind a
+   * screen's content, `artCard` behind a card's text, as `06` draws its provenance branch (F-247).
+   */
+  readonly opacity: { readonly art: number; readonly artCard: number };
   readonly motion: Motion;
   readonly exceptions: readonly ChromaException[];
   readonly gate: { readonly contrast: ContrastGateConfig };
@@ -1193,7 +1196,16 @@ export function parseManifest(input: unknown): Manifest {
       `expected a backdrop, got ${String(artOpacity)} — art past half the foreground competes ` +
         'with the content in front of it, and the mockups draw it at 0.10 to 0.18 (F-229)',
     );
-  const opacity = { art: artOpacity };
+  // 06's card art (F-247, ADR-0149): drawn on a card, twice the backdrop's ink, and still a backdrop —
+  // the same bounds hold, so a value that would compete with the card's text is refused.
+  const artCardOpacity = requireNumber(opacityRaw['artCard'], 'opacity.artCard');
+  if (artCardOpacity <= 0 || artCardOpacity > 0.5)
+    throw new ManifestError(
+      'opacity.artCard',
+      `expected (0, 0.5]; got ${String(artCardOpacity)} — art behind a card's text past half the ` +
+        'foreground competes with the words in front of it',
+    );
+  const opacity = { art: artOpacity, artCard: artCardOpacity };
 
   // --- elevation ----------------------------------------------------------------------
   const elevationRaw = requireRecord(root['elevation'], 'elevation');

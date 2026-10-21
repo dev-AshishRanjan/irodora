@@ -205,6 +205,8 @@ describe('the glyph groups F-232 mints', () => {
         6,
         'F-236',
       ],
+      // F-247 (ADR-0149): 06's review seal, one stop, in the place of the element exception it retires.
+      [['06.provenance.review'], 1, 'F-247'],
       [['00.controls.icon-wheel'], 8, 'F-232'],
       [['00.buttons.icon-palette'], 8, 'F-232'],
     ]);
@@ -213,6 +215,14 @@ describe('the glyph groups F-232 mints', () => {
         expect(manifest.color.dark[t]).toBeDefined();
         expect(manifest.color.light[t]).toBeDefined();
       }
+  });
+
+  it('retired 06’s seal as an element exception when it minted the token (F-247)', () => {
+    expect(
+      elementExceptions(manifest).filter((e) => e.elements.includes('06.provenance.review')),
+    ).toHaveLength(0);
+    expect(manifest.color.dark['glyph.seal']?.srgb).toBe('#4B9D61');
+    expect(manifest.color.light['glyph.seal']?.srgb).toBe('#4B9D61');
   });
 
   it('retired the two element exceptions it replaces (E-149)', () => {

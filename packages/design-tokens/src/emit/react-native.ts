@@ -151,6 +151,10 @@ export function emitReactNative(manifest: Manifest): string {
   );
   out.push(`export const nativeArtOpacity = ${String(manifest.opacity.art)} as const;`);
   out.push(
+    "/** How strongly a drawing behind a card's text is inked: 06's provenance branch (F-247). */",
+  );
+  out.push(`export const nativeArtCardOpacity = ${String(manifest.opacity.artCard)} as const;`);
+  out.push(
     `/**
  * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
  *

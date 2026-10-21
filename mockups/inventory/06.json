@@ -296,7 +296,7 @@
       },
       "type": {
         "face": "gothic",
-        "size": "display1",
+        "size": "kanjiHero",
         "weight": 400
       },
       "icon": null,

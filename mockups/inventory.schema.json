@@ -328,7 +328,9 @@
                     "label",
                     "caption",
                     "wordmark",
-                    "wordmarkSplash"
+                    "wordmarkSplash",
+                    "kanjiHero",
+                    "kanjiHeroJa"
                   ],
                   "description": "A §5 step. caption marks an em measured below 12 dp, where §5 names no step (OQ-12 asks whether to add one); raw.emDp keeps the estimate. Siblings drawn alike take one step — the one most of them snap to, the smaller on a tie (§2)."
                 },

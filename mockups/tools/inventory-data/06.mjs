@@ -179,7 +179,7 @@ export default {
     // ---- names and taxonomy
     el('06.kanji', 'ui:Text', B(84, 574, 120, 59), {
       tokens: { fg: 'text.primary' },
-      type: text('gothic', 'display1'),
+      type: text('gothic', 'kanjiHero'),
       binding: 'corpus:entry.name.ja',
       copy: { shape: 'heading', script: 'japanese' },
       // F-247 re-measured it from NotoSansJP's outlines (serif-weight --em, calibrated within 1.1 %):

@@ -479,7 +479,7 @@ Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's
 *Label* 14 in the sans; tabular figures for every number. **Adopted by `F-226`**
 ([ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)): the scale is those four steps plus a **`caption` at 10.3**, the
 measured median of every em the mockups draw below 12 dp (OQ-12). **Type a screen draws off the scale takes its step within
-4 dp and a measured step beyond** ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md), closing OQ-13): `wordmark` 31.6 and `wordmarkSplash` 59.7 so far. **`27`'s steps are set in a mono: Inconsolata, cut static at width 83 and weight 600, at `body`** ([ADR-0130](../adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)). The drawing advances 0.69 of its cap, where the platform monospaces advance 0.84–0.86 of theirs. At a 10 px cap no face can be named by shape, so the face is the open-licence monospace whose own width axis reaches the drawn proportion, at the weight its stems measure. **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
+4 dp and a measured step beyond** ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md), closing OQ-13): `wordmark` 31.6 and `wordmarkSplash` 59.7 (F-230), and `kanjiHero` 50.5 and `kanjiHeroJa` 39.2, `06`'s and `26`'s hero kanji, each em read from NotoSansJP's outlines (F-247, ADR-0146 D7). **`27`'s steps are set in a mono: Inconsolata, cut static at width 83 and weight 600, at `body`** ([ADR-0130](../adr/0130-the-steps-mono-is-inconsolata-cut-at-27s-width-and-weight.md)). The drawing advances 0.69 of its cap, where the platform monospaces advance 0.84–0.86 of theirs. At a 10 px cap no face can be named by shape, so the face is the open-licence monospace whose own width axis reaches the drawn proportion, at the weight its stems measure. **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
 Noto Serif JP at 400** ([ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)). Both weights are measured against the drawn
 stems with a blur-invariant instrument, and calibrated. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
 (20 faces, each rendered as the drawn word and scored by mask overlap after scaling to it): `01`'s
@@ -591,7 +591,8 @@ light the same pixels read about 0.036.
 
 - **The two exceptions** are `06.provenance.art` (0.31) and `15.art` (0.33) — twice the backdrop
   tone, on a card ground rather than the page. They are recorded as read; a surface that draws them
-  binds its own value rather than the median.
+  binds its own value rather than the median. `F-247` binds `06`'s as `opacity.artCard`, 0.31, read
+  through `Illustration tone="card"` (ADR-0149); `15`'s is `F-262`'s.
 - **`27`'s hanger is chromatic** (tan) and `C10` already declares that; the measurement reports its
   strength, not its hue.
 - **Seven boxes could not be measured cleanly** — the inventory box catches a neighbouring element, so
@@ -679,7 +680,7 @@ each stays covered once (`F-232`, ADR-0110's amendment).
 | `00.controls.icon-wheel` (ADR-0110) | spectrum | **minted** as `glyph.wheel.1–8` (eight sector means, `#D68164` … `#C25E62`), declared as a token group that carries this element | `F-232` ✓ |
 | `00.buttons.icon-palette` (ADR-0110) | multi | **minted** as `glyph.palette.1–8` (a hue sweep over the palette, `#BC8073` … `#B66380`), declared as a token group that carries this element | `F-232` ✓ |
 | `03.chips.gamut` (ADR-0110) | spectrum | — | `F-244` |
-| `06.provenance.review`: the green seal (ADR-0110) | tint | `#4B9D61` | `F-247` |
+| `06.provenance.review`: the green seal (ADR-0110) | tint | **minted** as `glyph.seal` (`#4B9D61`, in every palette), declared as a token group that carries this element (ADR-0149) | `F-247` ✓ |
 | `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked`: the padlock (ADR-0110) | tint | `#C8A145` (read on `07`, where it is largest) | `F-248` |
 | `11.gap.icon`: the bulb (ADR-0110) | tint | `#E7DDB2` | `F-255` |
 | `13.score.harmony.icon`: three circles (ADR-0110) | multi | — (≈ `#B0514E` · `#83A665` · `#535FA0`) | `F-257` |

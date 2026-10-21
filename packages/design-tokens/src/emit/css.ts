@@ -79,6 +79,7 @@ export function emitCss(manifest: Manifest): string {
   out.push(`  ${cssVarName('size', 'icon-stroke')}: ${String(manifest.size.iconStroke)}px;`);
   out.push(`  ${cssVarName('size', 'art-stroke')}: ${String(manifest.size.artStroke)}px;`);
   out.push(`  ${cssVarName('opacity', 'art')}: ${String(manifest.opacity.art)};`);
+  out.push(`  ${cssVarName('opacity', 'art-card')}: ${String(manifest.opacity.artCard)};`);
   out.push(`  ${cssVarName('size', 'judgeable')}: ${String(manifest.size.judgeable)}px;`);
   out.push('}');
   out.push('');

@@ -63,6 +63,7 @@ export const nativeColors = {
     'state.refused.edge': '#EEAF5E',
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
+    'glyph.seal': '#4B9D61',
   },
   light: {
     background: '#F6F5F2',
@@ -118,6 +119,7 @@ export const nativeColors = {
     'state.refused.edge': '#EEAF5E',
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
+    'glyph.seal': '#4B9D61',
   },
   'slate.dark': {
     background: '#2C323A',
@@ -173,6 +175,7 @@ export const nativeColors = {
     'state.refused.edge': '#EEAF5E',
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
+    'glyph.seal': '#4B9D61',
   },
   'obsidian.dark': {
     background: '#101114',
@@ -228,6 +231,7 @@ export const nativeColors = {
     'state.refused.edge': '#EEAF5E',
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
+    'glyph.seal': '#4B9D61',
   },
 } as const;
 
@@ -270,6 +274,8 @@ export const nativeIconStroke = 1.65 as const;
 export const nativeArtStroke = 0.5 as const;
 /** How strongly a backdrop drawing is inked, as a fraction of the theme's foreground. */
 export const nativeArtOpacity = 0.15 as const;
+/** How strongly a drawing behind a card's text is inked: 06's provenance branch (F-247). */
+export const nativeArtCardOpacity = 0.31 as const;
 /**
  * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
  *
@@ -289,6 +295,8 @@ export const nativeType = {
     label: { fontSize: 14, lineHeight: 21.7, letterSpacing: 0, fontWeight: '400' },
     caption: { fontSize: 10.3, lineHeight: 15.45, letterSpacing: 0, fontWeight: '400' },
     wordmarkSplash: { fontSize: 59.7, lineHeight: 75.82, letterSpacing: 0, fontWeight: '400' },
+    kanjiHero: { fontSize: 50.5, lineHeight: 73.22, letterSpacing: 0, fontWeight: '400' },
+    kanjiHeroJa: { fontSize: 39.2, lineHeight: 56.84, letterSpacing: 0, fontWeight: '400' },
   },
   japanese: {
     display1: { fontSize: 72, lineHeight: 79.11, letterSpacing: -2.88, fontWeight: '500' },
@@ -298,11 +306,13 @@ export const nativeType = {
     label: { fontSize: 14, lineHeight: 24.33, letterSpacing: 0, fontWeight: '400' },
     caption: { fontSize: 10.3, lineHeight: 17.32, letterSpacing: 0, fontWeight: '400' },
     wordmarkSplash: { fontSize: 59.7, lineHeight: 85.01, letterSpacing: 0, fontWeight: '400' },
+    kanjiHero: { fontSize: 50.5, lineHeight: 82.1, letterSpacing: 0, fontWeight: '400' },
+    kanjiHeroJa: { fontSize: 39.2, lineHeight: 63.73, letterSpacing: 0, fontWeight: '400' },
   },
 } as const;
 
 /** Scale steps at or above the 18.66px WCAG large-text floor. */
-export const nativeLargeTextSizes = ['display1', 'title', 'wordmark', 'wordmarkSplash'] as const;
+export const nativeLargeTextSizes = ['display1', 'title', 'wordmark', 'wordmarkSplash', 'kanjiHero', 'kanjiHeroJa'] as const;
 /** Scale steps BELOW it. A largeText-only token may never be used at these. */
 export const nativeSmallTextSizes = ['body', 'label', 'caption'] as const;
 export const nativeLargeTextMinPx = 18.66 as const;
@@ -316,6 +326,8 @@ export const nativeDynamicTypeRamp = {
   label: 'subheadline',
   caption: 'caption2',
   wordmarkSplash: 'largeTitle',
+  kanjiHero: 'largeTitle',
+  kanjiHeroJa: 'largeTitle',
 } as const;
 
 /** ONE family per bundled face — RN has no fallback cascade. The Latin sans is the platform. */

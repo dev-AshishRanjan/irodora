@@ -2,7 +2,7 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-09-25",
+  "updated": "2026-10-21",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
     "date": "2026-09-25",
@@ -789,6 +789,18 @@
         "role": "The padlock over 27's denied camera.",
         "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
         "pairsWith": []
+      },
+      "glyph.seal": {
+        "oklch": {
+          "l": 0.6287233731784929,
+          "c": 0.12085442215777102,
+          "h": 150.3642708801575
+        },
+        "srgb": "#4B9D61",
+        "usage": "nonText",
+        "role": "06's editorial-review seal: the green check drawn beside the review line (ADR-0110).",
+        "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the review line whose words carry its meaning (section 3). It is measured off 06 (#4B9D61, F-225's census) and pairs with nothing: no reading depends on it. The same value in every palette, as 06 draws one.",
+        "pairsWith": []
       }
     },
     "light": {
@@ -1486,6 +1498,18 @@
         "role": "The padlock over 27's denied camera.",
         "uncheckedReason": "Decoration in a picture whose state its title and body name (golden rule 13; ADR-0128 section 4). Measured off board 27 (F-236) and the same in every palette (D8); it pairs with nothing: no reading depends on it.",
         "pairsWith": []
+      },
+      "glyph.seal": {
+        "oklch": {
+          "l": 0.6287233731784929,
+          "c": 0.12085442215777102,
+          "h": 150.3642708801575
+        },
+        "srgb": "#4B9D61",
+        "usage": "nonText",
+        "role": "06's editorial-review seal: the green check drawn beside the review line (ADR-0110).",
+        "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the review line whose words carry its meaning (section 3). It is measured off 06 (#4B9D61, F-225's census) and pairs with nothing: no reading depends on it. The same value in every palette, as 06 draws one.",
+        "pairsWith": []
       }
     }
   },
@@ -1705,6 +1729,26 @@
           "14.splash.wordmark"
         ],
         "_note": "MEASURED (ADR-0121): 14's splash wordmark, drawn 12.3 dp from every board step. Its em from Gelasio's outlines, the serif's tracking and weight, and the serif's own line, 1.27 — display1's 0.98, the nearest board step's, would have iOS bottom-align the name and clip 7.3 dp off its top (F-230's review). Read by Wordmark alone."
+      },
+      "kanjiHero": {
+        "size": 50.5,
+        "lineHeight": 1.45,
+        "tracking": "0",
+        "weight": 400,
+        "elements": [
+          "06.kanji"
+        ],
+        "_note": "MEASURED (ADR-0121, F-247): 06's hero kanji, drawn 21.5 dp from display1 and farther from every other board step. Its em from NotoSansJP's outlines (serif-weight.mjs --em, calibrated within 1.1 %), at the gothic's one cut, 400 — 06 draws its stems lighter, named in ADR-0146 D7, not faked; and the gothic's own line, 1.45, taller than display1's 0.98, the nearest board step's. Read by ColourDetail alone."
+      },
+      "kanjiHeroJa": {
+        "size": 39.2,
+        "lineHeight": 1.45,
+        "tracking": "0",
+        "weight": 400,
+        "elements": [
+          "26.hero.kanji"
+        ],
+        "_note": "MEASURED (ADR-0121, F-247): 26's hero kanji, the Japanese typography 26 governs on 06's layout (P2, ADR-0146 D5), drawn 17.2 dp from title and farther from every other board step. Its em from NotoSansJP's outlines, at 400 — which its stems read — and the gothic's own line, 1.45, taller than title's 1.2. Read by ColourDetail alone, in the Japanese locale."
       }
     },
     "lineHeight": {
@@ -1933,16 +1977,15 @@
     },
     {
       "rule": "chromaCeiling",
+      "tokens": [
+        "glyph.seal"
+      ],
       "elements": [
         "06.provenance.review"
       ],
-      "kind": "tint",
-      "measured": [
-        "#4B9D61"
-      ],
-      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 06's editorial-review seal is green (OQ-20).",
+      "reason": "ADR-0110, minted by F-247 (ADR-0149): 06's editorial-review seal is drawn green (#4B9D61) over its one-ink silhouette. Its meaning is carried by its shape and by the review line beside it; the hue is decoration.",
       "owner": "design",
-      "recordedAt": "2026-09-25",
+      "recordedAt": "2026-10-21",
       "mintedBy": "F-247"
     },
     {
@@ -2072,8 +2115,9 @@
     }
   },
   "opacity": {
-    "_note": "How strongly a drawing is inked, as a fraction of the theme's foreground, measured on GAMMA-ENCODED luma — the space React Native composites an opacity in. (In linear light the same pixels read about 0.036; a number that moves fourfold with the space it is read in has to say which space, in a repository whose engine rule is that averaging happens in linear light.) F-229 measured every element the inventories bind an illustration to and found two uses: a BACKDROP behind a screen's content at 0.10-0.18 of the foreground (the 90th-percentile reading; median 0.15 over 21 elements) and a FIGURE, where the drawing is the content, at 0.80-0.96. The figure is drawn at full ink, so only the backdrop needs a number. No declared colour token matches that ink - the nearest are chart.5 and chart.4 at deltaE00 4.6-7, which are a chart ramp and mean something else - so the art is the foreground token at this opacity rather than a colour of its own. 06's card art (0.31) and 15's strip (0.33) are twice this and are recorded as read; the surfaces that draw them settle that with a person.",
-    "art": 0.15
+    "_note": "How strongly a drawing is inked, as a fraction of the theme's foreground, measured on GAMMA-ENCODED luma — the space React Native composites an opacity in. (In linear light the same pixels read about 0.036; a number that moves fourfold with the space it is read in has to say which space, in a repository whose engine rule is that averaging happens in linear light.) F-229 measured every element the inventories bind an illustration to and found two uses: a BACKDROP behind a screen's content at 0.10-0.18 of the foreground (the 90th-percentile reading; median 0.15 over 21 elements) and a FIGURE, where the drawing is the content, at 0.80-0.96. The figure is drawn at full ink, so only the backdrop needs a number. No declared colour token matches that ink - the nearest are chart.5 and chart.4 at deltaE00 4.6-7, which are a chart ramp and mean something else - so the art is the foreground token at this opacity rather than a colour of its own. 06's card art (0.31) and 15's strip (0.33) are twice this and are recorded as read. F-247 binds 06's as `artCard` (ADR-0149, decided on the person's delegation of 2026-10-05), read through Illustration tone=\"card\"; 15's is F-262's.",
+    "art": 0.15,
+    "artCard": 0.31
   },
   "themeDerivations": {
     "_note": "ADR-0107 (OQ-36, closed on the person’s delegation). Mockup 15 draws Slate Graphite and Obsidian Noir as ONE SWATCH EACH, and each tile’s swatch is its theme’s GROUND — the two fully specified themes read at their grounds, not their cards. So each is Sumi (`from`) re-anchored at its drawn ground: every token in `reanchor` keeps Sumi’s OKLab lightness STEP above the ground, with Sumi’s chroma and hue; everything else is Sumi’s value. `moves` are the pairings that then failed, each moved by the smallest lightness step that passes, hue and chroma held (R9-MOCKUP-FIDELITY §4 E3) — except a CVD separation no lightness move can fix, which moves one member by the smallest ΔE00 with its HUE held and chroma free (ADR-0111 §5; a move that records `c`) — COMPUTED by generate-design-tokens.mjs from the rule and held there by --check, never typed.",

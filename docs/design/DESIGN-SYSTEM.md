@@ -264,6 +264,8 @@ everywhere.
 **The tone is a measurement.** F-229 read every bound element off the images and found the art drawn
 two ways: as a **backdrop** behind a screen's content at 0.10 – 0.18 of `foreground` (median 0.15,
 declared as `opacity.art`), and as a **figure**, where the drawing is the content, at 0.80 – 0.96.
+`06`'s provenance branch is a backdrop on a card at twice that ink, 0.31, declared as `opacity.artCard`
+(F-247, ADR-0149).
 No declared colour token matches that backdrop ink — the nearest are `chart.5` and `chart.4` at
 ΔE00 4.6 – 7, which mean something else — so art is the foreground token turned down, not a colour of
 its own. `27`'s hanger is tan, and `C10` declares that — but no surface can pass that tint yet: the ink
@@ -476,4 +478,5 @@ on the drawn rest state ([ADR-0133](../adr/0133-motion-is-the-change-a-drawn-bin
   `display1` 72 · `title` 22 · `body` 16 · `label` 14 · `caption` 10.3. The caption is the median
   of every em the mockups draw below 12 dp, and a test recomputes it. Type a screen draws more
   than 4 dp from every step is a **measured step** bound to its elements ([ADR-0121](../adr/0121-type-drawn-off-the-scale-takes-its-step-within-4-dp-and-a-measured-step-beyond.md)):
-  `wordmark` 31.6 and `wordmarkSplash` 59.7, read by `Wordmark` alone.
+  `wordmark` 31.6 and `wordmarkSplash` 59.7, read by `Wordmark` alone; `kanjiHero` 50.5 and `kanjiHeroJa`
+  39.2, the colour page's hero kanji (F-247), read by `ColourDetail` alone.

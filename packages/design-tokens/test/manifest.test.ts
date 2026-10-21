@@ -267,6 +267,18 @@ describe('what the loader refuses', () => {
     expect(() => parseManifest(without(['opacity', 'art']))).toThrow(/opacity\.art/u);
   });
 
+  it('card art past half the foreground, at no opacity, or missing (F-247)', () => {
+    // 06's provenance branch is drawn at 0.31, behind a card's text: still a backdrop.
+    expect(() => parseManifest(withValue(['opacity', 'artCard'], 0.8))).toThrow(
+      /expected \(0, 0\.5\]/u,
+    );
+    expect(() => parseManifest(withValue(['opacity', 'artCard'], 0))).toThrow(/opacity\.artCard/u);
+    expect(() => parseManifest(without(['opacity', 'artCard']))).toThrow(/opacity\.artCard/u);
+    // DECOY: the measured 0.31 and the range's top end are accepted.
+    expect(parseManifest(clone()).opacity.artCard).toBe(0.31);
+    expect(() => parseManifest(withValue(['opacity', 'artCard'], 0.5))).not.toThrow();
+  });
+
   it('DECOY — the measured line and opacity, and both ends of each range, are accepted', () => {
     // Without this the two cases above would pass for a loader that refused every value.
     const m = parseManifest(clone());
