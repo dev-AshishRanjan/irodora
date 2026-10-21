@@ -21,14 +21,16 @@
     "enrolled": [
       "14.splash",
       "01.screen",
+      "05.screen",
       "27.wardrobe-empty",
       "27.lens-working",
       "27.lens-refused",
       "27.lens-permission"
     ],
-    "elementsAsserted": 75,
-    "renders": 24,
-    "owed": 22,
+    "elementsAsserted": 136,
+    "renders": 28,
+    "superseded": 2,
+    "owed": 21,
     "notWhole": {
       "00.board": "The vocabulary board: it governs words, parts and type (P3), and draws no screen a route renders.",
       "14.icon": "The launcher icon: an asset, held by generate-brand-assets --check and gate 16, not a screen.",

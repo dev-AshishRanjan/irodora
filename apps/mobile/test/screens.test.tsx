@@ -37,8 +37,10 @@ jest.mock('expo-localization', () => ({
 }));
 
 import {
+  APP_BAR_RULE_TEST_ID,
   Appear,
   Arrival,
+  BILINGUAL_SEPARATOR,
   EmptyState,
   Glyph,
   Illustration,
@@ -145,17 +147,19 @@ import {
 import { Lens, STATES as LENS_STATES } from '../src/screens/Lens';
 import { refusalOf, refusalText } from '../src/lens/refusal';
 import { Launch } from '../src/launch';
-import { t as message } from '../src/i18n';
+import { japaneseRun, t as message } from '../src/i18n';
 import {
   elementFindings,
   loadInventories,
   scopeJson,
   scopeLive,
   snapshot,
+  supersededFindings,
   surfacesOf,
   type LiveNodes,
   type Locator,
 } from './inventory';
+import { atlasOklch, atlasShown, capitalisedRomaji, NO_FILTERS, seasonLine } from '../src/atlas';
 import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
@@ -400,6 +404,18 @@ const PAIR_B = 'soko-zumi';
 
 /** An entry that HAS a complementary, so the populated branch is rendered too. */
 const WITH_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length > 0)!;
+
+/**
+ * The four cards 05 draws, as the Atlas draws them with *Autumn* chosen (F-246): a reachable state in
+ * which every card prints its last line, as Home's fixture gives every garment a material. Computed
+ * by the screen's own function, never named.
+ */
+const ATLAS_CARDS = atlasShown(allEntries(), '', { ...NO_FILTERS, season: 'autumn' }).slice(0, 4);
+const atlasCard = (n: number) => {
+  const card = ATLAS_CARDS[n];
+  if (card === undefined) throw new Error(`fewer than ${String(n + 1)} autumn entries`);
+  return card;
+};
 
 /** Three bookmarked colours (F-237): the Atlas subjects draw its toggle, on and off. */
 const BOOKMARKED: ReadonlySet<string> = new Set(
@@ -5530,6 +5546,11 @@ interface Enrolled {
   readonly root: string;
   readonly render: (theme: Theme) => TestNode | null;
   readonly locators: Readonly<Record<string, Locator>>;
+  /**
+   * Elements a §6 conflict replaces, each with the conflict's id (ADR-0144): not counted, and held to
+   * the inventory's own `conflicts`, so only an element listed under that conflict can be declared.
+   */
+  readonly superseded?: Readonly<Record<string, string>>;
 }
 
 const ENROLLED: readonly Enrolled[] = [
@@ -5616,6 +5637,117 @@ const ENROLLED: readonly Enrolled[] = [
     },
   },
   {
+    /*
+     * 05, THE ATLAS (F-246), over the tab bar its layout puts under it (C1: 01's five tabs, the Atlas
+     * active), so 05's tab elements are found on the same tree. *Autumn* chosen, so every card prints
+     * its season (ADR-0140); every action wired and the bookmark toggle drawn — 05 as drawn.
+     */
+    surface: '05.screen',
+    root: 'atlas.surface',
+    render: (theme) =>
+      draw(
+        <View testID="atlas.surface">
+          <Atlas
+            bookmarked={BOOKMARKED}
+            initialSeason="autumn"
+            onSelect={() => undefined}
+            onOpenFinder={() => undefined}
+            onOpenCompare={() => undefined}
+            onOpenPalettes={() => undefined}
+          />
+          <AppTabBar
+            state={{ index: 1, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: {
+      // One heading holding both scripts (ADR-0142): the English, the separator, the Japanese run.
+      '05.title': {
+        by: 'value',
+        text: (locale) =>
+          `${message(locale, 'atlas.title')}${BILINGUAL_SEPARATOR}${japaneseRun('atlas.titleJa')}`,
+      },
+      '05.header-rule': { by: 'testID', id: APP_BAR_RULE_TEST_ID },
+      // The inventory read the pills' keys as `atlas.season.*`; the catalogue's are `atlas.all` and
+      // `season.*`. In English each pill's kanji is a word of its own, beside its label.
+      '05.filters.season.all': { by: 'text', key: 'atlas.all' },
+      '05.filters.season.spring': { by: 'text', key: 'season.spring' },
+      '05.filters.season.summer': { by: 'text', key: 'season.summer' },
+      '05.filters.season.autumn': { by: 'text', key: 'season.autumn' },
+      '05.filters.season.winter': { by: 'text', key: 'season.winter' },
+      // A family chip is a generic Chip, so each is found by its own id, and its dot by the dot's.
+      '05.filters.family.ao': { by: 'testID', id: 'atlas.family.ao' },
+      '05.filters.family.aka': { by: 'testID', id: 'atlas.family.aka' },
+      '05.filters.family.midori': { by: 'testID', id: 'atlas.family.midori' },
+      '05.filters.family.murasaki': { by: 'testID', id: 'atlas.family.murasaki' },
+      '05.filters.family.cha': { by: 'testID', id: 'atlas.family.cha' },
+      '05.filters.family.kuro': { by: 'testID', id: 'atlas.family.kuro' },
+      '05.filters.family.ao.dot': { by: 'testID', id: 'atlas.family.ao.dot' },
+      '05.filters.family.aka.dot': { by: 'testID', id: 'atlas.family.aka.dot' },
+      '05.filters.family.midori.dot': { by: 'testID', id: 'atlas.family.midori.dot' },
+      '05.filters.family.murasaki.dot': { by: 'testID', id: 'atlas.family.murasaki.dot' },
+      '05.filters.family.cha.dot': { by: 'testID', id: 'atlas.family.cha.dot' },
+      '05.filters.family.kuro.dot': { by: 'testID', id: 'atlas.family.kuro.dot' },
+      '05.filters-rule': { by: 'testID', id: 'atlas.filters.rule' },
+      // The cards are generic components, so each is found by its own id; their words are the
+      // entry's, through the screen's own functions. Card 4 draws no OKLCh in 05 (E1 adds it).
+      '05.card-1': { by: 'testID', id: 'atlas.card.0' },
+      '05.card-1.kanji': { by: 'value', text: () => atlasCard(0).entry.name.kanji },
+      '05.card-1.hex': { by: 'value', text: () => atlasCard(0).derived.hex },
+      '05.card-1.romaji': {
+        by: 'value',
+        text: () => capitalisedRomaji(atlasCard(0).entry.name.romaji),
+      },
+      '05.card-1.oklch': {
+        by: 'value',
+        text: (locale) => atlasOklch(atlasCard(0).derived.oklch, message(locale, 'coord.oklch')),
+      },
+      '05.card-1.era': { by: 'value', text: (locale) => atlasSeason(0, locale) },
+      '05.card-2': { by: 'testID', id: 'atlas.card.1' },
+      '05.card-2.kanji': { by: 'value', text: () => atlasCard(1).entry.name.kanji },
+      '05.card-2.hex': { by: 'value', text: () => atlasCard(1).derived.hex },
+      '05.card-2.romaji': {
+        by: 'value',
+        text: () => capitalisedRomaji(atlasCard(1).entry.name.romaji),
+      },
+      '05.card-2.oklch': {
+        by: 'value',
+        text: (locale) => atlasOklch(atlasCard(1).derived.oklch, message(locale, 'coord.oklch')),
+      },
+      '05.card-2.era': { by: 'value', text: (locale) => atlasSeason(1, locale) },
+      '05.card-3': { by: 'testID', id: 'atlas.card.2' },
+      '05.card-3.kanji': { by: 'value', text: () => atlasCard(2).entry.name.kanji },
+      '05.card-3.hex': { by: 'value', text: () => atlasCard(2).derived.hex },
+      '05.card-3.romaji': {
+        by: 'value',
+        text: () => capitalisedRomaji(atlasCard(2).entry.name.romaji),
+      },
+      '05.card-3.oklch': {
+        by: 'value',
+        text: (locale) => atlasOklch(atlasCard(2).derived.oklch, message(locale, 'coord.oklch')),
+      },
+      '05.card-3.era': { by: 'value', text: (locale) => atlasSeason(2, locale) },
+      '05.card-4': { by: 'testID', id: 'atlas.card.3' },
+      '05.card-4.kanji': { by: 'value', text: () => atlasCard(3).entry.name.kanji },
+      '05.card-4.hex': { by: 'value', text: () => atlasCard(3).derived.hex },
+      '05.card-4.romaji': {
+        by: 'value',
+        text: () => capitalisedRomaji(atlasCard(3).entry.name.romaji),
+      },
+      '05.card-4.era': { by: 'value', text: (locale) => atlasSeason(3, locale) },
+      // The indicator binds nothing and is no component: the bar names the active one (F-242).
+      '05.tabs.indicator': { by: 'testID', id: TAB_INDICATOR_TEST_ID },
+      // The inventory read the key as `tabs.atlas`; the catalogue's is `tab.atlas` (F-145). It
+      // shares its word with the heading — *Atlas*, 色図鑑 — so the signature needs two.
+      '05.tabs.atlas.label': { by: 'text', key: 'tab.atlas' },
+    },
+    // 05 draws a four-item bar; C1 makes it 01's five, so these two glyphs are no tab's (ADR-0144).
+    superseded: { '05.tabs.compass.icon': 'C1', '05.tabs.search.icon': 'C1' },
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -5686,7 +5818,32 @@ const drawSurface = (
 };
 
 /** Counted for the sweep's evidence, below. */
-const inventorySwept = { surfaces: 0, elements: 0, renders: 0 };
+const inventorySwept = { surfaces: 0, elements: 0, renders: 0, superseded: 0 };
+
+/** The inventory a surface comes from. */
+const inventoryOf = (enrolled: Enrolled) => {
+  const mockup = SURFACES.get(enrolled.surface)?.mockup;
+  const found = INVENTORIES.find((i) => i.mockup === mockup);
+  if (found === undefined) throw new Error(`no inventory for ${enrolled.surface}`);
+  return found;
+};
+
+/** A surface's elements less those a conflict replaces (ADR-0144 D2): the ones the sweep finds. */
+const elementsSwept = (enrolled: Enrolled) =>
+  (SURFACES.get(enrolled.surface)?.elements ?? []).filter(
+    (e) => !Object.hasOwn(enrolled.superseded ?? {}, e.id),
+  );
+
+/** A card's season line, in the locale's words and script: the screen's own function. */
+const atlasSeason = (n: number, locale: 'en' | 'ja'): string => {
+  const line = seasonLine(
+    atlasCard(n),
+    (key) => message(locale, key),
+    locale === 'ja' ? 'japanese' : 'latin',
+  );
+  if (line === null) throw new Error(`autumn card ${String(n)} has no season`);
+  return line;
+};
 
 describe('every element an enrolled surface records is drawn (F-221)', () => {
   // Each case reads the words in the locale it draws in; a case left in Japanese misreads the next.
@@ -5710,9 +5867,10 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
   it.each(ENROLLED.map((e) => [e.surface, e] as const))(
     'draws every %s element, in both themes and both languages',
     (_name, enrolled) => {
-      const elements = SURFACES.get(enrolled.surface)?.elements ?? [];
+      const superseded = enrolled.superseded ?? {};
+      const elements = elementsSwept(enrolled);
       expect(elements.length).toBeGreaterThan(0);
-      const findings: string[] = [];
+      const findings: string[] = [...supersededFindings(inventoryOf(enrolled), superseded)];
       for (const { tag, locale } of SWEPT_LOCALES)
         for (const theme of ['light', 'dark'] as const) {
           mockLanguageTag = tag;
@@ -5732,6 +5890,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         }
       inventorySwept.surfaces += 1;
       inventorySwept.elements += elements.length;
+      inventorySwept.superseded += Object.keys(superseded).length;
       expect(findings).toStrictEqual([]);
     },
   );
@@ -5742,7 +5901,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       if (found === undefined) throw new Error(`${surface} is not enrolled`);
       return found;
     };
-    const elementsOf = (surface: string) => SURFACES.get(surface)?.elements ?? [];
+    const elementsOf = (surface: string) => elementsSwept(enrolledAs(surface));
     const drawnAs = (surface: string): { json: TestNode; live: LiveNodes } => {
       const drawn = drawSurface(enrolledAs(surface), 'dark');
       if (drawn === null) throw new Error(`${surface}'s root is not drawn`);
@@ -5782,7 +5941,13 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
     };
 
     it('the real surfaces are clean as drawn, so each decoy below changes one thing', () => {
-      for (const surface of ['01.screen', '14.splash', '27.lens-working', '27.lens-refused']) {
+      for (const surface of [
+        '01.screen',
+        '05.screen',
+        '14.splash',
+        '27.lens-working',
+        '27.lens-refused',
+      ]) {
         const { json, live } = drawnAs(surface);
         expect({ [surface]: findingsFor(surface, json, live) }).toStrictEqual({ [surface]: [] });
       }
@@ -5889,6 +6054,93 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         ),
         '01.tabs',
       );
+    });
+
+    /** The tree with `change` applied to every subtree whose id passes `which`. */
+    const within = (
+      node: TestNode,
+      which: (id: string) => boolean,
+      change: (n: TestNode) => TestNode,
+    ): TestNode => {
+      const id: unknown = node.props['testID'];
+      return typeof id === 'string' && which(id)
+        ? change(node)
+        : {
+            ...node,
+            children: (node.children ?? []).map((c) =>
+              typeof c === 'string' ? c : within(c, which, change),
+            ),
+          };
+    };
+
+    it('05: the cards’ seasons gone is a finding naming them and the pill that shares their words (F-246)', () => {
+      const { json, live } = drawnAs('05.screen');
+      const autumn = message('en', 'season.autumn');
+      // Each card's line is the chosen pill's word, so one signature needs all five.
+      expect([0, 1, 2, 3].map((n) => atlasSeason(n, 'en'))).toStrictEqual([
+        autumn,
+        autumn,
+        autumn,
+        autumn,
+      ]);
+      // The grid draws more autumn cards than 05's four, so every card's line is taken: the pill's
+      // word is left once, and a pill alone cannot stand in for the four lines.
+      const found = findingsFor(
+        '05.screen',
+        within(
+          json,
+          (id) => id.startsWith('atlas.card.'),
+          (card) => withoutText(card, autumn),
+        ),
+        live,
+      );
+      expect(found).toHaveLength(1);
+      for (const id of [
+        '05.filters.season.autumn',
+        '05.card-1.era',
+        '05.card-2.era',
+        '05.card-3.era',
+        '05.card-4.era',
+      ])
+        expect(found[0]).toContain(id);
+      expect(found[0]).toContain('found 1 time(s), needed 5');
+    });
+
+    it('05: the bar’s rule and a family’s dot are each found as themselves (F-246)', () => {
+      const { json, live } = drawnAs('05.screen');
+      expectOnly(
+        findingsFor('05.screen', without(json, APP_BAR_RULE_TEST_ID), live),
+        '05.header-rule',
+      );
+      expectOnly(
+        findingsFor('05.screen', without(json, 'atlas.family.ao.dot'), live),
+        '05.filters.family.ao.dot',
+      );
+    });
+
+    it('05: a supersession counts only where the inventory lists it under its conflict (ADR-0144)', () => {
+      const enrolled = enrolledAs('05.screen');
+      const inventory = inventoryOf(enrolled);
+      expect(supersededFindings(inventory, enrolled.superseded ?? {})).toStrictEqual([]);
+      // DECOY: the search field is under no C1, so calling it superseded is the finding.
+      const found = supersededFindings(inventory, { '05.search': 'C1' });
+      expect(found).toHaveLength(1);
+      expect(found[0]?.startsWith('05.search: declared superseded by C1')).toBe(true);
+      /*
+       * DECOY: undeclared, the compass is reported missing — and the tab's search glyph is NOT, because
+       * the field's own glyph satisfies the count. That is why a conflict's replacement is declared
+       * against the inventory rather than left to a presence count that a different element can pass.
+       */
+      const { json, live } = drawnAs('05.screen');
+      const undeclared = elementFindings(
+        live,
+        json,
+        SURFACES.get('05.screen')?.elements ?? [],
+        enrolled.locators,
+        'en',
+      );
+      expect(undeclared.some((f) => f.startsWith('05.tabs.compass.icon: not drawn'))).toBe(true);
+      expect(undeclared.some((f) => f.startsWith('05.tabs.search.icon'))).toBe(false);
     });
 
     it("a part found by its own id: the working card's step chip and glow, not the screen's other chips", () => {
@@ -6064,6 +6316,8 @@ describe('the conformance sweep, with evidence (F-204)', () => {
         enrolled: ENROLLED.map((e) => e.surface),
         elementsAsserted: inventorySwept.elements,
         renders: inventorySwept.renders,
+        // Elements a §6 conflict replaces, declared against the inventory's own list (ADR-0144).
+        superseded: inventorySwept.superseded,
         owed: SURFACES.size - TABLE.enrolled.length - Object.keys(TABLE.notWhole).length,
         notWhole: TABLE.notWhole,
       },

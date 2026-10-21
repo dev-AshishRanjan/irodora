@@ -2,6 +2,7 @@
   "$comment": "F-221 (ADR-0134 D7). Which inventory surfaces the conformance sweep enrolls — each rendered in both themes and both languages, every element found by what it draws (apps/mobile/test/screens.test.tsx, which must render exactly these) — and which are not whole screens a feature builds, with why. Every other surface is owed to the features that build it: those whose `mockups` names its mockup and that wait on F-221. scripts/verify-mockups.mjs refuses a surface whose builders are all done and that is not enrolled, a surface no feature builds, and a row naming a surface no inventory records.",
   "enrolled": [
     "01.screen",
+    "05.screen",
     "14.splash",
     "27.wardrobe-empty",
     "27.lens-working",

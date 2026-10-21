@@ -102,6 +102,25 @@ export interface Inventory {
   readonly governs: string;
   readonly frame?: { readonly screens: readonly { readonly id: string }[] };
   readonly elements: readonly InventoryElement[];
+  /** The §6 conflicts the drawing is resolved by, each with the elements it applies to. */
+  readonly conflicts?: readonly { readonly id: string; readonly elements: readonly string[] }[];
+}
+
+/**
+ * What is wrong with a surface's declared supersessions (ADR-0144 D1, D2): each element must be one
+ * the inventory lists under the §6 conflict the declaration names. A declaration that holds takes
+ * the element out of the count; one that does not is a finding, so a missing element cannot be
+ * waved through by calling it superseded.
+ */
+export function supersededFindings(
+  inventory: Inventory,
+  superseded: Readonly<Record<string, string>>,
+): readonly string[] {
+  return Object.entries(superseded).flatMap(([id, conflict]) =>
+    (inventory.conflicts?.find((c) => c.id === conflict)?.elements ?? []).includes(id)
+      ? []
+      : [`${id}: declared superseded by ${conflict}, which the inventory does not list it under`],
+  );
 }
 
 /** How an element is found on the rendered tree (ADR-0134 D1). */
