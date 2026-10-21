@@ -377,35 +377,37 @@ export function Atlas({
         />
       </View>
 
-      <View style={{ paddingHorizontal: nativeSpacing.md }}>{label(t('atlas.family'))}</View>
-
       {/*
         THE FAMILIES (ADR-0143 D3, D4): filter chips, any number on — OR within the row, AND with
         everything else. The row runs off the right edge, as 05 draws it, so it scrolls; each dot is
-        its group's medoid, a corpus colour with its own provenance (rule 12).
+        its group's medoid, a corpus colour with its own provenance (rule 12). The label sits on its
+        chips, `xs` above them: 05's 5.5 dp of ink less the label's own inset below it.
       */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: nativeSpacing.md, gap: nativeSpacing.xs }}
-      >
-        {groups.map((g) => (
-          <Chip
-            key={g.group}
-            label={g.romaji}
-            kanji={g.kanji}
-            dot={familyDot(g, entries)}
-            ground="surface.1"
-            height={FAMILY_CHIP}
-            size="caption"
-            selected={filters.groups.has(g.group)}
-            onPress={() => {
-              toggleGroup(g.group);
-            }}
-            testID={`atlas.family.${g.group}`}
-          />
-        ))}
-      </ScrollView>
+      <Stack gap="xs">
+        <View style={{ paddingHorizontal: nativeSpacing.md }}>{label(t('atlas.family'))}</View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: nativeSpacing.md, gap: nativeSpacing.xs }}
+        >
+          {groups.map((g) => (
+            <Chip
+              key={g.group}
+              label={g.romaji}
+              kanji={g.kanji}
+              dot={familyDot(g, entries)}
+              ground="surface.1"
+              height={FAMILY_CHIP}
+              size="caption"
+              selected={filters.groups.has(g.group)}
+              onPress={() => {
+                toggleGroup(g.group);
+              }}
+              testID={`atlas.family.${g.group}`}
+            />
+          ))}
+        </ScrollView>
+      </Stack>
 
       <View
         testID="atlas.filters.rule"
@@ -521,7 +523,8 @@ export function Atlas({
           numColumns={2}
           keyExtractor={(item) => item.entry.slug}
           ListHeaderComponent={header}
-          ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.md }}
+          // The heading to the first row: 05's 9 dp of ink less the heading's own inset below it.
+          ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xs }}
           ListEmptyComponent={
             // 00's empty (F-236): the search and the filters that would change it are on this
             // screen — and with nothing bookmarked, the toggle that would (ADR-0135 D3).

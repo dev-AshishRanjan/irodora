@@ -184,6 +184,13 @@ Adopted as written, with one edit:
    words or its group's romaji, kanji and English. E-210's oracle is `find()`'s hex branch only, and
    its decoy is a lexicon phrase (`dark`), which this field answers as a name query. ADR-0143 D1 says so.
 
+2. **Two intervals the table marks "(expected)" come out smaller when computed.** A text's line inset
+   lies INSIDE its layout box, so it is subtracted from an ink gap, never added. *Label → chips* is 5.5
+   dp of ink less the caption's 2.6 below it, so 2.9: `xs`, not `sm`. *Heading → grid* is 9 less the
+   label step's 3.85 below it, so 5.2: `xs`, not `md`. The screen draws both at `xs`: the label and its
+   chips are one `Stack gap="xs"`, and the list header pads `xs` below. `atlas-fidelity.test` computes
+   every interval from `05.json`, with the insets written out (Increment 6).
+
 Everything else — D-1 … D-5, the increments, the tests and the attestations — is the design below.
 
 ---
