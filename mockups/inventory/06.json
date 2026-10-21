@@ -19,20 +19,6 @@
       }
     ]
   },
-  "overhangs": [
-    {
-      "element": "06.provenance",
-      "question": "OQ-19"
-    },
-    {
-      "element": "06.combinations",
-      "question": "OQ-19"
-    },
-    {
-      "element": "06.actions",
-      "question": "OQ-19"
-    }
-  ],
   "elements": [
     {
       "id": "06.header",
@@ -111,7 +97,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.back",
+      "binding": "static:tab.atlas",
       "action": "navigate:/atlas",
       "raw": {
         "emDp": 18.9
@@ -168,7 +154,7 @@
       "icon": "share",
       "illustration": null,
       "binding": null,
-      "action": "share:colourCard",
+      "action": "navigate:/atlas/card/[slug]",
       "copy": null
     },
     {
@@ -241,7 +227,8 @@
         "h": 299
       },
       "tokens": {
-        "keyline": "keyline"
+        "keyline": "keyline",
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -252,7 +239,8 @@
         "fill": "#576777"
       },
       "raw": {
-        "keylinePx": 8.5
+        "keylinePx": 8.5,
+        "cornerPx": 8
       },
       "copy": null
     },
@@ -273,12 +261,17 @@
         "w": 14,
         "h": 298
       },
-      "tokens": {},
+      "tokens": {
+        "radius": "sm"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 7.5
+      },
       "copy": null
     },
     {
@@ -311,7 +304,7 @@
       "binding": "corpus:entry.name.ja",
       "action": null,
       "raw": {
-        "emDp": 53
+        "emDp": 50.5
       },
       "copy": {
         "shape": "heading",
@@ -410,7 +403,11 @@
         "bg": "level2",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:entry.taxonomy",
@@ -439,7 +436,8 @@
       },
       "tokens": {
         "bg": "level1",
-        "border": "border.subtle"
+        "border": "border.subtle",
+        "radius": "md"
       },
       "type": null,
       "icon": null,
@@ -575,7 +573,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:notation.hex",
+      "binding": "static:colour.hex",
       "action": null,
       "measured": {
         "fg": "#CDCED2"
@@ -640,7 +638,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:reading.hex",
+      "binding": "corpus:entry.derived.hex",
       "action": null,
       "measured": {
         "fg": "#C1C3C6"
@@ -704,7 +702,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:notation.oklch",
+      "binding": "static:coord.oklch",
       "action": null,
       "measured": {
         "fg": "#CDCED2"
@@ -742,7 +740,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:oklch",
+      "binding": "corpus:entry.derived.oklch",
       "action": null,
       "measured": {
         "fg": "#C1C3C6"
@@ -806,7 +804,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:notation.cielab",
+      "binding": "static:coord.lab",
       "action": null,
       "measured": {
         "fg": "#CDCED2"
@@ -844,7 +842,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:cielab",
+      "binding": "corpus:entry.derived.lab",
       "action": null,
       "measured": {
         "fg": "#C1C3C6"
@@ -908,7 +906,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:notation.srgb",
+      "binding": "static:coord.rgb",
       "action": null,
       "measured": {
         "fg": "#CDCED2"
@@ -946,7 +944,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:srgb",
+      "binding": "corpus:entry.derived.hex",
       "action": null,
       "measured": {
         "fg": "#C1C3C6"
@@ -1010,7 +1008,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:notation.displayP3",
+      "binding": "static:coord.displayP3",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1058,20 +1056,21 @@
       "parent": null,
       "component": "ui:Card",
       "box": {
-        "x": 51,
+        "x": 54,
         "y": 889,
-        "w": 667,
+        "w": 472,
         "h": 146
       },
       "dp": {
-        "x": -1.5,
+        "x": 1,
         "y": 640,
-        "w": 540.5,
+        "w": 382.5,
         "h": 118.5
       },
       "tokens": {
         "bg": "level1",
-        "border": "border.subtle"
+        "border": "border.subtle",
+        "radius": "md"
       },
       "type": null,
       "icon": null,
@@ -1081,6 +1080,9 @@
       "measured": {
         "bg": "#20232A"
       },
+      "raw": {
+        "cornerPx": 10.25
+      },
       "copy": null
     },
     {
@@ -1089,13 +1091,13 @@
       "parent": "06.provenance",
       "component": "ui:Illustration",
       "box": {
-        "x": 475,
+        "x": 283,
         "y": 895,
         "w": 231,
         "h": 134
       },
       "dp": {
-        "x": 342,
+        "x": 186.5,
         "y": 645,
         "w": 187,
         "h": 108.5
@@ -1172,7 +1174,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.provenance.note",
+      "binding": "corpus:entry.provenance",
       "action": null,
       "copy": {
         "shape": "body",
@@ -1207,7 +1209,7 @@
       },
       "icon": "seal-check",
       "illustration": null,
-      "binding": "corpus:entry.review",
+      "binding": "corpus:entry.provenance.verification",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1220,20 +1222,21 @@
       "parent": null,
       "component": "ui:Card",
       "box": {
-        "x": 51,
+        "x": 54,
         "y": 1049,
-        "w": 329,
+        "w": 472,
         "h": 173
       },
       "dp": {
-        "x": -1.5,
+        "x": 1,
         "y": 769.5,
-        "w": 266.5,
+        "w": 382.5,
         "h": 140
       },
       "tokens": {
         "bg": "level1",
-        "border": "border.subtle"
+        "border": "border.subtle",
+        "radius": "md"
       },
       "type": null,
       "icon": null,
@@ -1242,6 +1245,9 @@
       "action": null,
       "measured": {
         "bg": "#1F2229"
+      },
+      "raw": {
+        "cornerPx": 10.25
       },
       "copy": null
     },
@@ -1306,7 +1312,7 @@
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.0",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -1330,7 +1336,12 @@
         "bg": "level2",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.0.rank",
@@ -1364,7 +1375,7 @@
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.1",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -1388,7 +1399,12 @@
         "bg": "level2",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.1.rank",
@@ -1422,7 +1438,7 @@
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.2",
-      "action": "navigate:/wardrobe/[id]",
+      "action": "navigate:/wardrobe/with/[id]",
       "copy": null
     },
     {
@@ -1446,7 +1462,12 @@
         "bg": "level2",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.2.rank",
@@ -1478,7 +1499,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -1513,7 +1534,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -1548,7 +1569,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -1567,15 +1588,15 @@
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
-        "x": 51,
+        "x": 53,
         "y": 1222,
-        "w": 667,
+        "w": 474,
         "h": 78
       },
       "dp": {
-        "x": -1.5,
+        "x": 0,
         "y": 909.5,
-        "w": 540.5,
+        "w": 384,
         "h": 63
       },
       "tokens": {
@@ -1598,25 +1619,33 @@
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
-        "x": 68,
+        "x": 70,
         "y": 1245,
-        "w": 312,
+        "w": 214,
         "h": 44
       },
       "dp": {
-        "x": 12,
+        "x": 14,
         "y": 928.5,
-        "w": 253,
+        "w": 173.5,
         "h": 35.5
       },
       "tokens": {
-        "bg": "action.primary"
+        "bg": "action.primary",
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
       "icon": "arrow-right",
       "illustration": null,
       "binding": "static:detail.wearIt",
-      "action": "navigate:/atlas/with/[slug]",
+      "action": "navigate:/atlas/wear/[slug]",
+      "raw": {
+        "cornerPx": 9.25
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1628,25 +1657,33 @@
       "parent": "06.actions",
       "component": "ui:Button",
       "box": {
-        "x": 390,
+        "x": 294,
         "y": 1246,
-        "w": 310,
+        "w": 215,
         "h": 42
       },
       "dp": {
-        "x": 273,
+        "x": 195,
         "y": 929,
-        "w": 251,
+        "w": 174,
         "h": 34
       },
       "tokens": {
-        "border": "border.subtle"
+        "border": "border.subtle",
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:detail.holdAsTarget",
-      "action": "navigate:/lens/against",
+      "action": "navigate:/lens",
+      "raw": {
+        "cornerPx": 8
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1658,13 +1695,13 @@
       "parent": "06.actions.hold",
       "component": null,
       "box": {
-        "x": 419,
+        "x": 323,
         "y": 1256,
         "w": 21,
         "h": 21
       },
       "dp": {
-        "x": 296.5,
+        "x": 218.5,
         "y": 937.5,
         "w": 17,
         "h": 17
@@ -1788,6 +1825,16 @@
         "w": 326,
         "h": 173
       }
+    },
+    {
+      "what": "garbled-text",
+      "note": "\"Color\" in the readout title, on a screen the en-GB catalogue spells \"Colour\" (§2; F-247)",
+      "box": {
+        "x": 212,
+        "y": 711,
+        "w": 52,
+        "h": 22
+      }
     }
   ],
   "departures": [
@@ -1809,7 +1856,32 @@
     {
       "rule": "E1",
       "element": "06.provenance.body",
-      "why": "the provenance line is the corpus entry’s own note; 06’s dated manuscript is sample content no entry holds — none of the 120 claims an era"
+      "why": "the provenance line is the corpus entry’s own: its classification, source, source type and licence (ADR-0146); 06’s dated manuscript is sample content no entry holds — none of the 120 claims an era"
+    },
+    {
+      "rule": "E1",
+      "element": "06.provenance.title",
+      "why": "\"Cultural Heritage\" presents a 2026 construction as heritage (FR-23); the heading names the corpus source and the review, as 26’s コーパス典拠と査読 does (ADR-0146)"
+    },
+    {
+      "rule": "E1",
+      "element": "06.provenance.review",
+      "why": "\"Verified\" is sample content; the line says the check the record holds — its independence and date (ADR-0146, F-084)"
+    },
+    {
+      "rule": "E1",
+      "element": "06.taxonomy",
+      "why": "the pill names the entry’s own family group, era and season; no entry holds an era (Era: None) and 96 of 120 no season (Season: Not assigned) — 06’s Edo Period and Autumn are sample content (ADR-0146)"
+    },
+    {
+      "rule": "E1",
+      "element": "06.readout.table.hex.value",
+      "why": "the entry’s own hex; for the one entry outside sRGB the row adds the nearest-rendering note (E2, ADR-0146)"
+    },
+    {
+      "rule": "E1",
+      "element": "06.combinations.item-1.photo",
+      "why": "the person’s own garments the engine ranks best with this colour (ADR-0148); 06’s trousers, derby and scarf are sample content — and a garment with no photograph is drawn as its colour (E4)"
     }
   ],
   "conflicts": [
@@ -1840,13 +1912,13 @@
     {
       "id": "C3",
       "elements": ["06.readout.title", "06.provenance.title", "06.combinations.title"],
-      "resolution": "P1 + P2: 06's layout governs colour detail; 26 governs its Japanese headings and typography",
+      "resolution": "P1 + P2: 06's layout governs colour detail; 26 governs its Japanese headings and typography — the hero kanji at 26's measured step, the provenance lines at 26's body. The readout stays 06's table in Japanese: a screen never has two layouts (§6), and 26's grid is 26's layout (F-247, ADR-0146)",
       "flippedByUser": false
     },
     {
       "id": "C19",
       "elements": ["06.combinations"],
-      "resolution": "the right-hand card is not design (§2); Wearable Combinations spans the row",
+      "resolution": "the right-hand card is not design (§2); Wearable Combinations spans the row, fitted to the screen with the other lower regions (F-247, ADR-0145)",
       "flippedByUser": false
     }
   ]

@@ -42,7 +42,8 @@ describe('the defaults are the inventories’, recomputed', () => {
   it('CARD_RADIUS is the step most cards are bound to — md, not the lg it replaced', () => {
     const count = (step: string): number =>
       cards.filter((e) => e.tokens?.['radius'] === step).length;
-    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([66, 21, 4]);
+    // F-247 measured 06's three cards (readout, provenance, combinations): md, 66 → 69.
+    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([69, 21, 4]);
     expect(CARD_RADIUS).toBe('md');
     expect(CARD_RADIUS).not.toBe('lg');
   });

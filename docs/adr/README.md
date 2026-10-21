@@ -160,6 +160,11 @@ Two rules that matter more than the format:
 | [0142](0142-the-atlas-says-what-05-says-made-true.md) | The Atlas says what 05 says, made true | Accepted |
 | [0143](0143-the-atlas-controls-do-what-05-draws-and-its-overflow-holds-the-facets-05-does-not-draw.md) | The Atlas's controls do what 05 draws, and its overflow holds the facets 05 does not draw | Accepted |
 | [0144](0144-the-sweep-reads-an-element-a-conflict-replaces-as-declared.md) | The sweep reads an element a conflict replaces as declared, against the inventory's own record | Accepted |
+| [0145](0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md) | 06's screen is its upper panel, and what it draws wider is fitted to it | Accepted |
+| [0146](0146-the-colour-page-says-what-06-says-made-true-and-in-japanese-takes-26s-words-on-06s-layout.md) | The colour page says what 06 says, made true, and in Japanese takes 26's words on 06's layout | Accepted |
+| [0147](0147-what-leaves-the-colour-page-and-where-each-drawn-action-goes.md) | What leaves the colour page, and where each drawn action goes | Accepted |
+| [0148](0148-wearable-combinations-are-the-persons-own-garments-the-engine-ranks-best-with-this-colour-as-a-top.md) | Wearable Combinations are the person's own garments the engine ranks best with this colour as a top | Accepted |
+| [0149](0149-06s-card-art-is-inked-at-its-measured-0-31-and-its-review-seals-green-is-minted.md) | 06's card art is inked at its measured 0.31, and its review seal's green is minted | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

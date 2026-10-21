@@ -102,9 +102,12 @@ export default {
     }),
     t('26.hero.kanji', B(172, 428, 95, 47), '26.hero', 'corpus:entry.kanji', {
       tokens: { fg: 'text.primary' },
-      type: text('gothic', 'title', 600),
+      // F-247 re-measured it from NotoSansJP's outlines (serif-weight --em, calibrated within 1 %): 50.7 px,
+      // 39.2 dp an em; its stems read 382–430 on the axis — the regular cut, 400. The recorded title 600
+      // was the step's default, not a reading.
+      type: text('gothic', 'title', 400),
       copy: { shape: 'heading', script: 'japanese' },
-      raw: { emDp: 40.4 },
+      raw: { emDp: 39.2 },
     }),
     t('26.hero.description', B(171, 492, 413, 47), '26.hero', 'corpus:entry.description', {
       tokens: { fg: 'text.secondary' },
@@ -212,7 +215,9 @@ export default {
     el('26.provenance.seal', 'new:HankoSeal', B(562, 1123, 38, 38), {
       tokens: { fg: 'text.tertiary' },
     }),
-    t('26.provenance.review', B(168, 1149, 213, 20), null, 'corpus:entry.provenance.review', {
+    // F-247 measured it and the corpus line: each inks 18–19 px of kanji (about 0.88 em) — about 16.3 dp
+    // an em, body, as recorded. On 06's layout in Japanese the provenance lines take this step (P2).
+    t('26.provenance.review', B(168, 1149, 213, 20), null, 'corpus:entry.provenance.verification', {
       tokens: { fg: 'text.secondary' },
       copy: { shape: 'value', script: 'japanese' },
     }),
@@ -273,6 +278,11 @@ export default {
     { rule: 'E1', element: '26.provenance.corpus', why: TRADITIONAL },
     {
       rule: 'E1',
+      element: '26.provenance.review',
+      why: '承認済み ("approved") is sample content; the line says the check the record holds — its independence and date (F-247, ADR-0146, F-084)',
+    },
+    {
+      rule: 'E1',
       element: '26.hero.description',
       why: 'the description dates the colour to the mid-Edo period — provenance no entry holds (§4 E1, ADR-0065); the line shows the entry’s own description',
     },
@@ -308,9 +318,22 @@ export default {
     },
     {
       id: 'C3',
-      elements: ['26.kasane', '26.kasane.bar', '26.provenance.seal'],
+      elements: [
+        '26.title',
+        '26.hero',
+        '26.hero.photo',
+        '26.hero.description',
+        '26.next-card',
+        '26.readout.grid',
+        '26.kasane',
+        '26.kasane.label',
+        '26.kasane.bar',
+        '26.provenance.seal',
+        '26.actions.add',
+        '26.actions.share',
+      ],
       resolution:
-        "P1 + P2: 06's layout; 26's headings and Japanese typography. The hanko seal and the kasane bar are 26-only and not adopted by default",
+        "P1 + P2: 06's layout; 26's headings and Japanese typography (F-247, ADR-0146). 26's own composition is not adopted: its title (06 draws none), its hero card with text on the photo, the description, the next card's peek, the readout grid (the table stays 06's: a screen never has two layouts), the kasane card and bar, the hanko seal and its two actions",
       flippedByUser: false,
     },
     {

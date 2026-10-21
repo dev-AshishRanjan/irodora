@@ -69,6 +69,8 @@ const subsetFont = rootRequire('subset-font');
 const FRACTIONS = [0.25, 0.35, 0.45, 0.55];
 const BAND = 0.04;
 const WEIGHTS = Array.from({ length: 13 }, (_, i) => 400 + i * 25);
+/** Noto Sans JP's axis runs 100-900; the drawn kanji are read across 300-800. */
+const GOTHIC_WEIGHTS = Array.from({ length: 21 }, (_, i) => 300 + i * 25);
 /** Noto Serif JP's axis runs 200-900. */
 const MINCHO_WEIGHTS = Array.from({ length: 29 }, (_, i) => 200 + i * 25);
 
@@ -164,6 +166,32 @@ const CROPS = [
     polarity: 'light',
     font: GOTHIC,
     dpPerPx: 1.3521,
+  },
+  // 06's and 26's hero kanji 藍鼠, in the gothic (C6): read for their ems (F-247, ADR-0121), the two
+  // measured steps the type census owes, and for their weights on the gothic's axis — 26 draws its
+  // kanji heavier than 06 (ADR-0112: a drawn weight the bundled cut cannot set is named, not faked).
+  // A crop is the kanji's own box, ink to ink.
+  {
+    id: '06-kanji',
+    role: 'gothic',
+    weights: GOTHIC_WEIGHTS,
+    img: '06_color_detail_centerpiece.jpg',
+    box: [84, 574, 120, 59],
+    word: '藍鼠',
+    polarity: 'light',
+    font: GOTHIC,
+    dpPerPx: 0.8101,
+  },
+  {
+    id: '26-kanji',
+    role: 'gothic',
+    weights: GOTHIC_WEIGHTS,
+    img: '26_color_detail_japanese.jpg',
+    box: [172, 428, 95, 47],
+    word: '藍鼠',
+    polarity: 'light',
+    font: GOTHIC,
+    dpPerPx: 0.7742,
   },
   // 20's card: the kanji 藍鼠 (C6), in the mincho — the check on the inventory's recorded 400.
   {

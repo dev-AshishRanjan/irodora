@@ -71,7 +71,8 @@ describe('the defaults are the inventories’, recomputed', () => {
   it('the corner defaults to sm, the step most samples are bound to', () => {
     const sm = samples.filter((e) => e.tokens?.['radius'] === 'sm').length;
     const md = samples.filter((e) => e.tokens?.['radius'] === 'md').length;
-    expect([sm, md]).toStrictEqual([44, 29]);
+    // F-247 measured 06's hero: sm, 44 → 45.
+    expect([sm, md]).toStrictEqual([45, 29]);
     const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} />);
     expect(sampleNode(tree)['borderRadius']).toBe(swatchCorner(SWATCH_SIZE, 'sm').sample);
   });

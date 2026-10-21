@@ -61,8 +61,8 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
 - square brackets inside an outlined pill — `05`'s *[Compare] [Finder] [Palettes]*: the outline already
   says "button", and a bracket inside it is the wireframe's placeholder notation, as `06`'s bracketed
   names are (`F-246`, ADR-0142 D3). OQ-23 still asks the same of `13 16 17 18`'s headings and roles;
-- *"Color"* on a screen that spells *"Colour"* twice (`05`'s family label): the catalogue is en-GB
-  (`F-246`, ADR-0142 D4).
+- *"Color"* on a screen that spells *"Colour"* twice (`05`'s family label), and in `06`'s *Scientific
+  Color Space Readout Table*: the catalogue is en-GB (`F-246`, ADR-0142 D4; `F-247`, ADR-0146).
 
 **Pixels and tokens agree.** The README token table is the declared value; the rendered pixels
 were measured (dominant colours, 6-bit quantised) and match it within JPEG noise:
@@ -120,6 +120,14 @@ rule 3 make this non-negotiable, and the mockups show why:
   and *"Edo Era"* name eras no entry holds: the line is the season the entry was authored with, and is
   absent where none is; and every card prints its OKLCh line, which 05's fourth card omits
   (ADR-0140).
+- **`06` and `26`'s colour page** (`F-247`, [ADR-0146](../adr/0146-the-colour-page-says-what-06-says-made-true-and-in-japanese-takes-26s-words-on-06s-layout.md)):
+  the pill names the entry's own family group, *Era: None* (no entry holds one) and its season or *Not
+  assigned*; *"Cultural Heritage"* becomes *Provenance & Review* (26's コーパス典拠と査読); the provenance
+  card's bold lead is the classification and its body the record's source, source type and licence;
+  *"Verified"* and 承認済み become the check the record holds, its independence and date (F-084); the
+  back word is the Atlas tab's (色図鑑, where 26 prints 伝統色一覧); the readout's values are the
+  engine's, Display-P3 a real conversion of the record's XYZ; and the three garments are the person's
+  own (ADR-0148).
 - **Texture drawn inside a sample**: `12`'s fabric sample carries a woven texture. The sample is the
   colour (or the stored photograph where the binding is a photo), so `FabricSwatch` draws the colour
   and its pinked edge, not the weave (`F-233`).
@@ -147,6 +155,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `04` | *"(Identical Hue)"* | the ΔH figure and its descriptor band (ADR-0125's hue phrase); FR-74 never asserts identity. Outside `F-219`’s five classes, so this row and `F-245` hold it, not the lint |
 | `02` `27` | *"色の測定"*, *"Measurement Refused"* | a camera estimate is never called a measurement (golden rule 11, E-089): the Lens is an estimate in both languages, and the refused state names a reading. Outside `F-219`’s five classes; held by this row, `F-243` and `F-236` |
 | `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
+| `06` | a hex printed as the colour | for the one entry of 120 outside sRGB, the hex is the nearest sRGB rendering, and its row says so with the ΔE00 between the two (rule 11; `F-247`, ADR-0146 D4) |
 | `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps (claims-ok: quotes the drawn construction this row resolves) |
 | `01` | *"14 Garments • 38 Valid Outfits"*, on a wardrobe with no stored profile | the valid outfits are `coverage().valid`, which needs a profile to score against; without one the pill prints the garment count alone and invents no figure. With a profile it prints both, as drawn (`F-242`, [ADR-0138](../adr/0138-home-leads-with-the-days-corpus-colour-as-01-binds-it-and-draws-no-reading.md) D6) |
 
@@ -271,7 +280,14 @@ line holds more than that line — in Japanese, on a 360 or 320 dp phone, or at 
 element wraps below the first, keeping its own size: on `01`, the on-device pill under the tagline, the
 count pill under *Wardrobe Preview*, and the colour card's heading onto a second line; on `05`, the
 title, the count and pills row, the season row, a card's kanji and hex, and the heading row
-(`F-246`). Truncation is OQ-49's separate question for the tab bar's words.
+(`F-246`); on `06`, the names row, the *Family • Era • Season* pill (a badge that wraps, its drawn height
+a minimum) and every card's text (`F-247`). Truncation is OQ-49's separate question for the tab bar's
+words. A pill, chip, badge or small button drawn at a fixed height still clips its words at 200 % text:
+a component defect, `F-344`.
+
+**`06`'s three header icons** are drawn at a 33 dp pitch, so a full 44 / 48 dp target each cannot exist
+without overlapping its neighbour: each keeps its whole target inside the bar (`targetRoom`), and the
+overlap is `F-305`'s (`F-247`).
 
 ### E4 — A required capability no mockup draws
 
@@ -368,6 +384,12 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   temperature, lightness and chroma, each a single choice in `05`'s pill form (no era while no entry
   holds one). *Showing n / N* and *Clear* sit at the trailing end of the *Atlas* heading row, and only
   while anything narrows the list, so `05`'s drawn state is unchanged (ADR-0135 D4's line, moved).
+- **The colour page's states `06` does not draw** (`F-247`,
+  [ADR-0148](../adr/0148-wearable-combinations-are-the-persons-own-garments-the-engine-ranks-best-with-this-colour-as-a-top.md),
+  [ADR-0147](../adr/0147-what-leaves-the-colour-page-and-where-each-drawn-action-goes.md)): *Wearable
+  Combinations* with no garments is `27`'s wardrobe card, and with none that pairs `27`'s card with
+  *Add a garment*; a garment with no photograph is drawn as its colour, a rounded sample (no sample is
+  round, C7); and a colour this corpus does not hold keeps the app bar's back above `00`'s caption.
 
 ---
 
@@ -616,7 +638,7 @@ themes and **both** locales — a screen never has two layouts.
 |---|---|---|
 | **C1** | The tab bar is drawn nine ways — `01` five labelled; `02` three; `05 09 11 15 18` four, all different; `21` three; `25` four labelled, no Profile | **P5 → `01`**: Home · Atlas · Lens · Wardrobe · Profile, icon **and** label. The label reads *Lens* (`02` and `25` both say so; `01` says *Lens Camera*). The current order already matches; labels return, which reverses `F-168` — done by `F-234` ([ADR-0117](../adr/0117-the-tab-bar-is-01s-drawn-by-our-own-component-and-its-words-return.md)) |
 | **C2** ⇄ | Home `01` and Home-light `25` are different designs — lockup, hero shape, where the text sits, the CTA, the wardrobe strip, the tab bar | **P1 + P2**: `01`'s layout, `25`'s palette. The README itself calls `25` a *"light mode translation"*. `25`'s page dots are built (`PageDots`, F-235, ADR-0120) and live in the registry: `01` draws none, so no screen shows them until C2 is flipped |
-| **C3** ⇄ | Colour detail `06` and its Japanese `26` are different designs | **P1 + P2**: `06`'s layout; `26`'s headings (測色値と表色系 · 着こなしの配色調和 · コーパス典拠と査読) and Japanese typography. `26`-only elements — the hanko seal, the kasane bar — are not adopted by default. F-235 builds `26`'s readout grid as `ReadoutTable form="grid"`, for the Japanese locale's typography (P2); which form `06`'s Japanese screen uses is F-247's |
+| **C3** ⇄ | Colour detail `06` and its Japanese `26` are different designs | **P1 + P2**: `06`'s layout; `26`'s headings (測色値と表色系 · 着こなしの配色調和 · コーパス典拠と査読) and Japanese typography. `26`-only elements — the hanko seal, the kasane bar — are not adopted by default. F-235 builds `26`'s readout grid as `ReadoutTable form="grid"`, for the Japanese locale's typography (P2). **`F-247` decides it** ([ADR-0146](../adr/0146-the-colour-page-says-what-06-says-made-true-and-in-japanese-takes-26s-words-on-06s-layout.md) D5): `06`'s Japanese screen keeps `06`'s table — a screen never has two layouts — and takes `26`'s three headings, its hero kanji's measured step and its provenance lines at `body`; `26`'s title, hero card, description, next card, grid, kasane, hanko seal and two actions are not adopted |
 | **C4** | The lockup is drawn four ways — `00` coral outline mark; `01` filled white mark + *Irodora*; `14` silver mark + *Irodora* + 彩り・色の知性; `25` *IRODORA 彩度* + outline mark; `27`'s working state an outline of petal rings and rays, in purple | mark geometry from `14`; in-app lockup from `01`; splash lockup from `14`. Monochrome everywhere, including the icon — supersedes [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md). `00`'s, `25`'s and `27`'s variants are not used: `27`'s working state draws `14`'s blossom at `27`'s reach, in its C10 tint (`F-236`). **Built by `F-230`** ([ADR-0122](../adr/0122-the-mark-is-14s-blossom-in-one-ink-everywhere-its-cuts-drawn-as-holes.md), [ADR-0123](../adr/0123-a-lockup-is-one-figure-its-intervals-ratios-of-the-names-em-outside-the-spacing-snap.md)): `14`'s blossom drawn from code, its cuts holes, in one neutral ink; the icon `text.secondary` on the dark ground; `01`'s row and `14`'s stack each one figure, its intervals ratios of the name's em. **The icon's tile and the splash by `F-231`** ([ADR-0126](../adr/0126-the-icon-is-14s-tile-full-bleed-its-corner-and-its-rim-the-platforms.md), [ADR-0127](../adr/0127-the-launch-is-14s-splash-continued-from-the-native-frame-in-the-phones-appearance.md)): `14`'s gradient tile, full-bleed, its corner and its rim the platform's; the native splash's mark at the splash lockup's size; the lockup in the launch overlay |
 | **C5** | Board `00` draws a *Level 1* card white | **P3**: the screens draw it `#20232A` |
 | **C6** | Kanji are sans on `01 05 06 26`, Mincho on the card `20` | each surface follows its own mockup — the card needs a Japanese serif face |
@@ -632,7 +654,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C16** | `24` is routed to `wardrobe/with/[id]` only | it also governs `atlas/with/reading/[id]` — its *"Estimated from a capture"* chip is that route's case |
 | **C17** ⇄ | `14` draws the splash dark only | light appearance: `14`'s composition in `25`'s palette — so a light-mode launch does not flash dark then light. **Built by `F-231`** (ADR-0127): every element takes its role's Washi token, the glow included — the mark's own ink, so on Washi it is a soft dark halo, which `F-267` compares by eye |
 | **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn. Settled by `F-220` against FR-73's acceptance text: it also requires each proposed colour's gamut cost and each combination's family and generated-or-curated mark, none of which `19` draws — **OQ-27** |
-| **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row |
+| **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row, fitted to the screen with the other lower regions (`F-247`, [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md)) |
 | **C20** | The line around a sample is drawn light grey on `01` (#AF–#C0, 2.5 dp), `06` (#BE–#C9, 6.9 dp), `03` (#A0A5AB, 1 dp) and `20` (#717B84, 1 dp); the README's keyline is `#FFFFFF22`, which over the card reads `#3E4046` | **P4** for the value: the README keyline, moved per sample where it fails 3:1 (§4 E3, ADR-0116). **P1** for the width: each screen's, recorded as `raw.keylinePx` and drawn with `keylineWidth` (`F-233`). Found by `F-233`'s review |
 
 **The C10 census (`F-225`, [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)).**
@@ -709,7 +731,7 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `03` | *"97% Match"* | `similarityPercent` (FR-7, ADR-0048), floored, with *Similar* — the drawn word does not ship (ADR-0124) | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | `04` | ΔE00, ΔL\*, ΔC\*, ΔH and their readings | the FR-48 metric set (FR-74); the readings `deltaE00Band` and `axisReading` over `deltaE00Terms` — one table ([ADR-0125](../adr/0125-a-delta-e00-is-described-by-one-table-of-three-bands-anchored-on-published-thresholds.md)) | `F-222` |
 | `05` | the count; each card's hex, OKLCh and last line; the family chips' dots | `CORPUS_ENTRY_COUNT`; engine derivation at 3, 3, 1 decimals; the authored season, or nothing (ADR-0140); each family group's medoid entry, a corpus colour with its provenance (ADR-0143 D4) | `F-246` |
-| `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season | engine conversions — P3 is a real conversion; taxonomy, where era is empty for all 120 | exists |
+| `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season; the three garments | the record's derivation (hex, OKLCh at 3, 3, 1 decimals, CIELAB at 1); sRGB the hex's bytes; Display-P3 the engine's conversion of the record's XYZ at render, 3 decimals (the bundle holds none); the family group, *Era: None* for all 120, the season or *Not assigned* (ADR-0146); the person's garments ranked by `scoreOutfit` with this colour as a top, order only (ADR-0148) | `F-247` |
 | `07` | personal fit %, CVD separation %, contrast | FR-29, FR-5, FR-3 (ratio and Lc apart) | exists |
 | `08` | ΔE00 · ΔEok · ΔL\* · ΔC\* · ΔH · WCAG · APCA · three separations | FR-48, FR-3, FR-5; the four readings beside ΔE00 and its components, ADR-0125's table | exists; readings `F-222` |
 | `09` | three slider readings | the lexicon terms holding the value | `F-250` |
@@ -778,7 +800,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
-| **OQ-19** | `06` draws two screen widths (479 px above, 667 px below). Which is the screen? | `F-247` |
 | **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
 | **OQ-23** | `13 16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-257` `F-260` `F-263` |
 | **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? F-235 measured more: the vertices take two inks — blue at Temperature and Depth (#94B5E0, #89ADE0), grey at Muted Tolerance and Chroma (#C2C1C5, #CDCDD1) — and the edge blends between them, over a #5E6675 fill. | `F-260` |
@@ -805,6 +826,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-19** | `06`'s screen is its upper panel; the cards and the action bar drawn wider are fitted to it, the art behind the provenance text | [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md) |
 | **OQ-17**, **OQ-18** | Every Atlas card prints its OKLCh line; its last line is the season the entry was authored with, absent where none is; no era is printed | [ADR-0140](../adr/0140-every-atlas-card-prints-its-oklch-line-ends-in-its-authored-season-and-prints-no-era.md) |
 | **OQ-43** | The chosen pill carries its leading dot, as `12`, `15` and `17` draw a choice | [ADR-0141](../adr/0141-the-chosen-season-pill-on-05-carries-its-leading-dot.md) |
 | **OQ-11** | The checkered badge on a garment tile marks a garment whose material is recorded, and is absent where none is: one mark as `01` draws it, in the ink text on that sample takes, hidden from assistive technology; the tile's name says the material in words | [ADR-0137](../adr/0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md) |
