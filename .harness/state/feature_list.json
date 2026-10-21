@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-20",
+  "updated": "2026-10-21",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -8411,7 +8411,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-221",
         "F-232",
@@ -8446,6 +8446,27 @@
       "notes": "MOCKUP 05. ELEMENTS: title \"Colour Atlas • <Japanese>\" with an overflow action; count pill with a document icon; outlined pills Compare · Finder · Palettes; search field \"Search kanji, romaji, family or #hex…\"; season chips All · Spring 春 · Summer 夏 · Autumn 秋 · Winter 冬 with All selected white; the \"Color Family\" label; family chips with a colour dot, romaji and kanji, horizontally scrolling (F-224 groups the families); the \"Atlas\" heading; two-column cards — sample above, kanji large with hex at right, romaji, OKLCh, and the era/season line. DEPARTURES: \"日本の伝統色\" and \"Sourced\" wording → classification-true (E1, FR-23); era shows the entry’s real value, which is empty for all 120; \"Search & Faceted Filter Section\" is a leaked label. FROM F-226 (2026-09-28): the Atlas's small headings (\"Filters\", the section eyebrows) used the old 10 px bold uppercase `label`; since ADR-0113 they are `caption`, weight 400, indistinguishable from the notes under them until this rebuild sets them as 05 draws them. FROM F-232 (2026-09-28): OQ-43 (raised by F-232, a person's): 05 draws its selected season chip as a fill swap with no mark, where ACCESSIBILITY §4 asks for highlight + checkmark and 12/15/17 mark a chosen pill with a leading dot. Chip draws either, so this waits on the answer, not on code. Also recorded for this screen: the family chips rest FILLED level1 (#1C2026, #1E2128) with the family's colour as a 6 dp dot and the kanji after the romaji — Chip's `ground=\"surface.1\"`, `dot`, `kanji`; the count is `Chip form=\"badge\"` with `fill=\"surface.2\"`, `icon=\"list\"`, `numeric`. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 05's card-top samples are 159.5×103 sm with the keyline, inset in their cards (not bled). FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-266 (ADR-0133): the Atlas keeps its records in one Arrival with Appear index on each, and its entry in screens.test's arrival registry (E-199). FROM F-221 (ADR-0134): enroll this surface in the inventory sweep — its id in .harness/verification/inventory-surfaces.json and its render and locators in screens.test's ENROLLED — in the same change; verify-mockups refuses closing this feature without it (E-203). Its capture is pnpm fidelity:capture's, read beside its mockup under compose/. FROM F-237 (ADR-0135): the search field carries the bookmark toggle at its trailing end (SearchField `trailing`; D1) — keep it, with its filled-and-selected on state (D2), its AND with the query and filters and its reset by Clear (D4), and the empty caption (D3). At 05’s drawn 26.5 dp the field’s touch container must still reach the tap target: Android does not deliver a touch outside the parent, so hitSlop past the field does nothing. bookmarks.test fails if the toggle is dropped (E-204).",
       "openQuestions": [
         "OQ-43"
+      ],
+      "plan": "plans/F-246-the-atlas-is-mockup-05.md",
+      "attested": [
+        {
+          "criterion": "The only departures from mockup 05 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+          "verifiedBy": "GATED FOR STRUCTURE, ATTESTED FOR APPEARANCE. pnpm test runs atlas-fidelity.test (order, grouping, and every size, corner, gap, type step, rendered weight and ink the screen passes, recomputed from mockups/inventory/05.json through §2's snap) and the inventory sweep (05.screen, both themes and languages; two C1-superseded tab elements declared). What no tree shows is the person's comparison under the capture criterion: each difference is a named departure (E1 title, count, OKLCh, swatch, card 4, era lines; E3 the chosen-pill dot and the wraps; E4 the bookmark toggle, the facets sheet, the count line; §2 the leaked label, the brackets, Color, the scroll cut; C1), or is fixed and recaptured, or recorded as a feature.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The fidelity harness captures the route beside mockup 05 in both themes and both locales, and a person has compared each pair and recorded the result",
+          "verifiedBy": "A person runs `pnpm fidelity:capture -- --erase-app-data` on an Android device or emulator at 384 dp, with a non-debuggable build of F-246's final commit and Maestro and adb on the PATH. record.md lists /atlas captured in Sumi/Washi × en/ja, composed beside 05 (25 for Washi) under .harness/verification/evidence/fidelity/<UTC>/compose/. The person compares element by element against 05's inventory and records per pair 'matches' or each difference in progress.md under F-246. Expected and not defects: the cards are the corpus's first entries, not 05's samples; 96 of 120 cards end without a season line; the chosen pill carries a dot; the title and count say Japanese-inspired and Original.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface",
+          "verifiedBy": "GATED except the device half: tsc + i18n.test, the action tests (atlas.test, bookmarks.test), pnpm test:a11y, test:contrast, test:cvd. ATTESTED on the capture’s device: a tap anywhere in the 26.5 dp field focuses it and the bookmark toggle takes its tap, with the season pills below still taking theirs; the family row scrolls to Nezumi; a tap on a card’s sample opens the colour; TalkBack reads a card as one control with its full name; at 200 % text in en and ja the title, the count/pills row, the season row, a card’s kanji/hex row and the heading row wrap and nothing clips; the generated atlas.yaml journey passes. Recorded in progress.md under F-246.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
