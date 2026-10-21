@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-20",
+  "updated": "2026-10-21",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -578,6 +578,14 @@
         {
           "kind": "file",
           "ref": "apps/mobile/e2e/capture/routes.json"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/atlas.ts#atlasCountLabel"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/i18n/index.ts#japaneseRun"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -585,7 +593,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue.",
+      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue. F-246: the Atlas’s catalogue changed — 05’s ten keys in (atlas.titleJa, compare, finder, searchPlaceholder, family, heading, moreFilters and the facets sheet’s three names), the old screen’s six out (unused keys fail i18n.test), atlas.palettes re-valued to Palettes and the ja atlas.title to 色図鑑; the /atlas capture anchor moved from atlas.title (now one line holding both scripts, which a Maestro text selector cannot match by its English alone) to atlas.family, and the journey opens a colour by its kanji (a card prints no English). generate-e2e-flows --check resolves both.",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
       "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves. F-091 ADDED A READER THAT IS NOT THE APP AND THAT `tsc` CANNOT SEE. The Atlas journey selects on the strings the app renders, so its spec names MESSAGE KEYS and scripts/generate-e2e-flows.mjs resolves them through this file — imported, not parsed, under Node 24 type stripping, so it is the object the app renders from rather than a regex’s opinion of it. The completeness mechanism that makes this link safe cannot reach a JSON spec: a renamed key breaks `ja` and every call site at compile time, and the journey silently not at all. So the guard here is a SECOND one — `generate-e2e-flows.mjs --check`, in `lint` — and it matters more than usual because the journey CANNOT BE RUN on this workstation (no JDK, no emulator; F-091 criteria 2 to 4 are attested). A hand-written flow would have gone wrong at the first rename with every gate green, which is why ADR-0086 generates it instead. F-139 ADDED TWO KEYS THAT ARE CONTROLS RATHER THAN PROSE — `browse.add` and `export.buildPalette`. A missing one is still a `tsc` failure, which is this link working; what is new is that the string is now an ACCESSIBLE NAME as well as a label, so a wrong or absent translation is an unusable control rather than an untranslated sentence. `browse.add` is deliberately reused by three screens (wardrobe, outfit builder, shopping check) because they point at ONE destination: three labels for one action would drift, and somebody who learned the word on one screen would meet a different one on the next.",
       "confidence": 0.95,
@@ -1110,6 +1118,10 @@
         {
           "kind": "file",
           "ref": "turbo.json"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/atlas.ts#familyDot"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1119,7 +1131,7 @@
         "packages/corpus"
       ],
       "severity": "high",
-      "guard": "gate:content (parseTaxonomyVocabulary refuses a family in no group, in two, an unknown one, the groups out of order or not nine; verify-content.mjs refuses a chip holding no authored entry, through entriesPerGroup) + gate:test (packages/corpus/test/taxonomy.test.ts pins all 25 placements and the printed chip row) + gate:lint (verify-cache-scope: content/taxonomy.json is a turbo global dependency so a taxonomy edit reruns that test)",
+      "guard": "gate:content (parseTaxonomyVocabulary refuses a family in no group, in two, an unknown one, the groups out of order or not nine; verify-content.mjs refuses a chip holding no authored entry, through entriesPerGroup) + gate:test (packages/corpus/test/taxonomy.test.ts pins all 25 placements and the printed chip row) + gate:lint (verify-cache-scope: content/taxonomy.json is a turbo global dependency so a taxonomy edit reruns that test) F-246: the Atlas draws taxonomy.groups as 05’s family chips (familyGroups(), ADR-0108’s order) with each group’s medoid as its dot — E-212.",
       "memory": "memory/effects/a-family-word-is-content-because-the-family-is.md",
       "rationale": "THE KEY SET COMES FROM CORPUS DATA, SO THE COMPILER CANNOT CHECK IT. Every other user-facing string in this app is a key in an enumerated TypeScript record whose completeness `tsc` proves (ADR-0056). A family is different: `taxonomy.family` is authored in content/colors, so the set of words that must exist is decided by a PUBLISH rather than by source — and tsc cannot see a key set that comes from JSON. That is why F-018 left the Atlas rendering `blue-grey` and `off-white` in the ja locale rather than adding a lookup table: a table in the app would be enumerated against a set the corpus controls, and a family added by a future publish would render blank or fall back to English, which ADR-0028 forbids precisely because fallback makes a gap invisible. SO COMPLETENESS MOVED FROM THE COMPILER TO GATE 11, and the link runs BOTH ways: publishing an entry with a new family breaks the vocabulary, and removing a vocabulary row breaks the corpus. A row nobody uses fails too — a dead row is how a live gap gets waved through later, the same rule the source register and the advisory register both carry. THE THIRD DESTINATION IS THE FONT, and it caught something: the Japanese family words render on the Atlas filter, every Atlas row and the detail screen, so verify-font-coverage.mjs now reads them — and doing so immediately reported 鼠 and 陶, which nothing else in the repository required. 鼠 alone appears in six of the 25 families, so a Japanese reader would have seen tofu on most of the grey filter chips. THE LOOKUP IS TOTAL OR IT THROWS: familyLabel has no fallback to the slug, because returning `blue-grey` quietly is the behaviour that let this survive from F-018 to F-090 in the first place. F-224 (2026-09-24) MADE IT CARRY THE CHIPS. `groups` places the 25 families under the nine chips ADR-0108 fixes — the six mockup 05 draws, in its order, then Ki, Shiro, Nezumi past the edge — by a rule written into the file (`groupRule`) and read from each family's OWN Japanese name, so the word a family is called by and the chip it sits under cannot disagree. The parser proves the groups partition the families; the content gate proves every chip finds an entry, because that is a fact about the corpus and not about this file. The order is `FAMILY_GROUPS`, a constant the Atlas imports rather than retypes, so a file that reorders the chips is refused instead of reordering a drawing. THE FONT AGAIN: each chip prints its kanji, so both font scripts read `groups[].kanji`. And the corpus package's test reads this file, so it became a turbo global dependency — verify-cache-scope refused the test until it was.",
       "confidence": 0.9,
@@ -2539,6 +2551,22 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/atlas-fidelity.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/atlas-states.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/bookmarks.test.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/family-locale.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -2546,7 +2574,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:test — F-018 criterion 1 now reads the list data (all 120 slugs under no filter) rather than walking the mounted tree, and the swatch assertion is a correspondence WITHIN the rendered window: every entry whose kanji is present must have its hex present. Both survive virtualisation; neither was weakened.",
+      "guard": "gate:test — F-018 criterion 1 now reads the list data (all 120 slugs under no filter) rather than walking the mounted tree, and the swatch assertion is a correspondence WITHIN the rendered window: every entry whose kanji is present must have its hex present. Both survive virtualisation; neither was weakened. F-246: the list is a two-column grid (numColumns 2) and its data is still the whole corpus under no filter, so the F-018 tests stand unchanged. The Atlas now mounts 05’s More filters sheet, so every test that renders it holds time still (F-158) — bookmarks.test, family-locale.test, atlas-fidelity.test and atlas-states.test each say so; a new test that renders the Atlas without fake timers fails on DevMenu after its render.",
       "memory": "memory/effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md",
       "rationale": "THE ATLAS VIRTUALISES NOW, and two tests went red immediately — neither a regression. F-018 criterion 1 is \"every corpus entry reachable in 3 interactions or fewer\", and it was asserted by walking the rendered tree for all 120 names. That was a fair proxy while the screen mounted every entry eagerly, which is exactly what criterion 4 of THIS feature rules out. REACHABLE WAS NEVER THE SAME AS SIMULTANEOUSLY RENDERED: the proxy broke and the property did not. The assertion moved to where the property is legible — the list data — which is stronger in one respect, because it says the corpus reaches the list rather than that a particular renderer mounted it. THE SECOND TEST HAD A DIFFERENT POINT and kept it: an entry is a COLOUR, not only a name. It compares the rendered window against itself, so it survives virtualisation. Weakening one and keeping the other would have left \"it draws colours\" unchecked, which is the tempting move when a test goes red for a reason you believe is benign. THE LATENT VERSION OF THIS: any test that counts nodes to prove coverage has the same problem, and the two readings are indistinguishable until something virtualises. Nothing else in the app does today.",
       "confidence": 0.9,
@@ -2607,7 +2635,7 @@
         "apps/mobile"
       ],
       "severity": "low",
-      "guard": "gate:typecheck — `ja` is typed AGAINST `en`, so the two locales cannot drift: a key deleted from one and left in the other is a type error, in both directions. Removing five keys from `en` alone would not compile.",
+      "guard": "gate:typecheck — `ja` is typed AGAINST `en`, so the two locales cannot drift: a key deleted from one and left in the other is a type error, in both directions. Removing five keys from `en` alone would not compile. F-246: the Atlas’s ja title is 色図鑑 and its title run is read from the ja catalogue in both locales (japaneseRun, ADR-0142 D5); family-locale.test reads the new title.",
       "memory": "memory/effects/a-deleted-ui-section-leaves-live-locale-keys.md",
       "rationale": "THE HERO ABSORBED THE NAMES SECTION, and five label keys died with it — `detail.names`, `detail.kanji`, `detail.kana`, `detail.romaji`, `detail.english`. Nothing FAILS when a key outlives its caller: it is a valid string in two locales that no screen reads, and the app is smaller and correct without it. That is the whole hazard — dead strings are the cheapest thing in a codebase to leave behind, and the translation cost of the next locale is paid per key, including the ones nobody renders. THE GUARD IS REAL BUT NARROW: typecheck holds the two locales identical, which is what stops a half-deletion, and it says nothing about whether a key is REACHED. Token reach has a gate for exactly this question and strings do not. If the corpus of dead keys ever grows past what a reader can hold, the answer is the same shape as `verify-token-reach.mjs`: enumerate the keys, grep the callers, and make the exemptions name a closing feature — ADR-0088.",
       "confidence": 0.9,
@@ -3400,7 +3428,7 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "verify-claims.mjs reads ja.ts with Japanese patterns: 13 of the 30 banned constructions can match Japanese — eight before F-219 — seven from F-172 and one from F-155 — and five more from F-219 (a percentage match, an absolute CVD-safety claim, a verdict on a score, institution grade, a spectrum the camera never measures). The lint refuses a scanned script for which it holds no pattern (\"COVERS NOTHING\"), and verify-claims-proof watches that refusal happen by dropping the non-ASCII patterns, besides one red case per Japanese pattern and the product's real Japanese copy as a case that must stay green. NOT GUARDED: whether the Japanese patterns match what a person would actually write. The lint prints its scope on every run — patterns that can match Japanese, and how many files of it — so a green result reads as coverage of that scope, not as a review; F-172 owes the review. (Superseded 2026-09-14 in F-219: this guard read \"NONE YET\", which stopped being true when F-172 landed.)",
+      "guard": "verify-claims.mjs reads ja.ts with Japanese patterns: 13 of the 30 banned constructions can match Japanese — eight before F-219 — seven from F-172 and one from F-155 — and five more from F-219 (a percentage match, an absolute CVD-safety claim, a verdict on a score, institution grade, a spectrum the camera never measures). The lint refuses a scanned script for which it holds no pattern (\"COVERS NOTHING\"), and verify-claims-proof watches that refusal happen by dropping the non-ASCII patterns, besides one red case per Japanese pattern and the product's real Japanese copy as a case that must stay green. NOT GUARDED: whether the Japanese patterns match what a person would actually write. The lint prints its scope on every run — patterns that can match Japanese, and how many files of it — so a green result reads as coverage of that scope, not as a review; F-172 owes the review. (Superseded 2026-09-14 in F-219: this guard read \"NONE YET\", which stopped being true when F-172 landed.) F-246: 05’s ja copy (日本に着想を得た色, のオリジナル色, the field’s placeholder, the facets sheet’s names) passes verify:claims, and atlas.test holds the two words that are claims about the corpus true of every entry: the title’s 日本に着想を得た色 (every entry japanese-inspired) and the count’s Original (every classification one the catalogue calls original), each with a planted decoy.",
       "memory": "memory/effects/the-claims-lint-only-speaks-english.md",
       "rationale": "THE JAPANESE HOME SCREEN CALLED AN ESTIMATE A MEASUREMENT. `home.lastReading` read 最後の測定 and `home.noReadings` read まだ測定がありません — 測定 is MEASUREMENT, and ADR-0031 binds that word to `reference` and `calibrated`, the two sources with an instrument behind them. A camera reading is `estimated`. Golden rule 11, broken at the front door, and found only because F-164 happened to be rewriting that copy. THE GATE WAS GREEN AND CORRECT BY ITS OWN LIGHTS: `verify-claims.mjs` walks EVERY file in the repository, `ja.ts` included, and all eleven banned patterns are ASCII — the ones about exactness, about a colour being the true or actual one, about a numeric accuracy percentage, about laboratory or professional grading, about guarantees, and about the app doing the measuring itself. So half the product's user-facing copy has never been checked for the rule the product cares about most. THE SHAPE IS NEW: every blind spot recorded before this was a checker that could not SEE its subject — a style engine resolving in Metro, colour arriving as an SVG prop, a signature reading the wrong axis. This one read every byte and had nothing to say, because what it knows how to recognise is written in one language. A CHECKER'S SCOPE CAN BE DEFINED BY ITS PATTERNS RATHER THAN BY ITS FILE LIST, and from outside those look identical: \"it scans everything\" and \"it checks everything\" are different claims, and the first is the one that gets stated. SIX OF THE EIGHT USES WERE FINE, which is the half that decides the fix: the `measure` screen says お手持ちの測定器の値を入力すると — enter the values from your own measuring device — and that is exactly the provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific overstatements, as the English list already does, and doing that in Japanese needs somebody who reads it. Recorded as F-172 rather than half-done.",
       "confidence": 0.95,
@@ -5213,7 +5241,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced. F-221: the inventory sweep in screens.test asserts every element of an ENROLLED surface is drawn, in both themes and both languages, counted inside the surface's own root with statically hidden nodes left out, one locator per element and an element per locator (31 elements: 14.splash and 27's four cards), with a removal decoy for each kind of locator; the composer crops a framed mockup to its inventory's screen, read live.",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced. F-221: the inventory sweep in screens.test asserts every element of an ENROLLED surface is drawn, in both themes and both languages, counted inside the surface's own root with statically hidden nodes left out, one locator per element and an element per locator (31 elements: 14.splash and 27's four cards), with a removal decoy for each kind of locator; the composer crops a framed mockup to its inventory's screen, read live. F-246: 05.json measured (chip, pill, count and placeholder at caption; the title at body 600, raw.emDp 17.8; the heading at label 600), the era rebound to corpus:entry.taxonomy.season, the finder’s action corrected to /atlas/find, the overflow’s action declared, E1/E3 departures and two garbled-text notDesign boxes added; PRD §10 closes OQ-17, OQ-18 and OQ-43; R9 §2, §4, §8 and §11 updated.",
       "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
       "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it. F-232 (2026-09-28): 00, 05, 09, 12, 15, 17 and 23 re-recorded from measurement (control tokens, plate radii, dots, the switch's true track, 12's level3 fills, 05's filled chips, 17's options as ui:Chip); the schema gains `raw.trackPx`/`thumbPx`/`glyphPx` and ADR-0115's plate rule in the `component` description, held by icon-control-forms.test (30 icon-only controls, 15 plated, 15 bare, with an ambiguous decoy). Control defaults are now DERIVED from these records (E-157).",
       "confidence": 0.9,
@@ -5745,6 +5773,10 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5753,7 +5785,7 @@
         "mobile"
       ],
       "severity": "medium",
-      "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34). SINCE F-234 Screen has two more slots, appBar and actionBar, both absent by default, so no screen changed by their arrival.",
+      "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34). SINCE F-234 Screen has two more slots, appBar and actionBar, both absent by default, so no screen changed by their arrival. F-246: Screen bleed — a screen that owns its viewport (scroll={false}) takes no frame padding and pads each block itself; bleed with scroll throws (atlas-forms.test, decoy: without bleed the frame is padded as before). The AppBar’s rule is a node of its own with APP_BAR_RULE_TEST_ID, and a leading inline title wraps where a centred one keeps numberOfLines 1 (app-bar.test, both ways). The screen-insets pin re-captured the Atlas only: the frame’s 24 left by design.",
       "memory": "memory/effects/a-screen-header-is-a-slot-not-a-screens-business.md",
       "rationale": "Mockup 23 draws the avatar in the screen header, left of the title, so the arrangement belongs to Screen rather than to the profile screen — and putting the picture above the first card instead would have been reordering what a mockup draws, which is the mistake F-239's review caught in a smaller form. Medium rather than high: the slot is additive and absent by default, so the blast radius is a header that gains a row wrapper only where a caller asks for one. It reaches every screen because every screen renders this component, which is also why the guard is the sweep rather than the profile screen's own test.",
       "confidence": 0.9,
@@ -6272,7 +6304,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy.",
+      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy. F-246: 05’s title re-measured at body 600 and its heading at label 600, both inside the type census; the caption readings below 12 dp are comments, not raw.emDp.",
       "memory": "memory/effects/the-caption-is-the-median-of-what-the-mockups-draw.md",
       "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set. F-230: an inventory re-reading can now also MOVE A MEASURED STEP — the median of its bound elements — or move an element across the 4 dp line, which the census reports as unbound or no longer owed.",
       "confidence": 0.85,
@@ -6442,6 +6474,10 @@
         {
           "kind": "file",
           "ref": "scripts/verify-a11y-proof.mjs"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/SearchField.tsx#SearchFieldProps"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6453,7 +6489,7 @@
         "packages/design-tokens"
       ],
       "severity": "critical",
-      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44. SINCE F-324 the a11y mutation proof (verify-a11y-proof.mjs, ci.yml “Gate 8 — a11y mutation proof”) plants a LabelledButton with no hitSlop and requires gate 8 to report tap-target; it fails as UNRUNNABLE when Button stops reaching the target through hitArea(height, height).",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44. SINCE F-324 the a11y mutation proof (verify-a11y-proof.mjs, ci.yml “Gate 8 — a11y mutation proof”) plants a LabelledButton with no hitSlop and requires gate 8 to report tap-target; it fails as UNRUNNABLE when Button stops reaching the target through hitArea(height, height). F-246: the drawn SearchField (05, 26.5 dp) keeps its touch container at max(platformTapTarget(), height), centred on the drawn box by negative margins, with the outline and glyph drawn under it (atlas-forms.test, decoy: without a height it is the filled field it was).",
       "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
       "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
     },
@@ -6559,6 +6595,14 @@
         {
           "kind": "symbol",
           "ref": "packages/ui/src/TextureBadge.tsx#TEXTURE_BADGE"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory/05.json"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/atlas.ts#ATLAS_SAMPLE"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6570,7 +6614,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart). F-242: texture-badge.test (TEXTURE_BADGE 14, the median of the ten sides of 01’s five badges, and TEXTURE_BADGE_CELLS from each badge’s raw.cells).",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart). F-242: texture-badge.test (TEXTURE_BADGE 14, the median of the ten sides of 01’s five badges, and TEXTURE_BADGE_CELLS from each badge’s raw.cells). F-246: the Atlas’s drawn sizes (ATLAS_SAMPLE, the season, family, count and nav heights, the field, the bar) are constants in atlas.ts, each recomputed from 05.json by atlas-fidelity.test (the size most siblings are drawn at); Chip, Button and ChoiceGroup gained steps and forms whose defaults did not move (atlas-forms.test decoys).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6858,7 +6902,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes.",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json).",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -7325,7 +7369,7 @@
           "ref": "docs/design/design-system.manifest.json"
         }
       ],
-      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up. F-222 re-subset Noto Sans JP twice (知 for 知覚できる差; 頼 and 率 for 信頼度 and 確率), and the guard held: GOTHIC's metrics matched the new subset's tables, and the test now reads 14's full tagline. F-231: the splash copy ships (brand.taglineJa, brand.splashSubline), and the Japanese subline brought 論 and 的 — the subset was re-cut and fonts.test re-read GOTHIC from it (E-183). F-242: the subset was re-cut for Home’s copy; fonts.test and brand.test re-read GOTHIC from it and pass.",
+      "guard": "apps/mobile/test/fonts.test.tsx reads head, hhea, OS/2, cmap, hmtx, loca/glyf and BASE from the bundled TTFs and requires GELASIO and GOTHIC to equal them — Gelasio's em, line metrics and \"Irodora\"'s advance and ink; Noto Sans JP's em, line metrics and ideographic character face. Decoys: Noto's typographic pair (the face does not set USE_TYPO_METRICS) and another word's extent. The test sits beside the fonts, so no cached task outside the app keys on them. F-230's review: the name's advance is now read KERNED (GPOS `kern`, pair positioning, formats 1 and 2), since platforms kern by default — Gelasio's one kerned class, L before two unencoded glyphs at −300, is the decoy — and every bundled face's `ownLine` in the manifest is held to its hhea line, rounded up. F-222 re-subset Noto Sans JP twice (知 for 知覚できる差; 頼 and 率 for 信頼度 and 確率), and the guard held: GOTHIC's metrics matched the new subset's tables, and the test now reads 14's full tagline. F-231: the splash copy ships (brand.taglineJa, brand.splashSubline), and the Japanese subline brought 論 and 的 — the subset was re-cut and fonts.test re-read GOTHIC from it (E-183). F-242: the subset was re-cut for Home’s copy; fonts.test and brand.test re-read GOTHIC from it and pass. F-246: 05’s ja copy brought 漢 into the subset (generate-font-subset regenerated; verify-font-coverage and --check green).",
       "memory": "memory/effects/the-lockups-arithmetic-reads-the-bundled-faces-metrics.md",
       "rationale": "The lockups align ink, not boxes (ADR-0123), and the arithmetic is the faces' metrics written down as constants, since a component cannot read a TTF. Re-subsetting Noto Sans JP (F-231 adds 知 with the splash copy) or updating Gelasio could move an ascender, the character face or the name's advance; the lockup would then sit off by a dp or two with every component test green. The font test fails instead."
     },
@@ -8072,7 +8116,7 @@
           "ref": "test"
         }
       ],
-      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129.",
+      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129. F-246: the Atlas keeps STATES { absent: empty }; two witness subjects added (a season chosen, more filters open).",
       "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
       "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
     },
@@ -8306,9 +8350,13 @@
         {
           "kind": "doc",
           "ref": ".harness/state/feature_list.json#F-262"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
         }
       ],
-      "guard": "The conformance subject `ChoiceGroup (pills, 15)`. packages/ui/test/pill-selection.test.tsx recomputes from 15’s boxes the height the screen passes (23 dp) and the xs gap; the form’s own default is CHIP_HEIGHT. apps/mobile/test/preferences-vision.test.tsx recomputes VISION_PILL_HEIGHT (decoy: the chosen box) and VISION_CARD_PADDING (the four insets’ median snapped to sm; decoy: every inset nearer sm than md) from 15’s inventory, holds the heading above the card at 500, and the order, the chosen pill, the presses and the route’s wiring.",
+      "guard": "The conformance subject `ChoiceGroup (pills, 15)`. packages/ui/test/pill-selection.test.tsx recomputes from 15’s boxes the height the screen passes (23 dp) and the xs gap; the form’s own default is CHIP_HEIGHT. apps/mobile/test/preferences-vision.test.tsx recomputes VISION_PILL_HEIGHT (decoy: the chosen box) and VISION_CARD_PADDING (the four insets’ median snapped to sm; decoy: every inset nearer sm than md) from 15’s inventory, holds the heading above the card at 500, and the order, the chosen pill, the presses and the route’s wiring. F-246: Pills gained selectedFill, selectedEdge, size and gap, and Choice.kanji (a Japanese run that is part of the option’s name); 15’s defaults are unchanged (atlas-forms.test decoy), and 05’s form draws accent with the leading dot (ADR-0141).",
       "memory": "memory/effects/fifteens-section-two-is-choicegroups-pill-form.md",
       "rationale": "ChoiceGroup’s pill form (radio-group semantics, F-232’s choice-pill tone) is the control in 15’s section 2. A change to its height, gap or semantics changes 15’s section, and F-262, which composes 15, keeps it."
     },
@@ -8482,7 +8530,7 @@
           "ref": ".harness/state/feature_list.json#F-259"
         }
       ],
-      "guard": "packages/ui/test/motion.test.tsx: the window recomputed from the scale; the stagger and its cap; a late row present at once (DECOY: outside an Arrival it enters); a row inside the window enters; the limit; a re-mount does not re-enter; reduced; a theme change moves nothing. apps/mobile/test/screens.test.tsx, \"every list surface arrives once\": one Arrival per surface with its rows indexed 0…n−1 (the Wardrobe's cross-section offset read off its own renderItem), a list without one named (DECOY), and the cited records present in the inventories. The ui registry subject `Arrival (a list arriving)`. Decoys for each other finding (two scopes, one row, a row out of order). LIMITS, STATED: a new list surface added without an Arrival is not detected, and neither is a record of a registered surface drawn outside an Appear. SINCE F-238 THE LOOKBOOK IS A LIST SURFACE: the Wardrobe’s saved outfits are one Arrival with Appear index 0…n−1, and screens.test asserts it in its own case (“the Wardrobe’s lookbook arrives once, in order”) — added by hand, because this registry’s stated limit is that a new list without one is not detected.",
+      "guard": "packages/ui/test/motion.test.tsx: the window recomputed from the scale; the stagger and its cap; a late row present at once (DECOY: outside an Arrival it enters); a row inside the window enters; the limit; a re-mount does not re-enter; reduced; a theme change moves nothing. apps/mobile/test/screens.test.tsx, \"every list surface arrives once\": one Arrival per surface with its rows indexed 0…n−1 (the Wardrobe's cross-section offset read off its own renderItem), a list without one named (DECOY), and the cited records present in the inventories. The ui registry subject `Arrival (a list arriving)`. Decoys for each other finding (two scopes, one row, a row out of order). LIMITS, STATED: a new list surface added without an Arrival is not detected, and neither is a record of a registered surface drawn outside an Appear. SINCE F-238 THE LOOKBOOK IS A LIST SURFACE: the Wardrobe’s saved outfits are one Arrival with Appear index 0…n−1, and screens.test asserts it in its own case (“the Wardrobe’s lookbook arrives once, in order”) — added by hand, because this registry’s stated limit is that a new list without one is not detected. F-246: the Atlas is a grid now; one Arrival around it, each cell’s Appear indexed in reading order, the screens/Atlas entry kept in \"every list surface arrives once\".",
       "memory": "memory/effects/a-list-arrives-once.md",
       "rationale": "ADR-0133 §7: a list arrives once — rows mounting within the window of its first row stagger, and a row scrolled, windowed or re-keyed in later is simply there. Every list surface rebuilt by F-246 to F-259 keeps its Arrival and its entry in the registry; without it, a virtualised list re-enters every row it scrolls in."
     },
@@ -8641,9 +8689,13 @@
         {
           "kind": "gate",
           "ref": "lint"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/test/inventory.ts#supersededFindings"
         }
       ],
-      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing.",
+      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211.",
       "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
       "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
     },
@@ -8702,7 +8754,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test. SINCE F-238 the root layout mounts a second provider beside it (LookbookProvider, E-205); bookmarks.test’s route assertions still hold, and lookbook.test mirrors them.",
+      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test. SINCE F-238 the root layout mounts a second provider beside it (LookbookProvider, E-205); bookmarks.test’s route assertions still hold, and lookbook.test mirrors them. F-246: the toggle stays in 05’s drawn field; Clear moved to the heading row (ADR-0143 D6). bookmarks.test is adapted — the card’s name (atlasCardName), the family chip, and a query that is only a name (kage: no family word, no lexicon term, no hex, asserted) — with every decoy kept.",
       "memory": "memory/effects/the-bookmark-set-is-written-on-06-and-read-on-05.md",
       "rationale": "A bookmark is written on 06 and read back on 05 through one provider, so a change to how the set is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to bookmark, or a write nothing reads (OQ-39). F-246 and F-247 rebuild both screens, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once because nothing else writes; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout inside the native header (a device capture), and encryption at rest, which depends on SQLCipher being built in (F-336)."
     },
@@ -8944,6 +8996,170 @@
       "guard": "packages/ui/test/illustrations.test.tsx: a backdrop in foreground inks every shape in foreground at nativeArtOpacity (decoy: the default ink is not foreground), and a figure in foreground without the hanger’s tint does not compile (@ts-expect-error).",
       "memory": "memory/effects/the-backdrop-ink-is-foreground-at-the-art-opacity.md",
       "rationale": "R9 §5 measures the backdrop art as the foreground token at the declared opacity (0.15). Home is the first surface to draw it so; every backdrop from F-243 on can. opacity.art (E-136) is what keeps a foreground drawing faint, so a change to it moves every such backdrop at once. NOT GUARDED: the drawing’s orientation in each placement, which is for the capture’s comparison."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-246",
+      "id": "E-210",
+      "severity": "medium",
+      "scope": [
+        "mobile",
+        "content"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/atlas.ts#atlasShown"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/finder.ts#hexNearest"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/finder.ts#looksLikeHex"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/bookmarks.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/journeys/atlas.journey.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-250"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0143-the-atlas-controls-do-what-05-draws-and-its-overflow-holds-the-facets-05-does-not-draw.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/atlas.test.ts uses the Finder as its oracle: a hex lists exactly find(q).entries when nothing else narrows, and with a facet the whole corpus is ranked first and then narrowed (decoy: the Finder’s eight narrowed afterwards differ); a lexicon phrase (dark) is read as words here where the Finder answers a region (decoy), and six letters with no hash and no digit (beaded) are a word, not a hex. bookmarks.test asserts its query is only a name.",
+      "memory": "memory/effects/the-atlas-field-answers-what-its-placeholder-says.md",
+      "rationale": "05’s field promises kanji, romaji, family or #hex, and its hex branch is the Finder’s own index (hexNearest), so a change to how the Finder recognises or ranks a hex changes what the Atlas lists — silently, in a second screen. A natural phrase is the Finder’s alone (ADR-0143 D1): a phrase branch here would be a second, undrawn way to the facets. F-250 rebuilds the Finder to 09 and must keep the two in step. NOT GUARDED: which words a person types; the e2e journey types a romaji."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-246",
+      "id": "E-211",
+      "severity": "high",
+      "scope": [
+        "mobile",
+        "mockups",
+        ".harness"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/test/inventory.ts#supersededFindings"
+      },
+      "to": [
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/inventory-surfaces.json"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-243"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-250"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-254"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-255"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-262"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-263"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0144-the-sweep-reads-an-element-a-conflict-replaces-as-declared.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "screens.test.tsx: a declaration counts only where the surface’s own inventory lists the element under the named conflict (decoy: declaring 05.search under C1 is a finding); a superseded element is never also located (decoy: given a locator it is reported as an element the inventory does not record); undeclared, 05’s compass tab glyph is reported missing (decoy), and the evidence block counts the declarations (conformance-sweep.json inventory.superseded).",
+      "memory": "memory/effects/a-superseded-element-is-declared-not-counted.md",
+      "rationale": "C1 replaces the four-item tab bar six mockups draw with 01’s five, so each of those surfaces records tab glyphs no tab draws. A presence count cannot tell a replaced element from a missing one — and 05’s search tab glyph is \"found\" by the search field’s own glyph, a different element passing the count. The declaration is held to the inventory, so it can hide only what the conflict replaces. Six features enroll a C1 surface (F-243, F-250, F-254, F-255, F-262, F-263) and each declares its own."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-246",
+      "id": "E-212",
+      "severity": "medium",
+      "scope": [
+        "mobile",
+        "packages",
+        "content"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/atlas.ts#familyDot"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Chip.tsx#SAMPLE_DOT"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "content/taxonomy.json"
+        },
+        {
+          "kind": "file",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/atlas.test.ts: each chip’s dot is a member of its group, drawn in that entry’s own hex with its own provenance, and the same member whatever order the entries come in; a group with no members has no dot to draw (decoy). The inventory sweep finds each of 05’s six dots by its own id, with a decoy that one gone is named.",
+      "memory": "memory/effects/a-family-chips-dot-is-its-groups-medoid.md",
+      "rationale": "05 draws each family chip with a dot of the family’s colour, and no entry is that colour by name, so the dot is chosen by a stated rule (ADR-0143 D4): the member whose summed CIEDE2000 to the others, over each published Lab, is least, ties to the earlier slug. A publish that adds, removes or moves a group’s members can move its dot, and a taxonomy change that moves a family between groups moves two. The dot is a real corpus colour with reference provenance (rule 12). NOT GUARDED: that the medoid looks like the family to a person — that is the capture’s."
     }
   ]
 }

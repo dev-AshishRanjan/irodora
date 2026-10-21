@@ -6141,6 +6141,17 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       );
       expect(undeclared.some((f) => f.startsWith('05.tabs.compass.icon: not drawn'))).toBe(true);
       expect(undeclared.some((f) => f.startsWith('05.tabs.search.icon'))).toBe(false);
+      // DECOY: a superseded element is never also located — given a locator, it is the finding.
+      const located = elementFindings(
+        live,
+        json,
+        elementsOf('05.screen'),
+        { ...enrolled.locators, '05.tabs.compass.icon': { by: 'glyph', name: 'compass' } },
+        'en',
+      );
+      expect(located).toStrictEqual([
+        '05.tabs.compass.icon: a locator for an element the inventory does not record',
+      ]);
     });
 
     it("a part found by its own id: the working card's step chip and glow, not the screen's other chips", () => {
