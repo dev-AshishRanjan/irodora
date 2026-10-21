@@ -84,37 +84,11 @@ import type { ScreenStates } from '../states';
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /**
- * Corpus vocabulary → catalogue key.
- *
- * Written as total records rather than as template strings, so a value the corpus can hold and
- * the catalogue cannot name is a **compile error** rather than a blank on a screen. It is also
- * what keeps every one of these keys "used" for the unused-key check, including the ones the
- * seed corpus happens not to exercise.
+ * Corpus vocabulary → catalogue key: written once, in `../atlas` (F-246), and re-exported here for
+ * the screens that read them from the Atlas (the colour page).
  */
-export const TEMPERATURE_KEYS = {
-  warm: 'temperature.warm',
-  cool: 'temperature.cool',
-  neutral: 'temperature.neutral',
-} as const satisfies Record<string, MessageKey>;
-
-export const LIGHTNESS_KEYS = {
-  dark: 'band.dark',
-  mid: 'band.mid',
-  light: 'band.light',
-} as const satisfies Record<string, MessageKey>;
-
-export const CHROMA_KEYS = {
-  low: 'chroma.low',
-  mid: 'chroma.mid',
-  high: 'chroma.high',
-} as const satisfies Record<string, MessageKey>;
-
-export const SEASON_KEYS = {
-  spring: 'season.spring',
-  summer: 'season.summer',
-  autumn: 'season.autumn',
-  winter: 'season.winter',
-} as const satisfies Record<string, MessageKey>;
+import { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS } from '../atlas';
+export { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS };
 
 /** What the filter bar can narrow by. `family` is data-driven and handled separately. */
 interface Filters {

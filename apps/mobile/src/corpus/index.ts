@@ -50,8 +50,10 @@ import {
   type PublishedCombination,
   type PublishedPalette,
   type VersionBundle,
+  familyGroup,
   familyWord,
   parseTaxonomyVocabulary,
+  type FamilyGroup,
   type TaxonomyVocabulary,
 } from '@irodora/corpus';
 import {
@@ -255,6 +257,19 @@ function vocabulary(): TaxonomyVocabulary {
 export function familyLabel(family: string, locale: 'en' | 'ja'): string {
   return familyWord(vocabulary(), family, locale);
 }
+
+/**
+ * The nine family chips, in ADR-0108's order — the six `05` draws, then Ki, Shiro and Nezumi past
+ * the edge (F-224). Read from the verified vocabulary, never retyped (F-246).
+ */
+export function familyGroups(): readonly FamilyGroup[] {
+  return vocabulary().groups;
+}
+
+/** The chip a family sits under. Total, or it throws, as `familyLabel` is. */
+export function groupOf(family: string): FamilyGroup {
+  return familyGroup(vocabulary(), family);
+}
 /** Every family in the corpus, with how many entries carry it. For the Atlas's filters. */
 export function families(): readonly { readonly family: string; readonly count: number }[] {
   const counts = new Map<string, number>();
@@ -271,6 +286,7 @@ export type {
   CorpusCombination,
   CorpusEntry,
   CorpusPalette,
+  FamilyGroup,
   PublishedCombination,
   PublishedEntry,
   PublishedPalette,

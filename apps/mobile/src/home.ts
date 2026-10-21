@@ -22,6 +22,7 @@
 import { nativeSpacing } from '@irodora/design-tokens';
 import { allEntries, colorFor, type PublishedEntry } from './corpus';
 import type { MessageKey } from './i18n';
+import { capitalised, oklchLine } from './notation';
 import type { StoredGarment } from '@irodora/store';
 
 /** `01.wardrobe.tile-N`: each garment sample is drawn 52 dp square at 384 dp. */
@@ -147,19 +148,16 @@ export function recordedMaterial(garment: Pick<StoredGarment, 'material'>): stri
  * the English in brackets — *Kumori-garasu (Frosted Glass)*. Both halves are the entry's own names.
  */
 export function heroName(name: { readonly romaji: string; readonly en: string }): string {
-  const romaji = name.romaji.charAt(0).toUpperCase() + name.romaji.slice(1);
-  return `${romaji} (${name.en})`;
+  return `${capitalised(name.romaji)} (${name.en})`;
 }
 
 /**
  * `01.hero.sample.oklch`: the space's name, then L, C and h from the entry's derivation, at the
  * precision the corpus is authored at and the Lens prints (3, 3 and 1 decimals), separated as `01`
- * separates them. `01`'s own figures are sample content (R9 §4 E1).
+ * separates them. `01`'s own figures are sample content (R9 §4 E1). Written in `./notation`, which
+ * the Atlas shares (F-246).
  */
-export function oklchLine(oklch: readonly [number, number, number], unit: string): string {
-  const [l, c, h] = oklch;
-  return `${unit} ${l.toFixed(3)} • ${c.toFixed(3)} • ${h.toFixed(1)}°`;
-}
+export { oklchLine };
 
 /**
  * The hero's name, as a screen reader hears it: every line printed on the sample, in the order a

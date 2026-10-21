@@ -103,6 +103,9 @@ export const en = {
     'Machado tabulates eleven steps; anything between two of them is interpolated.',
   'atlas.corpus': 'Corpus',
   'atlas.colours': 'colours',
+  // 05's count pill (F-246, ADR-0142 D2): "Original" is the catalogue's word for both classifications the
+  // corpus holds (Irodora original); "Sourced" claimed a source it does not have.
+  'atlas.countNoun': 'Original Colours',
   'atlas.palettes': 'palettes',
   'atlas.search': 'Search by name or reading',
   'atlas.filters': 'Filters',

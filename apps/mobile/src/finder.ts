@@ -72,9 +72,21 @@ import {
 const HEX_ANY = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/iu;
 const HAS_DIGIT = /[0-9]/u;
 
-function looksLikeHex(text: string): boolean {
+export function looksLikeHex(text: string): boolean {
   if (!HEX_ANY.test(text)) return false;
   return text.startsWith('#') || HAS_DIGIT.test(text);
+}
+
+/**
+ * A typed hex's nearest corpus entries, ranked by ΔE00 through this module's own index — or `null`
+ * when the query is not a hex. The Atlas's field asks for the whole corpus ranked and narrows it by
+ * its own filters before it takes `HEX_LIMIT` (F-246, ADR-0143 D1); the Finder takes `HEX_LIMIT`
+ * at once. One route from a hex to a ranking, so the two cannot disagree (E-210).
+ */
+export function hexNearest(query: string, limit: number): readonly NearestEntry[] | null {
+  const text = query.trim();
+  if (!looksLikeHex(text)) return null;
+  return nearestByLab(labOfHex(normaliseHex(text)), limit);
 }
 
 export type FinderKind = 'hex' | 'phrase' | 'name' | 'empty';

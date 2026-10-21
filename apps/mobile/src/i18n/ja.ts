@@ -87,6 +87,7 @@ export const ja: Record<MessageKey, string> = {
   'separation.severity': 'Machado の表は11段階です。その間の値は補間しています。',
   'atlas.corpus': '収録版',
   'atlas.colours': '色',
+  'atlas.countNoun': 'のオリジナル色',
   'atlas.palettes': '配色',
   'atlas.search': '名前や読みで探す',
   'atlas.filters': 'しぼりこみ',
