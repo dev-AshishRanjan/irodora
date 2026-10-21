@@ -8,6 +8,134 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-21 — F-246 The Atlas is mockup 05
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** The Atlas is rebuilt to `05` in eleven commits, `23f388a` through this one. It is the
+second whole screen in the inventory sweep, and the first to declare elements a conflict replaces.
+
+- **Five decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0140 closes OQ-17 and OQ-18.** Every card prints its OKLCh line. A card's last line is the
+    season the entry was authored with, or nothing; no era is printed, because no entry holds one.
+  - **ADR-0141 closes OQ-43.** The chosen season pill keeps its leading dot, so a choice is never
+    colour alone.
+  - **ADR-0142: 05's words made true.** The title's run is 日本に着想を得た色 and the count's word is
+    *Original*, each tested true of every entry. The title and the heading were re-measured by the
+    line-box rule (`body` 600 and `label` 600). The brackets in the pills and *Color* are §2's.
+  - **ADR-0143: the controls.** The field answers names, family words and a hex (the hex through
+    the Finder's own index; a phrase is the Finder's). The season is a single choice, and the family
+    chips are filters with a medoid dot. The overflow opens *More filters*, a floating sheet with
+    FR-20's three remaining facets. *Showing n / N* and *Clear* sit on the heading row while anything
+    narrows. A card is one control.
+  - **ADR-0144: the sweep reads a replaced element as declared.** C1 swaps 05's four-item bar for 01's
+    five. `05.tabs.compass.icon` and `05.tabs.search.icon` are declared against the inventory's own
+    `conflicts` and are not counted. Only a conflict that replaces elements may be named.
+- **What the Atlas draws.**
+  - The bar holds the leading bilingual title, the overflow, the count pill and *Compare*, *Finder*
+    and *Palettes*, then its rule.
+  - Below it, in order: the outlined search field with its bookmark toggle (ADR-0135); the season
+    pills; *Colour Family* and nine chips in a row that scrolls off the edge; the filters rule; the
+    heading.
+  - Then a two-column grid of one-control cards, equal height per row. Every value is the corpus's
+    or the engine's.
+- **Built alongside:**
+  - `src/atlas.ts`: filters, search, the card's words, the count and the medoid dots.
+  - `src/notation.ts`, `hexNearest` (now the Finder's route too), `familyGroups`, `japaneseRun`.
+  - Additive forms in `@irodora/ui`: the drawn SearchField; Pills' accent fill, size and gap and
+    `Choice.kanji`; Chip's step and the dot's id; Button's step and inset; the AppBar's rule as a
+    node; `Screen bleed`, typed beside `scroll={false}`; `Card mediaGap`.
+- **Criterion 1:**
+  - The sweep finds 05's 61 swept elements (63 less 2 superseded) on `05.screen` in both themes and
+    both languages.
+  - `atlas-fidelity.test` holds order, grouping and proportion against `05.json` through §2's snap:
+    every interval with each text's inset written out, every rendered step, weight and ink, and the
+    card's height. A negative interval is refused, not rounded up.
+  - `atlas-states.test` holds what the Atlas does and that none of 05's sample content is drawn or
+    said.
+- **Records:**
+  - Effect links: E-210, E-211 and E-212 new. E-016, E-028, E-064, E-066, E-089, E-114, E-120,
+    E-128, E-140, E-152, E-156, E-157, E-164, E-174, E-191, E-196, E-199, E-203 and E-204 extended.
+    Three new effect notes.
+  - Docs: R9 §2, §4, §8 and §11; PRD §10 (OQ-17, OQ-18, OQ-43).
+  - Verification files: `screen-insets` (the Atlas re-captured; the frame's 24 left with `bleed`);
+    `unreached-tokens` (`link`, whose only reader was the old *Clear*).
+  - The e2e `/atlas` anchor and journey; the Japanese subset (漢).
+  - Features: F-344 and F-345 filed; a note on F-305.
+
+**Review (once): FAIL as delivered**, with 1 blocking, 5 significant and 11 minor findings. Every
+one is fixed or recorded; the plan's review table lists each.
+
+- **B1, fixed:** a card's rhythm.
+  - The kanji now sits `xs` under the sample (`Card mediaGap`).
+  - 05 sets a card's lines tighter than the type's line boxes allow. So a card with a season line is
+    18.7 dp taller than 05's 195.5 dp. It is computed, and recorded in ADR-0140's amendment, R9 §2
+    and criterion 4's expected list.
+- **S1–S5:**
+  - S1: the medoid is tested as a rule, and its cache is keyed on its list.
+  - S2: the sample's own action and its hiding are asserted directly.
+  - S3: only C1 can be declared.
+  - S4: drawn-height controls clipping at 200 % text → **F-344**.
+  - S5: 05's rows smaller than the Android target → **F-305**'s note.
+- **M1–M11:**
+  - `find()` goes through `hexNearest`; `MORE_GLYPH` comes from 05.json.
+  - `families()` and an orphaned comment went; 05.mjs's bindings and comments were corrected.
+  - Assertions were strengthened; the field is tested on Android too; `bleed` is typed.
+  - English inside Japanese names → **F-345**. The dot claim and criterion 5's test names were
+    corrected.
+- **The token-reach proof, found by the CI mirror (`3aef495`):** its plant read a token's readers in
+  single quotes. The Atlas is the first to read `surface.1` as a JSX prop, so the map case stopped
+  discriminating. It now plants every spelling the check reads (E-114).
+
+**Gates run on the final tree (`e349352`), each exit 0:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`: 35 of 35 tasks (ui 1,420, mobile 1,553)
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The conformance sweep: 95 subjects, 8 conditions, findings 0; claims findings 0. The inventory
+  block `enrolled` now includes `05.screen`: `elementsAsserted` 136, `renders` 28, `superseded` 2,
+  `owed` 21.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on F-322's advisories. F-246 changed no dependency.
+- `node scripts/verify-ci.mjs --all`:
+  - The two recorded reds: the iOS config half on win32, and gate 15 (F-322).
+  - **An F-333 event.** The contrast mutation proof's restore hit win32's transient `UNKNOWN`
+    (`verify-contrast-proof.mjs:297`), so the manifest kept its plant. The CVD gate and the content,
+    bench and no-inference proofs then refused over it, as they should.
+  - The journal's bytes equalled HEAD, and `node scripts/plant.mjs --recover` restored the file.
+  - Each of the five steps then exited 0 on its own: the contrast proof (all mutations held), CVD (a
+    turbo replay of Tier 2's own green run on the same inputs), content (28 cases), bench (10) and
+    no-inference (5).
+- **The E: drive holding the repository disconnected five times during gate runs.** Each run it
+  interrupted was void and was re-run from the start:
+  - the first CI mirror, on `6831db6`;
+  - a post-review Tier 1;
+  - three Tier 2 attempts on `e349352`.
+  Nothing was lost; the tree was clean with no plant left each time. The person fixed the drive.
+
+**Not run:**
+
+- e2e and the fidelity capture: no Maestro or JDK here. The attestations are the person's:
+  - an Android release build;
+  - `pnpm fidelity:capture -- --erase-app-data`;
+  - `/atlas` compared with 05 in both themes and languages, expecting the taller cards;
+  - the device taps, including a chip's and a nav pill's edge (F-305);
+  - TalkBack on a card;
+  - 200 % text, where F-344's clipping is expected.
+
+### Lessons
+
+[[an-ink-gap-loses-the-line-inset-and-a-negative-one-is-a-finding]] (new), and a third axis on
+[[a-proof-that-names-a-file-rots-when-the-file-is-not-the-only-one]].
+
+### Next
+
+The loop: F-247 (the colour page is mockup 06, and its Japanese is mockup 26), the lowest-id eligible
+feature.
+
+---
+
 ## 2026-10-20 — F-242 Home is mockup 01, element for element
 
 **Done here, with two criteria owed (attested): the person's capture and comparison.** Home is
