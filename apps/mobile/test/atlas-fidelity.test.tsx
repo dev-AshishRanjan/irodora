@@ -85,13 +85,27 @@ const el = (id: string): Element => {
 const bottom = (e: Element): number => e.dp.y + e.dp.h;
 const right = (e: Element): number => e.dp.x + e.dp.w;
 
-/** R9 §2's snap: the nearest step of the scale, the smaller on a tie. */
+/**
+ * R9 §2's snap: the nearest step of the scale, the smaller on a tie. A NEGATIVE interval is refused,
+ * never rounded up (F-246's review, B1): it means the drawn ink sits closer than the two line boxes
+ * allow, and the caller says so through {@link belowTheScale}.
+ */
 const STEPS = Object.entries(nativeSpacing) as readonly (readonly [string, number])[];
 const snap = (dp: number): string => {
+  if (dp < 0) throw new RangeError(`a negative interval (${String(dp)} dp) is not snapped`);
   const ranked = [...STEPS].sort(
     (a, b) => Math.abs(a[1] - dp) - Math.abs(b[1] - dp) || a[1] - b[1],
   );
   return ranked[0]?.[0] ?? '';
+};
+/**
+ * An interval the drawing makes tighter than the scale can: negative, or under half the smallest step.
+ * §2's scale has no step below `xs`, so it takes `xs`, the floor — and what that adds over the drawing
+ * is the snap's cost, which the caller computes and the records state (ADR-0140, criterion 4).
+ */
+const belowTheScale = (dp: number): 'xs' => {
+  expect(dp).toBeLessThan(nativeSpacing.xs / 2);
+  return 'xs';
 };
 /** Siblings drawn alike take one step: the one most of them snap to, the smaller on a tie (§2). */
 const snapSiblings = (dps: readonly number[]): string => {
@@ -351,14 +365,15 @@ describe('proportion: each size the screen passes is 05’s, recomputed', () => 
       nativeSpacing[snap(el('05.title').dp.x) as keyof typeof nativeSpacing],
     );
     expect(bar['rule']).toBe(true);
-    // Between the title's row and the pills' row: 1 dp of ink, less the title's own inset — xs.
-    expect(snap(el('05.count').dp.y - bottom(el('05.title')) - inset('body'))).toBe('xs');
+    // Between the title's row and the pills' row: 1 dp of ink, less the title's own inset — below
+    // the scale, so its floor.
+    expect(belowTheScale(el('05.count').dp.y - bottom(el('05.title')) - inset('body'))).toBe('xs');
     expect(bar['gap']).toBe(nativeSpacing.xs);
     const icons = (bar['trailing'] as { icons: readonly { size: number; glyph: string }[] }).icons;
     expect(icons.map((i) => i.glyph)).toStrictEqual(['more']);
     expect(icons[0]?.size).toBe(MORE_GLYPH);
-    // The three dots ink 0.633 of the grid: drawn at MORE_GLYPH they ink 05's width, within a dp.
-    expect(Math.abs(MORE_GLYPH * 0.633 - el('05.more').dp.w)).toBeLessThan(1);
+    // The three dots ink 0.633 of the grid: MORE_GLYPH is 05's ink width over that, to the half dp.
+    expect(MORE_GLYPH).toBe(Math.round((el('05.more').dp.w / 0.633) * 2) / 2);
   });
 
   it('the pills, the field, the chips and the samples, at their drawn heights', () => {
@@ -441,7 +456,16 @@ describe('proportion: each size the screen passes is 05’s, recomputed', () => 
       expect(c.props['padding']).toBe(snap(el('05.card-1.romaji').dp.x - one.dp.x));
       expect(c.props['mediaInset']).toBe(ATLAS_MEDIA_INSET);
       expect(c.props['fill']).toBe(true);
+      // The sample to the kanji: 10 dp of ink, less the Japanese body step's inset above it (B1).
+      expect(c.props['mediaGap']).toBe(
+        snap(
+          el('05.card-1.kanji').dp.y - bottom(el('05.card-1.swatch')) - inset('body', 'japanese'),
+        ),
+      );
     }
+    expect(
+      snap(el('05.card-1.kanji').dp.y - bottom(el('05.card-1.swatch')) - inset('body', 'japanese')),
+    ).toBe('xs');
     for (const s of tree.UNSAFE_getAllByType(Swatch)) {
       expect([
         s.props['width'],
@@ -527,7 +551,13 @@ describe('proportion: each size the screen passes is 05’s, recomputed', () => 
 
   it('a card’s lines and the pills’ gaps: xs, as drawn', () => {
     const { tree, text } = setup();
-    const lines = snapSiblings([
+    /*
+     * 05 SETS A CARD'S LINES TIGHTER THAN THE TYPE'S LINE BOXES (B1). Less each line's own inset, the
+     * kanji to the romaji is NEGATIVE — the Japanese body step's line box alone is taller than 05's
+     * pitch — and the other two are under 2 dp. Each is named, never rounded up, and takes the scale's
+     * floor; the card's extra height is computed below and recorded.
+     */
+    const raw = [
       el('05.card-1.romaji').dp.y -
         bottom(el('05.card-1.kanji')) -
         inset('body', 'japanese') -
@@ -537,7 +567,10 @@ describe('proportion: each size the screen passes is 05’s, recomputed', () => 
         inset('label') -
         inset('caption'),
       el('05.card-1.era').dp.y - bottom(el('05.card-1.oklch')) - 2 * inset('caption'),
-    ]);
+    ];
+    expect(raw[0]).toBeLessThan(0);
+    expect(() => snap(raw[0]!)).toThrow(RangeError);
+    const lines = raw.map(belowTheScale)[0];
     expect(lines).toBe('xs');
     expect(nearest(text(card(0).entry.name.kanji), Stack)?.props['gap']).toBe(lines);
     const seasons = ['all', 'spring', 'summer', 'autumn', 'winter'].map((s) =>
@@ -656,7 +689,31 @@ describe('proportion: each size the screen passes is 05’s, recomputed', () => 
     expect(tree.UNSAFE_getByType(Bilingual).props['numberOfLines']).toBeUndefined();
   });
 
+  it('the snap’s cost: a card with a season line is 18.7 dp taller than 05’s, from the line boxes alone', () => {
+    /*
+     * Built from the props and the type scale: the media inset and sample, the gap under it, the four
+     * lines' boxes and the three gaps between them at the floor, and the body's padding below. 05
+     * draws the card 195.5 dp. The difference is the type's own leading (ADR-0113), which 05's lines
+     * are set tighter than (above): recorded in ADR-0140's amendment and in criterion 4's expected list,
+     * and it moves with them if the type scale or the card does.
+     */
+    const lh = (step: 'caption' | 'label' | 'body', script: 'latin' | 'japanese' = 'latin') =>
+      nativeType[script][step].lineHeight;
+    const built =
+      ATLAS_MEDIA_INSET +
+      ATLAS_SAMPLE +
+      nativeSpacing.xs +
+      lh('body', 'japanese') +
+      lh('label') +
+      2 * lh('caption') +
+      3 * nativeSpacing.xs +
+      nativeSpacing.sm;
+    expect(Math.round((built - el('05.card-1').dp.h) * 10) / 10).toBe(18.7);
+  });
+
   it('DECOY — the snap can tell the steps apart, so the assertions above are not all one answer', () => {
+    // And a negative interval is refused, where it used to be rounded up to xs without a word.
+    expect(() => snap(-3.65)).toThrow(RangeError);
     expect([snap(17.5), snap(31.5), snap(9.5), snap(2.9), snap(10), snap(5.2)]).toStrictEqual([
       'md',
       'xl',

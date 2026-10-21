@@ -20,7 +20,6 @@ import {
   colorFor,
   corpus,
   entryBySlug,
-  families,
   palettesContaining,
   resolveSlugs,
   sha256,
@@ -163,12 +162,6 @@ describe('the queries the Atlas is built on', () => {
     const anchor = anchored.colors.find((c) => c.role === 'anchor')!;
     const found = palettesContaining(anchor.slug);
     expect(found.some((f) => f.palette.slug === anchored.slug && f.role === 'anchor')).toBe(true);
-  });
-
-  it('counts families, and they sum to the corpus', () => {
-    const total = families().reduce((sum, f) => sum + f.count, 0);
-    expect(total).toBe(CORPUS_ENTRY_COUNT);
-    expect(families().length).toBeGreaterThan(1);
   });
 });
 

@@ -11,9 +11,11 @@
  * - **The card**: its season line, its OKLCh line, its name; the family dot is a member of its group.
  */
 
+import { deltaE00 } from '@irodora/color-difference';
 import type { PublishedEntry } from '@irodora/corpus';
 import {
   atlasCardName,
+  capitalisedRomaji,
   atlasCountLabel,
   atlasMatches,
   atlasNarrowed,
@@ -105,11 +107,27 @@ describe('the search answers names, family words and a hex (ADR-0143 D1)', () =>
     expect(slugs(shown)).not.toStrictEqual(slugs(narrowedLate));
   });
 
-  it('finds a family by its chip’s words and by its own', () => {
-    for (const q of ['Ao', '青'])
-      for (const e of atlasShown(ENTRIES, q, NO_FILTERS)) expect(atlasMatches(e, q)).toBe(true);
-    const byChip = atlasShown(ENTRIES, 'Ao', NO_FILTERS);
-    expect(byChip.some((e) => groupOf(e.entry.taxonomy.family).group === 'ao')).toBe(true);
+  it('finds a family by its chip’s words: every member of the group, in either script', () => {
+    const ao = ENTRIES.filter((e) => groupOf(e.entry.taxonomy.family).group === 'ao');
+    expect(ao.length).toBeGreaterThan(1);
+    for (const q of ['Ao', '青', 'ao']) {
+      const listed = new Set(slugs(atlasShown(ENTRIES, q, NO_FILTERS)));
+      expect({
+        [q]: ao.filter((e) => !listed.has(e.entry.slug)).map((e) => e.entry.slug),
+      }).toStrictEqual({
+        [q]: [],
+      });
+    }
+    // DECOY: a group's word lists that group's members and not every entry.
+    expect(atlasShown(ENTRIES, '青', NO_FILTERS).length).toBeLessThan(ENTRIES.length);
+  });
+
+  it('reads part of a hex as a substring, not as a hex to rank', () => {
+    expect(hexNearest('#5B', 8)).toBeNull();
+    const expected = ENTRIES.filter((e) => e.derived.hex.toLowerCase().includes('#5b')).map(
+      (e) => e.entry.slug,
+    );
+    expect(slugs(atlasShown(ENTRIES, '#5B', NO_FILTERS))).toStrictEqual(expected);
   });
 
   it('DECOY — a phrase is read as words here, where the Finder answers a region', () => {
@@ -149,9 +167,12 @@ describe('05’s words are true of every entry (ADR-0140, ADR-0142)', () => {
 
   it('the count’s Original: every classification is one of the two the catalogue calls original', () => {
     const original = new Set(['japanese-inspired', 'editorial']);
-    for (const c of classifications(ENTRIES)) expect(original.has(c)).toBe(true);
-    // DECOY: traditional is not original.
-    expect(original.has('traditional')).toBe(false);
+    const notOriginal = (list: readonly { entry: { classification: string } }[]) =>
+      list.filter((e) => !original.has(e.entry.classification)).length;
+    expect(notOriginal(ENTRIES)).toBe(0);
+    // DECOY: a planted traditional entry is counted, so a corpus that gains one fails here first.
+    expect(notOriginal([...ENTRIES, { entry: { classification: 'traditional' } }])).toBe(1);
+    expect(classifications(ENTRIES).size).toBeGreaterThan(0);
     expect(t('classification.editorial')).toContain('original');
     expect(t('classification.japanese-inspired')).toContain('original');
   });
@@ -201,7 +222,7 @@ describe('what a card says', () => {
     const { kanji, romaji, en } = autumn.entry.name;
     for (const part of [kanji, en, autumn.derived.hex.replace('#', ''), 'reference', 'OKLCh: '])
       expect(name).toContain(part);
-    expect(name).toContain(romaji.charAt(0).toUpperCase());
+    expect(name).toContain(capitalisedRomaji(romaji));
     expect(name).toContain(t('season.autumn'));
     // DECOY: without a season, no season words.
     expect(atlasCardName(none, t, 'latin')).not.toContain(t('season.autumn'));
@@ -222,6 +243,60 @@ describe('a family chip’s dot is its group’s medoid (ADR-0143 D4)', () => {
       expect(dot.hex).toBe(entry.derived.hex);
       expect(dot.color.provenance.source).toBe(colorFor(entry.entry).provenance.source);
     }
+  });
+
+  /** Each member's summed ΔE00 to the others, over the published Lab: the rule ADR-0143 D4 states. */
+  const sums = (members: readonly PublishedEntry[]) =>
+    members.map((m) => ({
+      slug: m.entry.slug,
+      sum: members.reduce((n, o) => (o === m ? n : n + deltaE00(m.derived.lab, o.derived.lab)), 0),
+    }));
+  const membersOf = (group: ReturnType<typeof familyGroups>[number], list = ENTRIES) =>
+    list.filter((e) => group.families.includes(e.entry.taxonomy.family));
+
+  it('is the member whose summed ΔE00 to the others is least, the earlier slug on a tie', () => {
+    for (const group of familyGroups()) {
+      const all = sums(membersOf(group));
+      const least = Math.min(...all.map((m) => m.sum));
+      const expected = all
+        .filter((m) => m.sum === least)
+        .map((m) => m.slug)
+        .sort()[0];
+      expect({ [group.group]: familyDotEntry(group, ENTRIES).entry.slug }).toStrictEqual({
+        [group.group]: expected,
+      });
+    }
+  });
+
+  it('DECOY — the medoid is not the first member by slug, so the rule above is not that one', () => {
+    const differs = familyGroups().filter((group) => {
+      const first = membersOf(group)
+        .map((e) => e.entry.slug)
+        .sort()[0];
+      return familyDotEntry(group, ENTRIES).entry.slug !== first;
+    });
+    expect(differs.length).toBeGreaterThan(0);
+  });
+
+  it('DECOY — a colour outside the group is never its dot, even at the group’s centre', () => {
+    const group = familyGroups()[0]!;
+    const members = membersOf(group);
+    const medoid = familyDotEntry(group, ENTRIES);
+    // A foreign entry planted at the medoid's own Lab would tie it on every distance.
+    const foreign = ENTRIES.find((e) => !group.families.includes(e.entry.taxonomy.family))!;
+    const planted = { ...foreign, derived: { ...foreign.derived, lab: medoid.derived.lab } };
+    const chosen = familyDotEntry(group, [planted, ...members]);
+    expect(group.families).toContain(chosen.entry.taxonomy.family);
+  });
+
+  it('is worked out over the list it is given, not remembered from another', () => {
+    const group = familyGroups()[0]!;
+    const medoid = familyDotEntry(group, ENTRIES);
+    const without = ENTRIES.filter((e) => e !== medoid);
+    expect(familyDot(group, ENTRIES).hex).toBe(medoid.derived.hex);
+    // DECOY: a list without that medoid has another dot — the cache answered the first list until S1.
+    expect(familyDot(group, without).hex).toBe(familyDotEntry(group, without).derived.hex);
+    expect(familyDotEntry(group, without).entry.slug).not.toBe(medoid.entry.slug);
   });
 
   it('is the same member every time, whatever order the entries come in', () => {

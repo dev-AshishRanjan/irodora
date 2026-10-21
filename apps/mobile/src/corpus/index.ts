@@ -270,16 +270,6 @@ export function familyGroups(): readonly FamilyGroup[] {
 export function groupOf(family: string): FamilyGroup {
   return familyGroup(vocabulary(), family);
 }
-/** Every family in the corpus, with how many entries carry it. For the Atlas's filters. */
-export function families(): readonly { readonly family: string; readonly count: number }[] {
-  const counts = new Map<string, number>();
-  for (const { entry } of corpus().entries)
-    counts.set(entry.taxonomy.family, (counts.get(entry.taxonomy.family) ?? 0) + 1);
-  return [...counts.entries()]
-    .map(([family, count]) => ({ family, count }))
-    .sort((a, b) => a.family.localeCompare(b.family));
-}
-
 export { CORPUS_LABEL, CORPUS_ENTRY_COUNT, CORPUS_PALETTE_COUNT };
 export type {
   CombinationRole,

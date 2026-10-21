@@ -23,6 +23,12 @@ The sweep finds every element of an enrolled surface by what it draws. `05`'s fo
 
 **D1:** An enrolled surface may declare elements **superseded**, each naming the §6 conflict that replaces it.
 
+**D1, as built (F-246's review, S3):** only a conflict whose resolution REPLACES drawn elements can be
+named — today C1, `01`'s five tabs for a four-item bar (`REPLACING_CONFLICTS` in
+`apps/mobile/test/inventory.ts`). C6, C8, C11 and C13 list elements that are kept and drawn a stated way,
+so naming one of theirs would hide an element the build must still draw: the type refuses it, and the
+check reports it when a cast gets past the type.
+
 **D2:** A declaration counts only if the element is listed under that conflict in the surface's own inventory `conflicts`; anything else is a finding. A superseded element is not counted.
 
 **D3:** What replaces it is still asserted, by the surface's other elements: `05.tabs` as `TabBar`, plus the indicator and the counterpart glyphs and label.

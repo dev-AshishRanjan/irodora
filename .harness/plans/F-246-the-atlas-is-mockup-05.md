@@ -1180,3 +1180,27 @@ The sweep finds every element of an enrolled surface by what it draws. `05`'s fo
 - `E:\JCFIP\.harness\verification\inventory-surfaces.json`
 - `E:\JCFIP\apps\mobile\e2e\capture\routes.json`
 - `E:\JCFIP\apps\mobile\e2e\journeys\atlas.journey.json`
+
+---
+
+## Review (once, 2026-10-21): FAIL as delivered — every finding fixed or recorded
+
+| id | finding | outcome |
+|---|---|---|
+| B1 | A card's vertical rhythm departed from 05, and a negative interval was rounded up without a word | **Fixed.** `Card mediaGap` sets the kanji `xs` under the sample. The fidelity test refuses to snap a negative interval, names 05's card lines as tighter than the type's line boxes, and computes the cost: 18.7 dp taller than drawn (ADR-0140's amendment; R9 §2; criterion 4's expected list) |
+| S1 | The medoid rule was never tested; the dot cache ignored its list | **Fixed.** Every member's summed ΔE00 is computed and the least is asserted, with decoys (not first-by-slug; a planted foreign colour); the cache is keyed on the list |
+| S2 | The sample's own action and its hiding were asserted by checks that could not fail | **Fixed.** The sample's `onPress` is called directly, the wrapper's two props are asserted, and its own name is absent unless hidden elements are counted; a decoy shows a fired press bubbles regardless |
+| S3 | A supersession could hide an element its conflict keeps | **Fixed.** Only `REPLACING_CONFLICTS` (C1) may be named, in the type and the check (decoy: C11); the stray-locator finding is reworded |
+| S4 | Drawn-height pills, chips and badges clip at 200 % text | **Recorded as F-344**: a component defect across 01, 05 and 15; the attestation names it |
+| S5 | Android tap targets are cut by rows smaller than the target | **Recorded on F-305**, with 05's chip row, season row, nav row and *Clear*; the device attestation asks for an edge tap |
+| M1 | `find()` kept its own copy of the hex branch | **Fixed.** `find()` goes through `hexNearest` (ADR-0143, E-210) |
+| M2 | `MORE_GLYPH` came from a reading the inventory contradicts | **Fixed.** 19 dp from 05.json's 12 dp; the test recomputes it exactly |
+| M3 | `families()` had no caller; the F-181 comment headed the wrong keys | **Fixed.** Removed; reworded |
+| M4 | Copy-pasted inventory comments; the heading's re-measure unrecorded | **Fixed.** Comments corrected; ADR-0142 D1 records the heading |
+| M5 | Season and tab-label bindings named keys that do not exist | **Fixed.** Rebound in 05.mjs; the sweep derives them and the explicit locators went |
+| M6 | Weak assertions in atlas.test and family-locale.test | **Fixed.** A planted entry for *Original*; every ao member found by 青, Ao, ao; the whole capitalised romaji; `#5B`; the test title |
+| M7 | The drawn field tested only at iOS's 44 | **Fixed.** iOS and Android both |
+| M8 | `bleed` was a runtime throw, not a type | **Fixed.** `ScreenScroll` types it beside `scroll={false}`; `@ts-expect-error` holds it |
+| M9 | A card's Japanese name embeds English | **Recorded as F-345** (`swatchAccessibleName` is English-only product-wide) |
+| M10 | The header claimed every dot is frozen | **Fixed.** Which entry is the dot is a runtime choice among frozen values, and it says so |
+| M11 | Criterion 5 named the wrong action tests | **Fixed.** atlas-states.test and bookmarks.test |

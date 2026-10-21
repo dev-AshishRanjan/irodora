@@ -99,10 +99,11 @@ export const APP_BAR = 69.5;
  */
 export const SEARCH_GLYPH = 15;
 /**
- * `05.more`: it inks 22 px across (11 dp), and the three dots ink 0.633 of the grid (4.4 to 19.6),
- * so it is drawn at 17.5 dp.
+ * `05.more`: `05.json` records its ink 24 px across (12 dp), and the three dots ink 0.633 of the
+ * grid (4.4 to 19.6), so it is drawn at 19 dp, to the half dp (F-246's review, M2: an earlier reading
+ * of 22 px disagreed with the record the test reads).
  */
-export const MORE_GLYPH = 17.5;
+export const MORE_GLYPH = 19;
 
 /* ------------------------------------------------------------------ the filters */
 
@@ -257,7 +258,11 @@ export function atlasCountLabel(
 
 /* ------------------------------------------------------------------ the family chips */
 
-const dots = new Map<FamilyGroupId, PublishedEntry>();
+/**
+ * Each entry list's dots, remembered per list: the same groups over another list (a test's, or a
+ * later publish's) are worked out again rather than answered from the first (F-246's review, S1).
+ */
+const dots = new WeakMap<readonly PublishedEntry[], Map<FamilyGroupId, PublishedEntry>>();
 
 /**
  * The entry a family chip's dot is drawn in: the group's MEDOID — the member whose summed CIEDE2000
@@ -286,15 +291,20 @@ export function familyDotEntry(
   return best;
 }
 
-/** The dot of a chip, as a sample: its medoid's hex and colour, remembered per group. */
+/** The dot of a chip, as a sample: its medoid's hex and colour, remembered per group and list. */
 export function familyDot(
   group: FamilyGroup,
   entries: readonly PublishedEntry[],
 ): { readonly hex: string; readonly color: ReturnType<typeof colorFor> } {
-  let entry = dots.get(group.group);
+  let known = dots.get(entries);
+  if (known === undefined) {
+    known = new Map();
+    dots.set(entries, known);
+  }
+  let entry = known.get(group.group);
   if (entry === undefined) {
     entry = familyDotEntry(group, entries);
-    dots.set(group.group, entry);
+    known.set(group.group, entry);
   }
   return { hex: entry.derived.hex, color: colorFor(entry.entry) };
 }

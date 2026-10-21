@@ -17,10 +17,10 @@ jest.mock('expo-localization', () => ({
 }));
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ChoiceGroup, Sheet, Swatch, ThemeProvider } from '@irodora/ui';
+import { Card, ChoiceGroup, Sheet, Swatch, swatchAccessibleName, ThemeProvider } from '@irodora/ui';
 import { renderedTexts, type TestNode } from '@irodora/ui/testing';
 import { atlasCardName, atlasShown, NO_FILTERS } from '../src/atlas';
-import { allEntries, CORPUS_ENTRY_COUNT } from '../src/corpus';
+import { allEntries, colorFor, CORPUS_ENTRY_COUNT } from '../src/corpus';
 import { t, type MessageKey } from '../src/i18n';
 import { Atlas } from '../src/screens/Atlas';
 
@@ -133,14 +133,58 @@ describe('a card is one control (ADR-0143 D8)', () => {
     );
     fireEvent.press(screen.getByText(FIRST.entry.name.kanji));
     expect(onSelect).toHaveBeenLastCalledWith(FIRST.entry.slug);
+    /*
+     * THE SAMPLE'S OWN ACTION (F-246's review, S2). A press fired on the sample bubbles to the card
+     * in the test renderer whether or not the sample has an action, so it proves nothing (the decoy
+     * below). On a device the sample's own pressable takes the touch, so it must carry the action
+     * itself: its `onPress` is called directly.
+     */
     const sample = screen.UNSAFE_getAllByType(Swatch)[0]!;
-    fireEvent.press(sample);
+    const own = sample.props['onPress'] as (() => void) | undefined;
+    expect(own).toBeInstanceOf(Function);
+    own?.();
     expect(onSelect).toHaveBeenCalledTimes(2);
     expect(onSelect).toHaveBeenLastCalledWith(FIRST.entry.slug);
-    // Heard once: the card by its full name, and the sample not at all.
+    /*
+     * HEARD ONCE: the card by its full name, the sample not at all. The sample sits in a view hidden
+     * from assistive technology on both platforms, and its own name is not exposed — it is found
+     * only when hidden elements are counted, the decoy that the name looked for is the right one.
+     */
     const name = atlasCardName(FIRST, en, 'latin');
     expect(screen.getAllByRole('button', { name })).toHaveLength(1);
-    expect(screen.queryByLabelText(FIRST.entry.name.en)).toBeNull();
+    const wrapper = sample.parent!;
+    expect(wrapper.props['importantForAccessibility']).toBe('no-hide-descendants');
+    expect(wrapper.props['accessibilityElementsHidden']).toBe(true);
+    const sampleName = swatchAccessibleName(
+      FIRST.entry.name.en,
+      FIRST.derived.hex,
+      colorFor(FIRST.entry),
+    );
+    expect(screen.queryByRole('button', { name: sampleName })).toBeNull();
+    expect(screen.queryByLabelText(sampleName)).toBeNull();
+    // DECOY: the name is the sample's own — with hidden elements counted it is there, a button.
+    const hidden = screen.getAllByLabelText(sampleName, { includeHiddenElements: true });
+    expect(hidden.length).toBeGreaterThan(0);
+    expect(hidden.some((n) => n.props['accessibilityRole'] === 'button')).toBe(true);
+  });
+
+  it('DECOY — a press fired on a sample with no action still reaches its card here', () => {
+    const onCard = jest.fn();
+    render(
+      <ThemeProvider theme="dark">
+        <Card
+          onPress={onCard}
+          label="card"
+          media={<Swatch name="x" hex="#808080" color={colorFor(FIRST.entry)} />}
+        >
+          {null}
+        </Card>
+      </ThemeProvider>,
+    );
+    fireEvent.press(screen.UNSAFE_getByType(Swatch));
+    // So a fired press is no evidence the sample carries the action; its own prop is.
+    expect(onCard).toHaveBeenCalledTimes(1);
+    expect(screen.UNSAFE_getByType(Swatch).props['onPress']).toBeUndefined();
   });
 
   it('DECOY — without a destination no card is a button', () => {

@@ -21,6 +21,11 @@ the Atlas changes in code when that happens — the chip just shows another colo
 The dot is a real corpus colour drawn with that entry's own provenance, never an invented average
 (rule 12), and it is decorative to a screen reader: the chip is named by its words.
 
+**The rule is tested as a rule** (F-246's review, S1): every member's summed ΔE00 is computed, and the
+chosen one is the least — with the decoy that the medoid is not simply the first member by slug, which
+an implementation returning `members[0]` would have passed every earlier assertion with. The dot is
+remembered per entry list, not per group alone, so a later list is never answered from an earlier one.
+
 ## What it does not guard
 
 - **That the medoid looks like the family.** A person judges that, on the capture.

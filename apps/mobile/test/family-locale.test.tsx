@@ -93,7 +93,9 @@ describe('no authoring slug reaches a Japanese reader', () => {
     return SLUGS.filter((slug) => nodes.some((text) => isLeak(text, slug)));
   };
 
-  it('shows none on the Atlas — filter chips and list rows in one pass', () => {
+  // The Atlas prints its chips' romaji and kanji and a card's names, never an authoring slug: the
+  // check holds the day a family word is printed raw again (F-246's review, M6).
+  it('shows none on the Atlas — the family chips and the cards in one pass', () => {
     expect(leaks(<Atlas />)).toHaveLength(0);
   });
 

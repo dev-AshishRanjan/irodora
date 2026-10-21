@@ -68,3 +68,23 @@
 - A cleared source gives an entry an era (the test fails first).
 - A mockup draws the slot empty or filled differently.
 - The person's comparison finds the short cards wrong.
+
+## Amendment (F-246's review, B1): the card's height is the snap's cost
+
+The review measured the card's vertical rhythm, and two parts of it are recorded here.
+
+- **The sample to the kanji is `xs`.** 05 draws 10 dp of ink between the sample and the kanji, which is
+  3.2 dp less the Japanese body step's line inset (6.8), so `xs`. `Card` gains an additive
+  `mediaGap`, and the Atlas passes `xs`. `atlas-fidelity.test` computes it.
+- **05 sets a card's lines tighter than the type's line boxes allow.** Less each line's own inset,
+  kanji → romaji is −3.65 dp: the Japanese body step's line box alone (29.6 dp) is taller than 05's
+  line pitch. Romaji → OKLCh is 1.6 dp and OKLCh → season is 1.9 dp. R9 §2's scale has no step below
+  `xs`, so all three take `xs`, the floor. The test names the negative interval and does not round it
+  up.
+- **The cost:** a card with a season line is **18.7 dp taller** than 05's 195.5 dp (214.2 dp), and
+  every card in its row is as tall. All of it comes from the type scale's leading (ADR-0113), which
+  this feature does not change. `atlas-fidelity.test` computes the figure from the props and the
+  scale, so a change to either moves it, and this record with it.
+- **Expected in the person's comparison** (F-246 criterion 4): cards taller than drawn, by this
+  much. It is not a defect of the build. If the comparison finds it wrong, the remedy is a decision
+  about the Japanese line height, not about this screen.

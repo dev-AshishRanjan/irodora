@@ -48,7 +48,7 @@ export const ja: Record<MessageKey, string> = {
 
   'atlas.title': '色図鑑',
 
-  // F-181 — see en.ts.
+  // F-181, F-237 — see en.ts.
   'detail.compareWith': 'この色を別の色と比べる',
   'detail.bookmark': 'この色をブックマーク',
   'compare.title': '2色をくらべる',

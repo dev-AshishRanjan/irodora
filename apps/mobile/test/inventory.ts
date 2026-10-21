@@ -107,20 +107,33 @@ export interface Inventory {
 }
 
 /**
- * What is wrong with a surface's declared supersessions (ADR-0144 D1, D2): each element must be one
- * the inventory lists under the §6 conflict the declaration names. A declaration that holds takes
+ * The §6 conflicts whose resolution REPLACES drawn elements, rather than settling how they are drawn
+ * (ADR-0144 D1): C1, `01`'s five tabs for a four-item bar. C6, C8, C11 and C13 list elements that are
+ * kept and drawn a stated way, so declaring one of theirs would hide an element the build must still
+ * draw (F-246's review, S3). A conflict joins this list only by replacing what it lists.
+ */
+export const REPLACING_CONFLICTS = ['C1'] as const;
+export type ReplacingConflict = (typeof REPLACING_CONFLICTS)[number];
+
+/**
+ * What is wrong with a surface's declared supersessions (ADR-0144 D1, D2): each must name a conflict
+ * that replaces elements, and an element the inventory lists under it. A declaration that holds takes
  * the element out of the count; one that does not is a finding, so a missing element cannot be
  * waved through by calling it superseded.
  */
 export function supersededFindings(
   inventory: Inventory,
-  superseded: Readonly<Record<string, string>>,
+  superseded: Readonly<Record<string, ReplacingConflict>>,
 ): readonly string[] {
-  return Object.entries(superseded).flatMap(([id, conflict]) =>
-    (inventory.conflicts?.find((c) => c.id === conflict)?.elements ?? []).includes(id)
+  return Object.entries(superseded).flatMap(([id, conflict]: [string, string]) => {
+    if (!(REPLACING_CONFLICTS as readonly string[]).includes(conflict))
+      return [
+        `${id}: declared superseded by ${conflict}, which replaces nothing — it settles how its elements are drawn`,
+      ];
+    return (inventory.conflicts?.find((c) => c.id === conflict)?.elements ?? []).includes(id)
       ? []
-      : [`${id}: declared superseded by ${conflict}, which the inventory does not list it under`],
-  );
+      : [`${id}: declared superseded by ${conflict}, which the inventory does not list it under`];
+  });
 }
 
 /** How an element is found on the rendered tree (ADR-0134 D1). */
@@ -278,7 +291,9 @@ export function elementFindings(
   const ids = new Set(elements.map((e) => e.id));
   for (const id of Object.keys(explicit))
     if (!ids.has(id))
-      findings.push(`${id}: a locator for an element the inventory does not record`);
+      findings.push(
+        `${id}: a locator for an element this surface does not sweep (unrecorded, or superseded)`,
+      );
 
   const located = elements.flatMap((element) => {
     const locator = explicit[element.id] ?? derivedLocator(element);

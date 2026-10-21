@@ -23,7 +23,8 @@ const season = (key, box, selected = false) =>
     // F-246: "Spring 春" inks 21 px with descenders and a kanji — about 10.5 dp an em by the line-box
     // rule, so the caption step (the reading stays here, not as raw.emDp: the caption's census).
     type: text('sans', 'caption'),
-    binding: `static:atlas.season.${key}`,
+    // The catalogue's keys: `atlas.all`, and each season's own word (F-246's review, M5).
+    binding: key === 'all' ? 'static:atlas.all' : `static:season.${key}`,
     action: `select:filter.season.${key}`,
     copy: { shape: 'label', script: key === 'all' ? 'latin' : 'mixed' },
     ...(key === 'spring' ? { raw: { cornerPx: 20.5 } } : {}),
@@ -195,8 +196,8 @@ export default {
     el('05.finder', 'ui:Button', B(534, 82, 88, 37), {
       parent: '05.header',
       tokens: { border: 'border.subtle' },
-      // F-246: "[Compare]" inks 17 px, brackets spanning the descender — about 8.5 dp an em, the
-      // caption step. The brackets are notation, not copy (ADR-0142 D3; notDesign below).
+      // F-246: drawn alike with `05.compare` (siblings, §2), so its step: caption. The brackets are
+      // notation, not copy (ADR-0142 D3; notDesign below).
       type: text('sans', 'caption'),
       binding: 'static:atlas.finder',
       action: 'navigate:/atlas/find',
@@ -205,8 +206,8 @@ export default {
     el('05.palettes', 'ui:Button', B(628, 82, 105, 37), {
       parent: '05.header',
       tokens: { border: 'border.subtle' },
-      // F-246: "[Compare]" inks 17 px, brackets spanning the descender — about 8.5 dp an em, the
-      // caption step. The brackets are notation, not copy (ADR-0142 D3; notDesign below).
+      // F-246: drawn alike with `05.compare` (siblings, §2), so its step: caption. The brackets are
+      // notation, not copy (ADR-0142 D3; notDesign below).
       type: text('sans', 'caption'),
       binding: 'static:atlas.palettes',
       action: 'navigate:/atlas/palettes',
@@ -316,7 +317,8 @@ export default {
       parent: '05.tabs',
       tokens: { fg: 'text.primary' },
       type: text('sans', 'caption', 500),
-      binding: 'static:tabs.atlas',
+      // The catalogue's key is `tab.atlas` (F-145; F-246's review, M5).
+      binding: 'static:tab.atlas',
       copy: { shape: 'label', script: 'latin' },
       raw: { emDp: 9.6 },
     }),

@@ -336,7 +336,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.season.all",
+      "binding": "static:atlas.all",
       "action": "select:filter.season.all",
       "copy": {
         "shape": "label",
@@ -371,7 +371,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.season.spring",
+      "binding": "static:season.spring",
       "action": "select:filter.season.spring",
       "raw": {
         "cornerPx": 20.5
@@ -409,7 +409,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.season.summer",
+      "binding": "static:season.summer",
       "action": "select:filter.season.summer",
       "copy": {
         "shape": "label",
@@ -444,7 +444,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.season.autumn",
+      "binding": "static:season.autumn",
       "action": "select:filter.season.autumn",
       "copy": {
         "shape": "label",
@@ -479,7 +479,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:atlas.season.winter",
+      "binding": "static:season.winter",
       "action": "select:filter.season.winter",
       "copy": {
         "shape": "label",
@@ -2082,7 +2082,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:tabs.atlas",
+      "binding": "static:tab.atlas",
       "action": null,
       "raw": {
         "emDp": 9.6

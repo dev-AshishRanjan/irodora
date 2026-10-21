@@ -24,6 +24,11 @@ A declared element is not counted, and giving it a locator as well is a finding.
 Every C1 surface's feature declares its own. The evidence block counts them
 (`conformance-sweep.json` → `inventory.superseded`), so a growing number is visible.
 
+**Only a conflict that replaces elements can be named** (F-246's review, S3). C1 replaces; C6, C8, C11
+and C13 list elements that are kept and drawn a stated way, so a declaration naming one of theirs
+would hide an element the build must still draw. `REPLACING_CONFLICTS` is the list, and the type
+refuses anything else.
+
 ## What it does not guard
 
 - **That the replacement is right.** The replacing elements are asserted by the surface's others —

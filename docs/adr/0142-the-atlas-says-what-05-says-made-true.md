@@ -29,6 +29,10 @@ No open question covers 05's brackets: OQ-23 asks about 13, 16, 17 and 18. The J
   line-box rule, its Latin inks 26 px (about 17.8 dp an em) and its six kanji 172 px wide (about
   14.3 dp each). F-220's 26 dp read the line box as the em, which the drawn width cannot hold.
 - A test holds every published entry `japanese-inspired`, with a planted `traditional` entry as its decoy.
+- **The heading *Atlas* was re-measured by the same rule** (recorded here at F-246's review, M4). Its
+  ink is 21 px tall (A, t and l, about 0.73 em), so about 14.4 dp an em: `label` 600, not the `body`
+  F-220 read from its line box. `05.json` records it with `raw.emDp` 14.4, and the type census
+  holds it.
 
 **D2: The count.**
 - *120 Original Colours*; ja 「120のオリジナル色」.

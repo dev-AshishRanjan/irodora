@@ -11,13 +11,16 @@
  * - `Chip` (control) — the words at `caption`, and the family dot found by the chip's own id.
  * - `Button` (labelled) — `05`'s small outlined pill: the words at `caption`, the side inset `sm`.
  * - `Screen` — `bleed`: a screen that owns its viewport takes no frame padding.
+ * - `Card` — `mediaGap`: `05`'s kanji sits `xs` under its sample, closer than the body's padding.
  */
 
 import { render } from '@testing-library/react-native';
+import { Platform, View } from 'react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
 import {
   Button,
+  Card,
   Chip,
   ChoiceGroup,
   platformTapTarget,
@@ -58,16 +61,27 @@ describe('SearchField, drawn as 05 draws it', () => {
     expect(nodes(tree).some((n) => n.type === 'RNSVGSvgView')).toBe(true);
   });
 
-  it('keeps the touch at the platform’s target, the layout at the drawn height', () => {
-    const tree = field({ height: 26.5, icon: 'search' });
-    const target = Math.max(platformTapTarget(), 26.5);
-    expect(styleOf(input(tree))['height']).toBe(target);
-    // The root takes the target's height and gives back the overhang, so layout sees 26.5.
-    const root = nodes(tree).find((n) => styleOf(n)['marginVertical'] !== undefined);
-    expect(styleOf(root)['height']).toBe(target);
-    expect(target + 2 * Number(styleOf(root)['marginVertical'])).toBe(26.5);
-    // DECOY: a field drawn at the target needs no overhang.
-    const tall = field({ height: target });
+  it.each(['ios', 'android'] as const)(
+    'keeps the touch at %s’s target, the layout at the drawn height',
+    (os) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        const tree = field({ height: 26.5, icon: 'search' });
+        const target = Math.max(platformTapTarget(os), 26.5);
+        // Android's is 48 and iOS's 44: the case that caught F-237's short field ran on Android.
+        expect(target).toBe(os === 'android' ? 48 : 44);
+        expect(styleOf(input(tree))['height']).toBe(target);
+        const root = nodes(tree).find((n) => styleOf(n)['marginVertical'] !== undefined);
+        expect(styleOf(root)['height']).toBe(target);
+        expect(target + 2 * Number(styleOf(root)['marginVertical'])).toBe(26.5);
+      } finally {
+        replaced.restore();
+      }
+    },
+  );
+
+  it('DECOY — a field drawn at the target needs no overhang', () => {
+    const tall = field({ height: platformTapTarget() });
     expect(
       styleOf(nodes(tall).find((n) => styleOf(n)['marginVertical'] !== undefined))[
         'marginVertical'
@@ -228,13 +242,53 @@ describe('Screen bleed, for a screen that owns its viewport', () => {
     expect(styleOf(frame(page(false)))['padding']).toBe(nativeSpacing.lg);
   });
 
-  it('refuses bleed on a screen that scrolls in its own scroller', () => {
+  it('refuses bleed on a screen that scrolls in its own scroller — at compile time, and at run time', () => {
     expect(() =>
       render(
         <ThemeProvider theme="dark">
+          {/* @ts-expect-error — bleed is typed only beside scroll={false} (ScreenScroll). */}
           <Screen bleed testID="page" />
         </ThemeProvider>,
       ),
     ).toThrow(TypeError);
+  });
+});
+
+describe('Card mediaGap, as 05 sets its kanji under the sample', () => {
+  const card = (mediaGap?: 'xs') =>
+    draw(
+      <Card
+        padding="sm"
+        mediaInset={5}
+        {...(mediaGap === undefined ? {} : { mediaGap })}
+        media={<View testID="media" style={{ height: 10 }} />}
+      >
+        <Text size="body" color="foreground">
+          藍
+        </Text>
+      </Card>,
+    );
+  const body = (tree: TestNode) =>
+    nodes(tree).find((n) => styleOf(n)['padding'] === nativeSpacing.sm);
+
+  it('sets the body’s first line the gap given under the media, and keeps its padding elsewhere', () => {
+    const style = styleOf(body(card('xs')));
+    expect(style['paddingTop']).toBe(nativeSpacing.xs);
+    expect(style['padding']).toBe(nativeSpacing.sm);
+  });
+
+  it('DECOY — without it the body is padded alike on every side', () => {
+    expect(styleOf(body(card()))['paddingTop']).toBeUndefined();
+  });
+
+  it('DECOY — without media there is nothing to sit under, so the gap is not applied', () => {
+    const tree = draw(
+      <Card padding="sm" mediaGap="xs">
+        <Text size="body" color="foreground">
+          藍
+        </Text>
+      </Card>,
+    );
+    expect(styleOf(body(tree))['paddingTop']).toBeUndefined();
   });
 });

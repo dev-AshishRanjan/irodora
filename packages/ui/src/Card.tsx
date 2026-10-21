@@ -116,6 +116,11 @@ export interface CardProps {
   readonly mediaInset?: number;
   /** The media's own corner, where the surface draws one (`11`: `sm`). */
   readonly mediaRadius?: keyof typeof nativeRadius;
+  /**
+   * From the media to the body's first line, where the surface draws it closer than the body's
+   * padding (`05`: the kanji `xs` under the sample, F-246). The body's padding by default.
+   */
+  readonly mediaGap?: SpacingStep;
   readonly level?: CardLevel;
   /**
    * Whether the card carries its resting edge. By default a level-1 card does and a level-2 or
@@ -175,6 +180,7 @@ export function Card({
   media,
   mediaInset,
   mediaRadius,
+  mediaGap,
   level = '1',
   edge = level === '1',
   padding = 'md',
@@ -253,7 +259,17 @@ export function Card({
         </>
       )}
       {children === undefined ? null : (
-        <View style={{ padding: inset, ...(fill ? { flexGrow: 1 } : {}) }}>{children}</View>
+        <View
+          style={{
+            padding: inset,
+            ...(media !== undefined && mediaGap !== undefined
+              ? { paddingTop: nativeSpacing[mediaGap] }
+              : {}),
+            ...(fill ? { flexGrow: 1 } : {}),
+          }}
+        >
+          {children}
+        </View>
       )}
       {footer === undefined ? null : (
         <>

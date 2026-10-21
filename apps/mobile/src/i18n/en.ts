@@ -57,13 +57,7 @@ export const en = {
 
   'atlas.title': 'Colour Atlas',
 
-  /*
-   * F-181 — THE ATLAS OWNS ITS OWN AFFORDANCES.
-   *
-   * Three finished screens sat on routes nothing navigated to: the finder, the comparison and
-   * the palette studio. The Atlas offered exactly one thing — a list — and the other three
-   * ways of using a corpus were unreachable.
-   */
+  // F-181: the colour page's way into the comparison, and the bookmark it draws (F-237).
   'detail.compareWith': 'Compare this with another colour',
   'detail.bookmark': 'Bookmark this colour',
   'compare.title': 'Compare two colours',

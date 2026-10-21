@@ -82,7 +82,9 @@ undrawn way to the same filters (decided by the implementing session over the pl
 ## Consequences
 
 - `src/atlas.ts`.
-- `finder.ts` exports `looksLikeHex`.
+- `finder.ts` exports `looksLikeHex` and `hexNearest`, and the Finder's own hex branch goes through
+  `hexNearest` too, so the two screens share one route from a hex to a ranking (F-246's review, M1).
+  F-250, which rebuilds the Finder to 09, keeps that route.
 - E-210 and E-212.
 - `bookmarks.test` adapts with its decoys kept.
 - R9 §4 E4 lists the facets sheet and the count line's place.

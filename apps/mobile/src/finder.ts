@@ -236,12 +236,10 @@ export function find(query: string): FinderResult {
   const text = query.trim();
   if (text === '') return { kind: 'empty', entries: [] };
 
-  if (looksLikeHex(text)) {
-    const hex = normaliseHex(text);
-    // Through the engine, never re-implemented: hex → sRGB → XYZ → OKLCh is three published
-    // conversions, and the ranking below needs Lab from the same source the corpus used.
-    const lab = labOfHex(hex);
-    const nearest = nearestByLab(lab, HEX_LIMIT);
+  // Through the engine, never re-implemented: hex → sRGB → XYZ → Lab, ranked by `hexNearest` —
+  // the Atlas's field's own route, so the two cannot disagree (F-246's review, M1; E-210).
+  const nearest = hexNearest(text, HEX_LIMIT);
+  if (nearest !== null) {
     return {
       kind: 'hex',
       entries: nearest.map((n) => n.entry),

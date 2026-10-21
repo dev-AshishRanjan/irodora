@@ -158,6 +158,7 @@ import {
   surfacesOf,
   type LiveNodes,
   type Locator,
+  type ReplacingConflict,
 } from './inventory';
 import { atlasOklch, atlasShown, capitalisedRomaji, NO_FILTERS, seasonLine } from '../src/atlas';
 import { readingOklch } from '../src/profile/photo';
@@ -5550,7 +5551,7 @@ interface Enrolled {
    * Elements a §6 conflict replaces, each with the conflict's id (ADR-0144): not counted, and held to
    * the inventory's own `conflicts`, so only an element listed under that conflict can be declared.
    */
-  readonly superseded?: Readonly<Record<string, string>>;
+  readonly superseded?: Readonly<Record<string, ReplacingConflict>>;
 }
 
 const ENROLLED: readonly Enrolled[] = [
@@ -5671,13 +5672,6 @@ const ENROLLED: readonly Enrolled[] = [
           `${message(locale, 'atlas.title')}${BILINGUAL_SEPARATOR}${japaneseRun('atlas.titleJa')}`,
       },
       '05.header-rule': { by: 'testID', id: APP_BAR_RULE_TEST_ID },
-      // The inventory read the pills' keys as `atlas.season.*`; the catalogue's are `atlas.all` and
-      // `season.*`. In English each pill's kanji is a word of its own, beside its label.
-      '05.filters.season.all': { by: 'text', key: 'atlas.all' },
-      '05.filters.season.spring': { by: 'text', key: 'season.spring' },
-      '05.filters.season.summer': { by: 'text', key: 'season.summer' },
-      '05.filters.season.autumn': { by: 'text', key: 'season.autumn' },
-      '05.filters.season.winter': { by: 'text', key: 'season.winter' },
       // A family chip is a generic Chip, so each is found by its own id, and its dot by the dot's.
       '05.filters.family.ao': { by: 'testID', id: 'atlas.family.ao' },
       '05.filters.family.aka': { by: 'testID', id: 'atlas.family.aka' },
@@ -5740,9 +5734,6 @@ const ENROLLED: readonly Enrolled[] = [
       '05.card-4.era': { by: 'value', text: (locale) => atlasSeason(3, locale) },
       // The indicator binds nothing and is no component: the bar names the active one (F-242).
       '05.tabs.indicator': { by: 'testID', id: TAB_INDICATOR_TEST_ID },
-      // The inventory read the key as `tabs.atlas`; the catalogue's is `tab.atlas` (F-145). It
-      // shares its word with the heading — *Atlas*, 色図鑑 — so the signature needs two.
-      '05.tabs.atlas.label': { by: 'text', key: 'tab.atlas' },
     },
     // 05 draws a four-item bar; C1 makes it 01's five, so these two glyphs are no tab's (ADR-0144).
     superseded: { '05.tabs.compass.icon': 'C1', '05.tabs.search.icon': 'C1' },
@@ -6127,6 +6118,16 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       expect(found).toHaveLength(1);
       expect(found[0]?.startsWith('05.search: declared superseded by C1')).toBe(true);
       /*
+       * DECOY: C11 lists 05's samples, and they are KEPT — drawn on the tinted card as 05 draws them.
+       * A conflict that settles how an element is drawn replaces nothing, so it cannot hide one: the
+       * type refuses it, and so does the check when a cast gets it past the type (S3).
+       */
+      // @ts-expect-error — C11 is not a conflict that replaces elements.
+      const kept = supersededFindings(inventory, { '05.card-1.swatch': 'C11' });
+      expect(kept).toStrictEqual([
+        '05.card-1.swatch: declared superseded by C11, which replaces nothing — it settles how its elements are drawn',
+      ]);
+      /*
        * DECOY: undeclared, the compass is reported missing — and the tab's search glyph is NOT, because
        * the field's own glyph satisfies the count. That is why a conflict's replacement is declared
        * against the inventory rather than left to a presence count that a different element can pass.
@@ -6150,7 +6151,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         'en',
       );
       expect(located).toStrictEqual([
-        '05.tabs.compass.icon: a locator for an element the inventory does not record',
+        '05.tabs.compass.icon: a locator for an element this surface does not sweep (unrecorded, or superseded)',
       ]);
     });
 

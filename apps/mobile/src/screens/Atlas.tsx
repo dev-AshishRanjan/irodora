@@ -27,10 +27,12 @@
  *
  * ## Every number here came from the bundle
  *
- * `hex`, `oklch` and every dot are the engine's answers at publish time, frozen. Nothing on this
- * screen converts a colour, and `verify-guards.mjs` boundary #24 is what stops that from being a
- * promise — recomputing a bundled value would look identical, pass every test, and return *today's*
- * engine's answer for a published version.
+ * `hex` and `oklch` are the engine's answers at publish time, frozen, and so is every dot's colour:
+ * a dot is a published entry's own. WHICH entry is a group's dot is chosen here, by today's ΔE00 over
+ * the published Lab (`familyDot`, ADR-0143 D4) — a choice among frozen values, never a new one.
+ * Nothing on this screen converts a colour, and `verify-guards.mjs` boundary #24 is what stops that
+ * from being a promise — recomputing a bundled value would look identical, pass every test, and
+ * return *today's* engine's answer for a published version.
  *
  * ## The rules live in `../atlas.ts`
  *
@@ -187,6 +189,8 @@ function AtlasCard({
       padding="sm"
       fill
       mediaInset={ATLAS_MEDIA_INSET}
+      // 05 sets the kanji `xs` under the sample, closer than the body's padding (F-246's review, B1).
+      mediaGap="xs"
       {...(onSelect === undefined
         ? {}
         : { onPress: onSelect, label: atlasCardName(item, t, script) })}

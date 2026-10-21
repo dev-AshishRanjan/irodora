@@ -332,16 +332,8 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
    * are the same thing there and different things on a phone.
    *
    * A screen that genuinely owns its own viewport — the Lens, which is a camera — passes
-   * `scroll={false}` and says so at the call site.
+   * `scroll={false}` and says so at the call site. `bleed` rides on it: see {@link ScreenScroll}.
    */
-  readonly scroll?: boolean;
-  /**
-   * The frame takes no padding, and the screen's own scroller pads what it holds (F-246). Only a
-   * screen that owns its viewport (`scroll={false}`) may ask: `05`'s grid runs down to the tab bar
-   * and its family row off the right edge, which a padded frame would cut 16 dp short. A screen
-   * that scrolls in `Screen`'s own scroller has nowhere else for its inset to go.
-   */
-  readonly bleed?: boolean;
   /** Page inset. `lg` (24) is the editorial default; a dense surface may take less. */
   readonly padding?: SpacingStep;
   /** Rhythm between top-level blocks. `xl` (32) is the editorial default. */
@@ -363,7 +355,21 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
    * below the scene, so it sits above the tab bar, which keeps the device's bottom inset (§4 E4).
    */
   readonly actionBar?: ActionBarProps;
-};
+} & ScreenScroll;
+
+/**
+ * Whether the page scrolls, and whether its frame bleeds (F-246).
+ *
+ * `scroll` **defaults to true**, and the default is load-bearing (see above). `bleed` — the frame
+ * takes no padding and the screen's own scroller pads what it holds — is typed only beside
+ * `scroll={false}`: `05`'s grid runs down to the tab bar and its family row off the right edge,
+ * which a padded frame would cut 16 dp short, and a screen that scrolls in `Screen`'s own scroller
+ * has nowhere else for its inset to go. So `<Screen bleed />` does not compile, and throws if a cast
+ * gets it past the compiler.
+ */
+type ScreenScroll =
+  | { readonly scroll?: boolean; readonly bleed?: false }
+  | { readonly scroll: false; readonly bleed: true };
 
 /** An app bar as a screen passes it: everything but the inset, which is the screen's to set. */
 export type ScreenAppBar = AppBarProps extends infer P
