@@ -40,6 +40,7 @@ import {
   Glyph,
   IconButton,
   Illustration,
+  illustrationBox,
   ReadoutTable,
   Row,
   Stack,
@@ -49,6 +50,7 @@ import {
 } from '@irodora/ui';
 import { allEntries } from '../src/corpus';
 import {
+  ART_HEIGHT,
   ART_WIDTH,
   BACK_GLYPH,
   BOOKMARK_GLYPH,
@@ -63,7 +65,9 @@ import {
   PHOTO,
   PILL,
   provenanceBody,
+  provenanceLead,
   RANK,
+  reviewLine,
   SEAL_GLYPH,
   SHARE_GLYPH,
   STACK_HEIGHT,
@@ -328,7 +332,7 @@ describe('order: 06 top to bottom', () => {
       byId('detail.readout.table.srgb.also.value'),
       text(message('en', 'detail.provenance')),
       text(provenanceBody(DETAIL, say('en'))),
-      seal(root),
+      text(reviewLine(DETAIL, say('en'), 'latin')),
       text(message('en', 'detail.combinations')),
       byId('detail.combination.1.photo'),
       text(combinationCaption(COMBOS[0]!)),
@@ -352,9 +356,9 @@ describe('order: 06 top to bottom', () => {
   });
 });
 
-/** The review line's seal: the one `seal-check` glyph. */
-function seal(root: Instance): Instance {
-  return root.findAll((n) => n.type === Glyph && n.props['name'] === 'seal-check')[0]!;
+/** The review line's seal, where one is drawn: the one `seal-check` glyph. */
+function seal(root: Instance): Instance | undefined {
+  return root.findAll((n) => n.type === Glyph && n.props['name'] === 'seal-check')[0];
 }
 
 /* ----------------------------------------------------------------------------- grouping */
@@ -427,7 +431,11 @@ describe('proportion: every size and interval from 06.json', () => {
     );
     expect(WEAR).toBe(el('06.actions.wear').dp.h);
     expect(HOLD).toBe(el('06.actions.hold').dp.h);
-    expect(ART_WIDTH).toBe(el('06.provenance.art').dp.w);
+    // The art at its drawn height; its width is the drawing's own aspect, never wider than drawn.
+    expect(ART_HEIGHT).toBe(el('06.provenance.art').dp.h);
+    const [boxW, boxH] = illustrationBox('plum-branch');
+    expect(ART_WIDTH).toBe(half((ART_HEIGHT * boxW) / boxH));
+    expect(ART_WIDTH).toBeLessThanOrEqual(el('06.provenance.art').dp.w);
   });
 
   /*
@@ -459,7 +467,8 @@ describe('proportion: every size and interval from 06.json', () => {
       ['share', SHARE_GLYPH],
       ['export', EXPORT_GLYPH],
     ]);
-    expect(seal(root).props['size']).toBe(SEAL_GLYPH);
+    // The sweep's entry is self-reviewed, so no seal is drawn (S3); colour-detail-states draws one.
+    expect(seal(root)).toBeUndefined();
   });
 
   it('the app bar: 06’s height, its inset and its icons’ pitch', () => {
@@ -617,6 +626,17 @@ describe('proportion: every size and interval from 06.json', () => {
       'card',
       'plum-branch',
     ]);
+    /*
+     * THE WORDS END xs SHORT OF THE ART (F-247's review, S2): 06 draws them 2 px apart, under half the
+     * scale's step, so the floor. Their block pads to the art's leading edge, less the card's own
+     * inset, and is as tall as the art and its drawn xs below, so the card holds the art.
+     */
+    const words = styled(text(message('en', 'detail.provenance')), 'paddingRight');
+    const gap = belowTheScale(2 * DP);
+    expect(flat(words?.props['style'])).toMatchObject({
+      paddingRight: nativeSpacing.sm + ART_WIDTH + nativeSpacing[gap] - nativeSpacing.md,
+      minHeight: 2 * nativeSpacing.xs + ART_HEIGHT - 2 * nativeSpacing.md,
+    });
     const place = flat(art.parent?.props['style']);
     expect(place['top']).toBe(
       nativeSpacing[
@@ -652,6 +672,13 @@ describe('proportion: every size and interval from 06.json', () => {
     expect(flat(byId('detail.combination.1.photo').props['style'])).toMatchObject({
       width: PHOTO,
       height: PHOTO,
+    });
+    // The caption runs at most half a gap past each side of its photograph, so the item is the
+    // photograph's width and the pitch is 06's however long a name is (F-247's review, M4).
+    const caption = styled(text(combinationCaption(COMBOS[1]!)), 'marginHorizontal');
+    expect(flat(caption?.props['style'])).toMatchObject({
+      width: PHOTO + nativeSpacing[pitch as keyof typeof nativeSpacing],
+      marginHorizontal: -nativeSpacing[pitch as keyof typeof nativeSpacing] / 2,
     });
     expect(nearest(byId('detail.combination.1.photo'), Stack)?.props['gap']).toBe(
       snap(el('06.combinations.item-1.caption').dp.y - bottom(photos[0]!) - lineInset('caption')),
@@ -738,7 +765,9 @@ describe('type: every text at the face, step, weight and ink its mockup records'
   };
 
   it('in English, each against 06', () => {
-    const { text } = setup();
+    const { text, byId } = setup();
+    const rank = (n: string): Instance =>
+      byId(`detail.combination.${n}.rank`).findAll((x) => x.type === Text && textOf(x) === n)[0]!;
     const cases: readonly (readonly [string, Instance, 'latin' | 'japanese'])[] = [
       ['06.back.label', text(message('en', 'tab.atlas')), 'latin'],
       ['06.kanji', text(DETAIL.entry.name.kanji), 'japanese'],
@@ -748,6 +777,12 @@ describe('type: every text at the face, step, weight and ink its mockup records'
       ['06.readout.title', text(message('en', 'detail.readout')), 'latin'],
       ['06.provenance.title', text(message('en', 'detail.provenance')), 'latin'],
       ['06.provenance.body', text(provenanceBody(DETAIL, say('en'))), 'latin'],
+      ['06.provenance.review', text(reviewLine(DETAIL, say('en'), 'latin')), 'latin'],
+      ['06.readout.table.hex.label', byId('detail.readout.table.hex.label'), 'latin'],
+      ['06.readout.table.hex.value', byId('detail.readout.table.hex.value'), 'latin'],
+      ['06.readout.table.srgb.p3-label', byId('detail.readout.table.srgb.also.label'), 'latin'],
+      ['06.readout.table.srgb.p3-value', byId('detail.readout.table.srgb.also.value'), 'latin'],
+      ['06.combinations.item-1.rank', rank('1'), 'latin'],
       ['06.combinations.title', text(message('en', 'detail.combinations')), 'latin'],
       ['06.combinations.item-1.caption', text(combinationCaption(COMBOS[0]!)), 'latin'],
       ['06.actions.wear', text(message('en', 'detail.wearIt')), 'latin'],
@@ -780,7 +815,15 @@ describe('type: every text at the face, step, weight and ink its mockup records'
       ['26.readout.title', text(message('ja', 'detail.readout'))],
       ['26.kasane.title', text(message('ja', 'detail.combinations'))],
       ['26.provenance.title', text(message('ja', 'detail.provenance'))],
-      ['26.provenance.corpus', text(provenanceBody(DETAIL, say('ja')))],
+      // In Japanese the lead is the same line's words, one weight and one ink, as 26 sets it (M2).
+      [
+        '26.provenance.corpus',
+        text(`${provenanceLead(DETAIL, say('ja'))}: ${provenanceBody(DETAIL, say('ja'))}`),
+      ],
+      [
+        '26.provenance.review',
+        text(`${message('ja', 'detail.review')}: ${reviewLine(DETAIL, say('ja'), 'japanese')}`),
+      ],
     ];
     for (const [id, node] of cases) {
       const e = el26(id);
@@ -812,7 +855,7 @@ describe('nothing 06 draws on one line is clipped (§4 E3)', () => {
     const pill = root.findAllByType(Chip).find((c) => c.props['testID'] === 'detail.taxonomy')!;
     expect([pill.props['wrap'], pill.props['height']]).toStrictEqual([true, PILL]);
     expect(nearest(text(DETAIL.entry.name.kanji), Row)?.props['wrap']).toBe(true);
-    expect(nearest(seal(root), Row)?.props['wrap']).toBe(true);
+    expect(nearest(text(reviewLine(DETAIL, say('en'), 'latin')), Row)?.props['wrap']).toBe(true);
     expect(
       sharedRow(byId('detail.combination.1'), byId('detail.combination.3'))?.props['style'],
     ).toMatchObject({

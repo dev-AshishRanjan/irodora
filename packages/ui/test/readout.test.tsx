@@ -191,7 +191,7 @@ const named = (tree: TestNode): readonly string[] =>
 describe('each part of a table, by its own id under the caller’s (F-247)', () => {
   const rows = [
     { key: 'hex', label: 'Hex', value: HEX },
-    { key: 'srgb', label: 'sRGB', value: LAB, also: { label: 'Display-P3:', value: OKLCH } },
+    { key: 'srgb', label: 'sRGB', value: LAB, also: { label: 'Display-P3', value: OKLCH } },
   ] as const;
   const ids = (tree: TestNode): readonly string[] =>
     nodes(tree)
@@ -267,13 +267,13 @@ describe('each row is one accessible element, and every figure is tabular', () =
       rows: [
         { key: 'hex', label: 'Hex', value: HEX },
         { key: 'oklch', label: 'OKLCh', value: OKLCH },
-        { key: 'srgb', label: 'sRGB', value: LAB, also: { label: 'Display-P3:', value: OKLCH } },
+        { key: 'srgb', label: 'sRGB', value: LAB, also: { label: 'Display-P3', value: OKLCH } },
       ],
     });
     expect(named(tree)).toStrictEqual([
       'Hex: hex 5B6B78',
       'OKLCh: L 0.490, C 0.035, h 240.2°, OKLCh',
-      'sRGB: L* 45.2, a* −3.4, CIELAB; Display-P3:: L 0.490, C 0.035, h 240.2°, OKLCh',
+      'sRGB: L* 45.2, a* −3.4, CIELAB; Display-P3: L 0.490, C 0.035, h 240.2°, OKLCh',
     ]);
     expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
     // Every figure is selectable, which is how a value is copied (FR-48).

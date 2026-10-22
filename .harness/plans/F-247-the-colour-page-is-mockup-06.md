@@ -277,9 +277,13 @@ recorded its own, with the reason.
   - **`exportSubjectFor(slug, palettes)`** in `export/subject.ts`. A test may not import a route, so
     the route's choice of subject is a function the export tests reach (E-215).
   - **A caption is at most one pitch wide** (`PHOTO + md`), so a long garment name wraps under its
-    own photograph rather than pushing its neighbours (E3).
+    own photograph rather than pushing its neighbours (E3). *Superseded by the review's M4: the item
+    is the photograph's width, and its caption runs at most half a gap past each side.*
   - **The second empty card names trousers, a skirt or shoes.** The builder has three slots, and a
     coat or jacket is a top, so *an outer layer* would have been a false way out.
+  - **The action bar's side inset is `md`**, where the sketch above says `sm`. Fitted, `06` draws the
+    two buttons 17 and 18 px (13.8 and 14.6 dp) from the bar's edges, nearer `md` than `sm`;
+    `colour-detail-fidelity.test` computes it.
 
 ---
 
@@ -1438,3 +1442,29 @@ no mockup draws only where a requirement forces it.
 - E:\JCFIP\.harness\verification\inventory-surfaces.json
 - E:\JCFIP\apps\mobile\e2e\journeys\atlas.journey.json
 - E:\JCFIP\apps\mobile\e2e\capture\routes.json
+
+---
+
+## Review (once, 2026-10-22): FAIL as delivered — every finding fixed or recorded
+
+No blocking finding; 7 significant and 10 minor. The gates the evaluator re-ran on `0422ea0` were green.
+
+| id | finding | outcome |
+|---|---|---|
+| S1 | Back said *Back to Atlas* and popped to wherever the page was opened from (the Finder, Nearby, Wear, the combinations, a garment, the Lens) | **Fixed.** Back navigates to `/atlas`, as `06.json` records it; the route test reads each handler's own body (decoy: a back that only pops). ADR-0147 amended |
+| S2 | The provenance text crossed the art at 2.6–3.0:1, and the art at 187 dp drew 162 dp tall, past the card | **Fixed.** The art keeps its drawn height (108.5 dp, so 125 dp wide by the drawing's aspect) and place, beside the words, `xs` apart; the words' block holds it. No opacity reaches 4.5:1 in every palette. ADR-0145 D3 amended; the fidelity test holds the padding and height |
+| S3 | A check-seal beside *Checked by its own author* on all 120 entries | **Fixed.** The seal is an independent check's (`reviewSealed`): drawn on none today; a planted independent review draws it at `SEAL_GLYPH` in `glyph.seal`. The sweep finds the review by its words. ADR-0146 amended |
+| S4 | A garment's spoken name dropped its colour's provenance | **Fixed.** `combinationName` appends `swatchAccessibleName`, as the Wardrobe does; asserted |
+| S5 | Code left dead: `palettesContaining`, `resolveSlugs`; `Accordion` and `Tabs` in `@irodora/ui` | **Fixed** for the corpus helpers (removed; the relation-integrity test uses `entryBySlug`). **Recorded as F-346** for the package's two components |
+| S6 | Claims the build did not support: an out-of-gamut P3 note; "the whole record lives in the export" | **Fixed** for P3: `detail.test` asserts every component in [0, 1] over all 120, so an entry that leaves it fails, and the comment says so. **Corrected and recorded** for the prose: ADR-0147 D1 amended; **F-347** with **OQ-54** (a surface no mockup draws waits for one) |
+| S7 | Guards and tests saying more than they check (E-214's oracle, E-216's slop, the ranking-context oracle, E-204's stale text) | **Fixed.** The combinations oracle is `scoreOutfit` worked by hand, with a no-slot garment and a tie; `app-bar.test` reads each icon's rendered `hitSlop`; the ranking context is compared with four parts written out; E-204 corrected |
+| M1 | Two inventory weights changed to fit the build | **Recorded** in criterion 4's attested list: compare the back word and *Hold* by eye |
+| M2 | Japanese provenance lines bold with a full-width colon; the review joined with ", " | **Fixed.** In Japanese both leads are the line's own words, regular, with ": "; the review joins with "、" |
+| M3 | The photographs' hairline ring missing | **Fixed.** The `border` token's line; `06.json` records it |
+| M4 | A long garment name widened the pitch | **Fixed.** The item is the photograph's width; the caption overhangs at most half a gap |
+| M5 | The spoken row said "Display-P3::" | **Fixed.** The table draws the colon after the second value's label |
+| M6 | The type test omitted texts | **Fixed.** The review line, the rank figure and the readout's labels and values, in English; the review in Japanese |
+| M7 | The route test matched strings anywhere in the file | **Fixed.** Each handler's own body; decoy: swapped targets |
+| M8 | A photograph added while the page was open stayed hidden | **Fixed.** The image cache is rebuilt each time the page is shown |
+| M9 | Record mismatches (the action bar's side inset; the pill's clipping in criterion 5) | **Fixed.** The decisions above; criterion 5's attestation |
+| M10 | The sRGB row of the out-of-sRGB entry was unqualified | **Fixed.** Both rows carry the note |

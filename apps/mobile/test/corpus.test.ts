@@ -20,8 +20,6 @@ import {
   colorFor,
   corpus,
   entryBySlug,
-  palettesContaining,
-  resolveSlugs,
   sha256,
   SEED_ORIGIN_SPACE,
   CORPUS_ENTRY_COUNT,
@@ -142,26 +140,18 @@ describe('the queries the Atlas is built on', () => {
   });
 
   it('resolves every relation in the corpus — a dangling one cannot exist', () => {
-    for (const { entry } of allEntries()) {
-      const targets = [
+    for (const { entry } of allEntries())
+      for (const target of [
         ...entry.relations.related,
         ...entry.relations.complementary,
         ...entry.relations.historicalVariants,
-      ];
-      expect(resolveSlugs(targets)).toHaveLength(targets.length);
-    }
+      ])
+        expect({ [target]: entryBySlug(target) === null }).toStrictEqual({ [target]: false });
   });
 
   it('resolves every palette member', () => {
     for (const { palette } of allPalettes())
       for (const member of palette.colors) expect(entryBySlug(member.slug)).not.toBeNull();
-  });
-
-  it('reports the palettes a colour belongs to, with its role', () => {
-    const anchored = allPalettes()[0]!.palette;
-    const anchor = anchored.colors.find((c) => c.role === 'anchor')!;
-    const found = palettesContaining(anchor.slug);
-    expect(found.some((f) => f.palette.slug === anchored.slug && f.role === 'anchor')).toBe(true);
   });
 });
 

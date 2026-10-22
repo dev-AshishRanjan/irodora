@@ -49,6 +49,7 @@ import {
 } from '@irodora/ui';
 import { colorFor, entryBySlug } from '../corpus';
 import {
+  ART_HEIGHT,
   ART_WIDTH,
   BACK_GLYPH,
   BOOKMARK_GLYPH,
@@ -68,7 +69,7 @@ import {
   RANK,
   readoutRows,
   reviewLine,
-  reviewRecorded,
+  reviewSealed,
   SEAL_GLYPH,
   SHARE_GLYPH,
   STACK_HEIGHT,
@@ -303,9 +304,20 @@ export function ColourDetail({
           ? ([hold] as const)
           : null;
 
-  // 26 draws the provenance lines at `body` where 06 draws `label` (ADR-0146 D5).
+  /*
+   * 26 draws the provenance lines at `body` where 06 draws `label` (ADR-0146 D5), and in ONE weight and
+   * one ink, its lead set off by a half-width colon (査読ステータス: …); 06 sets the English lead bold and
+   * brighter (F-247's review, M2).
+   */
   const prose = script === 'japanese' ? 'body' : 'label';
-  const colon = script === 'japanese' ? '：' : ': ';
+  const lead = (words: string): React.JSX.Element | string =>
+    script === 'japanese' ? (
+      `${words}: `
+    ) : (
+      <Text size={prose} weight={600} color="foreground" script={script}>
+        {`${words}: `}
+      </Text>
+    );
 
   return (
     /*
@@ -436,9 +448,11 @@ export function ColourDetail({
               <Stack gap="sm">
                 <Card level="1" padding="md" radius="md" testID="detail.provenance">
                   {/*
-                    THE PLUM BRANCH BEHIND THE WORDS (`06.provenance.art`): at its drawn size and its
-                    place from the card's top and trailing edge (ADR-0145 D3), inked at `06`'s card
-                    tone (ADR-0149). Drawn first, so the words are over it.
+                    THE PLUM BRANCH (`06.provenance.art`) at its drawn height and its place from the card's
+                    top and trailing edge, inked at 06's card tone (ADR-0149). THE WORDS KEEP CLEAR OF
+                    IT (F-247's review, S2; ADR-0145 D3 amended): over its strokes they read 2.6–3.0:1,
+                    and no ink the token allows brings that to 4.5:1 in every palette. So the words end
+                    `xs` short of the art, as 06 draws them beside it (2 px apart, under half the scale's step).
                   */}
                   <View
                     pointerEvents="none"
@@ -451,29 +465,40 @@ export function ColourDetail({
                       width={ART_WIDTH}
                     />
                   </View>
-                  <Stack gap="xs">
-                    <Text size="title" weight={600} color="foreground" script={script} heading>
-                      {t('detail.provenance')}
-                    </Text>
-                    <Text size={prose} color="foreground.2" script={script}>
-                      <Text size={prose} weight={600} color="foreground" script={script}>
-                        {`${provenanceLead(found, t)}${colon}`}
+                  <View
+                    style={{
+                      // To the art's leading edge, less the card's own inset, and xs apart.
+                      paddingRight:
+                        nativeSpacing.sm + ART_WIDTH + nativeSpacing.xs - nativeSpacing.md,
+                      // As tall as the art and its drawn xs below it, so the card holds the art.
+                      minHeight:
+                        nativeSpacing.xs + ART_HEIGHT + nativeSpacing.xs - 2 * nativeSpacing.md,
+                    }}
+                  >
+                    <Stack gap="xs">
+                      <Text size="title" weight={600} color="foreground" script={script} heading>
+                        {t('detail.provenance')}
                       </Text>
-                      {provenanceBody(found, t)}
-                    </Text>
-                    <Row gap="xs" align="center" wrap>
-                      <Text size={prose} color="foreground.2" script={script} numeric>
-                        <Text size={prose} weight={600} color="foreground" script={script}>
-                          {`${t('detail.review')}${colon}`}
+                      <Text size={prose} color="foreground.2" script={script}>
+                        {lead(provenanceLead(found, t))}
+                        {provenanceBody(found, t)}
+                      </Text>
+                      <Row gap="xs" align="center" wrap>
+                        <Text size={prose} color="foreground.2" script={script} numeric>
+                          {lead(t('detail.review'))}
+                          {reviewLine(found, t, script)}
                         </Text>
-                        {reviewLine(found, t)}
-                      </Text>
-                      {/* The seal only where a check is recorded; the words carry the status (rule 13). */}
-                      {reviewRecorded(found) ? (
-                        <Glyph name="seal-check" color={colors['glyph.seal']} size={SEAL_GLYPH} />
-                      ) : null}
-                    </Row>
-                  </Stack>
+                        {/*
+                          The seal only for an INDEPENDENT check (F-247's review, S3): beside
+                          "Checked by its own author" it would say verified in a picture. The words
+                          carry the status either way (rule 13).
+                        */}
+                        {reviewSealed(found) ? (
+                          <Glyph name="seal-check" color={colors['glyph.seal']} size={SEAL_GLYPH} />
+                        ) : null}
+                      </Row>
+                    </Stack>
+                  </View>
                 </Card>
                 {combinations === null ? null : combinations.length > 0 ? (
                   <Card level="1" padding="md" radius="md" testID="detail.combinations">
@@ -548,6 +573,7 @@ function CombinationItem({
   readonly script: 'latin' | 'japanese';
   readonly onPress?: () => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
   const n = String(combination.rank);
   const drawn = (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -565,7 +591,14 @@ function CombinationItem({
           ) : (
             <Image
               source={{ uri }}
-              style={{ width: PHOTO, height: PHOTO, borderRadius: nativeRadius.pill }}
+              style={{
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: nativeRadius.pill,
+                // 06's hairline ring between the card and the photograph (F-247's review, M3).
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
               resizeMode="cover"
               accessible={false}
             />
@@ -582,8 +615,11 @@ function CombinationItem({
             />
           </View>
         </View>
-        {/* A long name wraps under its own photograph rather than pushing its neighbours (E3). */}
-        <View style={{ maxWidth: PHOTO + nativeSpacing.md }}>
+        {/*
+          THE PITCH IS THE PHOTOGRAPH'S (F-247's review, M4): the item is as wide as its photograph, and
+          its caption may run half a gap past each side — as 06's widest does — and wraps beyond that (E3).
+        */}
+        <View style={{ width: PHOTO + nativeSpacing.md, marginHorizontal: -nativeSpacing.sm }}>
           <Text size="caption" color="foreground.2" script={script} align="center" numeric>
             {combinationCaption(combination)}
           </Text>

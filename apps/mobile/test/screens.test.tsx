@@ -900,7 +900,16 @@ function detailLocators(): Readonly<Record<string, Locator>> {
     '06.provenance.body': {
       by: 'value',
       text: (locale) =>
-        `${provenanceLead(DETAIL, say(locale))}${locale === 'ja' ? '：' : ': '}${provenanceBody(DETAIL, say(locale))}`,
+        `${provenanceLead(DETAIL, say(locale))}: ${provenanceBody(DETAIL, say(locale))}`,
+    },
+    /*
+     * The review line, by its words: its seal is drawn for an independent check only, and every
+     * entry is self-reviewed (F-247's review, S3), so the record's icon is not what finds it.
+     */
+    '06.provenance.review': {
+      by: 'value',
+      text: (locale) =>
+        `${message(locale, 'detail.review')}: ${reviewLine(DETAIL, say(locale), scriptOf(locale))}`,
     },
     '06.combinations': { by: 'testID', id: 'detail.combinations' },
   };
@@ -3332,8 +3341,8 @@ describe('colour detail shows what 06 binds (F-247)', () => {
     expect(DETAIL.entry.provenance.reviewIndependence).toBe('self');
     const text = shown();
     expect(text).toContain(inEn('detail.review'));
-    expect(text).toContain(reviewLine(DETAIL, inEn));
-    expect(reviewLine(DETAIL, inEn)).toContain('Checked by its own author');
+    expect(text).toContain(reviewLine(DETAIL, inEn, 'latin'));
+    expect(reviewLine(DETAIL, inEn, 'latin')).toContain('Checked by its own author');
   });
 
   /*

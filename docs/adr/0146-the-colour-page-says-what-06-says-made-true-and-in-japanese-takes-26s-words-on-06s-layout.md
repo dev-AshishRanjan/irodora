@@ -99,3 +99,26 @@ F-247.
 - OQ-48 or OQ-5 is answered.
 - A cleared source gives an entry an era.
 - A person's comparison asks for the grid, or for 06's lighter kanji.
+
+## Amendment (F-247's review, S3, S6, M2, M10)
+
+- **D3: the seal is an independent check's.** A check-seal beside *Checked by its own author* says
+  *verified* in a picture, which is what D3 removed in words. All 120 entries are self-reviewed. So
+  the seal is drawn only where the record holds an **independent** review with a date
+  (`reviewSealed`), and on no entry today. `colour-detail-states.test` plants an independent review
+  to show it draws, at `SEAL_GLYPH` in `glyph.seal`. The sweep finds `06.provenance.review` by its
+  words.
+- **D4: the out-of-sRGB note qualifies both rows that print the mapped value.** The sRGB row prints the
+  hex's bytes, so the one entry outside sRGB carries the note on its hex row and its sRGB row. Each
+  note is the row's own words (`TableRow.note`), in the row's script, and part of the row's spoken
+  name. Inside the hex's code run, the Japanese note was set in the Latin face.
+- **D4: a P3 component outside [0, 1].** None of the 120 converts outside the P3 gamut, and the page
+  has no words for one that does. `detail.test` asserts every component is in range, so a published
+  entry that leaves it fails the build, and its row is owed a note before it ships. The earlier claim
+  that "the screen says so" was not built, and is withdrawn.
+- **D5: 26's Japanese provenance lines are one weight and one ink.** `26` sets
+  *査読ステータス: 承認済み* regular, with a half-width colon, and its corpus line without a lead.
+  - In Japanese, the classification lead (FR-23) and the review lead are the line's own words, regular,
+    each followed by ": ".
+  - English keeps `06`'s bold, brighter lead.
+  - The review joins its date with "、" in Japanese.

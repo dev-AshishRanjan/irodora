@@ -15,7 +15,8 @@
 import { xyzToDisplayP3 } from '@irodora/color-spaces';
 import type { PublishedEntry } from '@irodora/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
-import { figureText, valueText, type ReadoutValue } from '@irodora/ui';
+import { scoreOutfit } from '@irodora/recommendation';
+import { figureText, swatchAccessibleName, valueText, type ReadoutValue } from '@irodora/ui';
 import {
   combinationCaption,
   combinationName,
@@ -24,7 +25,7 @@ import {
   provenanceLead,
   readoutRows,
   reviewLine,
-  reviewRecorded,
+  reviewSealed,
   taxonomyLine,
   wearableCombinations,
 } from '../src/detail';
@@ -34,7 +35,7 @@ import { colourSubject, paletteSubject } from '../src/export/subject';
 import { en } from '../src/i18n/en';
 import { ja } from '../src/i18n/ja';
 import { t as message, type MessageKey } from '../src/i18n';
-import { rankForSlot } from '../src/outfit/builder';
+import { colorOf } from '../src/wardrobe';
 import { rankingContext } from '../src/wardrobe/coverage';
 import { NO_EVIDENCE_PROFILE } from '../src/wear';
 
@@ -78,6 +79,14 @@ describe('the readout is the record’s derivation, and P3 the engine’s conver
       const p3 = xyzToDisplayP3(e.entry.color.xyz);
       expect(figures(also!.value).map(figureText)).toStrictEqual(p3.map((c) => c.toFixed(3)));
     }
+    /*
+     * EVERY COMPONENT IS IN [0, 1] TODAY, over all 120 (F-247's review, S6). The page prints a value as
+     * converted, and has no words for one outside the P3 gamut; the day a published entry converts
+     * outside it, this fails, and that entry's row is owed its note before it ships (ADR-0146 D4).
+     */
+    for (const x of ENTRIES)
+      for (const c of xyzToDisplayP3(x.entry.color.xyz))
+        expect({ [x.entry.slug]: c >= 0 && c <= 1 }).toStrictEqual({ [x.entry.slug]: true });
     // DECOY: 06's own "P3" is its sRGB bytes ÷ 255, which is not the conversion.
     const e = ENTRIES[0]!;
     const naive = [1, 3, 5].map((i) =>
@@ -165,16 +174,43 @@ describe('the provenance card says the record’s classification, source and che
     expect(provenanceLead(planted, t)).toBe('Traditional');
   });
 
-  it('says the check the record holds, and draws the seal only where one is recorded (F-084)', () => {
-    expect(reviewLine(e, t)).toBe(`${t('independence.self')}, ${e.entry.provenance.verifiedAt!}`);
-    expect(reviewRecorded(e)).toBe(true);
-    // DECOY: no independence recorded, no seal, and the line says so.
+  it('says the check the record holds, in each script’s own punctuation (F-084)', () => {
+    const at = e.entry.provenance.verifiedAt!;
+    expect(reviewLine(e, t, 'latin')).toBe(`${t('independence.self')}, ${at}`);
+    expect(reviewLine(e, tJa, 'japanese')).toBe(`${tJa('independence.self')}、${at}`);
+    // No independence recorded: the line says so.
     const unrecorded = {
       ...e,
       entry: { ...e.entry, provenance: { ...e.entry.provenance, reviewIndependence: null } },
     } as PublishedEntry;
-    expect(reviewRecorded(unrecorded)).toBe(false);
-    expect(reviewLine(unrecorded, t)).toContain(t('detail.notRecorded'));
+    expect(reviewLine(unrecorded, t, 'latin')).toContain(t('detail.notRecorded'));
+  });
+
+  /*
+   * THE SEAL IS AN INDEPENDENT CHECK'S, NEVER A SELF-REVIEW'S (F-247's review, S3): beside "Checked by
+   * its own author" a check-seal says *verified* in a picture. All 120 entries are self-reviewed, so
+   * the seal is drawn on none today; a planted independent review is what proves it can be drawn.
+   */
+  it('draws the seal only for an independent check, and on no entry today', () => {
+    expect(ENTRIES.filter(reviewSealed)).toStrictEqual([]);
+    expect(ENTRIES.every((x) => x.entry.provenance.reviewIndependence === 'self')).toBe(true);
+    const independent = {
+      ...e,
+      entry: {
+        ...e.entry,
+        provenance: { ...e.entry.provenance, reviewIndependence: 'independent' },
+      },
+    } as PublishedEntry;
+    expect(reviewSealed(independent)).toBe(true);
+    // DECOY: an independent review with no date is no recorded check.
+    const undated = {
+      ...independent,
+      entry: {
+        ...independent.entry,
+        provenance: { ...independent.entry.provenance, verifiedAt: null },
+      },
+    } as PublishedEntry;
+    expect(reviewSealed(undated)).toBe(false);
   });
 
   it('prints no word of 06’s or 26’s sample claims in the words this page adds', () => {
@@ -267,32 +303,68 @@ const garment = (
 describe('Wearable Combinations are the builder’s ranking with this colour as a top (ADR-0148)', () => {
   const colour = ENTRIES[10]!;
   const wardrobe = [
-    garment('g1', 'trousers', ENTRIES[1]!, 'Ecru Trousers'),
+    garment('g1', 'trousers', ENTRIES[1]!, 'Wool trousers'),
     garment('g2', 'shoes', ENTRIES[2]!),
     garment('g3', 'jeans', ENTRIES[3]!),
     garment('g4', 'boots', ENTRIES[4]!),
     garment('g5', 'shirt', ENTRIES[5]!),
+    garment('g6', 'scarf', ENTRIES[6]!),
   ];
   const context = rankingContext(null);
+  /** The slot each fixture garment fills, written out — not read from the builder's words. */
+  const SLOT: Readonly<Record<string, 'trouser' | 'shoe'>> = {
+    trousers: 'trouser',
+    jeans: 'trouser',
+    shoes: 'shoe',
+    boots: 'shoe',
+  };
 
-  it('is the builder’s own ranking over every other slot, best first, three at most (the oracle)', () => {
-    const top = { slot: 'top' as const, color: colorFor(colour.entry) };
-    const oracle = [
-      ...rankForSlot('trouser', [top], wardrobe, context),
-      ...rankForSlot('shoe', [top], wardrobe, context),
-    ]
-      .sort(
-        (a, b) =>
-          b.score.overall - a.score.overall ||
-          (a.garment.id < b.garment.id ? -1 : a.garment.id > b.garment.id ? 1 : 0),
-      )
+  /*
+   * THE ORACLE, WORKED BY HAND: each garment that fills another slot scored by scoreOutfit WITH the
+   * colour as the top, best first, ties to the earlier id — the rule ADR-0148 D1 states, computed
+   * here without rankForSlot, so a change to the builder's ranking is a change this sees.
+   */
+  const byHand = (pieces: readonly (typeof wardrobe)[number][]): readonly string[] =>
+    pieces
+      .filter((g) => SLOT[g.type] !== undefined)
+      .map((g) => ({
+        id: g.id,
+        overall: scoreOutfit(
+          [
+            { slot: 'top', color: colorFor(colour.entry) },
+            { slot: SLOT[g.type]!, color: colorOf(g.color) },
+          ],
+          context.reference,
+          context.profile,
+          context.rules,
+          context.weights,
+        ).overall,
+      }))
+      .sort((a, b) => b.overall - a.overall || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
       .slice(0, 3)
-      .map((r) => r.garment.id);
+      .map((r) => r.id);
+
+  it('ranks every garment that fills another slot by scoreOutfit with the colour, three at most', () => {
     const combos = wearableCombinations(colour, wardrobe, context);
-    expect(combos.map((c) => c.garment.id)).toStrictEqual(oracle);
+    expect(combos.map((c) => c.garment.id)).toStrictEqual(byHand(wardrobe));
     expect(combos.map((c) => c.rank)).toStrictEqual([1, 2, 3]);
-    // The shirt fills the colour's own slot, so it is never offered beside it.
-    expect(combos.some((c) => c.garment.id === 'g5')).toBe(false);
+  });
+
+  it('never offers a second top, nor a garment that fills no slot', () => {
+    const offered = (pieces: typeof wardrobe) =>
+      wearableCombinations(colour, pieces, context, 10).map((c) => c.garment.id);
+    expect(offered(wardrobe)).not.toContain('g5');
+    expect(offered(wardrobe)).not.toContain('g6');
+    // DECOY: the same scarf typed as trousers is offered, so its type is what left it out.
+    expect(offered([garment('g6', 'trousers', ENTRIES[6]!)])).toStrictEqual(['g6']);
+  });
+
+  it('breaks a tie by the earlier garment id', () => {
+    const twins = [garment('t2', 'shoes', ENTRIES[2]!), garment('t1', 'shoes', ENTRIES[2]!)];
+    expect(wearableCombinations(colour, twins, context).map((c) => c.garment.id)).toStrictEqual([
+      't1',
+      't2',
+    ]);
   });
 
   it('offers nothing for an empty wardrobe, or one holding only tops', () => {
@@ -306,12 +378,14 @@ describe('Wearable Combinations are the builder’s ranking with this colour as 
       expect(Object.keys(c).sort()).toStrictEqual(['color', 'garment', 'hex', 'rank']);
   });
 
-  it('captions and names each by what the person called it, or its type, and its hex', () => {
+  it('captions each by its name or type over its hex, and names it with its colour’s provenance', () => {
     const [first] = wearableCombinations(colour, [wardrobe[0]!], context);
-    expect(combinationCaption(first!)).toBe(`Ecru Trousers\n${ENTRIES[1]!.derived.hex}`);
+    expect(combinationCaption(first!)).toBe(`Wool trousers\n${ENTRIES[1]!.derived.hex}`);
+    // S4: the sample inside the control is hidden, so the name carries its source and confidence.
     expect(combinationName(first!)).toBe(
-      `1. Ecru Trousers, hex ${ENTRIES[1]!.derived.hex.slice(1)}`,
+      `1. Wool trousers — ${swatchAccessibleName(first!.garment.color.name, first!.hex, first!.color)}`,
     );
+    expect(combinationName(first!)).toMatch(/percent confidence/u);
     // DECOY: an unnamed garment is called by its type.
     const [unnamed] = wearableCombinations(colour, [wardrobe[1]!], context);
     expect(combinationCaption(unnamed!)).toBe(`shoes\n${ENTRIES[2]!.derived.hex}`);

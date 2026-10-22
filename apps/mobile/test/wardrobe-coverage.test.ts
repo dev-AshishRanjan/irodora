@@ -169,13 +169,25 @@ describe('the context a valid outfit is counted against', () => {
 });
 
 describe('the context a garment is ranked against (F-247, ADR-0148)', () => {
-  it('is the coverage context where a profile is stored (the same four, the oracle)', () => {
+  /*
+   * THE ORACLE IS WRITTEN OUT BY HAND, as the counting context's is above — never compared with
+   * coverageContext, which now returns rankingContext and so could not disagree with it (F-247's
+   * review, S7).
+   */
+  it('is the four parts written out by hand where a profile is stored (the oracle)', () => {
     const ranking = rankingContext(STORED);
-    const counted = coverageContext(STORED);
-    expect(ranking.profile).toStrictEqual(counted?.profile);
-    expect(ranking.weights).toStrictEqual(counted?.weights);
-    expect(ranking.rules.versionId).toBe(counted?.rules.versionId);
-    expect(ranking.reference).toHaveLength(counted?.reference.length ?? -1);
+    const oracle = {
+      profile: engineProfile(toWorking(STORED)),
+      rules: ruleSet(),
+      weights: outfitWeights(parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json')),
+      reference: referenceSet(),
+    };
+    expect(ranking.profile).toStrictEqual(oracle.profile);
+    expect(ranking.weights).toStrictEqual(oracle.weights);
+    expect(ranking.rules.versionId).toBe(oracle.rules.versionId);
+    expect(ranking.reference).toStrictEqual(oracle.reference);
+    // DECOY: the stored profile is not the no-evidence one, so the line above is not two defaults.
+    expect(ranking.profile).not.toStrictEqual(NO_EVIDENCE_PROFILE);
   });
 
   it('is the no-evidence profile where none is stored, so an order can still be given', () => {

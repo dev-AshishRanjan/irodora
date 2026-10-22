@@ -77,3 +77,21 @@ draws. E4 keeps a capability no mockup draws only where a requirement forces it.
 - E-024's palettes note is answered.
 - F-326's colour-page half lapses.
 - E-215.
+
+## Amendment (F-247's review, S1, S6)
+
+- **D3: back goes to the Atlas.** The control is drawn *Atlas* and named *Back to Atlas*, and `06.json`
+  records `navigate:/atlas`. But the page is opened from the Finder, Nearby, Wear, the combinations,
+  a garment and the Lens as well, and `router.back()` returned to those. It now navigates to
+  `/atlas`: it returns there where the Atlas is already in the stack, and opens it where it is not.
+  `colour-detail-states.test` holds each control's own target in the route's source, and a back that
+  only pops fails it.
+- **D1: "the whole record | the corpus and the export" was not true.** `colourSubject` exports a
+  colour's coordinates, name and source. Since F-247, no surface shows the description, the
+  contemporary note, the fashion use, the derivation or the editorial notes; the bundle carries them
+  (FR-21 is the record's, and is met). A surface for them waits on a mockup that draws one, and
+  **F-347** records it.
+- **Dead code removed with the page.** `palettesContaining` and `resolveSlugs` (`src/corpus`) had no
+  caller but their tests, and are gone; the relation-integrity test now uses `entryBySlug`.
+  `@irodora/ui`'s `Accordion` and `Tabs` have no surface either. They are a package's components,
+  with their registry subjects, so their fate is **F-346**'s.

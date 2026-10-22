@@ -34,7 +34,7 @@ export default function ColourDetailRoute(): React.JSX.Element {
    * added on the Wardrobe tab, or a profile finished, reaches *Wearable Combinations* the next time
    * this page is shown rather than the next time something else re-renders it.
    */
-  const [, setShown] = useState(0);
+  const [shown, setShown] = useState(0);
   useFocusEffect(
     useCallback(() => {
       setShown((n) => n + 1);
@@ -46,7 +46,9 @@ export default function ColourDetailRoute(): React.JSX.Element {
   // What the ranking turns on: the profile as last written (each read returns a new object).
   const profileKey = stored === null ? 'none' : `${stored.id}:${String(stored.updatedAt)}`;
   const ranking = useMemo(() => rankingContext(stored), [profileKey]);
-  const images = useMemo(() => galleryImages(repo), [repo]);
+  // A fresh cache each time the page is shown: a cached `null` would hide a photograph added since
+  // (F-247's review, M8).
+  const images = useMemo(() => galleryImages(repo), [repo, shown]);
 
   return (
     <>
@@ -57,9 +59,13 @@ export default function ColourDetailRoute(): React.JSX.Element {
         onBookmark={(on) => {
           setBookmarked(slug, on);
         }}
+        /*
+          TO THE ATLAS, wherever the page was opened from (F-247's review, S1): the control is drawn
+          *Atlas* and named *Back to Atlas*, and 06 records it so. Navigating to the Atlas returns to it
+          where it is already in the stack, and opens it where it is not.
+        */
         onBack={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/atlas');
+          router.navigate('/atlas');
         }}
         onShareCard={(s) => {
           router.push(`/atlas/card/${s}`);

@@ -490,10 +490,20 @@ describe('06’s trailing icons (F-247)', () => {
           paddingHorizontal: reach,
           marginHorizontal: -reach,
         });
-        // Each icon's own hit area lies within the row's room: its slop never reaches past the padding.
+        /*
+         * EACH ICON'S OWN HIT AREA, READ FROM WHAT IT RENDERS (F-247's review, S7): the size it draws at
+         * plus the slop its pressable carries reaches the platform's target, and fits inside the row —
+         * its height in the row's height, its sideways slop in the padding the row gives it.
+         */
         for (const icon of screen.UNSAFE_getAllByType(IconButton)) {
           const size = Number(icon.props['size']);
-          expect((target - size) / 2).toBeLessThanOrEqual(reach);
+          const host = icon.findAll((n) => n.props['hitSlop'] !== undefined)[0];
+          const slop = host?.props['hitSlop'] as
+            { top: number; bottom: number; left: number; right: number } | undefined;
+          expect(slop).toBeDefined();
+          expect(size + slop!.top + slop!.bottom).toBe(target);
+          expect(size + slop!.left + slop!.right).toBe(target);
+          expect(Math.max(slop!.left, slop!.right)).toBeLessThanOrEqual(reach);
         }
       } finally {
         replaced.restore();

@@ -22,10 +22,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { StoredGarment } from '@irodora/store';
-import { ThemeProvider } from '@irodora/ui';
+import { nativeColors } from '@irodora/design-tokens';
+import { Glyph, ThemeProvider } from '@irodora/ui';
 import type { TestNode } from '@irodora/ui/testing';
-import { allEntries } from '../src/corpus';
-import { combinationName, wearableCombinations } from '../src/detail';
+import * as corpus from '../src/corpus';
+import { allEntries, type PublishedEntry } from '../src/corpus';
+import { combinationName, SEAL_GLYPH, wearableCombinations } from '../src/detail';
 import { t as message } from '../src/i18n';
 import { ColourDetail, type ColourDetailProps } from '../src/screens/ColourDetail';
 import { rankingContext } from '../src/wardrobe/coverage';
@@ -324,36 +326,108 @@ describe('27’s card in the combinations’ place (ADR-0148 D4)', () => {
  */
 describe('the route sends each drawn action where ADR-0147 D3 says (E-215)', () => {
   const ROUTE = readFileSync(join(__dirname, '..', 'app', '(tabs)', 'atlas', '[slug].tsx'), 'utf8');
-  const TARGETS = [
-    'router.push(`/atlas/card/${s}`)',
-    'router.push(`/profile/export?slug=${s}`)',
-    'router.push(`/atlas/wear/${s}`)',
-    "router.push('/lens')",
-    'router.push(`/wardrobe/with/${id}`)',
-    "router.push('/wardrobe/add')",
+
+  /**
+   * Each handler's own body, by its prop name: from its name to the next prop the screen takes. Read
+   * per handler (F-247's review, M7), so a target moved to the wrong control, or one control's target
+   * satisfied by another's, is seen.
+   */
+  const handlers = (source: string): ReadonlyMap<string, string> => {
+    const out = new Map<string, string>();
+    const props = [
+      ...source.matchAll(/\n\s+(on[A-Z]\w+|wardrobe|photoOf|ranking|bookmarked)=\{/gu),
+    ];
+    props.forEach((m, i) => {
+      const end = props[i + 1]?.index ?? source.length;
+      out.set(m[1]!, source.slice(m.index, end));
+    });
+    return out;
+  };
+
+  /** What each drawn control must do: the target it pushes or navigates to. */
+  const EXPECTED: readonly (readonly [string, string])[] = [
+    // S1: the control is drawn *Atlas* and named *Back to Atlas*, and 06 records navigate:/atlas.
+    ['onBack', "router.navigate('/atlas')"],
+    ['onShareCard', 'router.push(`/atlas/card/${s}`)'],
+    ['onExport', 'router.push(`/profile/export?slug=${s}`)'],
+    ['onWearIt', 'router.push(`/atlas/wear/${s}`)'],
+    ['onHoldAsTarget', "router.push('/lens')"],
+    ['onOpenGarment', 'router.push(`/wardrobe/with/${id}`)'],
+    ['onScanGarment', "router.push('/lens')"],
+    ['onAddGarment', "router.push('/wardrobe/add')"],
   ];
-  /** Every target pushed, and Hold arms the target before it opens the Lens (E-106). */
+
   const sendsEveryAction = (source: string): boolean => {
-    const hold = source.slice(source.indexOf('onHoldAsTarget='), source.indexOf('wardrobe={'));
+    const by = handlers(source);
+    const hold = by.get('onHoldAsTarget') ?? '';
     return (
-      TARGETS.every((target) => source.includes(target)) &&
+      EXPECTED.every(([name, target]) => (by.get(name) ?? '').includes(target)) &&
+      // Hold arms the target, then opens the Lens (E-106); Scan opens it without arming.
       hold.includes('arm({') &&
-      hold.indexOf('arm({') < hold.indexOf("router.push('/lens')")
+      hold.indexOf('arm({') < hold.indexOf("router.push('/lens')") &&
+      !(by.get('onScanGarment') ?? '').includes('arm(')
     );
   };
 
-  it('pushes each target, and arms before it opens the Lens', () => {
+  it('each control sends its own target, and Hold arms before it opens the Lens', () => {
+    expect(handlers(ROUTE).size).toBeGreaterThanOrEqual(EXPECTED.length);
     expect(sendsEveryAction(ROUTE)).toBe(true);
   });
 
-  it('DECOY: a route that exports bare, or opens the Lens before arming, fails that', () => {
+  it('DECOY: a bare export, a back that only pops, swapped targets, or the Lens before arming each fail', () => {
     expect(sendsEveryAction(ROUTE.replace('/profile/export?slug=${s}', '/profile/export'))).toBe(
       false,
     );
-    const hold = ROUTE.slice(ROUTE.indexOf('onHoldAsTarget='), ROUTE.indexOf('wardrobe={'));
+    expect(sendsEveryAction(ROUTE.replace("router.navigate('/atlas')", 'router.back()'))).toBe(
+      false,
+    );
+    // Share and Wear It swap targets: every target is still in the file, and the check still fails.
+    const swapped = ROUTE.replace('/atlas/card/${s}', '@@')
+      .replace('/atlas/wear/${s}', '/atlas/card/${s}')
+      .replace('@@', '/atlas/wear/${s}');
+    expect(sendsEveryAction(swapped)).toBe(false);
+    const hold = handlers(ROUTE).get('onHoldAsTarget') ?? '';
     const lensFirst = hold
       .replace("router.push('/lens');", '')
       .replace('arm({', "router.push('/lens');\n          arm({");
     expect(sendsEveryAction(ROUTE.replace(hold, lensFirst))).toBe(false);
+  });
+});
+
+/* ----------------------------------------------------------------------------- the seal */
+
+/*
+ * THE SEAL IS AN INDEPENDENT CHECK'S (F-247's review, S3). Every published entry is self-reviewed,
+ * so the page is drawn here over a planted copy of the sweep's entry whose check is independent:
+ * the seal appears at its drawn size, in its minted green, beside the words that carry the status.
+ */
+describe('the review seal is drawn for an independent check, and only then', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const seals = () =>
+    screen.UNSAFE_queryAllByType(Glyph).filter((g) => g.props['name'] === 'seal-check');
+
+  it('draws none for a self-reviewed entry — every one today', () => {
+    drawPage(handlers());
+    expect(seals()).toHaveLength(0);
+    expect(screen.getByText(/Checked by its own author/u)).toBeTruthy();
+  });
+
+  it('draws one, at its drawn size and in its green, for an independent check', () => {
+    const real = corpus.entryBySlug(DETAIL.entry.slug)!;
+    const independent = {
+      ...real,
+      entry: {
+        ...real.entry,
+        provenance: { ...real.entry.provenance, reviewIndependence: 'independent' },
+      },
+    } as PublishedEntry;
+    jest.spyOn(corpus, 'entryBySlug').mockReturnValue(independent);
+    drawPage(handlers());
+    const [seal] = seals();
+    expect(seal?.props['size']).toBe(SEAL_GLYPH);
+    expect(seal?.props['color']).toBe(nativeColors.dark['glyph.seal']);
   });
 });

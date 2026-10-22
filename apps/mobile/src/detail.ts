@@ -24,7 +24,12 @@
  * bundle's.
  */
 
-import type { ReadoutPart, TableRow } from '@irodora/ui';
+import {
+  illustrationBox,
+  swatchAccessibleName,
+  type ReadoutPart,
+  type TableRow,
+} from '@irodora/ui';
 import type { OutfitPiece } from '@irodora/recommendation';
 import type { StoredGarment } from '@irodora/store';
 import { seasonLine } from './atlas';
@@ -89,8 +94,15 @@ export const RANK = 22.5;
 export const WEAR = 35.5;
 /** `06.actions.hold`: 42 px. */
 export const HOLD = 34;
-/** `06.provenance.art`: 231 px, kept at its drawn size (ADR-0145 D3). */
-export const ART_WIDTH = 187;
+/**
+ * `06.provenance.art`: drawn 134 px (108.5 dp) tall. The plum branch's own grid is squarer than 06's crop
+ * (60 × 52 against 231 × 134 px), so at 06's 187 dp width it would draw 162 dp tall, past the card; it
+ * is sized by its drawn height, and its width follows the drawing (F-247's review, ADR-0145 D3 amended).
+ */
+export const ART_HEIGHT = 108.5;
+const [ART_BOX_W, ART_BOX_H] = illustrationBox('plum-branch');
+/** The art's width: its drawn height at the drawing's own aspect, to the half dp. */
+export const ART_WIDTH = Math.round(((ART_HEIGHT * ART_BOX_W) / ART_BOX_H) * 2) / 2;
 
 /*
  * THE GLYPHS, at the size that inks what 06 draws. A line glyph's ink is its path's extent on the
@@ -219,13 +231,15 @@ export function readoutRows(entry: PublishedEntry, t: T, p3: Triple): readonly T
     {
       key: 'srgb',
       label: t('coord.rgb'),
+      // The sRGB bytes are the hex's, so the one entry outside sRGB says so here too (F-247's review).
+      ...note,
       value: {
         kind: 'figures',
         separator: ', ',
         parts: [measure(r, 0, 'R', 'sRGB'), measure(g, 0, 'G', 'sRGB'), measure(b, 0, 'B', 'sRGB')],
       },
       also: {
-        label: `${t('coord.displayP3')}:`,
+        label: t('coord.displayP3'),
         value: {
           kind: 'figures',
           separator: ', ',
@@ -261,19 +275,24 @@ export function provenanceBody(entry: PublishedEntry, t: T): string {
  * `06.provenance.review`: the check the record holds — who checked it, relative to its author, and
  * when (F-084) — after the bold *Editorial Review*. Never *Verified*: the words say what was done.
  */
-export function reviewLine(entry: PublishedEntry, t: T): string {
+export function reviewLine(entry: PublishedEntry, t: T, script: Script): string {
   const { reviewIndependence, verifiedAt } = entry.entry.provenance;
   const who =
     reviewIndependence === null
       ? t('detail.notRecorded')
       : t(INDEPENDENCE_KEYS[reviewIndependence]);
-  return verifiedAt === null ? who : `${who}, ${verifiedAt}`;
+  if (verifiedAt === null) return who;
+  return `${who}${script === 'japanese' ? '、' : ', '}${verifiedAt}`;
 }
 
-/** Whether a check is recorded at all: the seal is drawn only then. */
-export function reviewRecorded(entry: PublishedEntry): boolean {
+/**
+ * Whether the record holds an INDEPENDENT check: the seal is drawn only then (F-247's review, S3).
+ * A seal beside *Checked by its own author* would say *verified* in a picture where the words say
+ * otherwise; all 120 entries are self-reviewed today, so none draws it (ADR-0146 D3, amended).
+ */
+export function reviewSealed(entry: PublishedEntry): boolean {
   const { reviewIndependence, verifiedAt } = entry.entry.provenance;
-  return reviewIndependence !== null && verifiedAt !== null;
+  return reviewIndependence === 'independent' && verifiedAt !== null;
 }
 
 /* ------------------------------------------------------------------ the combinations */
@@ -330,7 +349,11 @@ export function combinationCaption(c: WearableCombination): string {
   return `${garmentLabel(c.garment)}\n${c.hex}`;
 }
 
-/** A combination as a screen reader hears it: its number, its name and its hex. */
+/**
+ * A combination as a screen reader hears it: its number and name, then its colour as every sample in
+ * the app is named — name, hex, source and confidence (`swatchAccessibleName`, as the Wardrobe names a
+ * garment): the sample inside the control is hidden, so this is the only place its provenance is heard.
+ */
 export function combinationName(c: WearableCombination): string {
-  return `${String(c.rank)}. ${garmentLabel(c.garment)}, hex ${c.hex.slice(1)}`;
+  return `${String(c.rank)}. ${garmentLabel(c.garment)} — ${swatchAccessibleName(c.garment.color.name, c.hex, c.color)}`;
 }

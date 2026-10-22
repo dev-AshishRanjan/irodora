@@ -1306,13 +1306,17 @@
         "h": 67
       },
       "tokens": {
-        "radius": "pill"
+        "radius": "pill",
+        "border": "border.subtle"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.0",
       "action": "navigate:/wardrobe/with/[id]",
+      "measured": {
+        "border": "#383B42"
+      },
       "copy": null
     },
     {
@@ -1369,13 +1373,17 @@
         "h": 67
       },
       "tokens": {
-        "radius": "pill"
+        "radius": "pill",
+        "border": "border.subtle"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.1",
       "action": "navigate:/wardrobe/with/[id]",
+      "measured": {
+        "border": "#383B42"
+      },
       "copy": null
     },
     {
@@ -1432,13 +1440,17 @@
         "h": 67
       },
       "tokens": {
-        "radius": "pill"
+        "radius": "pill",
+        "border": "border.subtle"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:combinations.2",
       "action": "navigate:/wardrobe/with/[id]",
+      "measured": {
+        "border": "#383B42"
+      },
       "copy": null
     },
     {
@@ -1866,7 +1878,7 @@
     {
       "rule": "E1",
       "element": "06.provenance.review",
-      "why": "\"Verified\" is sample content; the line says the check the record holds — its independence and date (ADR-0146, F-084)"
+      "why": "\"Verified\" is sample content; the line says the check the record holds — its independence and date (ADR-0146, F-084) — and its seal is drawn for an independent check only, beside which it does not overstate; every entry is self-reviewed, so none draws it today (F-247’s review)"
     },
     {
       "rule": "E1",

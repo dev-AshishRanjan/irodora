@@ -165,26 +165,6 @@ export function entryBySlug(slug: string): PublishedEntry | null {
   return corpus().entries.find((e) => e.entry.slug === slug) ?? null;
 }
 
-/** The palettes that hold this colour, with the role it plays in each. */
-export function palettesContaining(
-  slug: string,
-): readonly { readonly palette: CorpusPalette; readonly role: string; readonly rank: number }[] {
-  const found: { palette: CorpusPalette; role: string; rank: number }[] = [];
-  for (const { palette } of allPalettes()) {
-    const member = palette.colors.find((c) => c.slug === slug);
-    if (member !== undefined) found.push({ palette, role: member.role, rank: member.rank });
-  }
-  return found;
-}
-
-/** Entries a slug relates to, resolved. A dangling relation cannot exist — the gate forbids it. */
-export function resolveSlugs(slugs: readonly string[]): readonly PublishedEntry[] {
-  return slugs.flatMap((s) => {
-    const found = entryBySlug(s);
-    return found === null ? [] : [found];
-  });
-}
-
 /**
  * The space every entry in the pinned bundle arrived in.
  *

@@ -47,3 +47,14 @@ owned garments by `scoreOutfit` against locked pieces.
 - `rankForSlot` is extracted from `regenerate`, with no change to the builder's behaviour (E-214).
 - `rankingContext` joins E-208's module.
 - R9 §4 E4 lists the empty states and the garment without a photograph.
+
+## Amendment (F-247's review, S4, M3, M4)
+
+- **D3: a garment's name carries its colour's provenance.** The sample inside the control is hidden,
+  so its source and confidence are heard only in the control's name. `combinationName` is the number
+  and the name, then `swatchAccessibleName`, as the Wardrobe names a garment.
+- **D3: the pitch is the photograph's.** The item is as wide as its photograph. A caption may run half
+  a gap past each side, as `06`'s widest does, and wraps beyond that. A long name no longer widens the
+  pitch.
+- **D3: the photograph's ring.** `06` draws a hairline ring between the card and the photograph
+  (`#383B42` between `#20232A` and `#1E2126`). It is the `border` token's line, and `06.json` records it.

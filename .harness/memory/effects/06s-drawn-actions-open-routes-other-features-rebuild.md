@@ -15,6 +15,7 @@ handler an absent control; the route's push targets read from its source); `expo
 
 | control | goes to | rebuilt by |
 |---|---|---|
+| back | `/atlas`, navigated to from every way in (its name says so) | the Atlas, F-246 |
 | *Wear It* | `/atlas/wear/[slug]` | F-248 (`07`) |
 | share | `/atlas/card/[slug]` | F-253 (`20`) |
 | export | `/profile/export?slug=` | F-263 (`18`) |

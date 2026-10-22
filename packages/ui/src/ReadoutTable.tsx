@@ -81,6 +81,7 @@ interface RowBase {
 
 /** 06's row: a label, a value, and optionally a second value after a bar (Display-P3). */
 export interface TableRow extends RowBase {
+  /** The second value: its label is drawn bold with the colon the drawing sets after it, and spoken so. */
   readonly also?: { readonly label: string; readonly value: ReadoutValue };
   /**
    * Words after the row's values, in the row's own script (F-247): 06's hex row, for the one entry
@@ -241,7 +242,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                       script={script}
                       {...part(row.key, 'also.label')}
                     >
-                      {`${row.also.label} `}
+                      {`${row.also.label}: `}
                     </Text>
                     {valueText(row.also.value)}
                   </Text>

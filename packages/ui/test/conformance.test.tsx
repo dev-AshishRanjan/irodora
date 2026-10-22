@@ -1779,7 +1779,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
               key: 'srgb',
               label: 'sRGB',
               value: READOUT_SRGB,
-              also: { label: 'Display-P3:', value: READOUT_OKLCH },
+              also: { label: 'Display-P3', value: READOUT_OKLCH },
             },
           ],
         },

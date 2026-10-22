@@ -82,7 +82,10 @@ const p3 = [
 const garment = (n, photo, badge, caption) => [
   el(`06.combinations.item-${n}.photo`, 'app:GarmentPhoto', photo, {
     parent: '06.combinations',
-    tokens: { radius: 'pill' },
+    // F-247's review (M3): a hairline ring between the card and the photograph — #383B42 between the
+    // card's #20232A and the dark photograph's #1E2126 (x 175, y 1150) — the border token's line.
+    tokens: { radius: 'pill', border: 'border.subtle' },
+    measured: { border: '#383B42' },
     binding: `engine:combinations.${n - 1}`,
     // F-247 (ADR-0147): a garment opens at its combinations, as Home's tiles do; /wardrobe/[id] is no route.
     action: 'navigate:/wardrobe/with/[id]',
@@ -248,8 +251,10 @@ export default {
       measured: { bg: '#20232A' },
       raw: { cornerPx: 10.25 },
     }),
-    // The art keeps its drawn size and its place from the card's top and trailing edge (drawn
-    // B(475, 895, 231, 134), 12 px in from the drawn edge): behind the text, clipped by the card.
+    // The art keeps its place from the card's top and trailing edge (drawn B(475, 895, 231, 134), 12 px
+    // in from the drawn edge) and its drawn HEIGHT; its width follows the plum branch's own grid (60 × 52,
+    // squarer than this crop), 125 dp. 06 draws it BESIDE the words (2 px apart), and so does the build:
+    // fitted behind them, text crossing its strokes read 2.6–3.0:1 (F-247's review, ADR-0145 D3 amended).
     el('06.provenance.art', 'ui:Illustration', B(283, 895, 231, 134), {
       parent: '06.provenance',
       illustration: 'plum-branch',
@@ -412,7 +417,7 @@ export default {
     {
       rule: 'E1',
       element: '06.provenance.review',
-      why: '"Verified" is sample content; the line says the check the record holds — its independence and date (ADR-0146, F-084)',
+      why: '"Verified" is sample content; the line says the check the record holds — its independence and date (ADR-0146, F-084) — and its seal is drawn for an independent check only, beside which it does not overstate; every entry is self-reviewed, so none draws it today (F-247’s review)',
     },
     {
       rule: 'E1',

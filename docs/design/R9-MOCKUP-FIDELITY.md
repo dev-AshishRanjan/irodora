@@ -827,7 +827,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
-| **OQ-19** | `06`'s screen is its upper panel; the cards and the action bar drawn wider are fitted to it, the art behind the provenance text | [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md) |
+| **OQ-19** | `06`'s screen is its upper panel; the cards and the action bar drawn wider are fitted to it, the art beside the provenance text at its drawn height (amended by F-247’s review: behind it, the words read under 4.5:1) | [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md) |
 | **OQ-17**, **OQ-18** | Every Atlas card prints its OKLCh line; its last line is the season the entry was authored with, absent where none is; no era is printed | [ADR-0140](../adr/0140-every-atlas-card-prints-its-oklch-line-ends-in-its-authored-season-and-prints-no-era.md) |
 | **OQ-43** | The chosen pill carries its leading dot, as `12`, `15` and `17` draw a choice | [ADR-0141](../adr/0141-the-chosen-season-pill-on-05-carries-its-leading-dot.md) |
 | **OQ-11** | The checkered badge on a garment tile marks a garment whose material is recorded, and is absent where none is: one mark as `01` draws it, in the ink text on that sample takes, hidden from assistive technology; the tile's name says the material in words | [ADR-0137](../adr/0137-the-texture-badge-marks-a-garment-whose-material-is-recorded-and-is-absent-where-none-is.md) |

@@ -82,3 +82,30 @@ overhangs waiting on OQ-19, and `mockup-inventory.mjs` refuses an overhang whose
 
 - `06` is regenerated at one width.
 - The person's comparison finds the overlap or the height wrong.
+
+## Amendment (F-247's review, S2): the art sits beside the words, at its drawn height
+
+D3 put the art behind the provenance text's end. The review measured it: text crossing a stroke reads
+**2.65:1 on Sumi, 3.02:1 on Washi, 2.64:1 on Slate and 2.82:1 on Obsidian** (`foreground.2` label over
+the art at `opacity.artCard`), against 7.16, 5.98, 6.31 and 7.68 on the card. That fails NFR-8's 4.5:1
+wherever a word meets a stroke. No ink the opacity allows fixes it: even the backdrop's 0.15 gives
+4.40:1 on Washi and 4.08:1 on Slate.
+
+The same reading found a second problem. The plum branch's own grid is 60 × 52, squarer than `06`'s
+crop (231 × 134 px). At 187 dp wide it draws 162 dp tall, which is taller than the card.
+
+- **D3, as amended.**
+  - The art keeps its drawn **height** (108.5 dp) and its place: `xs` from the card's top and `sm`
+    from its trailing edge.
+  - Its width follows the drawing: 125 dp.
+  - The words end `xs` short of it. `06` draws them beside the art, 2 px apart, which is under half
+    the scale's step.
+  - The words' block is at least as tall as the art and its drawn `xs` below, so the card holds it.
+  - This is `06`'s own relation between the two, art beside words, which fitting the region had
+    undone.
+- **The cost.** The text column is 219 dp where `06` draws 324 dp, and the card is taller than drawn.
+  `colour-detail-fidelity.test` holds the padding and the height.
+- **Rejected:**
+  - A lower opacity: it does not reach 4.5:1 in every palette.
+  - The art at 187 dp beside a 157 dp column: art kept at the cost of prose.
+  - The art below the words: `06` places it at the card's top.
