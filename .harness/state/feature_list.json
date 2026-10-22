@@ -8546,7 +8546,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-221",
         "F-232",
@@ -8580,6 +8580,27 @@
       "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not. OQ-37 CLOSED 2026-09-24 by ADR-0110 (on the person's delegation): the icons are followed as drawn, each colour a declared exception over the one-ink silhouette. FROM F-232 (2026-09-29): 07.occasion's chosen segment carries a leading dot in the pill's ink (12.4 px, #18191E), recorded as 07.occasion.selected.dot after F-232's review found it; F-232 had first read 07 as fill-only. Build it as ChoiceGroup segmented with mark 'dot' and selectedFill 'accent', radius 'md'. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 07's anchor swatch is 51.5 sm with the keyline, and its text sits on the sample (C8): `Text on`. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ; the route atlas/wear/[slug] is still on the platform header, and its entry in PLATFORM_HEADER (apps/mobile/test/chrome.test.ts) is deleted in the same change that moves it — the test fails until it is. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-221 (ADR-0134): enroll this surface in the inventory sweep — its id in .harness/verification/inventory-surfaces.json and its render and locators in screens.test's ENROLLED — in the same change; verify-mockups refuses closing this feature without it (E-203). Its capture is pnpm fidelity:capture's, read beside its mockup under compose/. FROM F-238 (ADR-0136): 07’s “Save Outfit to Lab” is this feature’s, not the lookbook’s — 07’s slots are corpus colours, not garments, so they are not lookbook entries. FROM F-247 (ADR-0147): 06’s Wear It opens /atlas/wear/[slug].",
       "openQuestions": [
         "OQ-32"
+      ],
+      "plan": "plans/F-248-wear-is-mockup-07.md",
+      "attested": [
+        {
+          "criterion": "The only departures from mockup 07 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+          "verifiedBy": "GATED FOR STRUCTURE, ATTESTED FOR APPEARANCE. wear-fidelity.test (order, grouping, every interval, size, corner, step, weight and ink, recomputed from 07.json through §2’s snap, negative and sub-half intervals named) and the 07.screen sweep in both themes and languages. The person’s comparison: each difference is a named departure (ADR-0150 to ADR-0153; R9 §4 E1/E2/E3/E4, §6 C8/C10/C12), or is fixed and recaptured, or recorded as a feature.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The fidelity harness captures the route beside mockup 07 in both themes and both locales, and a person has compared each pair and recorded the result",
+          "verifiedBy": "A person runs `pnpm fidelity:capture -- --erase-app-data` on an Android device or emulator at 384 dp with a non-debuggable build of the final commit. /atlas/wear/[slug] is captured in Sumi/Washi × en/ja and composed beside 07 (25’s palette for Washi). Recorded in progress.md under F-248. Expected and not defects: a corpus colour in place of 07’s; the occasion words (Office, Japanese-inspired, Formal); (your profile) beside the fit figure; the contrast as ratio · Lc; the harmony as the warm–cool relation; the canvas and card taller than drawn; the asymmetric trailing insets, as drawn.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface",
+          "verifiedBy": "GATED except the device half: tsc + i18n.test, wear-states.test, test:a11y, test:contrast, test:cvd. ATTESTED on the capture’s device: each occasion re-ranks; Swap steps; Lock is announced by TalkBack; a pill substitutes; a tile opens its sheet; Shop for this carries the slot; Add to wardrobe stores nothing until saved; Save to Outfit Lab opens the Lab with the nearest owned garments and the top locked, and without a profile is disabled with its line; Export lists the four colours; back opens the colour page; at 200 % in en and ja rows, names and segments wrap or fit and nothing is cut, the drawn-height chips and buttons clip (F-344, recorded); the generated flows pass.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
