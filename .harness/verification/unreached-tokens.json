@@ -92,6 +92,15 @@
       "why": "THE ATLAS'S *CLEAR* WAS ITS ONLY READER, from F-018 until F-246 rebuilt the Atlas to 05. No governing mockup draws link text, and *Clear* — a control 05 does not draw, placed on the heading row by ADR-0143 D6 (R9 §4 E4) — is composed from 05's own parts as a plain Button, inked `foreground`. That is the value `link` holds in every palette: the manifest makes it IDENTICAL to `foreground` because the underline was to be the channel, and no surface draws one. Kept rather than deleted because it is the manifest's decision for link text: the day a governing mockup draws a link, that surface must not invent an ink for it.",
       "closedBy": null,
       "permanentBecause": "No governing mockup draws link text. Re-read this the first time one does."
+    },
+    {
+      "group": "colour token",
+      "tokens": [
+        "glyph.lock"
+      ],
+      "cites": "F-248, ADR-0153",
+      "why": "07’s padlock gold, minted in F-248’s increment 2 and drawn on the Lock control from its increment 6: declared for the commits between the token and its reader, so each increment stays green.",
+      "closedBy": "F-248"
     }
   ]
 }

@@ -801,6 +801,18 @@
         "role": "06's editorial-review seal: the green check drawn beside the review line (ADR-0110).",
         "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the review line whose words carry its meaning (section 3). It is measured off 06 (#4B9D61, F-225's census) and pairs with nothing: no reading depends on it. The same value in every palette, as 06 draws one.",
         "pairsWith": []
+      },
+      "glyph.lock": {
+        "oklch": {
+          "l": 0.727246084421259,
+          "c": 0.11854889369509097,
+          "h": 85.89324976582105
+        },
+        "srgb": "#C8A145",
+        "usage": "nonText",
+        "role": "07’s padlock on a locked slot, and 15’s and 16’s: the gold glyph drawn on the Lock control (ADR-0110).",
+        "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), on a control whose word — Lock or Locked — carries its state (section 3; golden rule 13). It is measured off 07, where it is largest (#C8A145), and pairs with nothing: no reading depends on it. The same value in every palette, as 07 draws one.",
+        "pairsWith": []
       }
     },
     "light": {
@@ -1510,6 +1522,18 @@
         "role": "06's editorial-review seal: the green check drawn beside the review line (ADR-0110).",
         "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), beside the review line whose words carry its meaning (section 3). It is measured off 06 (#4B9D61, F-225's census) and pairs with nothing: no reading depends on it. The same value in every palette, as 06 draws one.",
         "pairsWith": []
+      },
+      "glyph.lock": {
+        "oklch": {
+          "l": 0.727246084421259,
+          "c": 0.11854889369509097,
+          "h": 85.89324976582105
+        },
+        "srgb": "#C8A145",
+        "usage": "nonText",
+        "role": "07’s padlock on a locked slot, and 15’s and 16’s: the gold glyph drawn on the Lock control (ADR-0110).",
+        "uncheckedReason": "Decoration laid over a glyph whose one-ink silhouette carries its shape (ADR-0110 section 2), on a control whose word — Lock or Locked — carries its state (section 3; golden rule 13). It is measured off 07, where it is largest (#C8A145), and pairs with nothing: no reading depends on it. The same value in every palette, as 07 draws one.",
+        "pairsWith": []
       }
     }
   },
@@ -1990,18 +2014,17 @@
     },
     {
       "rule": "chromaCeiling",
+      "tokens": [
+        "glyph.lock"
+      ],
       "elements": [
         "07.slots.slot-2.lock",
         "15.security.badge",
         "16.slots.slot-1.locked"
       ],
-      "kind": "tint",
-      "measured": [
-        "#C8A145"
-      ],
-      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. The padlock is gold on 07, 15 and 16 — one gold, read from 07's lock, where it is largest; 15's and 16's read desaturated (≈ #A1965D) from JPEG blending at their size.",
+      "reason": "ADR-0110, minted by F-248 (ADR-0153 D5): the padlock is drawn gold (#C8A145) over its one-ink silhouette on 07, 15 and 16 — one gold, read from 07’s lock, where it is largest; 15’s and 16’s read desaturated (≈ #A1965D) from JPEG blending at their size. Its meaning is carried by its shape and by the word on its control; the hue is decoration.",
       "owner": "design",
-      "recordedAt": "2026-09-25",
+      "recordedAt": "2026-10-22",
       "mintedBy": "F-248"
     },
     {

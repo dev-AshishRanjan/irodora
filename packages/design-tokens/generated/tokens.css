@@ -63,6 +63,7 @@
   --irodora-color-state-refused-glyph: #A2917A;
   --irodora-color-state-lock: #BAA07C;
   --irodora-color-glyph-seal: #4B9D61;
+  --irodora-color-glyph-lock: #C8A145;
 }
 
 [data-theme="light"] {
@@ -120,6 +121,7 @@
   --irodora-color-state-refused-glyph: #A2917A;
   --irodora-color-state-lock: #BAA07C;
   --irodora-color-glyph-seal: #4B9D61;
+  --irodora-color-glyph-lock: #C8A145;
 }
 
 [data-theme="slate.dark"] {
@@ -177,6 +179,7 @@
   --irodora-color-state-refused-glyph: #A2917A;
   --irodora-color-state-lock: #BAA07C;
   --irodora-color-glyph-seal: #4B9D61;
+  --irodora-color-glyph-lock: #C8A145;
 }
 
 [data-theme="obsidian.dark"] {
@@ -234,6 +237,7 @@
   --irodora-color-state-refused-glyph: #A2917A;
   --irodora-color-state-lock: #BAA07C;
   --irodora-color-glyph-seal: #4B9D61;
+  --irodora-color-glyph-lock: #C8A145;
 }
 
 @supports (color: oklch(0 0 0)) {
@@ -292,6 +296,7 @@
     --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
     --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
     --irodora-color-glyph-seal: oklch(0.6287233731784929 0.12085442215777102 150.3642708801575);
+    --irodora-color-glyph-lock: oklch(0.727246084421259 0.11854889369509097 85.89324976582105);
   }
   [data-theme="light"] {
     --irodora-color-background: oklch(0.9700818876373151 0.004122095072712324 91.44637793652691);
@@ -348,6 +353,7 @@
     --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
     --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
     --irodora-color-glyph-seal: oklch(0.6287233731784929 0.12085442215777102 150.3642708801575);
+    --irodora-color-glyph-lock: oklch(0.727246084421259 0.11854889369509097 85.89324976582105);
   }
   [data-theme="slate.dark"] {
     --irodora-color-background: oklch(0.3146671601438604 0.01659574570409328 255.64193068066527);
@@ -404,6 +410,7 @@
     --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
     --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
     --irodora-color-glyph-seal: oklch(0.6287233731784929 0.12085442215777102 150.3642708801575);
+    --irodora-color-glyph-lock: oklch(0.727246084421259 0.11854889369509097 85.89324976582105);
   }
   [data-theme="obsidian.dark"] {
     --irodora-color-background: oklch(0.17786923358635712 0.006370287913118377 271.04219528891264);
@@ -460,6 +467,7 @@
     --irodora-color-state-refused-glyph: oklch(0.6654738005687253 0.038524049172811915 75.34089599388199);
     --irodora-color-state-lock: oklch(0.7197601801939266 0.058067541595378275 75.62115861275976);
     --irodora-color-glyph-seal: oklch(0.6287233731784929 0.12085442215777102 150.3642708801575);
+    --irodora-color-glyph-lock: oklch(0.727246084421259 0.11854889369509097 85.89324976582105);
   }
 }
 

@@ -63,6 +63,7 @@ export const COLOR = {
     'state.refused.glyph': { srgb: '#A2917A', oklch: { l: 0.6654738005687253, c: 0.038524049172811915, h: 75.34089599388199 }, usage: 'nonText' },
     'state.lock': { srgb: '#BAA07C', oklch: { l: 0.7197601801939266, c: 0.058067541595378275, h: 75.62115861275976 }, usage: 'nonText' },
     'glyph.seal': { srgb: '#4B9D61', oklch: { l: 0.6287233731784929, c: 0.12085442215777102, h: 150.3642708801575 }, usage: 'nonText' },
+    'glyph.lock': { srgb: '#C8A145', oklch: { l: 0.727246084421259, c: 0.11854889369509097, h: 85.89324976582105 }, usage: 'nonText' },
   },
   light: {
     background: { srgb: '#F6F5F2', oklch: { l: 0.9700818876373151, c: 0.004122095072712324, h: 91.44637793652691 }, usage: 'surface' },
@@ -119,6 +120,7 @@ export const COLOR = {
     'state.refused.glyph': { srgb: '#A2917A', oklch: { l: 0.6654738005687253, c: 0.038524049172811915, h: 75.34089599388199 }, usage: 'nonText' },
     'state.lock': { srgb: '#BAA07C', oklch: { l: 0.7197601801939266, c: 0.058067541595378275, h: 75.62115861275976 }, usage: 'nonText' },
     'glyph.seal': { srgb: '#4B9D61', oklch: { l: 0.6287233731784929, c: 0.12085442215777102, h: 150.3642708801575 }, usage: 'nonText' },
+    'glyph.lock': { srgb: '#C8A145', oklch: { l: 0.727246084421259, c: 0.11854889369509097, h: 85.89324976582105 }, usage: 'nonText' },
   },
   'slate.dark': {
     background: { srgb: '#2C323A', oklch: { l: 0.3146671601438604, c: 0.01659574570409328, h: 255.64193068066527 }, usage: 'surface' },
@@ -175,6 +177,7 @@ export const COLOR = {
     'state.refused.glyph': { srgb: '#A2917A', oklch: { l: 0.6654738005687253, c: 0.038524049172811915, h: 75.34089599388199 }, usage: 'nonText' },
     'state.lock': { srgb: '#BAA07C', oklch: { l: 0.7197601801939266, c: 0.058067541595378275, h: 75.62115861275976 }, usage: 'nonText' },
     'glyph.seal': { srgb: '#4B9D61', oklch: { l: 0.6287233731784929, c: 0.12085442215777102, h: 150.3642708801575 }, usage: 'nonText' },
+    'glyph.lock': { srgb: '#C8A145', oklch: { l: 0.727246084421259, c: 0.11854889369509097, h: 85.89324976582105 }, usage: 'nonText' },
   },
   'obsidian.dark': {
     background: { srgb: '#101114', oklch: { l: 0.17786923358635712, c: 0.006370287913118377, h: 271.04219528891264 }, usage: 'surface' },
@@ -231,6 +234,7 @@ export const COLOR = {
     'state.refused.glyph': { srgb: '#A2917A', oklch: { l: 0.6654738005687253, c: 0.038524049172811915, h: 75.34089599388199 }, usage: 'nonText' },
     'state.lock': { srgb: '#BAA07C', oklch: { l: 0.7197601801939266, c: 0.058067541595378275, h: 75.62115861275976 }, usage: 'nonText' },
     'glyph.seal': { srgb: '#4B9D61', oklch: { l: 0.6287233731784929, c: 0.12085442215777102, h: 150.3642708801575 }, usage: 'nonText' },
+    'glyph.lock': { srgb: '#C8A145', oklch: { l: 0.727246084421259, c: 0.11854889369509097, h: 85.89324976582105 }, usage: 'nonText' },
   },
 } as const;
 

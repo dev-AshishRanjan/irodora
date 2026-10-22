@@ -725,6 +725,18 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "glyph.lock": {
+        "oklch": {
+          "l": 0.727246084421259,
+          "c": 0.11854889369509097,
+          "h": 85.89324976582105
+        },
+        "srgb": "#C8A145",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     },
     "light": {
@@ -1434,6 +1446,18 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "glyph.lock": {
+        "oklch": {
+          "l": 0.727246084421259,
+          "c": 0.11854889369509097,
+          "h": 85.89324976582105
+        },
+        "srgb": "#C8A145",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "uncheckedReason": ""
       }
     }
   },
@@ -1592,6 +1616,13 @@ export const runtimeManifest: CheckableManifest = {
       "reason": "ADR-0110, minted by F-247 (ADR-0149): 06's editorial-review seal is drawn green (#4B9D61) over its one-ink silhouette. Its meaning is carried by its shape and by the review line beside it; the hue is decoration.",
       "owner": "design",
       "recordedAt": "2026-10-21"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "glyph.lock",
+      "reason": "ADR-0110, minted by F-248 (ADR-0153 D5): the padlock is drawn gold (#C8A145) over its one-ink silhouette on 07, 15 and 16 — one gold, read from 07’s lock, where it is largest; 15’s and 16’s read desaturated (≈ #A1965D) from JPEG blending at their size. Its meaning is carried by its shape and by the word on its control; the hue is decoration.",
+      "owner": "design",
+      "recordedAt": "2026-10-22"
     },
     {
       "rule": "chromaCeiling",

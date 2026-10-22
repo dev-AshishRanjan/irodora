@@ -64,6 +64,7 @@ export const nativeColors = {
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
     'glyph.seal': '#4B9D61',
+    'glyph.lock': '#C8A145',
   },
   light: {
     background: '#F6F5F2',
@@ -120,6 +121,7 @@ export const nativeColors = {
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
     'glyph.seal': '#4B9D61',
+    'glyph.lock': '#C8A145',
   },
   'slate.dark': {
     background: '#2C323A',
@@ -176,6 +178,7 @@ export const nativeColors = {
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
     'glyph.seal': '#4B9D61',
+    'glyph.lock': '#C8A145',
   },
   'obsidian.dark': {
     background: '#101114',
@@ -232,6 +235,7 @@ export const nativeColors = {
     'state.refused.glyph': '#A2917A',
     'state.lock': '#BAA07C',
     'glyph.seal': '#4B9D61',
+    'glyph.lock': '#C8A145',
   },
 } as const;
 

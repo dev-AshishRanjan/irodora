@@ -686,7 +686,7 @@ each stays covered once (`F-232`, ADR-0110's amendment).
 | `00.buttons.icon-palette` (ADR-0110) | multi | **minted** as `glyph.palette.1–8` (a hue sweep over the palette, `#BC8073` … `#B66380`), declared as a token group that carries this element | `F-232` ✓ |
 | `03.chips.gamut` (ADR-0110) | spectrum | — | `F-244` |
 | `06.provenance.review`: the green seal (ADR-0110) | tint | **minted** as `glyph.seal` (`#4B9D61`, in every palette), declared as a token group that carries this element (ADR-0149) | `F-247` ✓ |
-| `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked`: the padlock (ADR-0110) | tint | `#C8A145` (read on `07`, where it is largest) | `F-248` |
+| `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked`: the padlock (ADR-0110) | tint | **minted** as `glyph.lock` (`#C8A145`, read on `07`, where it is largest; in every palette), declared as a token group that carries these elements (ADR-0153) | `F-248` ✓ |
 | `11.gap.icon`: the bulb (ADR-0110) | tint | `#E7DDB2` | `F-255` |
 | `13.score.harmony.icon`: three circles (ADR-0110) | multi | — (≈ `#B0514E` · `#83A665` · `#535FA0`) | `F-257` |
 | `13.capsule.icon`: the sparkles (ADR-0110) | tint | `#9E813F` | `F-257` |
