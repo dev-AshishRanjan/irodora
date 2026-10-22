@@ -8,6 +8,126 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-22 — F-247 The colour page is mockup 06, and its Japanese is mockup 26
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** The colour page is rebuilt to `06`, and in Japanese takes `26`'s words and Japanese type on
+`06`'s layout (C3). Twelve commits, `4d51376` through this one. It is the third whole screen in the
+inventory sweep.
+
+- **Five decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0145 closes OQ-19.** `06`'s screen is its upper panel (474 px, 0.8101 dp/px). The
+    provenance card, the combinations card and the action bar, drawn wider into the callout column,
+    are fitted to it. Intervals tighter than the scale take `xs`, each with its cost recorded.
+    *Amended by the review:* the plum branch sits beside the words at its drawn height, not behind
+    them.
+  - **ADR-0146: 06's words made true, 26's Japanese.**
+    - The pill reads *Family • Era: None • Season* (or *Not assigned*).
+    - *Provenance & Review* leads with the classification, then the source, its type and licence,
+      then the check the record holds.
+    - The readout is hex, OKLCh, CIELAB and sRGB, with Display-P3 as the engine's conversion of the
+      record's XYZ.
+    - The two kanji steps are measured from NotoSansJP's outlines (50.5 and 39.2 dp).
+    - *Amended by the review:* the seal shows for an independent check only; in Japanese the
+      provenance lines are one weight.
+  - **ADR-0147: what left the page, and where each drawn action goes.** Back goes to the Atlas,
+    share to the card, export to this colour's export, *Wear It* to `07`, *Hold* arms the target and
+    opens the Lens, and a garment opens itself.
+  - **ADR-0148: Wearable Combinations.** The person's own garments, ranked by the Lab's one
+    `rankForSlot` with this colour as a top. The order is shown, never a score.
+  - **ADR-0149: 06's two drawn inks.** `opacity.artCard` 0.31; `glyph.seal` minted.
+- **What the page draws:**
+  - The app bar: *← Atlas*, the bookmark (moved from the platform header, with `targetRoom`), share
+    and export, then the rule.
+  - The sample, with its stacked layer.
+  - The kanji beside the kana and *Romaji • English*; the pill.
+  - The readout, provenance and combinations cards.
+  - The pinned *Wear It* / *Hold as Target* action bar.
+- **Built alongside:**
+  - `src/detail.ts`; `engine.ts#displayP3Of`; `outfit/builder.ts#rankForSlot` (extracted, unchanged);
+    `wardrobe/coverage.ts#rankingContext`; `export/subject.ts#colourSubject` and `exportSubjectFor`.
+  - Additive in `@irodora/ui`: `AppBarIcon.selected`, `AppBarTrailing.targetRoom`,
+    `AppBarBack.size`, `Chip` badge `wrap`, `Illustration tone="card"`, `ReadoutTable` part ids and
+    `TableRow.note`.
+  - Tokens: `kanjiHero`, `kanjiHeroJa`, `opacity.artCard`, `glyph.seal`.
+- **Criterion 1:**
+  - The sweep finds `06`'s 52 elements on `06.screen` in both themes and languages:
+    `elementsAsserted` 136 → 188, `renders` 28 → 32, `owed` 21 → 20.
+  - `colour-detail-fidelity.test` holds order, grouping and proportion against `06.json` (and
+    `26.json` in Japanese). It was watched failing on two planted changes.
+  - `colour-detail-states.test` holds what the page says and does, and that none of 06's or 26's
+    sample content reaches it.
+- **Records:**
+  - Effects: E-213 to E-216 new, each with a note. E-016, E-024, E-065, E-076, E-089, E-101, E-106,
+    E-128, E-136, E-145, E-152, E-156, E-159, E-164, E-169, E-171, E-191, E-203, E-204, E-208 and
+    E-209 updated.
+  - Docs: R9 §2, §4, §5, §6, §8 and §11; PRD §10 (OQ-19 closed; OQ-54 opened).
+  - Verification files: `screen-insets` (re-captured); `type-census` (two rows discharged);
+    `unreached-tokens` (two temporary rows closed); `inventory-surfaces` (`06.screen` enrolled).
+  - The e2e anchors move to the readout heading and *Wear It*; the Japanese font subset is
+    regenerated.
+  - 33 catalogue keys only the old page read are removed.
+
+**Review (once): FAIL as delivered**, with 0 blocking, 7 significant and 10 minor findings. Every one
+is fixed or recorded; the plan's review table lists each.
+
+- **S1, fixed:** back popped to whatever opened the page; it now navigates to the Atlas.
+- **S2, fixed:** the provenance text crossed the art at 2.6–3.0:1, and the art drew past its card.
+  The art now keeps its drawn height, beside the words.
+- **S3, fixed:** a check-seal sat beside "Checked by its own author" on every entry. It now shows
+  for an independent check only.
+- **S4, fixed:** a garment's spoken name now carries its colour's provenance.
+- **S5:** two corpus helpers removed; `Accordion` and `Tabs` → **F-346**.
+- **S6:** the P3 range is asserted and the comment made true; ADR-0147 D1 corrected; the record's
+  prose without a surface → **F-347**, **OQ-54** (a person's: no agent designs a surface no mockup
+  draws).
+- **S7, fixed:** the oracles worked by hand, the hit area read from the render, E-204's text.
+- **M1–M10:** fixed, except M1 (two inventory weights set to board 00's 400), which is recorded in
+  criterion 4's comparison list.
+
+**Gates run on the final tree (`b7bb832`), each exit 0:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The CI mirror’s Gate 4, `pnpm test` over every package, passed on the same tree.
+- Tier 1 on the same tree, before its commit: ui 1,443 and mobile 1,619 passed.
+- The conformance sweep: 96 subjects, findings 0; claims findings 0. The inventory block `enrolled`
+  now includes `06.screen`: `elementsAsserted` 188, `renders` 32, `owed` 20.
+
+**Not green, and why:**
+
+- `pnpm turbo run test --force` failed on one test, 32 of 35 tasks done when turbo stopped: the
+  design-tokens `on-sample` device-palette search timed out at 120 s under the parallel load. F-247
+  did not touch that package. The package passes alone (445/445, about 30 s), and the CI mirror’s
+  full test gate passed on the same tree. It has now timed out twice, so it is filed as **F-348**,
+  the same class as F-306 and F-317. The first Tier 2, on `0422ea0`, passed 35 of 35 (ui 1,443,
+  mobile 1,615).
+- `pnpm security` exits 1 on F-322’s advisories. F-247 changed no dependency.
+- `node scripts/verify-ci.mjs --all` exits 1 on the two recorded reds: the iOS config half on win32,
+  and gate 15 (F-322). The first run, on `0422ea0`, also saw the store’s `outfit-force-quit` child
+  process time out under load. It passed in that Tier 2’s own run and alone (315/315); F-247 changed
+  nothing under `packages/store`. No plant was left either time.
+
+**Not run:**
+
+- e2e and the fidelity capture: no Maestro or JDK here. The attestations are the person's:
+  - a release Android build;
+  - `pnpm fidelity:capture -- --erase-app-data`;
+  - `/atlas/[slug]` compared with `06`, `25` (Washi) and `26` (Japanese);
+  - the device taps, including each header icon's edge (F-305);
+  - TalkBack on the bookmark and a garment;
+  - 200 % text, where F-344's clipping is expected.
+
+### Lessons
+
+[[text-over-a-drawing-is-a-pairing-the-contrast-gate-never-sees]] (new).
+
+### Next
+
+The loop: F-248 (Wear is mockup 07), the lowest-id eligible feature; OQ-32 is decided under the delegation when it is planned. F-243 (and F-244 and F-245 behind it) waits on OQ-8, which asks for mockups no agent may draw.
+
+---
+
 ## 2026-10-21 — F-246 The Atlas is mockup 05
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device
