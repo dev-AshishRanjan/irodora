@@ -16,7 +16,7 @@
  * the file, made by the layer least able to know.
  */
 
-import { CORPUS_LABEL, type PublishedEntry } from '../corpus';
+import { CORPUS_LABEL, entryBySlug, type PublishedEntry } from '../corpus';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
 import { ruleSet } from '../rules';
 import type { ExportColour, ExportSubject } from '@irodora/export';
@@ -93,4 +93,22 @@ export function colourSubject(entry: PublishedEntry): ExportSubject {
       },
     ],
   };
+}
+
+/**
+ * What the export route exports (F-247, E-215): the colour the colour page asked for, when its slug
+ * is one this corpus holds; otherwise the palette saved most recently, as before `06` had an export
+ * glyph; otherwise nothing, and the screen says so. A slug the corpus does not hold names no colour,
+ * so it falls back as a bare open does.
+ */
+export function exportSubjectFor(
+  slug: string | undefined,
+  palettes: readonly StoredPalette[],
+): ExportSubject | null {
+  const colour = slug === undefined ? null : entryBySlug(slug);
+  if (colour !== null) return colourSubject(colour);
+  // The LAST one, because `listPalettes` is in creation order and the most recent is what
+  // somebody was just working on.
+  const latest = palettes.at(-1);
+  return latest === undefined ? null : paletteSubject(latest);
 }

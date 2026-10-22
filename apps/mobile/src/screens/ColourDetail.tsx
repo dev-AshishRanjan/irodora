@@ -1,768 +1,609 @@
 /**
- * One colour, and everything the record carries.
+ * One colour, as mockup `06` draws it (F-247) — and in Japanese, `26`'s words and Japanese type on
+ * `06`'s layout (R9 C3).
  *
- * ## Why this screen is long
+ * Top to bottom: the app bar (*← Atlas*, bookmark, share, export, a rule); the sample with the layer
+ * stacked behind its trailing edge; the kanji beside the kana and *Romaji • English*; the *Family •
+ * Era • Season* pill; three cards — the readout, the provenance, the person's own garments — and the
+ * pinned action bar.
  *
- * FR-21 promises every field present or explicitly `null` **with a reason**, and FR-24 promises
- * provenance on the colour surface rather than on a legal page. Both are promises about what a
- * reader can *see*, so a shorter screen would be a smaller promise. The `unknowns` reasons are
- * rendered where the value would have been — which is the only place they mean anything.
+ * ## What it says, and where that is decided
  *
- * ## Three things this screen must not get wrong
+ * Every word and value on this page is worked out in `../detail` and drawn here: the readout is the
+ * record's own derivation, with Display-P3 the engine's conversion of its XYZ (`engine.ts`); the
+ * provenance card leads with the classification (FR-23) and says the source, its type, its licence
+ * and the check the record holds (FR-24, F-084) — never *Verified*, never a period no entry claims
+ * (ADR-0146). The garments are the builder's own ranking with this colour as a top, and only their
+ * order is shown (ADR-0148).
  *
- * 1. **The classification is displayed** (FR-23). The renderer switches on it and it cannot
- *    default, because the whole point is that the UI never presents our own curation as
- *    historical. For the seed corpus every entry is `japanese-inspired`, and the label says so
- *    in plain words rather than as a tag a reader has to decode.
- * 2. **`reviewIndependence` reaches a reader.** F-084's attested criterion, discharged here:
- *    if the label never renders, the honesty is confined to a JSON field and ADR-0060 bought
- *    nothing over simply dropping the author-reviewer rule.
- * 3. **No value is recomputed.** Every coordinate comes from `derived`, computed by the engine
- *    at publish time and frozen. The one place the engine *is* called is the colour-vision
- *    block, because a simulation is a derived answer the bundle does not carry — which is the
- *    distinction criterion 3 draws, and `verify-guards.mjs` boundary #24 enforces.
+ * ## What left the page
+ *
+ * The description, XYZ and CIELCh, the bands, the full register, palettes, relations, the
+ * colour-vision block and *Compare with* — each still reachable where ADR-0147 lists it. `06` draws
+ * none of them, and a page that kept them would be a second design beside the one drawn.
+ *
+ * ## Every drawn action is a prop
+ *
+ * The route supplies them; an absent handler is an absent control, so the conformance suite renders
+ * the page without a navigator and nothing on it does nothing.
  */
 
-import { useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
-import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
-import { srgbToHex } from '@irodora/color-spaces';
+import { useMemo } from 'react';
+import { Image, Pressable, ScrollView, View } from 'react-native';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import type { StoredGarment } from '@irodora/store';
 import {
-  Accordion,
-  Button,
   Card,
+  Chip,
   EmptyState,
+  Glyph,
+  Illustration,
+  ReadoutTable,
   Row,
   Screen,
   Stack,
   Swatch,
-  Tabs,
   Text,
   useTheme,
+  type AppBarIcon,
 } from '@irodora/ui';
+import { colorFor, entryBySlug } from '../corpus';
 import {
-  colorFor,
-  familyLabel,
-  entryBySlug,
-  palettesContaining,
-  resolveSlugs,
-  type CorpusEntry,
-  type PublishedEntry,
-} from '../corpus';
-import { CHROMA_KEYS, LIGHTNESS_KEYS, SEASON_KEYS, TEMPERATURE_KEYS } from './Atlas';
+  ART_WIDTH,
+  BACK_GLYPH,
+  BOOKMARK_GLYPH,
+  combinationCaption,
+  combinationName,
+  DETAIL_APP_BAR,
+  EXPORT_GLYPH,
+  HERO_HEIGHT,
+  HERO_KEYLINE,
+  HOLD,
+  HOLD_GLYPH,
+  nameLine,
+  PHOTO,
+  PILL,
+  provenanceBody,
+  provenanceLead,
+  RANK,
+  readoutRows,
+  reviewLine,
+  reviewRecorded,
+  SEAL_GLYPH,
+  SHARE_GLYPH,
+  STACK_HEIGHT,
+  STACK_WIDTH,
+  taxonomyLine,
+  WEAR,
+  wearableCombinations,
+  type WearableCombination,
+} from '../detail';
+import { displayP3Of } from '../engine';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
+import type { RankingContext } from '../outfit/builder';
 import type { ScreenStates } from '../states';
 
 /**
  * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
- * does not hold the colour this screen is about. A relationship with none is a row's value, not an
- * absent panel.
+ * does not hold the colour this screen is about. An empty wardrobe is a card's state on a page that
+ * is otherwise whole, not the page's.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /**
- * Corpus vocabulary → catalogue key, as total records.
- *
- * A value the corpus can hold and the catalogue cannot name is a compile error rather than a
- * blank line on the screen a reader is using to decide whether to trust us.
- */
-/**
  * The record's vocabulary → catalogue keys: written once, in `../detail` (F-247), and the
  * classification's re-exported here for the colour card, which reads it from this screen (F-023).
  */
-import { CLASSIFICATION_KEYS, INDEPENDENCE_KEYS, SOURCE_TYPE_KEYS } from '../detail';
-export { CLASSIFICATION_KEYS };
-
-const ROLE_KEYS = {
-  anchor: 'role.anchor',
-  neutral: 'role.neutral',
-  light: 'role.light',
-  accent: 'role.accent',
-} as const satisfies Record<string, MessageKey>;
+export { CLASSIFICATION_KEYS } from '../detail';
 
 /**
- * The three colour-vision types, and the key each announces under.
- *
- * Typed `Record<Deficiency, MessageKey>` rather than `satisfies` alone, so indexing by a
- * `Deficiency` is total: a fourth deficiency added to the engine would be a compile error here
- * rather than a blank label on the screen.
+ * A pressed garment dims, as the Wardrobe's cells do: opacity, because `motion.animatable` is
+ * opacity and transform, and a hand-rolled `Pressable` otherwise gives no sign it was touched.
  */
-const CVD_KEYS: Record<Deficiency, MessageKey> = {
-  protan: 'cvd.protan',
-  deutan: 'cvd.deutan',
-  tritan: 'cvd.tritan',
-};
-
-/**
- * The strongest severity Machado tabulates.
- *
- * `simulateAnomalous` rather than `simulateDichromacy`, and the reason is in the engine
- * rather than in a preference: `VIENOT_1999` deliberately has **no tritan entry**, because
- * Viénot's single-plane simplification is not accurate for it and publishing one anyway would
- * be inventing a value the source does not. `simulateDichromacy('tritan')` throws, by design.
- *
- * So the block models **anomalous trichromacy at maximum severity**, which Machado's tables do
- * cover for all three — and the copy says "red-weak" rather than "protanopia", because the two
- * are different conditions and the label has to match the model that produced the swatch.
- */
-const CVD_SEVERITY = 1;
-
-/**
- * How the colour is sized at the top of this page.
- *
- * A colour is judged by AREA, and this page exists to let somebody judge one — so it is as wide
- * as the screen allows and square.
- *
- * IT WAS `320`, A NUMBER, and that was wrong on the smallest phone worth supporting: an iPhone
- * SE is 320pt wide, `Screen padding="xs"` takes 4 from each side, and 320 does not fit in 312.
- * The reporter saw overflow. A size chosen against one imagined screen is a size that is wrong
- * on every other one — and the fix is not a smaller number, it is deriving it from what it has
- * to fit inside.
- */
-const HERO_INSET = nativeSpacing.xs * 2;
-
-const triple = (t: readonly number[], places = 3): string =>
-  t.map((n) => n.toFixed(places)).join('  ');
+const PRESSED_OPACITY = 0.7;
 
 export interface ColourDetailProps {
   readonly slug: string;
+  /** Whether this colour is bookmarked (ADR-0135): the app bar's bookmark is drawn on. */
+  readonly bookmarked?: boolean;
+  /** Bookmark it, or take the bookmark off: called with the state the toggle moves to. */
+  readonly onBookmark?: (on: boolean) => void;
+  /** `06.back`: back to the Atlas. */
+  readonly onBack?: () => void;
+  /** `06.share`: this colour's card (26's binding; the card's own share is F-253's). */
+  readonly onShareCard?: (slug: string) => void;
+  /** `06.export`: the export, of this colour. */
+  readonly onExport?: (slug: string) => void;
+  /** `06.actions.wear`: `07`, what to wear with it. */
+  readonly onWearIt?: (slug: string) => void;
+  /** `06.actions.hold`: arm this colour as the Lens's target, and open the Lens. */
+  readonly onHoldAsTarget?: (slug: string) => void;
   /**
-   * Open this colour's card. Supplied by the route, absent in the conformance suite.
-   *
-   * Same shape and same reason as Home's: a card nothing routes to is 120 documents nobody
-   * can reach [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
+   * The person's garments, read by the route. Absent, the combinations card is not drawn: the
+   * page cannot say what goes with a wardrobe it was not given.
    */
-  readonly onOpenCard?: (slug: string) => void;
-  /**
-   * Compare this colour with another (F-181).
-   *
-   * The comparison screen has existed since F-019 on a route nothing navigated to, and it took
-   * `initialA` from the start — for *"a future 'compare with this one' entry point from the
-   * colour detail screen"*, in its own words. This is that entry point, two releases later.
-   *
-   * It carries the SLUG, so the screen opens on the colour a person came from rather than on
-   * two empty slots they have to fill before the screen says anything.
-   */
-  readonly onCompareWith?: ((slug: string) => void) | undefined;
-  /**
-   * What goes with this colour (F-194).
-   *
-   * The harmony engine has generated twelve relationships since F-014 and nothing called it.
-   * This screen already draws ONE of them in its `harmony` panel — a preview of a single
-   * relationship — and this is the way from that preview to the whole answer.
-   */
-  readonly onOpenCombinations?: ((slug: string) => void) | undefined;
-  /**
-   * Make this colour the one being compared against (F-200).
-   *
-   * The route supplies it and reads the context, for the reason every port here is a prop: a
-   * screen calling `useTarget` itself would throw in the conformance suite, which is where the
-   * accessibility guarantees are actually checked.
-   */
-  readonly onArmTarget?: ((slug: string) => void) | undefined;
-  /**
-   * Which derived panel opens first.
-   *
-   * Injected the way `PaletteStudio` takes `initialDraft` and `Preferences` takes
-   * `initialConfirming`: a panel whose selection lives only inside the component is a panel no
-   * test can reach, and F-018's criterion 4 asserts by CONTENT — so without this the material
-   * behind a tab would be unreachable to the check rather than merely un-mounted.
-   */
-  readonly initialPanel?: DerivedPanel;
-  /**
-   * Which reference sections start open. Every one, unless a subject says otherwise.
-   *
-   * Injected for the reason `initialPanel` is, and for one more: a conformance subject has to
-   * be able to render a COLLAPSED section, or the accordion's second state is defined in name
-   * only and the suite would report the two states as identical trees.
-   */
-  readonly initialSections?: readonly string[];
+  readonly wardrobe?: readonly StoredGarment[];
+  /** A garment's photograph as a `data:` URI, or `null` without one (`wardrobe/gallery.ts`). */
+  readonly photoOf?: (garmentId: string) => string | null;
+  /** What a garment is ranked against (`wardrobe/coverage.ts#rankingContext`). */
+  readonly ranking?: RankingContext;
+  /** A combination: open that garment. */
+  readonly onOpenGarment?: (garmentId: string) => void;
+  /** 27's empty wardrobe: scan the first garment. */
+  readonly onScanGarment?: () => void;
+  /** Garments, but none that pairs with a top: add one. */
+  readonly onAddGarment?: () => void;
 }
 
-/** The reference sections, in the order they appear. Provenance is deliberately not one. */
-export const DETAIL_SECTIONS = ['description', 'coordinates', 'taxonomy'] as const;
-
-/** The three derived panels. A union so a typo is a compile error rather than a blank tab. */
-export type DerivedPanel = 'harmony' | 'vision' | 'related';
+/** Up to three icons as the app bar types them: the tuple, or nothing. */
+function upToThree(
+  icons: readonly AppBarIcon[],
+):
+  | readonly [AppBarIcon]
+  | readonly [AppBarIcon, AppBarIcon]
+  | readonly [AppBarIcon, AppBarIcon, AppBarIcon]
+  | null {
+  const [a, b, c] = icons;
+  if (a === undefined) return null;
+  if (b === undefined) return [a];
+  if (c === undefined) return [a, b];
+  return [a, b, c];
+}
 
 export function ColourDetail({
   slug,
-  onOpenCard,
-  onCompareWith,
-  onOpenCombinations,
-  onArmTarget,
-  initialPanel = 'harmony',
-  initialSections = DETAIL_SECTIONS,
+  bookmarked = false,
+  onBookmark,
+  onBack,
+  onShareCard,
+  onExport,
+  onWearIt,
+  onHoldAsTarget,
+  wardrobe,
+  photoOf,
+  ranking,
+  onOpenGarment,
+  onScanGarment,
+  onAddGarment,
 }: ColourDetailProps): React.JSX.Element {
   const { colors } = useTheme();
-  const { t, script, locale } = useMessages();
+  const { t, script } = useMessages();
   const found = entryBySlug(slug);
+  const combinations = useMemo(
+    () =>
+      found === null || wardrobe === undefined || ranking === undefined
+        ? null
+        : wearableCombinations(found, wardrobe, ranking),
+    [found, wardrobe, ranking],
+  );
+
+  /*
+   * THE APP BAR (`06.header`): the Atlas's word beside the back glyph, named for where it goes, and
+   * the three icons at the trailing end. The row is the platform's target tall (`targetRoom`), so an
+   * icon's slop lies inside its parent on Android as F-237's header box kept it (E-216); at `06`'s
+   * pitch the three targets still overlap, which F-305 holds.
+   */
+  const back =
+    onBack === undefined
+      ? {}
+      : {
+          back: {
+            glyph: 'back' as const,
+            label: t('tab.atlas'),
+            name: t('detail.backToAtlas'),
+            size: BACK_GLYPH,
+            onPress: onBack,
+          },
+        };
+  const bar = {
+    rule: true,
+    height: DETAIL_APP_BAR,
+    inset: nativeSpacing.md,
+    gap: nativeSpacing.md,
+    script,
+  };
 
   if (found === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
-        {/*
-          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
-          back, already on this screen — a second control would be a second way to do one thing.
-        */}
-        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
-      </View>
+      /*
+        A COLOUR THIS CORPUS DOES NOT HOLD (F-236, ADR-0147 D4): 00's caption under the app bar,
+        whose back is the way out — a second control would be a second way to do one thing.
+      */
+      <Screen scroll={false} bleed script={script} appBar={{ ...back, ...bar }}>
+        <View style={{ padding: nativeSpacing.md }}>
+          <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
+        </View>
+      </Screen>
     );
 
   const { entry, derived } = found;
-
-  /**
-   * Which derived panel is open.
-   *
-   * Controlled, because `Tabs` is — a tab set whose selection lives inside the component cannot
-   * be driven by a conformance subject, and that is what makes every panel checkable.
-   */
-  // Square, and as wide as the page allows. `useWindowDimensions` re-renders on rotation and
-  // on a foldable opening, which a constant cannot do.
-  const { width } = useWindowDimensions();
-  const heroSize = width - HERO_INSET;
-
-  const [panel, setPanel] = useState<DerivedPanel>(initialPanel);
-
-  /**
-   * Which reference sections are open.
-   *
-   * Controlled, because `Accordion` is — for the reason the tab set is. A section whose
-   * expanded state lives inside the component is a section no subject can render collapsed.
-   */
-  const [sections, setSections] = useState<readonly string[]>(initialSections);
-
-  /**
-   * A labelled row. `value === null` renders the recorded reason where the value would be.
-   *
-   * `numeric` says the value IS figures — a coordinate triple, a hex, a date — so it is set in
-   * tabular digits and can be selected, like every other value a person copies (FR-48, C9). The
-   * caller says so; no heuristic can tell "0.42" from "F-019" (Text's own note).
-   */
-  function DetailRow({
-    label,
-    value,
-    reasonFor,
-    numeric = false,
-  }: {
-    readonly label: string;
-    readonly value: string | null;
-    readonly reasonFor?: string;
-    readonly numeric?: boolean;
-  }): React.JSX.Element {
-    const reason = reasonFor === undefined ? undefined : entry.unknowns[reasonFor];
-    return (
-      <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-        <Text size="caption" color="foreground.2" script={script}>
-          {label}
-        </Text>
-        {value !== null ? (
-          <Text
-            size="label"
-            color="foreground"
-            script={script}
-            {...(numeric ? { numeric: true, selectable: true } : {})}
-          >
-            {value}
-          </Text>
-        ) : (
-          /*
-            FR-21's "no silent blanks", rendered. The reason the field is empty is worth more
-            to a reader than the emptiness, and it is the thing the gate spent a rule on.
-          */
-          <Text size="label" color="foreground.2" script={script}>
-            {reason === undefined
-              ? t('detail.notRecorded')
-              : `${t('detail.notRecorded')} — ${reason}`}
-          </Text>
-        )}
-      </View>
-    );
-  }
-
-  function DetailSection({
-    title,
-    children,
-  }: {
-    readonly title: string;
-    readonly children: React.ReactNode;
-  }): React.JSX.Element {
-    return (
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {title}
-          </Text>
-        }
-      >
-        <Stack gap="xs">{children}</Stack>
-      </Card>
-    );
-  }
-
-  function RelatedList({
-    label,
-    slugs,
-  }: {
-    readonly label: string;
-    readonly slugs: readonly string[];
-  }): React.JSX.Element {
-    const resolved: readonly PublishedEntry[] = resolveSlugs(slugs);
-    return (
-      <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-        <Text size="caption" color="foreground.2" script={script}>
-          {label}
-        </Text>
-        {resolved.length === 0 ? (
-          <Text size="label" color="foreground.2" script={script}>
-            {t('rel.none')}
-          </Text>
-        ) : (
-          <Row gap="sm" wrap>
-            {resolved.map((r) => (
-              <View key={r.entry.slug} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
-                <Swatch
-                  caption="name"
-                  name={r.entry.name.en}
-                  hex={r.derived.hex}
-                  color={colorFor(r.entry)}
-                  size={44}
-                />
-                <Text size="caption" color="foreground.2" script={script}>
-                  {r.entry.name.en}
-                </Text>
-              </View>
-            ))}
-          </Row>
-        )}
-      </View>
-    );
-  }
-
-  const seasons = entry.taxonomy.season;
-  const palettes = palettesContaining(entry.slug);
+  const sample = { hex: derived.hex, color: colorFor(entry) };
+  const icons = upToThree([
+    ...(onBookmark === undefined
+      ? []
+      : [
+          {
+            glyph: 'bookmark' as const,
+            label: t('detail.bookmark'),
+            selected: bookmarked,
+            size: BOOKMARK_GLYPH,
+            testID: 'detail.bookmark',
+            onPress: () => {
+              onBookmark(!bookmarked);
+            },
+          },
+        ]),
+    ...(onShareCard === undefined
+      ? []
+      : [
+          {
+            glyph: 'share' as const,
+            label: t('detail.shareCard'),
+            size: SHARE_GLYPH,
+            onPress: () => {
+              onShareCard(slug);
+            },
+          },
+        ]),
+    ...(onExport === undefined
+      ? []
+      : [
+          {
+            glyph: 'export' as const,
+            label: t('detail.export'),
+            size: EXPORT_GLYPH,
+            onPress: () => {
+              onExport(slug);
+            },
+          },
+        ]),
+  ]);
 
   /*
-   * The one engine call on this screen, and it is a DERIVED ANSWER rather than a stored value.
-   * The bundle carries what the colour IS; what it looks like to someone with a colour-vision
-   * deficiency is a question the bundle does not answer and the engine does. That is the
-   * distinction criterion 3 draws, and boundary #24 enforces.
-   *
-   * The INPUT is `derived.rgb` — the bundle's own gamut-mapped, ENCODED sRGB. Machado's
-   * matrices are applied to encoded sRGB (see `simulateAnomalous`), and the first draft of
-   * this passed `entry.color.xyz`, which type-checks perfectly because both are `Triple` and
-   * returns a plausible wrong colour. Same trap as handing OKLCh to ΔE00.
+   * THE ACTION BAR (`06.actions`), pinned above the tab bar: *Wear It*, filled, and *Hold as Target*,
+   * outlined, sharing the screen's width at their drawn heights (ADR-0145 D4).
    */
-  const cvd = (Object.keys(CVD_KEYS) as Deficiency[]).map((kind) => ({
-    kind,
-    hex: srgbToHex(simulateAnomalous(derived.rgb, kind, CVD_SEVERITY)),
-  }));
+  const wear =
+    onWearIt === undefined
+      ? null
+      : {
+          label: t('detail.wearIt'),
+          glyph: 'arrow-right' as const,
+          height: WEAR,
+          radius: 'sm' as const,
+          script,
+          testID: 'detail.wearIt',
+          onPress: () => {
+            onWearIt(slug);
+          },
+        };
+  const hold =
+    onHoldAsTarget === undefined
+      ? null
+      : {
+          variant: 'secondary' as const,
+          edge: 'border' as const,
+          label: t('detail.holdAsTarget'),
+          glyph: 'reticle' as const,
+          glyphSize: HOLD_GLYPH,
+          height: HOLD,
+          radius: 'sm' as const,
+          script,
+          testID: 'detail.holdAsTarget',
+          onPress: () => {
+            onHoldAsTarget(slug);
+          },
+        };
+  const actions =
+    wear !== null && hold !== null
+      ? ([wear, hold] as const)
+      : wear !== null
+        ? ([wear] as const)
+        : hold !== null
+          ? ([hold] as const)
+          : null;
+
+  // 26 draws the provenance lines at `body` where 06 draws `label` (ADR-0146 D5).
+  const prose = script === 'japanese' ? 'body' : 'label';
+  const colon = script === 'japanese' ? '：' : ': ';
 
   return (
     /*
-      NO `title` PROP, DELIBERATELY. This screen's heading is the entry's kanji set beside the
-      sample, not a page title above it — the colour and its name are one object here. Passing
-      a title would put a second heading above that pairing and break it.
-
-      That composition is F-148's subject, and this feature deliberately does not touch it: the
-      wrapper changes, the header does not.
+      THE FRAME BLEEDS, AND THE PAGE SCROLLS IN ITS OWN SCROLLER (F-246's shape): `06` draws two
+      insets — the sample and the names at `md`, the cards at `xs` — which one padded frame cannot
+      give. The scroller carries `flex: 1`, so the action bar below it stays where it is drawn.
     */
-    /*
-      `padding="xs"` ON THE SCREEN, and the body pads itself. That is what makes the hero below
-      run edge to edge: the page inset is exactly the thing that stops a colour bleeding, so it
-      moves off the page and onto the content.
-    */
-    <Screen script={script} padding="xs" gap="xl">
-      {/*
-        THE COLOUR, FULL BLEED, ABOVE THE FOLD (criterion 1).
-
-        This is the one place the visual-taste skill says to spend boldness on this product, and
-        it was being spent at 96px beside three lines of text. `HERO` is deliberately a large
-        number: a colour is judged by AREA, and the Irodora test — put a real garment colour on
-        screen and see whether you can judge it — has its best case here, where nothing sits
-        between the sample and the eye except the card it sits on and its line.
-
-        The sample sits on the card the mockups draw it on (C11), and its line keeps its edge
-        against any colour, moved per sample where it must (F-233, ADR-0116), which is why the
-        sample can be this large without the page around it shifting how the colour reads.
-      */}
-      <Swatch
-        caption="name"
-        name={entry.name.en}
-        hex={derived.hex}
-        color={colorFor(entry)}
-        size={heroSize}
-      />
-
-      <Stack padding="lg" gap="xl">
-        <Stack gap="xs">
-          {/*
-            The name leads in Japanese and the English is a gloss — the corpus's own order. The
-            romaji sits between them at a display size in `foreground.3`: large, decorative,
-            subordinate.
-
-            SINCE F-225 IT IS ORDINARY TEXT (ADR-0111). The README's tertiary passes 4.5:1 on
-            the ground, where this sits, and `foreground.3.card` carries it on the cards. The
-            pairing is declared by the surface, as every text pairing is, and gate 9 measures it.
-            Before F-225 this token was large-text-only (3.17:1 against a 3.0 threshold).
-          */}
-          <Text size="title" color="foreground" script="japanese" heading>
-            {entry.name.kanji}
-          </Text>
-          <Text size="body" color="foreground.2" script="japanese">
-            {entry.name.kana}
-          </Text>
-          <Text size="title" color="foreground.3" script={script}>
-            {entry.name.romaji}
-          </Text>
-          <Text size="body" color="foreground" script={script}>
-            {entry.name.en}
-          </Text>
-          {/*
-            FR-23, on the surface. This label is the difference between an honest corpus and a
-            corpus that merely stores an honest field.
-          */}
-          <Text size="caption" color="foreground.2" script={script}>
-            {t(CLASSIFICATION_KEYS[entry.classification])}
-          </Text>
-        </Stack>
-
-        {/*
-          THE REFERENCE SECTIONS FOLD (F-156), AND PROVENANCE IS NOT AMONG THEM.
-
-          Three long blocks a returning reader has already read, on a page that is already
-          taller than a screen. Every one starts EXPANDED: this is a way to fold away what you
-          are done with, not a way to hide the page behind three taps.
-
-          PROVENANCE STAYS BELOW, OUTSIDE THE ACCORDION, and that is F-018's decision rather
-          than a layout preference: *"criterion 4 says provenance is 'never a disclosure a
-          person has to find'"*, and FR-24 put it on the colour surface rather than on a legal
-          page. A control that can collapse it is a disclosure whatever it does by default.
-
-          The rules between the three items are the first DECORATIVE hairline in this product
-          — `border`, translucent, carrying nothing. The expanded state is on each trigger,
-          announced, and drawn as a different chevron; a person who cannot see an 8 %-alpha
-          line has lost nothing, which is the test a decorative element has to pass.
-        */}
-        <Accordion
-          expanded={sections}
-          onExpandedChange={setSections}
-          script={script}
-          items={[
-            {
-              value: 'description',
-              title: t('detail.description'),
-              children: (
-                <>
-                  {/*
-          PROSE, NOT ROWS. These two paragraphs are what 120 entries of sourced editorial work
-          produced, and they were set at `small` — 13px, the size this page used for label/value
-          pairs — which presented them as another field. `body` is 16px with 1.65 leading in
-          Latin and 1.85 in Japanese, which is the step the scale defines for reading rather than
-          for scanning.
-        */}
-                  <Text size="body" color="foreground" script={script}>
-                    {entry.editorial.description_en}
-                  </Text>
-                  <Text size="body" color="foreground" script="japanese">
-                    {entry.editorial.description_ja}
-                  </Text>
-                  <DetailRow
-                    label={t('detail.contemporary')}
-                    value={entry.editorial.contemporaryNote_en}
-                    reasonFor="editorial.contemporaryNote_en"
-                  />
-                  <DetailRow
-                    label={t('detail.fashionUse')}
-                    value={
-                      entry.editorial.fashionUse === null
-                        ? null
-                        : entry.editorial.fashionUse.join(', ')
-                    }
-                    reasonFor="editorial.fashionUse"
-                  />
-                </>
-              ),
+    <Screen
+      scroll={false}
+      bleed
+      script={script}
+      appBar={{
+        ...back,
+        ...bar,
+        ...(icons === null ? {} : { trailing: { targetRoom: true, icons } }),
+      }}
+      {...(actions === null
+        ? {}
+        : {
+            actionBar: {
+              actions,
+              fill: 'surface.1',
+              rule: true,
+              gap: nativeSpacing.sm,
+              padding: { top: nativeSpacing.md, bottom: nativeSpacing.sm, side: nativeSpacing.md },
             },
-            {
-              value: 'coordinates',
-              title: t('detail.coordinates'),
-              children: (
-                <>
-                  <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} numeric />
-                  <DetailRow label={t('coord.lab')} value={triple(derived.lab)} numeric />
-                  <DetailRow label={t('coord.lch')} value={triple(derived.lch)} numeric />
-                  <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} numeric />
-                  <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} numeric />
-                  <DetailRow label={t('colour.hex')} value={derived.hex} numeric />
-                  {/*
-          ADR-0031: "closest digital reference" is only an honest phrase when a number stands
-          behind it, so the number is here rather than the phrase alone.
-        */}
-                  <DetailRow
-                    label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
-                    value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
-                    numeric
-                  />
-                </>
-              ),
-            },
-            {
-              value: 'taxonomy',
-              title: t('detail.taxonomy'),
-              children: (
-                <>
-                  <DetailRow
-                    label={t('filter.family')}
-                    value={familyLabel(entry.taxonomy.family, locale)}
-                  />
-                  <DetailRow
-                    label={t('filter.temperature')}
-                    value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
-                  />
-                  <DetailRow
-                    label={t('filter.lightness')}
-                    value={
-                      entry.taxonomy.lightnessBand === null
-                        ? null
-                        : t(LIGHTNESS_KEYS[entry.taxonomy.lightnessBand])
-                    }
-                    reasonFor="taxonomy.lightnessBand"
-                  />
-                  <DetailRow
-                    label={t('filter.chroma')}
-                    value={
-                      entry.taxonomy.chromaBand === null
-                        ? null
-                        : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
-                    }
-                    reasonFor="taxonomy.chromaBand"
-                  />
-                  <DetailRow
-                    label={t('filter.season')}
-                    value={
-                      seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')
-                    }
-                    reasonFor="taxonomy.season"
-                  />
-                </>
-              ),
-            },
-          ]}
-        />
-
-        <DetailSection title={t('detail.provenance')}>
-          <DetailRow label={t('prov.source')} value={entry.provenance.source} numeric />
-          <DetailRow label={t('prov.sourceId')} value={entry.provenance.sourceId} />
-          <DetailRow
-            label={t('prov.sourceType')}
-            value={t(SOURCE_TYPE_KEYS[entry.provenance.sourceType])}
-          />
-          <DetailRow label={t('prov.licence')} value={entry.provenance.sourceLicence} />
-          <DetailRow
-            label={t('prov.rightsHolder')}
-            value={entry.provenance.rightsHolder}
-            reasonFor="provenance.rightsHolder"
-          />
-          <DetailRow
-            label={t('prov.publisher')}
-            value={entry.provenance.publisher}
-            reasonFor="provenance.publisher"
-          />
-          <DetailRow
-            label={t('prov.publishedYear')}
-            value={
-              entry.provenance.publishedYear === null
-                ? null
-                : String(entry.provenance.publishedYear)
-            }
-            reasonFor="provenance.publishedYear"
-          />
-          <DetailRow
-            label={t('prov.url')}
-            value={entry.provenance.sourceUrl}
-            reasonFor="provenance.sourceUrl"
-          />
-          <DetailRow label={t('prov.derivation')} value={entry.provenance.derivation} />
-          <DetailRow label={t('prov.author')} value={entry.provenance.authoredBy} />
-          <DetailRow label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
-          <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} numeric />
-          {/*
-          F-084's attested criterion, discharged. `self` is a weaker claim than `independent`
-          and it is stated in words rather than as a code, because a reader deciding whether to
-          trust an entry should not have to know our vocabulary.
-        */}
-          <DetailRow
-            label={t('prov.independence')}
-            value={
-              entry.provenance.reviewIndependence === null
-                ? null
-                : t(INDEPENDENCE_KEYS[entry.provenance.reviewIndependence])
-            }
-          />
-          <DetailRow label={t('detail.editorialNotes')} value={entry.provenance.editorialNotes} />
-        </DetailSection>
-
-        {/*
-        THE DERIVED MATERIAL, BEHIND TABS (criterion 3) — and the line is drawn deliberately.
-
-        A tab is a DISCLOSURE: what is inside one is a tap away rather than on the page. So what
-        goes in is only what the engine COMPUTES — harmony, a CVD simulation, nearest neighbours.
-        Everything the RECORD ASSERTS — the names, the coordinates, the classification, the
-        provenance — stays outside, because criterion 4 says provenance is "never a disclosure a
-        person has to find" and FR-24 put it on the colour surface rather than on a legal page.
-
-        F-018's criterion-4 test asserts by CONTENT, so anything moved in here leaves the
-        rendered tree and that test goes red. It did not, which is the check on this paragraph
-        rather than a coincidence.
-      */}
-        <Tabs
-          items={[
-            { value: 'harmony', label: t('detail.palettes') },
-            { value: 'vision', label: t('detail.colourVision') },
-            { value: 'related', label: t('detail.relations') },
-          ]}
-          value={panel}
-          onValueChange={(v) => {
-            setPanel(v as DerivedPanel);
-          }}
-          script={script}
-        >
-          {panel === 'harmony' ? (
-            <DetailSection title={t('detail.palettes')}>
-              {palettes.length === 0 ? (
-                <Text size="label" color="foreground.2" script={script}>
-                  {t('rel.none')}
-                </Text>
-              ) : (
-                palettes.map(({ palette, role }) => (
-                  <DetailRow
-                    key={palette.slug}
-                    label={palette.name.en}
-                    value={`${palette.name.ja} · ${t(ROLE_KEYS[role as keyof typeof ROLE_KEYS])}`}
-                  />
-                ))
-              )}
-            </DetailSection>
-          ) : null}
-          {panel === 'vision' ? (
-            <DetailSection title={t('detail.colourVision')}>
-              <Row gap="sm" wrap align="stretch" padY="xs">
-                <Stack gap="xs" align="center">
-                  <Swatch
-                    caption="name"
-                    name={entry.name.en}
-                    hex={derived.hex}
-                    color={colorFor(entry)}
-                    size={44}
-                  />
-                  <Text size="caption" color="foreground.2" script={script}>
-                    {t('cvd.normal')}
-                  </Text>
-                </Stack>
-                {cvd.map(({ kind, hex }) => (
-                  <View key={kind} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
-                    {/*
-                The accessible name carries which deficiency this is, so the swatches are not
-                distinguished by colour alone (golden rule 13) — which in a colour-vision block
-                would be a particularly poor joke. The `Color` is still the corpus entry's,
-                because provenance describes where the COLOUR came from and the simulation is a
-                rendering of it, not a second measurement.
+          })}
+    >
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: nativeSpacing.sm, paddingBottom: nativeSpacing.md }}
+      >
+        <Stack gap="md">
+          <View style={{ paddingHorizontal: nativeSpacing.md }}>
+            <Stack gap="xs">
+              {/*
+                THE SAMPLE, AND THE LAYER STACKED BEHIND IT (`06.swatch`, `06.swatch.stack`). The layer
+                is drawn first, so the sample is over it: it shows `STACK_WIDTH` past the sample's
+                trailing edge and runs on under the sample's rounded corners, so the two meet square
+                as `06` draws them. It is the entry's own colour (ADR-0146 D6) and decorative, so it is
+                hidden from assistive technology.
               */}
-                    <Swatch
-                      caption="name"
-                      name={`${entry.name.en} — ${t(CVD_KEYS[kind])}`}
-                      hex={hex}
-                      color={colorFor(entry)}
-                      size={44}
-                    />
-                    <Text size="caption" color="foreground.2" script={script}>
-                      {t(CVD_KEYS[kind])}
+              <View style={{ paddingRight: STACK_WIDTH }}>
+                <View
+                  testID="detail.stack"
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: (HERO_HEIGHT - STACK_HEIGHT) / 2,
+                  }}
+                >
+                  <Swatch
+                    width={STACK_WIDTH + nativeRadius.sm}
+                    height={STACK_HEIGHT}
+                    keyline={false}
+                    corner="sm"
+                    name={entry.name.en}
+                    hex={sample.hex}
+                    color={sample.color}
+                  />
+                </View>
+                <Swatch
+                  width="fill"
+                  height={HERO_HEIGHT}
+                  keylineWidth={HERO_KEYLINE}
+                  corner="sm"
+                  name={entry.name.en}
+                  hex={sample.hex}
+                  color={sample.color}
+                />
+              </View>
+              {/* THE NAMES (`06.kanji`, `.kana`, `.name`) and the pill, indented `sm` under the sample. */}
+              <View style={{ paddingLeft: nativeSpacing.sm }}>
+                <Stack gap="xs" align="start">
+                  <Row gap="sm" align="center" wrap>
+                    <Text
+                      size={script === 'japanese' ? 'kanjiHeroJa' : 'kanjiHero'}
+                      face="gothic"
+                      weight={400}
+                      color="foreground"
+                      script="japanese"
+                      heading
+                    >
+                      {entry.name.kanji}
                     </Text>
+                    <Stack gap="xs">
+                      <Text size="body" face="gothic" color="foreground.2" script="japanese">
+                        {entry.name.kana}
+                      </Text>
+                      <Text size="body" color="foreground.2" script="latin">
+                        {nameLine(found)}
+                      </Text>
+                    </Stack>
+                  </Row>
+                  <Chip
+                    form="badge"
+                    wrap
+                    fill="surface.2"
+                    height={PILL}
+                    size="label"
+                    label={taxonomyLine(found, t, script)}
+                    script={script}
+                    testID="detail.taxonomy"
+                  />
+                </Stack>
+              </View>
+            </Stack>
+          </View>
+
+          {/* THE CARDS, fitted to the screen's width (ADR-0145): `06` draws them 0.8 dp in, so `xs`. */}
+          <View style={{ paddingHorizontal: nativeSpacing.xs }}>
+            <Stack gap="md">
+              <Card level="1" padding="md" radius="md" testID="detail.readout">
+                <Stack gap="sm">
+                  <Text size="title" weight={600} color="foreground" script={script} heading>
+                    {t('detail.readout')}
+                  </Text>
+                  <ReadoutTable
+                    form="table"
+                    rows={readoutRows(found, t, displayP3Of(entry.color.xyz))}
+                    script={script}
+                    testID="detail.readout.table"
+                  />
+                </Stack>
+              </Card>
+              <Stack gap="sm">
+                <Card level="1" padding="md" radius="md" testID="detail.provenance">
+                  {/*
+                    THE PLUM BRANCH BEHIND THE WORDS (`06.provenance.art`): at its drawn size and its
+                    place from the card's top and trailing edge (ADR-0145 D3), inked at `06`'s card
+                    tone (ADR-0149). Drawn first, so the words are over it.
+                  */}
+                  <View
+                    pointerEvents="none"
+                    style={{ position: 'absolute', top: nativeSpacing.xs, right: nativeSpacing.sm }}
+                  >
+                    <Illustration
+                      name="plum-branch"
+                      color="foreground"
+                      tone="card"
+                      width={ART_WIDTH}
+                    />
                   </View>
-                ))}
-              </Row>
-              <Text size="label" color="foreground.2" script={script}>
-                {t('cvd.note')}
-              </Text>
-            </DetailSection>
-          ) : null}
-          {panel === 'related' ? (
-            <DetailSection title={t('detail.relations')}>
-              <RelatedList label={t('rel.related')} slugs={entry.relations.related} />
-              <RelatedList label={t('rel.complementary')} slugs={entry.relations.complementary} />
-              <RelatedList
-                label={t('rel.historicalVariants')}
-                slugs={entry.relations.historicalVariants}
-              />
-            </DetailSection>
-          ) : null}
-        </Tabs>
-
-        <Button
-          label={t('detail.openCard')}
-          variant="secondary"
-          onPress={() => {
-            onOpenCard?.(slug);
-          }}
-          script={script}
-        />
-
-        {/*
-          COMPARE, CARRYING THIS COLOUR (F-181). `Compare` has taken `initialA` since F-019 for
-          *"a future 'compare with this one' entry point from the colour detail screen"* — its own
-          words, and this is that entry point. Opening it empty would make a person choose two
-          colours before the screen said anything, when they arrived here already holding one.
-        */}
-        {/*
-          COMPARE A READING AGAINST THIS ONE (F-200). Placed with the other things you can do
-          WITH a colour rather than beside the coordinates, because arming a target is an
-          activity — the bar that appears is what says it started.
-        */}
-        {onArmTarget === undefined ? null : (
-          <Button
-            label={t('target.arm')}
-            variant="secondary"
-            onPress={() => {
-              onArmTarget(slug);
-            }}
-            script={script}
-          />
-        )}
-
-        {/*
-          WHAT GOES WITH THIS (F-194). The `harmony` panel above shows one relationship for this
-          colour; this opens the rest. Placed after compare because it is the same shape of
-          action — take this colour somewhere that does something with it.
-        */}
-        {onOpenCombinations === undefined ? null : (
-          <Button
-            label={t('combos.open')}
-            variant="secondary"
-            onPress={() => {
-              onOpenCombinations(slug);
-            }}
-            script={script}
-          />
-        )}
-
-        {onCompareWith === undefined ? null : (
-          <Button
-            label={t('detail.compareWith')}
-            variant="secondary"
-            onPress={() => {
-              onCompareWith(slug);
-            }}
-            script={script}
-          />
-        )}
-      </Stack>
+                  <Stack gap="xs">
+                    <Text size="title" weight={600} color="foreground" script={script} heading>
+                      {t('detail.provenance')}
+                    </Text>
+                    <Text size={prose} color="foreground.2" script={script}>
+                      <Text size={prose} weight={600} color="foreground" script={script}>
+                        {`${provenanceLead(found, t)}${colon}`}
+                      </Text>
+                      {provenanceBody(found, t)}
+                    </Text>
+                    <Row gap="xs" align="center" wrap>
+                      <Text size={prose} color="foreground.2" script={script} numeric>
+                        <Text size={prose} weight={600} color="foreground" script={script}>
+                          {`${t('detail.review')}${colon}`}
+                        </Text>
+                        {reviewLine(found, t)}
+                      </Text>
+                      {/* The seal only where a check is recorded; the words carry the status (rule 13). */}
+                      {reviewRecorded(found) ? (
+                        <Glyph name="seal-check" color={colors['glyph.seal']} size={SEAL_GLYPH} />
+                      ) : null}
+                    </Row>
+                  </Stack>
+                </Card>
+                {combinations === null ? null : combinations.length > 0 ? (
+                  <Card level="1" padding="md" radius="md" testID="detail.combinations">
+                    <Stack gap="sm">
+                      <Text size="title" weight={600} color="foreground" script={script} heading>
+                        {t('detail.combinations')}
+                      </Text>
+                      <Row gap="md" align="start" wrap>
+                        {combinations.map((c) => (
+                          <CombinationItem
+                            key={c.garment.id}
+                            combination={c}
+                            uri={photoOf === undefined ? null : photoOf(c.garment.id)}
+                            script={script}
+                            {...(onOpenGarment === undefined
+                              ? {}
+                              : {
+                                  onPress: () => {
+                                    onOpenGarment(c.garment.id);
+                                  },
+                                })}
+                          />
+                        ))}
+                      </Row>
+                    </Stack>
+                  </Card>
+                ) : wardrobe?.length === 0 ? (
+                  /*
+                    THE EMPTY WARDROBE IS 27'S CARD (ADR-0148 D4), in the combinations' place: Home's
+                    heading, body and way out, which opens the Lens.
+                  */
+                  onScanGarment === undefined ? null : (
+                    <EmptyState
+                      title={t('wardrobe.empty.title')}
+                      body={t('wardrobe.empty.body')}
+                      action={{ label: t('wardrobe.empty.scan'), onPress: onScanGarment }}
+                      script={script}
+                    />
+                  )
+                ) : onAddGarment === undefined ? null : (
+                  // Garments, but none that pairs with a top: 27's card, and a way to add one.
+                  <EmptyState
+                    title={t('detail.combinationsNone.title')}
+                    body={t('detail.combinationsNone.body')}
+                    action={{ label: t('detail.combinationsNone.add'), onPress: onAddGarment }}
+                    script={script}
+                  />
+                )}
+              </Stack>
+            </Stack>
+          </View>
+        </Stack>
+      </ScrollView>
     </Screen>
   );
 }
 
-export type { CorpusEntry };
+/**
+ * One of the person's garments (`06.combinations.item-n`): its photograph in `06`'s circle, or —
+ * without one — its colour as a sample, which no mockup draws round (E4, C7); the number at its
+ * corner; its name over its hex. ONE control, named in full, because a tap anywhere on it opens the
+ * garment; what it draws inside is hidden from assistive technology, which hears the name.
+ */
+function CombinationItem({
+  combination,
+  uri,
+  script,
+  onPress,
+}: {
+  readonly combination: WearableCombination;
+  readonly uri: string | null;
+  readonly script: 'latin' | 'japanese';
+  readonly onPress?: () => void;
+}): React.JSX.Element {
+  const n = String(combination.rank);
+  const drawn = (
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Stack gap="xs" align="center">
+        <View testID={`detail.combination.${n}.photo`} style={{ width: PHOTO, height: PHOTO }}>
+          {uri === null ? (
+            <Swatch
+              width={PHOTO}
+              height={PHOTO}
+              corner="md"
+              name={combination.garment.color.name}
+              hex={combination.hex}
+              color={combination.color}
+            />
+          ) : (
+            <Image
+              source={{ uri }}
+              style={{ width: PHOTO, height: PHOTO, borderRadius: nativeRadius.pill }}
+              resizeMode="cover"
+              accessible={false}
+            />
+          )}
+          <View style={{ position: 'absolute', top: 0, left: 0 }}>
+            <Chip
+              form="badge"
+              fill="surface.2"
+              height={RANK}
+              size="caption"
+              numeric
+              label={n}
+              testID={`detail.combination.${n}.rank`}
+            />
+          </View>
+        </View>
+        {/* A long name wraps under its own photograph rather than pushing its neighbours (E3). */}
+        <View style={{ maxWidth: PHOTO + nativeSpacing.md }}>
+          <Text size="caption" color="foreground.2" script={script} align="center" numeric>
+            {combinationCaption(combination)}
+          </Text>
+        </View>
+      </Stack>
+    </View>
+  );
+  return onPress === undefined ? (
+    <View accessible accessibilityLabel={combinationName(combination)}>
+      {drawn}
+    </View>
+  ) : (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={combinationName(combination)}
+      testID={`detail.combination.${n}`}
+      style={({ pressed }) => ({ opacity: pressed ? PRESSED_OPACITY : 1 })}
+    >
+      {drawn}
+    </Pressable>
+  );
+}

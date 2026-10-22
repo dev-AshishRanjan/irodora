@@ -1,7 +1,7 @@
 /**
  * The bookmarked colours (F-237, FR-56; ADR-0135).
  *
- * `06` bookmarks a colour from its page; the Atlas (`05`) reads the set back through a toggle in
+ * `06` bookmarks a colour from its app bar; the Atlas (`05`) reads the set back through a toggle in
  * its search field. Both read one set, and this is where it lives.
  *
  * ## A context, for the reason `target.tsx` gives
@@ -26,11 +26,7 @@
  */
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { View } from 'react-native';
-import { IconButton, platformTapTarget } from '@irodora/ui';
 import type { Repository } from '@irodora/store';
-import { entryBySlug } from './corpus';
-import { useMessages } from './i18n/useMessages';
 
 /** The three methods this needs. `Repository` satisfies it; a test passes a fake. */
 export type BookmarkStore = Pick<Repository, 'bookmarkColor' | 'unbookmarkColor' | 'listBookmarks'>;
@@ -92,46 +88,4 @@ export function useBookmarks(): BookmarksValue {
         'render it.',
     );
   return value;
-}
-
-/**
- * `06`'s bookmark (`06.bookmark`): the glyph `06` draws, in its ink, at the size that reproduces
- * its drawn 18 dp height in the 24-unit grid. On is the glyph filled and an announced `selected`
- * (ADR-0135 D2).
- *
- * Renders nothing for a slug this corpus does not hold: that page is `00`'s caption, and a
- * bookmark of a colour the app cannot show would be a row nothing could ever read back.
- *
- * **In a box the size of the platform's tap target.** The header's trailing slot sizes itself to
- * what it holds, and a 24 dp glyph's slop past a 24 dp slot is a target Android never delivers: it
- * clips touches to the parent (F-237's review, S3). The box makes the slot the target.
- */
-export function ColourBookmark({
-  slug,
-  on,
-  onChange,
-}: {
-  readonly slug: string;
-  readonly on: boolean;
-  readonly onChange: (on: boolean) => void;
-}): React.JSX.Element | null {
-  const { t } = useMessages();
-  if (entryBySlug(slug) === null) return null;
-  const target = platformTapTarget();
-  return (
-    <View
-      testID="detail.bookmark.box"
-      style={{ width: target, height: target, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <IconButton
-        name="bookmark"
-        label={t('detail.bookmark')}
-        selected={on}
-        onPress={() => {
-          onChange(!on);
-        }}
-        testID="detail.bookmark"
-      />
-    </View>
-  );
 }

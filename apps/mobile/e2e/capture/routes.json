@@ -160,7 +160,7 @@
           "colour": "aki-batake"
         }
       },
-      "anchor": "detail.provenance"
+      "anchor": "detail.readout"
     },
     {
       "route": "/atlas/compare",

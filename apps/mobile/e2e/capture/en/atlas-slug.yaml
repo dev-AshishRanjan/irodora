@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/aki-batake'
-- assertVisible: 'Where this colour came from'
+- assertVisible: 'Scientific Colour Space Readout Table'
 - waitForAnimationToEnd
 - takeScreenshot: capture

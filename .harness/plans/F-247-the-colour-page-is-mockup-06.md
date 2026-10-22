@@ -246,6 +246,41 @@ All five rest on R9 §11's widened delegation of 2026-10-05: *"For all OQ, when 
 Adopted as written. Anything the implementation changes from it is recorded here, as F-246's plan
 recorded its own, with the reason.
 
+- **Increment 4.**
+  - `STACK` became `STACK_WIDTH` and `STACK_HEIGHT`. `verify-viewport` refuses a `height:` literal
+    over 224 in source, and a named constant is how `HERO_HEIGHT` already states its height (E-076).
+  - `detail.review` moved to increment 5: the i18n unused-key scan refuses a key nothing renders, and
+    only the screen renders the review's bold lead. No reader was invented to keep it.
+- **Increment 5.**
+  - **A fifth additive `@irodora/ui` change: `AppBarBack.size`.** `06`'s back arrow inks 13 dp; the
+    back control drew its glyph at its label's step (16) and took no size. It is forwarded as
+    `glyphSize` (word) or `size` (glyph alone); `app-bar.test` holds both, with the default as decoy.
+  - **The stacked layer is a layer, not a row sibling.** The scale has no zero gap, and `06` draws
+    the layer behind the sample, meeting it square. It is drawn first, absolutely placed at the
+    sample's trailing edge, `STACK_WIDTH + radius.sm` wide, so it shows its drawn 14 dp and runs on
+    under the sample's rounded corners; the sample's block pads `STACK_WIDTH` on its trailing side.
+  - **`06.back.label` and `06.actions.hold` are recorded at 400.** F-220 recorded the back word at
+    500 without a reading, and increment 1 carried 500 onto *Hold* the same way. Neither weight can
+    be read apart from 400 on this JPEG at 14–17 px (`stem.ps1`: *Hold* 3.85 against *Wear*'s 4.27
+    ink widths a height, opposite polarity), so each takes board 00's form: 400 for a plain label and
+    an outlined button (`00.buttons.secondary`). `06.mjs` says so at each element.
+  - **A sixth additive `@irodora/ui` change: `TableRow.note`.** The first build put E2's note inside
+    the hex's code run, and the sweep's Japanese face check found the Japanese note set in the Latin
+    face. The note is now the row's own words after its values, in the row's script and in the row's
+    spoken name (`readout.test`, with a row without a note as the decoy). The hex run is the hex alone.
+  - **The review's date and each caption's hex are set tabular** (`numeric`): the conformance
+    sweep's ragged-figure rule found both (FR-48, C9).
+  - **`SEAL_GLYPH` = 17**: the seal's blob inks 15 × 16 px (`measure.ps1`), and the scalloped ring
+    spans 17.8 of the grid's 24 units; a solid drawing adds no line.
+  - **An empty state needs its handler.** The two empty cards are controls, so with no
+    `onScanGarment` or `onAddGarment` the card is absent, as every other control is.
+  - **`exportSubjectFor(slug, palettes)`** in `export/subject.ts`. A test may not import a route, so
+    the route's choice of subject is a function the export tests reach (E-215).
+  - **A caption is at most one pitch wide** (`PHOTO + md`), so a long garment name wraps under its
+    own photograph rather than pushing its neighbours (E3).
+  - **The second empty card names trousers, a skirt or shoes.** The builder has three slots, and a
+    coat or jacket is a top, so *an outer layer* would have been a false way out.
+
 ---
 
 ## Approach

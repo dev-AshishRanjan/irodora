@@ -128,10 +128,13 @@ export default {
       icon: 'back',
       action: 'navigate:/atlas',
     }),
+    // F-247: F-220 recorded 500 without a reading, and a five-letter word 17 px tall on this JPEG cannot be
+    // read apart from 400 (stem.ps1's spread is about ±50 on the axis), so the back control takes board
+    // 00's plain label, 400 (P3).
     el('06.back.label', 'ui:Text', B(101, 134, 47, 17), {
       parent: '06.header',
       tokens: { fg: 'text.primary' },
-      type: text('sans', 'body', 500),
+      type: text('sans', 'body'),
       // F-247 (ADR-0146): the Atlas tab's own word; the control is named "Back to Atlas".
       binding: 'static:tab.atlas',
       action: 'navigate:/atlas',
@@ -318,11 +321,13 @@ export default {
       copy: { shape: 'label', script: 'latin' },
       raw: { cornerPx: 9.25 },
     }),
-    // Drawn B(390, 1246, 310, 42). Its corners fit 7.5–8.5 px (6.5 dp, sm). "Hold" inks 14 px — body.
+    // Drawn B(390, 1246, 310, 42). Its corners fit 7.5–8.5 px (6.5 dp, sm). "Hold" inks 14 px — body. Its
+    // stems read lighter than Wear's (stem.ps1: 3.85 against 4.27 ink widths a height, encoded; opposite
+    // polarity, so not decisive), and an outlined label is board 00's 400 (00.buttons.secondary, P3).
     el('06.actions.hold', 'ui:Button', B(294, 1246, 215, 42), {
       parent: '06.actions',
       tokens: { border: 'border.subtle', radius: 'sm' },
-      type: text('sans', 'body', 500),
+      type: text('sans', 'body'),
       binding: 'static:detail.holdAsTarget',
       // F-247 (ADR-0147): arms the target, then opens the Lens, which shows 04 while one is armed (F-200);
       // /lens/against is no route.

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { nativeColors, nativeFamilies, nativeSpacing } from '@irodora/design-tokens';
+import { nativeColors, nativeFamilies, nativeSpacing, nativeType } from '@irodora/design-tokens';
 import {
   AppBar,
   APP_BAR_HEIGHT,
@@ -25,6 +25,7 @@ import {
   APP_BAR_RULE,
   APP_BAR_RULE_TEST_ID,
   APP_BAR_STACKED,
+  Glyph,
   IconButton,
   platformTapTarget,
   Screen,
@@ -222,6 +223,23 @@ describe('every control in it is named', () => {
       draw(<AppBar back={{ glyph: 'back', label: 'Atlas', name: 'Go back', onPress: noop }} />);
     }).toThrow(/does not contain the visible label/u);
     quiet.mockRestore();
+  });
+
+  it('draws the back glyph at the size the element draws, beside a word or alone (F-247)', () => {
+    const glyph = () => screen.UNSAFE_getByType(Glyph);
+    draw(
+      <AppBar
+        back={{ glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: noop, size: 22.5 }}
+      />,
+    );
+    expect(glyph().props['size']).toBe(22.5);
+    screen.unmount();
+    draw(<AppBar back={{ glyph: 'chevron-left', name: 'Back', onPress: noop, size: 20 }} />);
+    expect(glyph().props['size']).toBe(20);
+    screen.unmount();
+    // DECOY: without a size the word's glyph is its step's, as every other back control draws it.
+    draw(<AppBar back={{ glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: noop }} />);
+    expect(glyph().props['size']).toBe(nativeType.latin.body.fontSize);
   });
 
   it('a glyph alone takes the name it is given (22)', () => {

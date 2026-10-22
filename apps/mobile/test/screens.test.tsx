@@ -89,10 +89,19 @@ import { Home, type HomeStore, STATES as HOME_STATES } from '../src/screens/Home
 import { Atlas, STATES as ATLAS_STATES } from '../src/screens/Atlas';
 import {
   ColourDetail,
-  type DerivedPanel,
+  type ColourDetailProps,
   STATES as COLOUR_DETAIL_STATES,
 } from '../src/screens/ColourDetail';
-import { ColourBookmark } from '../src/bookmarks';
+import {
+  provenanceBody,
+  provenanceLead,
+  readoutRows,
+  reviewLine,
+  taxonomyLine,
+  wearableCombinations,
+} from '../src/detail';
+import { displayP3Of } from '../src/engine';
+import { rankingContext } from '../src/wardrobe/coverage';
 import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
 import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
 import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
@@ -176,7 +185,7 @@ import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@
 import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
-import { isMessageKey, t } from '../src/i18n/index';
+import { isMessageKey, t, type MessageKey } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
 import {
@@ -287,9 +296,6 @@ const CVD_HEXES: readonly string[] = allEntries().flatMap((e) =>
 );
 
 const SAMPLE_HEXES: readonly string[] = [...CORPUS_HEXES, ...CVD_HEXES];
-
-/** An entry whose `complementary` is empty, so the empty branch is RENDERED, not skipped. */
-const WITHOUT_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length === 0)!;
 
 /**
  * The pair Compare opens on in these assertions.
@@ -402,9 +408,6 @@ const GARMENT_HEXES: readonly string[] = [
 
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
-
-/** An entry that HAS a complementary, so the populated branch is rendered too. */
-const WITH_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length > 0)!;
 
 /**
  * The four cards 05 draws, as the Atlas draws them with *Autumn* chosen (F-246): a reachable state in
@@ -817,6 +820,48 @@ const OUTFIT_WARDROBE = [
   outfitGarment('o-2', 'trousers', allEntries()[1]!.entry.slug),
   outfitGarment('o-3', 'shoes', allEntries()[2]!.entry.slug),
 ];
+
+/**
+ * 06's subject (F-247): an entry with an authored autumn, so the pill prints a season rather than
+ * *Not assigned*, and three garments that pair with it as a top — trousers, shoes and a skirt, the
+ * first named and photographed — so every element 06 draws is drawn. None is 06's sample content.
+ */
+const DETAIL = allEntries().find((e) => (e.entry.taxonomy.season ?? []).includes('autumn'))!;
+const DETAIL_WARDROBE: readonly StoredGarment[] = [
+  { ...outfitGarment('d-1', 'trousers', allEntries()[3]!.entry.slug), name: 'Wool trousers' },
+  outfitGarment('d-2', 'shoes', allEntries()[4]!.entry.slug),
+  outfitGarment('d-3', 'skirt', allEntries()[5]!.entry.slug),
+];
+const DETAIL_PHOTO =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII=';
+const DETAIL_PHOTOS = (id: string): string | null => (id === 'd-1' ? DETAIL_PHOTO : null);
+/** No stored profile: the order only, as a person who has not set one up sees it (ADR-0148 D2). */
+const DETAIL_RANKING = rankingContext(null);
+/** The one entry outside sRGB, whose hex row says it is the nearest rendering (E2). */
+const OUTSIDE_SRGB = allEntries().find((e) => !e.derived.inSrgbGamut)!;
+const ignore = (): void => undefined;
+
+/** 06 as the route composes it, every drawn action supplied: what the subjects and the sweep draw. */
+function DetailPage(props: Partial<ColourDetailProps>): React.JSX.Element {
+  return (
+    <ColourDetail
+      slug={DETAIL.entry.slug}
+      onBookmark={ignore}
+      onBack={ignore}
+      onShareCard={ignore}
+      onExport={ignore}
+      onWearIt={ignore}
+      onHoldAsTarget={ignore}
+      wardrobe={DETAIL_WARDROBE}
+      photoOf={DETAIL_PHOTOS}
+      ranking={DETAIL_RANKING}
+      onOpenGarment={ignore}
+      onScanGarment={ignore}
+      onAddGarment={ignore}
+      {...props}
+    />
+  );
+}
 
 /** Every slot filled, the top locked: an outfit the Lab can save (F-238). */
 const OUTFIT_COMPLETE: OutfitDraft = [
@@ -1282,58 +1327,51 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) => draw(<Atlas bookmarked={new Set()} initialBookmarkedOnly />, theme),
   },
   {
+    /*
+     * 06, WHOLE (F-247): every drawn action supplied, a season on the pill, and three of the person's
+     * garments, one photographed — so every element 06 draws is drawn and measured, in both themes.
+     */
     name: 'screens/ColourDetail',
     shows: showing(COLOUR_DETAIL_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    // The comparison entry is rendered, so it is measured (F-181). See the Atlas subject above.
-    render: (_state, theme) =>
-      draw(
-        <ColourDetail
-          slug={WITH_COMPLEMENT.entry.slug}
-          onCompareWith={() => undefined}
-          onOpenCombinations={() => undefined}
-          onArmTarget={() => undefined}
-        />,
-        theme,
-      ),
+    render: (_state, theme) => draw(<DetailPage />, theme),
   },
-  ...([false, true] as const).map((on): ConformanceSubject => ({
-    /*
-     * 06's BOOKMARK, AS THE APP COMPOSES IT (F-237, ADR-0135 D2): the catalogue's name in both
-     * locales, 06's glyph and ink, off and on. `static`, like every screen here: the toggle's
-     * own states — the fill appearing on `active`, the announcement — are the ui registry's
-     * `IconButton (bookmark toggle)`, where the `glyph` treatment holds them.
-     */
-    name: `screens/ColourDetail (06's bookmark, ${on ? 'on' : 'off'})`,
-    shows: showing(COLOUR_DETAIL_STATES),
-    kind: 'static',
-    forbiddenNames: ['bookmark', 'icon'],
-    render: (_state, theme) =>
-      draw(
-        <ColourBookmark slug={WITH_COMPLEMENT.entry.slug} on={on} onChange={() => undefined} />,
-        theme,
-      ),
-  })),
   {
-    /*
-     * WITH THE REFERENCE SECTIONS FOLDED AWAY (F-156).
-     *
-     * The accordion's second state, and it is a genuinely different tree: three chevrons point
-     * the other way and three blocks of content are hidden. A subject that only ever rendered
-     * the expanded form would check the state a person arrives in and never the one they leave
-     * it in.
-     *
-     * PROVENANCE IS STILL HERE, because it is outside the accordion — which is F-018's
-     * criterion 4 ("never a disclosure a person has to find"), and the content assertions
-     * elsewhere in this file are what hold it there.
-     */
-    name: 'screens/ColourDetail (sections folded)',
+    // The bookmark on (ADR-0135 D2): the glyph filled, and announced selected.
+    name: 'screens/ColourDetail (bookmarked)',
     shows: showing(COLOUR_DETAIL_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<DetailPage bookmarked />, theme),
+  },
+  {
+    // An empty wardrobe: 27's card in the combinations' place, its way out the Lens (ADR-0148 D4).
+    name: 'screens/ColourDetail (an empty wardrobe)',
+    shows: showing(COLOUR_DETAIL_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<DetailPage wardrobe={[]} />, theme),
+  },
+  {
+    // Garments, but none that pairs with a top: 27's card, and a way to add one (ADR-0148 D4).
+    name: 'screens/ColourDetail (nothing to rank)',
+    shows: showing(COLOUR_DETAIL_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} initialSections={[]} />, theme),
+      draw(
+        <DetailPage wardrobe={[outfitGarment('d-4', 'jumper', allEntries()[6]!.entry.slug)]} />,
+        theme,
+      ),
+  },
+  {
+    // The one entry outside sRGB: its hex row says it is the nearest rendering, and by how much (E2).
+    name: 'screens/ColourDetail (outside sRGB)',
+    shows: showing(COLOUR_DETAIL_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<DetailPage slug={OUTSIDE_SRGB.entry.slug} />, theme),
   },
   {
     /*
@@ -2696,7 +2734,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     shows: showing(COLOUR_DETAIL_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<ColourDetail slug="no-such-colour" />, theme),
+    render: (_state, theme) => draw(<DetailPage slug="no-such-colour" />, theme),
   },
   {
     /*
@@ -3165,14 +3203,13 @@ describe('the Atlas root reaches every colour (F-018 criterion 1)', () => {
 });
 
 /**
- * Criterion 4 — the detail screen shows **everything the record carries**.
+ * What the colour page shows: what 06 binds, made true (F-247, ADR-0146) — and what F-018's
+ * criterion 4 still asks of this surface, now in the slots 06 draws (ADR-0147 D2).
  *
- * Asserted by content rather than by structure: what matters is that a reader can see the
- * provenance, not that it sits in a particular node. Both the populated and the EMPTY relation
- * branches are rendered, because an empty array rendering nothing at all would satisfy any
- * assertion written only against an entry that has relations.
+ * Asserted by content rather than by structure: what matters is that a reader can see the record,
+ * not that it sits in a particular node. Order and proportion are colour-detail-fidelity's.
  */
-describe('colour detail shows what the record carries (F-018 criterion 4)', () => {
+describe('colour detail shows what 06 binds (F-247)', () => {
   function textOf(node: TestNode, out: string[] = []): string[] {
     for (const child of node.children ?? []) {
       if (typeof child === 'string') out.push(child);
@@ -3182,117 +3219,80 @@ describe('colour detail shows what the record carries (F-018 criterion 4)', () =
     if (typeof label === 'string') out.push(label);
     return out;
   }
+  const inEn = (key: MessageKey): string => message('en', key);
+  const nodes = (slug = DETAIL.entry.slug): readonly string[] =>
+    textOf(draw(<DetailPage slug={slug} />, 'light'));
+  const shown = (slug = DETAIL.entry.slug): string => nodes(slug).join('\u0000');
 
-  /**
-   * The page's text, with a derived panel optionally opened.
-   *
-   * F-148 put harmony, colour vision and neighbours behind tabs, so those three are REACHABLE
-   * rather than always mounted — the same distinction E-064 records for the Atlas. A test that
-   * asserts by content has to reach them, and `initialPanel` is how, exactly as `PaletteStudio`
-   * takes `initialDraft`.
-   *
-   * Everything the RECORD asserts — the four name forms, the coordinates, the classification
-   * and the whole provenance block — is still asserted with **no panel opened**, because none
-   * of it is behind a tab. That is criterion 4 of F-148: provenance never becomes a disclosure.
-   */
-  const shown = (slug: string, panel?: DerivedPanel): string =>
-    textOf(
-      draw(
-        // SPREAD RATHER THAN PASSED: `exactOptionalPropertyTypes` is on, so an explicit
-        // `undefined` is not the same as omitting the prop — and omitting is what makes the
-        // component fall back to its own default.
-        <ColourDetail slug={slug} {...(panel === undefined ? {} : { initialPanel: panel })} />,
-        'light',
-      ),
-    ).join('\u0000');
-
-  it('shows all four name forms', () => {
-    const { entry } = WITH_COMPLEMENT;
-    const text = shown(entry.slug);
-    for (const form of [entry.name.kanji, entry.name.kana, entry.name.romaji, entry.name.en])
+  it('shows all four name forms: the kanji, the kana, and Romaji • English', () => {
+    const { entry } = DETAIL;
+    const text = shown();
+    for (const form of [entry.name.kanji, entry.name.kana, entry.name.en])
       expect(text).toContain(form);
+    expect(text.toLowerCase()).toContain(entry.name.romaji.toLowerCase());
   });
 
-  it('shows every coordinate system, from the bundle', () => {
-    const { entry, derived } = WITH_COMPLEMENT;
-    const text = shown(entry.slug);
-    expect(text).toContain(derived.hex);
-    // One component of each triple is enough to prove the row rendered; asserting the whole
-    // formatted string would be asserting the formatter.
-    expect(text).toContain(derived.lab[0].toFixed(3));
-    expect(text).toContain(derived.lch[1].toFixed(3));
-    expect(text).toContain(derived.oklch[2].toFixed(3));
-    expect(text).toContain(derived.rgb[0].toFixed(3));
-    expect(text).toContain(entry.color.xyz[0].toFixed(6));
+  it('shows hex, OKLCh, CIELAB, sRGB and Display-P3, each with its space named (FR-61)', () => {
+    const text = shown();
+    const rows = readoutRows(DETAIL, inEn, displayP3Of(DETAIL.entry.color.xyz));
+    expect(rows.map((r) => r.key)).toStrictEqual(['hex', 'oklch', 'cielab', 'srgb']);
+    for (const label of ['colour.hex', 'coord.oklch', 'coord.lab', 'coord.rgb'] as const)
+      expect(text).toContain(inEn(label));
+    expect(text).toContain(`${inEn('coord.displayP3')}:`);
+    expect(text).toContain(DETAIL.derived.hex);
+    expect(text).toContain(DETAIL.derived.oklch[0].toFixed(3));
+    expect(text).toContain(DETAIL.derived.lab[0].toFixed(1));
+    expect(text).toContain(displayP3Of(DETAIL.entry.color.xyz)[0].toFixed(3));
   });
 
-  it('shows the provenance FR-24 names, on the colour surface', () => {
-    const { entry } = WITH_COMPLEMENT;
-    const text = shown(entry.slug);
-    expect(text).toContain(entry.provenance.source);
-    expect(text).toContain(entry.provenance.sourceId);
-    expect(text).toContain(entry.provenance.sourceLicence);
-    expect(text).toContain(entry.provenance.derivation);
-    expect(text).toContain(entry.provenance.authoredBy);
+  it('shows the pill: the family group, Era: None, and the authored season', () => {
+    const text = shown();
+    expect(text).toContain(taxonomyLine(DETAIL, inEn, 'latin'));
+    expect(taxonomyLine(DETAIL, inEn, 'latin')).toContain(
+      `${inEn('detail.era')}: ${inEn('detail.eraNone')}`,
+    );
+    expect(taxonomyLine(DETAIL, inEn, 'latin')).toContain(inEn('season.autumn'));
+  });
+
+  it('shows the provenance FR-24 names, on the colour surface, and the classification first', () => {
+    const { entry } = DETAIL;
+    const text = shown();
+    expect(text).toContain(`${provenanceLead(DETAIL, inEn)}: `);
+    expect(text).toContain(provenanceBody(DETAIL, inEn));
+    for (const part of [entry.provenance.source, entry.provenance.sourceLicence])
+      expect(text).toContain(part);
   });
 
   /*
-   * F-084's attested criterion. If this label never reaches a reader, ADR-0060's honesty is
-   * confined to a JSON field and it bought nothing over dropping the author-reviewer rule.
+   * F-084's attested criterion, in 06's review line. If this never reaches a reader, ADR-0060's
+   * honesty is confined to a JSON field and it bought nothing over dropping the author-reviewer rule.
    */
   it('says a self-reviewed entry was checked by its own author (F-084)', () => {
-    expect(WITH_COMPLEMENT.entry.provenance.reviewIndependence).toBe('self');
-    expect(shown(WITH_COMPLEMENT.entry.slug)).toContain('Checked by its own author');
+    expect(DETAIL.entry.provenance.reviewIndependence).toBe('self');
+    const text = shown();
+    expect(text).toContain(inEn('detail.review'));
+    expect(text).toContain(reviewLine(DETAIL, inEn));
+    expect(reviewLine(DETAIL, inEn)).toContain('Checked by its own author');
   });
 
   /*
-   * FR-23 in its negative form, on the SURFACE rather than in the data. The data assertion
-   * lives in corpus.test.ts; the field being right and the screen showing it are two claims.
+   * FR-23 in its negative form, on the SURFACE. Compared as whole text nodes: the classification is
+   * its own bold run, so an exact match catches a label that is not the entry's own.
    */
   it('presents our own curation as ours, never as historical (FR-23)', () => {
-    const nodes = textOf(draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} />, 'light'));
-    expect(nodes).toContain('Irodora original, Japanese-inspired');
-    /*
-     * Compared as WHOLE text nodes, not as a substring of the blob. The first draft asserted
-     * `not.toContain('Historical')` and failed against the relation heading "Historical
-     * variants" — which is a legitimate label for a field that is empty on every seed entry.
-     * The classification renders as its own node, so an exact match is both stricter and
-     * correct: it catches the failure FR-23 is about (a classification label that is not the
-     * entry's own) without catching a word that happens to appear elsewhere.
-     */
-    for (const other of ['Historical', 'Traditional', 'Modern Japanese'])
-      expect(nodes).not.toContain(other);
+    const all = nodes();
+    expect(all).toContain(`${inEn('classification.japanese-inspired')}: `);
+    for (const other of ['Historical', 'Traditional', 'Modern Japanese', 'Verified'])
+      expect(all.some((n) => n.startsWith(other))).toBe(false);
   });
 
-  it('renders the FR-21 reason where a value is null, rather than a blank', () => {
-    const { entry } = WITH_COMPLEMENT;
-    const reason = entry.unknowns['taxonomy.era'];
-    expect(reason).toBeDefined();
-    // era has no row of its own; material and season do. Assert one that IS rendered.
-    expect(shown(entry.slug)).toContain(entry.unknowns['taxonomy.season'] ?? 'MISSING');
-  });
-
-  it('renders relations, including the EMPTY case', () => {
-    expect(WITHOUT_COMPLEMENT.entry.relations.complementary).toHaveLength(0);
-    expect(shown(WITHOUT_COMPLEMENT.entry.slug, 'related')).toContain('None recorded');
-
-    const withText = shown(WITH_COMPLEMENT.entry.slug, 'related');
-    for (const slug of WITH_COMPLEMENT.entry.relations.related) {
-      const related = allEntries().find((e) => e.entry.slug === slug)!;
-      expect(withText).toContain(related.entry.name.en);
-    }
-  });
-
-  it('shows the palettes a colour belongs to, with its role', () => {
-    const anchored = allEntries().find((e) => e.entry.slug === 'soko-zumi');
-    expect(anchored).toBeDefined();
-    expect(shown('soko-zumi')).toContain('Quiet Neutrals');
-  });
-
-  it('shows a colour-vision block whose swatches are named, not colour-coded', () => {
-    const text = shown(WITH_COMPLEMENT.entry.slug, 'vision');
-    for (const label of ['Red-weak (protan)', 'Green-weak (deutan)', 'Blue-weak (tritan)'])
-      expect(text).toContain(label);
+  it('names the person’s garments the engine ranks with it, in order, and no figure', () => {
+    const combos = wearableCombinations(DETAIL, DETAIL_WARDROBE, DETAIL_RANKING);
+    expect(combos).toHaveLength(3);
+    const text = shown();
+    for (const c of combos) expect(text).toContain(c.hex);
+    expect(text).toContain('Wool trousers');
+    expect(text).not.toMatch(/%/u);
   });
 
   it('says a colour is not in this corpus version rather than throwing', () => {
@@ -3317,9 +3317,7 @@ describe('the Atlas and the detail screen have headings (A11)', () => {
       expect(roles(draw(<Atlas />, theme))).toContain('header');
     });
     it(`colour detail announces headings in ${theme}`, () => {
-      expect(roles(draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} />, theme))).toContain(
-        'header',
-      );
+      expect(roles(draw(<DetailPage />, theme))).toContain('header');
     });
   }
 });

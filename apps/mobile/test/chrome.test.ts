@@ -99,15 +99,13 @@ describe('one tab bar (F-234, ADR-0117)', () => {
     expect(buildsTabNavigator(code(quoted))).toBe(false);
   });
 
-  it('names the one in-page tab set, which is not a navigation bar', () => {
+  it('names every in-page tab set, which is not a navigation bar — none today', () => {
     /*
-     * `@irodora/ui`'s `Tabs` switches between two panels of one colour's detail (06), inside the
-     * screen: it moves nobody anywhere, so it is not a second tab bar. Named rather than ignored, so
-     * a second use is a decision somebody sees. Its drawing is F-247's, under 06.
+     * `@irodora/ui`'s `Tabs` switches between panels inside a screen: it moves nobody anywhere, so it
+     * is not a second tab bar. Named rather than ignored, so a use is a decision somebody sees. The
+     * colour page was the one, and F-247 rebuilt it to `06`, which draws no tab set (ADR-0147).
      */
-    expect(where((s) => imported(s, '@irodora/ui').includes('Tabs'))).toStrictEqual([
-      'src/screens/ColourDetail.tsx',
-    ]);
+    expect(where((s) => imported(s, '@irodora/ui').includes('Tabs'))).toStrictEqual([]);
   });
 });
 
@@ -116,7 +114,6 @@ describe('one tab bar (F-234, ADR-0117)', () => {
  * `profile/measure` has no mockup; its header waits on OQ-7 with the rest of it.
  */
 const PLATFORM_HEADER: Readonly<Record<string, string>> = {
-  'atlas/[slug]': 'F-247 (06)',
   'atlas/card/[slug]': 'F-253 (20)',
   'atlas/compare': 'F-249 (08)',
   'atlas/find': 'F-250 (09)',

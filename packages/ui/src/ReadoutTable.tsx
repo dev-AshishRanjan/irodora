@@ -82,6 +82,12 @@ interface RowBase {
 /** 06's row: a label, a value, and optionally a second value after a bar (Display-P3). */
 export interface TableRow extends RowBase {
   readonly also?: { readonly label: string; readonly value: ReadoutValue };
+  /**
+   * Words after the row's values, in the row's own script (F-247): 06's hex row, for the one entry
+   * outside sRGB, says its hex is the nearest rendering and by how much (R9 §4 E2). Part of the row's
+   * name, so a screen reader hears it with the value it qualifies.
+   */
+  readonly note?: string;
 }
 
 /** 08's row. */
@@ -135,9 +141,11 @@ export function readoutRowName(
   label: string,
   value: ReadoutValue,
   also?: TableRow['also'],
+  note?: string,
 ): string {
   const first = `${label}: ${valueSpoken(value)}`;
-  return also === undefined ? first : `${first}; ${also.label}: ${valueSpoken(also.value)}`;
+  const values = also === undefined ? first : `${first}; ${also.label}: ${valueSpoken(also.value)}`;
+  return note === undefined ? values : `${values}; ${note}`;
 }
 
 export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
@@ -169,7 +177,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
             key={row.key}
             accessible
             accessibilityRole="text"
-            accessibilityLabel={readoutRowName(row.label, row.value, row.also)}
+            accessibilityLabel={readoutRowName(row.label, row.value, row.also, row.note)}
             style={{
               flexDirection: 'row',
               minHeight: READOUT_ROW,
@@ -238,6 +246,17 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                     {valueText(row.also.value)}
                   </Text>
                 </>
+              )}
+              {row.note === undefined ? null : (
+                <Text
+                  size="label"
+                  color="foreground.2"
+                  script={script}
+                  numeric
+                  {...part(row.key, 'note')}
+                >
+                  {row.note}
+                </Text>
               )}
             </View>
           </View>

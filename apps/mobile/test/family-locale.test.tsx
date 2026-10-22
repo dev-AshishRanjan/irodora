@@ -25,7 +25,7 @@ import { ThemeProvider } from '@irodora/ui';
 import type { TestNode } from '@irodora/ui/testing';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
-import { allEntries, familyLabel } from '../src/corpus';
+import { allEntries, familyLabel, groupOf } from '../src/corpus';
 
 function draw(node: React.JSX.Element): TestNode {
   const json = render(<ThemeProvider theme="light">{node}</ThemeProvider>).toJSON();
@@ -123,9 +123,11 @@ describe('no authoring slug reaches a Japanese reader', () => {
     expect(isLeak(text, 'clay')).toBe(expected);
   });
 
-  it('shows the Japanese word the vocabulary authored', () => {
+  // 06's pill names the entry's family GROUP (F-224), as it draws *Ao (Blue)*; in Japanese, its
+  // kanji (F-247, ADR-0146 D2).
+  it('shows the Japanese word for the family group the vocabulary authored', () => {
     expect(shown(<ColourDetail slug={ENTRY.entry.slug} />)).toContain(
-      familyLabel(ENTRY.entry.taxonomy.family, 'ja'),
+      groupOf(ENTRY.entry.taxonomy.family).kanji,
     );
   });
 });

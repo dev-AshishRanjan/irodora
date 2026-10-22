@@ -12,7 +12,7 @@
  * know it.
  */
 
-import { paletteSubject } from '../src/export/subject';
+import { colourSubject, exportSubjectFor, paletteSubject } from '../src/export/subject';
 import { allEntries, CORPUS_LABEL } from '../src/corpus';
 import { ruleSet } from '../src/rules';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
@@ -143,5 +143,28 @@ describe('the colours come from the stored row', () => {
     const subject = paletteSubject(PALETTE);
 
     expect(subject.title).toBe(PALETTE.nameEn);
+  });
+});
+
+/*
+ * WHICH SUBJECT THE EXPORT ROUTE EXPORTS (F-247, E-215): 06's export glyph opens it with the
+ * colour's slug, and that colour is the file; bare, it is the palette saved most recently, as it was.
+ */
+describe('the export route exports the colour it was opened for', () => {
+  const [entry] = allEntries();
+
+  it('a slug this corpus holds is that colour, whatever palettes are saved', () => {
+    expect(exportSubjectFor(entry!.entry.slug, [PALETTE])).toStrictEqual(colourSubject(entry!));
+    expect(exportSubjectFor(entry!.entry.slug, [])).toStrictEqual(colourSubject(entry!));
+  });
+
+  it('DECOY: bare, it is the palette saved most recently, and nothing when none is', () => {
+    const later = { ...PALETTE, id: 'p-2', nameEn: 'Later' };
+    expect(exportSubjectFor(undefined, [PALETTE, later])?.title).toBe('Later');
+    expect(exportSubjectFor(undefined, [])).toBeNull();
+  });
+
+  it('DECOY: a slug this corpus does not hold falls back as a bare open does', () => {
+    expect(exportSubjectFor('no-such-colour', [PALETTE])?.title).toBe(PALETTE.nameEn);
   });
 });

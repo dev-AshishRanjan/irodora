@@ -111,6 +111,12 @@ export interface AppBarBack {
   readonly label?: string;
   /** The ink: `foreground`, or `foreground.2` where the drawing sets it secondary. */
   readonly ink?: 'foreground' | 'foreground.2';
+  /**
+   * The glyph's size in dp, where the element draws its own (F-247): `06`'s arrow inks 13 dp, a
+   * size its label's step would not give it. Without it, the glyph is the label's step, or an
+   * `IconButton`'s own size alone.
+   */
+  readonly size?: number;
   readonly testID?: string;
 }
 
@@ -354,7 +360,14 @@ function BackControl({
   const ink = back.ink ?? 'foreground';
   const id = back.testID === undefined ? {} : { testID: back.testID };
   return back.label === undefined ? (
-    <IconButton name={back.glyph} label={back.name} color={ink} onPress={back.onPress} {...id} />
+    <IconButton
+      name={back.glyph}
+      label={back.name}
+      color={ink}
+      onPress={back.onPress}
+      {...(back.size === undefined ? {} : { size: back.size })}
+      {...id}
+    />
   ) : (
     <Button
       variant="plain"
@@ -364,6 +377,7 @@ function BackControl({
       ink={ink}
       script={script}
       onPress={back.onPress}
+      {...(back.size === undefined ? {} : { glyphSize: back.size })}
       {...id}
     />
   );

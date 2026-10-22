@@ -10,12 +10,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Platform, StyleSheet, Text } from 'react-native';
-import { platformTapTarget, ThemeProvider } from '@irodora/ui';
-import { tapTargetReach } from '@irodora/ui/testing';
+import { Text } from 'react-native';
+import { AppBar, ThemeProvider } from '@irodora/ui';
 import {
   BookmarksProvider,
-  ColourBookmark,
   useBookmarks,
   type BookmarkStore,
   type BookmarksValue,
@@ -24,6 +22,7 @@ import { atlasCardName, atlasMatches, familyGroups } from '../src/atlas';
 import { allEntries, groupOf } from '../src/corpus';
 import { find } from '../src/finder';
 import { Atlas } from '../src/screens/Atlas';
+import { ColourDetail } from '../src/screens/ColourDetail';
 import { t } from '../src/i18n';
 
 const slug = allEntries()[0]!.entry.slug;
@@ -130,58 +129,61 @@ describe('the provider', () => {
   });
 });
 
-describe("06's bookmark", () => {
-  const draw = (on: boolean, s = slug, onChange = jest.fn()) => {
+describe("06's bookmark, in the page's own app bar (ADR-0135 D2, F-247)", () => {
+  const draw = (on: boolean, s = slug, onBookmark: ((on: boolean) => void) | null = jest.fn()) => {
     render(
       <ThemeProvider theme="dark">
-        <ColourBookmark slug={s} on={on} onChange={onChange} />
+        {onBookmark === null ? (
+          <ColourDetail slug={s} bookmarked={on} />
+        ) : (
+          <ColourDetail slug={s} bookmarked={on} onBookmark={onBookmark} />
+        )}
       </ThemeProvider>,
     );
-    return onChange;
+    return onBookmark;
   };
+  const bookmark = () => screen.queryAllByRole('button', { name: t('en', 'detail.bookmark') });
 
   it('is a button named by what it does, announcing whether it is on', () => {
     for (const on of [false, true]) {
       draw(on);
-      const button = screen.getByRole('button', { name: t('en', 'detail.bookmark') });
-      expect((button.props['accessibilityState'] as { selected?: boolean }).selected).toBe(on);
+      const [button] = bookmark();
+      expect((button?.props['accessibilityState'] as { selected?: boolean }).selected).toBe(on);
       screen.unmount();
     }
   });
 
   it('asks for the opposite of its state when pressed', () => {
-    const onChange = draw(false);
-    fireEvent.press(screen.getByRole('button', { name: t('en', 'detail.bookmark') }));
-    expect(onChange).toHaveBeenCalledWith(true);
+    for (const on of [false, true]) {
+      const onBookmark = draw(on);
+      fireEvent.press(bookmark()[0]!);
+      expect(onBookmark).toHaveBeenCalledWith(!on);
+      screen.unmount();
+    }
   });
 
-  it('renders nothing for a colour this corpus does not hold', () => {
+  it('draws no bookmark for a colour this corpus does not hold', () => {
     draw(false, 'not-a-corpus-slug');
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(bookmark()).toHaveLength(0);
+  });
+
+  it('DECOY: draws none when the route supplies no handler, and one when it does', () => {
+    draw(false, slug, null);
+    expect(bookmark()).toHaveLength(0);
+    screen.unmount();
+    draw(false);
+    expect(bookmark()).toHaveLength(1);
   });
 
   /*
-   * THE HEADER SLOT SIZES ITSELF TO WHAT IT HOLDS (F-237's review, S3). A 24 dp glyph's slop past a
-   * 24 dp slot is a target Android never delivers, so the toggle brings its own box: the platform's
-   * target, square, with the glyph and its slop exactly filling it. Checked as each platform.
+   * THE TARGET'S ROOM (F-237's review, S3, moved by F-247): the header box that held the toggle is
+   * gone, and the app bar's trailing row makes the room instead — `app-bar.test` proves the row on
+   * iOS and on Android. This holds the page to asking for it.
    */
-  it.each([['ios'], ['android']] as const)('sits in a box the size of the %s tap target', (os) => {
-    const replaced = jest.replaceProperty(Platform, 'OS', os);
-    try {
-      draw(false);
-      const target = platformTapTarget(os);
-      const box = StyleSheet.flatten(screen.getByTestId('detail.bookmark.box').props['style']) as
-        Record<string, unknown> | undefined;
-      expect(box).toMatchObject({ width: target, height: target });
-      const button = screen.getByTestId('detail.bookmark');
-      const reach = tapTargetReach(
-        (StyleSheet.flatten(button.props['style']) ?? {}) as Record<string, unknown>,
-        button.props['hitSlop'] as never,
-      );
-      expect(reach).toStrictEqual({ width: target, height: target });
-    } finally {
-      replaced.restore();
-    }
+  it('asks its app bar for the platform target’s room around the icons', () => {
+    draw(false);
+    const trailing = screen.UNSAFE_getByType(AppBar).props['trailing'] as { targetRoom?: true };
+    expect(trailing.targetRoom).toBe(true);
   });
 });
 
@@ -192,10 +194,23 @@ describe('the routes carry the controls ADR-0135 places (E-204)', () => {
     expect(source('app/_layout.tsx')).toMatch(/<BookmarksProvider store=\{deviceRepository\(\)\}>/);
   });
 
-  it("a colour's page reads the set and draws the bookmark in its header", () => {
+  /** Whether a route hands the set to its page's own app bar, with the platform header off. */
+  const handsTheBookmarkToItsAppBar = (page: string): boolean =>
+    page.includes('useBookmarks()') &&
+    page.includes('bookmarked={bookmarked.has(slug)}') &&
+    page.includes('onBookmark={') &&
+    page.includes('headerShown: false') &&
+    !page.includes('headerRight');
+
+  it("a colour's page reads the set and hands it to the page's app bar (F-247)", () => {
+    expect(handsTheBookmarkToItsAppBar(source('app/(tabs)/atlas/[slug].tsx'))).toBe(true);
+  });
+
+  it('DECOY: a page that still draws a bookmark in the platform header fails that', () => {
     const page = source('app/(tabs)/atlas/[slug].tsx');
-    expect(page).toMatch(/useBookmarks\(\)/);
-    expect(page).toMatch(/headerRight: \(\) => \(\s*<ColourBookmark/);
+    expect(
+      handsTheBookmarkToItsAppBar(page.replace('headerShown: false', 'headerRight: () => null')),
+    ).toBe(false);
   });
 
   it('the Atlas route reads the set and hands it to the screen', () => {

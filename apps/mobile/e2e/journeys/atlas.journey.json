@@ -1,7 +1,7 @@
 {
   "name": "atlas",
-  "title": "The Atlas journey — launch, browse, filter, open a colour, read its provenance",
-  "why": "F-091 criterion 2. Everything this walks past is covered by a render test, and a\nrender test cannot tell reachable from rendered: react-test-renderer mounts a screen\nwithout a navigator, so \"the row is in the tree\" and \"a person can tap it\" are the same\nsentence there and different sentences on a phone.\n\nSTEP 3 WALKS THE TAB BAR, not a button on Home. It used to tap `home.openAtlas`, one of the ten buttons Home carried until F-146 rewrote it as an editorial surface; F-145 had already made the Atlas a TAB. The journey kept tapping a control that no longer existed, and the generator caught it — the key was not in the catalogue. That is the point of a journey being generated from keys rather than from strings: a removed control fails the build instead of failing on a device.\n\nF-246 REBUILT THE ATLAS TO 05, AND THE ANCHORS MOVED WITH IT. The title is now one node holding *Colour Atlas • 日本に着想を得た色*, which a whole-text selector cannot find by its English alone, so the Atlas is recognised by *Colour Family*, a node of its own; the filters heading is gone, so its place is taken by *Compare*, one of 05's three pills; the field is found by 05's placeholder; and a card prints no English (ADR-0140), so the colour is found and opened by its kanji.",
+  "title": "The Atlas journey — launch, browse, filter, open a colour, read its readout",
+  "why": "F-091 criterion 2. Everything this walks past is covered by a render test, and a\nrender test cannot tell reachable from rendered: react-test-renderer mounts a screen\nwithout a navigator, so \"the row is in the tree\" and \"a person can tap it\" are the same\nsentence there and different sentences on a phone.\n\nSTEP 3 WALKS THE TAB BAR, not a button on Home. It used to tap `home.openAtlas`, one of the ten buttons Home carried until F-146 rewrote it as an editorial surface; F-145 had already made the Atlas a TAB. The journey kept tapping a control that no longer existed, and the generator caught it — the key was not in the catalogue. That is the point of a journey being generated from keys rather than from strings: a removed control fails the build instead of failing on a device.\n\nF-246 REBUILT THE ATLAS TO 05, AND THE ANCHORS MOVED WITH IT. The title is now one node holding *Colour Atlas • 日本に着想を得た色*, which a whole-text selector cannot find by its English alone, so the Atlas is recognised by *Colour Family*, a node of its own; the filters heading is gone, so its place is taken by *Compare*, one of 05's three pills; the field is found by 05's placeholder; and a card prints no English (ADR-0140), so the colour is found and opened by its kanji.\n\nF-247 REBUILT THE COLOUR PAGE TO 06, AND ITS ANCHORS MOVED WITH IT. The provenance card now sits below the readout and is under the fold on a phone, and its rows are gone (ADR-0147), so the page is recognised by the readout heading, the first heading above the fold, and by *Wear It*, in the action bar 06 pins above the tab bar.",
   "steps": [
     {
       "do": "launch",
@@ -52,15 +52,11 @@
     },
     {
       "do": "assertVisible",
-      "key": "detail.provenance"
+      "key": "detail.readout"
     },
     {
       "do": "assertVisible",
-      "key": "prov.source"
-    },
-    {
-      "do": "assertVisible",
-      "key": "detail.coordinates"
+      "key": "detail.wearIt"
     },
     {
       "do": "back"

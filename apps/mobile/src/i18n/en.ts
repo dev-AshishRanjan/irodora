@@ -57,8 +57,7 @@ export const en = {
 
   'atlas.title': 'Colour Atlas',
 
-  // F-181: the colour page's way into the comparison, and the bookmark it draws (F-237).
-  'detail.compareWith': 'Compare this with another colour',
+  // The bookmark the colour page draws in its app bar (F-237, F-247).
   'detail.bookmark': 'Bookmark this colour',
   'compare.title': 'Compare two colours',
   'compare.slotA': 'First colour',
@@ -145,46 +144,38 @@ export const en = {
   'role.neutral': 'Neutral',
   'role.light': 'Light',
   'role.accent': 'Accent',
-  'detail.coordinates': 'Coordinates',
-  'detail.description': 'Description',
-  'detail.contemporary': 'In use today',
-  'detail.fashionUse': 'Worn as',
-  'detail.taxonomy': 'Classification',
-  'detail.provenance': 'Where this colour came from',
-  'detail.relations': 'Related colours',
-  'detail.palettes': 'In these palettes',
-  'detail.colourVision': 'Colour vision',
-  'detail.editorialNotes': 'Editorial notes',
+  // 26's heading for the section names the corpus source and the review; 06's "Cultural Heritage"
+  // presents a 2026 construction as heritage (ADR-0146 D1).
+  'detail.provenance': 'Provenance & Review',
   'detail.notFound': 'That colour is not in this corpus version.',
   'detail.notRecorded': 'Not recorded',
   // 06's pill and provenance card (F-247, ADR-0146): an absent era or season is stated, never blank.
   'detail.era': 'Era',
   'detail.eraNone': 'None',
   'detail.seasonNone': 'Not assigned',
+  'detail.review': 'Editorial Review',
   // The one entry outside sRGB: its hex is the nearest rendering, and the row says by how much (E2).
   'detail.nearestSrgb': 'nearest sRGB rendering',
-  'coord.xyz': 'XYZ (D65)',
+  // 06's app bar: the back control's name (its drawn word is `tab.atlas`), and the two icons'.
+  'detail.backToAtlas': 'Back to Atlas',
+  'detail.shareCard': "Share this colour's card",
+  'detail.export': 'Export this colour',
+  // 06's two other headings; "Color" is the drawing's misspelling (R9 §2).
+  'detail.readout': 'Scientific Colour Space Readout Table',
+  'detail.combinations': 'Wearable Combinations',
+  // Garments, but none that pairs with this colour as a top: 27's card, and the way to add one.
+  'detail.combinationsNone.title': 'Nothing to Pair Yet',
+  'detail.combinationsNone.body':
+    'Add trousers, a skirt or shoes, and the ones that go with this colour as a top appear here.',
+  'detail.combinationsNone.add': 'Add a Garment',
+  // 06's action bar.
+  'detail.wearIt': 'Wear It (Build Outfit)',
+  'detail.holdAsTarget': 'Hold as Target in Lens',
   'coord.lab': 'CIELAB',
   'coord.lch': 'CIELCh',
   'coord.oklch': 'OKLCh',
   'coord.rgb': 'sRGB',
   'coord.displayP3': 'Display-P3',
-  'coord.inGamut': 'Fits inside sRGB',
-  'coord.outOfGamut': 'Outside sRGB — the hex below is the nearest sRGB rendering',
-  'coord.renderDifference': 'Difference to what the screen draws',
-  'prov.source': 'Source',
-  'prov.sourceId': 'Register id',
-  'prov.sourceType': 'Kind of source',
-  'prov.licence': 'Licence',
-  'prov.rightsHolder': 'Rights holder',
-  'prov.publisher': 'Publisher',
-  'prov.publishedYear': 'Published',
-  'prov.url': 'Link',
-  'prov.derivation': 'How this value was obtained',
-  'prov.author': 'Written by',
-  'prov.reviewer': 'Checked by',
-  'prov.reviewedAt': 'Checked on',
-  'prov.independence': 'Review',
   'independence.independent': 'Checked by someone other than the author',
   'independence.self': 'Checked by its own author',
   'sourceType.measurement': 'Measurement',
@@ -192,11 +183,6 @@ export const en = {
   'sourceType.museum-record': 'Museum record',
   'sourceType.editorial': 'Our own editorial work',
   'sourceType.standard': 'Published standard',
-  'rel.related': 'Close in colour',
-  'rel.complementary': 'Opposite in hue',
-  'rel.historicalVariants': 'Historical variants',
-  'rel.none': 'None recorded',
-  'cvd.normal': 'As specified',
   'cvd.protan': 'Red-weak (protan)',
   'cvd.deutan': 'Green-weak (deutan)',
   'cvd.tritan': 'Blue-weak (tritan)',
@@ -250,7 +236,6 @@ export const en = {
   'card.note':
     'Generated on this device from the pinned corpus version. The same colour at the same version gives the same card.',
   'card.export': 'Saving the card to a file arrives with export.',
-  'detail.openCard': 'See its card',
 
   /*
    * F-026 — guided personal colour profile setup (FR-26, FR-30).
@@ -805,7 +790,6 @@ export const en = {
    */
   'target.armed': 'Comparing against',
   'target.disarm': 'Stop comparing',
-  'target.arm': 'Compare against this',
   /*
    * F-201 — AGAINST THE TARGET.
    *

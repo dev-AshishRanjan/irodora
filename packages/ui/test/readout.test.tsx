@@ -12,7 +12,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
-import { nativeNumericFeature, nativeSpacing, nativeType } from '@irodora/design-tokens';
+import {
+  nativeFamilies,
+  nativeNumericFeature,
+  nativeSpacing,
+  nativeType,
+} from '@irodora/design-tokens';
 import {
   READOUT_GRID_INSET,
   READOUT_GRID_PAD,
@@ -224,6 +229,34 @@ describe('each part of a table, by its own id under the caller’s (F-247)', () 
     expect(named(tree)).toStrictEqual(
       rows.map((r) => readoutRowName(r.label, r.value, 'also' in r ? r.also : undefined)),
     );
+  });
+
+  /*
+   * 06's out-of-sRGB hex (F-247, R9 §4 E2): the row says its hex is the nearest rendering, in its
+   * own words and its own script, after the value — never inside the hex's code run — and the row's
+   * name says it too, so a screen reader hears it with the value it qualifies.
+   */
+  it('draws a note after the values, in the row’s script, and says it in the row’s name', () => {
+    const note = 'nearest sRGB rendering, ΔE00 1.23';
+    const tree = draw({
+      form: 'table',
+      rows: [{ key: 'hex', label: 'Hex', value: HEX, note }],
+      script: 'japanese',
+      testID: 't',
+    });
+    const node = nodes(tree).find((n) => n.props['testID'] === 't.hex.note');
+    expect(node?.children).toStrictEqual([note]);
+    expect(flattenStyle(node?.props['style'])['fontFamily']).toBe(nativeFamilies.jp);
+    expect(named(tree)).toStrictEqual([`Hex: hex 5B6B78; ${note}`]);
+    expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
+    // DECOY: without a note the row draws none, and its name ends at its value.
+    const bare = draw({
+      form: 'table',
+      rows: [{ key: 'hex', label: 'Hex', value: HEX }],
+      testID: 't',
+    });
+    expect(nodes(bare).some((n) => n.props['testID'] === 't.hex.note')).toBe(false);
+    expect(named(bare)).toStrictEqual(['Hex: hex 5B6B78']);
   });
 });
 

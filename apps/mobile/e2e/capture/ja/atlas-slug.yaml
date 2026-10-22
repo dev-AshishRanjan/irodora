@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/aki-batake'
-- assertVisible: 'この色の由来'
+- assertVisible: '測色値と表色系'
 - waitForAnimationToEnd
 - takeScreenshot: capture

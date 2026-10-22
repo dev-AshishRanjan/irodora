@@ -87,9 +87,13 @@ const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 const DECLARATIONS = join(ROOT, '.harness', 'verification', 'unreached-tokens.json');
 /**
  * ADR-0121: a MEASURED type step (one the manifest binds to inventory elements) is the size those
- * elements are drawn at, not a step a screen may pick. Only the component that draws them reads it.
+ * elements are drawn at, not a step a screen may pick. Only the surface that draws them reads it: the
+ * lockup's wordmark (`brand.tsx`), and the colour page's hero kanji (`ColourDetail.tsx`, F-247).
  */
-const MEASURED_STEP_READERS = ['packages/ui/src/brand.tsx'];
+const MEASURED_STEP_READERS = [
+  'packages/ui/src/brand.tsx',
+  'apps/mobile/src/screens/ColourDetail.tsx',
+];
 /** ADR-0121's census: off-scale type owed a measured step, each by the feature that builds it. */
 const TYPE_CENSUS = join(ROOT, '.harness', 'verification', 'type-census.json');
 

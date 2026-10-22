@@ -108,6 +108,11 @@ export const SHARE_GLYPH = 23.5;
 export const EXPORT_GLYPH = 22.5;
 /** `06.actions.hold.icon`, the reticle: 21 px (17.0 dp); 16 units. */
 export const HOLD_GLYPH = 23;
+/**
+ * `06.provenance.review`'s seal: inks 15 × 16 px (12.6 dp). A solid glyph has no line to add, and
+ * the scalloped ring spans 17.8 of the grid's 24 units, so 12.6 × 24 ÷ 17.8.
+ */
+export const SEAL_GLYPH = 17;
 
 /* ------------------------------------------------------------------ the names */
 
@@ -171,15 +176,19 @@ const bytesOf = (hex: string): Triple => [
 export function readoutRows(entry: PublishedEntry, t: T, p3: Triple): readonly TableRow[] {
   const { derived } = entry;
   const hex = derived.hex;
+  // In the row's own script, after its value: never inside the hex's code run (E2, F-152's faces).
   const note = derived.inSrgbGamut
-    ? ''
-    : ` · ${t('detail.nearestSrgb')}, ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`;
+    ? {}
+    : {
+        note: `${t('detail.nearestSrgb')}, ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`,
+      };
   const [r, g, b] = bytesOf(hex);
   return [
     {
       key: 'hex',
       label: t('colour.hex'),
-      value: { kind: 'code', text: `${hex}${note}`, spoken: `hex ${hex.slice(1)}${note}` },
+      value: { kind: 'code', text: hex, spoken: `hex ${hex.slice(1)}` },
+      ...note,
     },
     {
       key: 'oklch',

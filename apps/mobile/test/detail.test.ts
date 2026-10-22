@@ -97,18 +97,19 @@ describe('the readout is the record’s derivation, and P3 the engine’s conver
   it('says the one entry outside sRGB is shown at its nearest rendering, and by how much', () => {
     const outside = ENTRIES.filter((e) => !e.derived.inSrgbGamut);
     expect(outside).toHaveLength(1);
-    const text = valueText(row(outside[0]!, 'hex').value);
-    expect(text).toContain(t('detail.nearestSrgb'));
-    expect(text).toContain(outside[0]!.derived.renderDeltaE00.toFixed(2));
+    const hex = row(outside[0]!, 'hex');
+    expect(hex.note).toContain(t('detail.nearestSrgb'));
+    expect(hex.note).toContain(outside[0]!.derived.renderDeltaE00.toFixed(2));
+    // The note is the row's own words, never inside the hex's code run: that run is set in the Latin
+    // face, and the note in Japanese would not be (F-152).
+    expect(valueText(hex.value)).toBe(outside[0]!.derived.hex);
     // DECOY: an entry inside sRGB says nothing of the kind.
     expect(
-      valueText(
-        row(
-          ENTRIES.find((e) => e.derived.inSrgbGamut)!,
-          'hex',
-        ).value,
-      ),
-    ).not.toContain(t('detail.nearestSrgb'));
+      row(
+        ENTRIES.find((e) => e.derived.inSrgbGamut)!,
+        'hex',
+      ).note,
+    ).toBeUndefined();
   });
 });
 
@@ -181,7 +182,19 @@ describe('the provenance card says the record’s classification, source and che
       'detail.era',
       'detail.eraNone',
       'detail.seasonNone',
+      'detail.review',
       'detail.nearestSrgb',
+      'detail.backToAtlas',
+      'detail.shareCard',
+      'detail.export',
+      'detail.readout',
+      'detail.provenance',
+      'detail.combinations',
+      'detail.combinationsNone.title',
+      'detail.combinationsNone.body',
+      'detail.combinationsNone.add',
+      'detail.wearIt',
+      'detail.holdAsTarget',
     ];
     const claims = /伝統|Traditional|Heritage|Historical|Verified|承認済み/u;
     for (const key of keys)
