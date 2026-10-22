@@ -127,8 +127,15 @@ export function valueSpoken(value: ReadoutValue): string {
   return value.kind === 'code' ? value.spoken : figuresName(value.parts.map((p) => p.figure));
 }
 
-/** A row's whole name: its label and every value's spoken name. */
-function rowName(label: string, value: ReadoutValue, also?: TableRow['also']): string {
+/**
+ * A row's whole name: its label and every value's spoken name. Exported so a screen's test can find
+ * a row by the name a screen reader hears (F-247).
+ */
+export function readoutRowName(
+  label: string,
+  value: ReadoutValue,
+  also?: TableRow['also'],
+): string {
   const first = `${label}: ${valueSpoken(value)}`;
   return also === undefined ? first : `${first}; ${also.label}: ${valueSpoken(also.value)}`;
 }
@@ -137,6 +144,14 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
   const { colors } = useTheme();
   const script = props.script ?? 'latin';
   const id = props.testID === undefined ? {} : { testID: props.testID };
+  /*
+   * EACH PART BY ITS OWN ID, under the caller's (F-247): a row's label and value, the column rule's
+   * cell, the bar and the second value's two runs. An inventory records each as an element, and a
+   * sweep finds a part by what it draws — a bordered cell or a run of text — not by the table's id
+   * alone. Without a `testID` no part carries one.
+   */
+  const part = (key: string, name: string): { testID?: string } =>
+    props.testID === undefined ? {} : { testID: `${props.testID}.${key}.${name}` };
 
   if (props.form === 'table')
     return (
@@ -154,7 +169,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
             key={row.key}
             accessible
             accessibilityRole="text"
-            accessibilityLabel={rowName(row.label, row.value, row.also)}
+            accessibilityLabel={readoutRowName(row.label, row.value, row.also)}
             style={{
               flexDirection: 'row',
               minHeight: READOUT_ROW,
@@ -162,6 +177,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
             }}
           >
             <View
+              {...part(row.key, 'divider')}
               style={{
                 width: READOUT_LABEL,
                 paddingHorizontal: READOUT_INSET,
@@ -170,7 +186,13 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                 borderRightColor: colors.border,
               }}
             >
-              <Text size="label" weight={500} color="foreground" script={script}>
+              <Text
+                size="label"
+                weight={500}
+                color="foreground"
+                script={script}
+                {...part(row.key, 'label')}
+              >
                 {row.label}
               </Text>
             </View>
@@ -184,20 +206,33 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                 paddingHorizontal: READOUT_INSET,
               }}
             >
-              <Text size="label" color="foreground" numeric selectable>
+              <Text size="label" color="foreground" numeric selectable {...part(row.key, 'value')}>
                 {valueText(row.value)}
               </Text>
               {row.also === undefined ? null : (
                 <>
                   <View
+                    {...part(row.key, 'bar')}
                     style={{
                       width: READOUT_RULE,
                       height: READOUT_BAR,
                       backgroundColor: colors.border,
                     }}
                   />
-                  <Text size="label" color="foreground" numeric selectable>
-                    <Text size="label" weight={500} color="foreground" script={script}>
+                  <Text
+                    size="label"
+                    color="foreground"
+                    numeric
+                    selectable
+                    {...part(row.key, 'also.value')}
+                  >
+                    <Text
+                      size="label"
+                      weight={500}
+                      color="foreground"
+                      script={script}
+                      {...part(row.key, 'also.label')}
+                    >
                       {`${row.also.label} `}
                     </Text>
                     {valueText(row.also.value)}
@@ -219,7 +254,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
             key={row.key}
             accessible
             accessibilityRole="text"
-            accessibilityLabel={`${rowName(row.label, row.value)}${
+            accessibilityLabel={`${readoutRowName(row.label, row.value)}${
               row.reading === undefined ? '' : `, ${row.reading}`
             }${row.note === undefined ? '' : `, ${row.note}`}`}
             style={{
@@ -284,7 +319,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
         : {
             accessible: true,
             accessibilityRole: 'text' as const,
-            accessibilityLabel: rowName(row.label, row.value),
+            accessibilityLabel: readoutRowName(row.label, row.value),
           })}
       style={{
         flex: 1,

@@ -94,15 +94,6 @@
       "permanentBecause": "No governing mockup draws link text. Re-read this the first time one does."
     },
     {
-      "group": "binding",
-      "tokens": [
-        "nativeArtCardOpacity"
-      ],
-      "cites": "F-247, ADR-0149",
-      "why": "06's card art opacity, minted in F-247's increment 2 and read by Illustration's tone=\"card\" from its increment 3: declared for the one commit between the token and its reader, so each increment stays green.",
-      "closedBy": "F-247"
-    },
-    {
       "group": "colour token",
       "tokens": [
         "glyph.seal"

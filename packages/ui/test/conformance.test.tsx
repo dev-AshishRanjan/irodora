@@ -771,6 +771,13 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) => draw(<Illustration name="plum-branch" tone="backdrop" />, theme),
   },
   {
+    // 06's provenance branch behind a card's text, in foreground at the card opacity (F-247, ADR-0149).
+    name: 'Illustration (card tone)',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(<Illustration name="plum-branch" color="foreground" tone="card" width={187} />, theme),
+  },
+  {
     name: 'Illustration (the empty wardrobe)',
     kind: 'static',
     render: (_state, theme) => draw(<Illustration name="hanger" width={96} />, theme),
@@ -1196,6 +1203,16 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         'Chip (badge, tinted)',
         { label: 'ΔE00 1.8', tint: { hex: '#526A6B', color: SAMPLE }, radius: 'sm', numeric: true },
+      ],
+      // 06's Family • Era • Season pill (F-247): its drawn height a minimum, so its words wrap.
+      [
+        'Chip (badge, wrapped)',
+        {
+          label: 'Family: Ao (Blue) • Era: None • Season: Not assigned',
+          fill: 'surface.2',
+          height: 22,
+          wrap: true,
+        },
       ],
     ] as const
   ).map(([name, form]): ConformanceSubject => ({
@@ -2815,6 +2832,35 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           height: 69.5,
           inset: 16,
           gap: 4,
+        },
+      ],
+      [
+        '06 (the back word, a toggle and two actions, their targets inside the bar, a rule)',
+        {
+          back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
+          trailing: {
+            targetRoom: true,
+            icons: [
+              {
+                glyph: 'bookmark',
+                label: 'Bookmark this colour',
+                selected: true,
+                size: 18,
+                onPress: () => undefined,
+              },
+              {
+                glyph: 'share',
+                label: 'Share this colour’s card',
+                size: 19,
+                onPress: () => undefined,
+              },
+              { glyph: 'export', label: 'Export this colour', size: 18, onPress: () => undefined },
+            ],
+          },
+          rule: true,
+          height: 57.5,
+          inset: 16,
+          gap: 16,
         },
       ],
       [

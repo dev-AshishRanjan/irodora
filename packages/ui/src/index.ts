@@ -182,6 +182,7 @@ export {
   READOUT_RULED_LABEL,
   READOUT_RULED_PAD,
   ReadoutTable,
+  readoutRowName,
   valueSpoken,
   valueText,
   type GridRow,

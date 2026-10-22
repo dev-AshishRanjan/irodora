@@ -23,6 +23,7 @@ import {
   READOUT_RULED_LABEL,
   READOUT_RULED_PAD,
   ReadoutTable,
+  readoutRowName,
   ThemeProvider,
   valueSpoken,
   valueText,
@@ -181,6 +182,50 @@ const named = (tree: TestNode): readonly string[] =>
   nodes(tree)
     .filter((n) => n.props['accessible'] === true)
     .map((n) => String(n.props['accessibilityLabel']));
+
+describe('each part of a table, by its own id under the caller’s (F-247)', () => {
+  const rows = [
+    { key: 'hex', label: 'Hex', value: HEX },
+    { key: 'srgb', label: 'sRGB', value: LAB, also: { label: 'Display-P3:', value: OKLCH } },
+  ] as const;
+  const ids = (tree: TestNode): readonly string[] =>
+    nodes(tree)
+      .map((n) => n.props['testID'])
+      .filter((id): id is string => typeof id === 'string');
+
+  it('names each label, value, column cell, bar and the second value’s two runs', () => {
+    const tree = draw({ form: 'table', rows, testID: 't' });
+    expect([...ids(tree)].sort()).toStrictEqual(
+      [
+        't',
+        't.hex.divider',
+        't.hex.label',
+        't.hex.value',
+        't.srgb.divider',
+        't.srgb.label',
+        't.srgb.value',
+        't.srgb.bar',
+        't.srgb.also.value',
+        't.srgb.also.label',
+      ].sort(),
+    );
+    // Each id lands on what it names: the second value's label run is inside its value run.
+    const byId = (id: string) => nodes(tree).find((n) => n.props['testID'] === id);
+    expect(nodes(byId('t.srgb.also.value')!).includes(byId('t.srgb.also.label')!)).toBe(true);
+    expect(flattenStyle(byId('t.hex.divider')?.props['style'])['borderRightWidth']).toBe(1);
+  });
+
+  it('DECOY — without a testID no part carries one', () => {
+    expect(ids(draw({ form: 'table', rows }))).toStrictEqual([]);
+  });
+
+  it('names a row exactly as a screen reader hears it', () => {
+    const tree = draw({ form: 'table', rows });
+    expect(named(tree)).toStrictEqual(
+      rows.map((r) => readoutRowName(r.label, r.value, 'also' in r ? r.also : undefined)),
+    );
+  });
+});
 
 describe('each row is one accessible element, and every figure is tabular', () => {
   it('table: the label, the value, and the second value after the bar', () => {

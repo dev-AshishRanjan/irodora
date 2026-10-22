@@ -14,7 +14,12 @@ import { join } from 'node:path';
 import { type ReactElement, type ReactNode } from 'react';
 import { render } from '@testing-library/react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
-import { nativeArtOpacity, nativeArtStroke, nativeColors } from '@irodora/design-tokens';
+import {
+  nativeArtCardOpacity,
+  nativeArtOpacity,
+  nativeArtStroke,
+  nativeColors,
+} from '@irodora/design-tokens';
 import {
   DRAWN_ILLUSTRATIONS,
   Illustration,
@@ -262,6 +267,16 @@ describe('27’s hanger, the one tinted drawing', () => {
     expect(inks).toStrictEqual(new Set([dark.foreground]));
     // DECOY: the default ink is not foreground, so the set above is the prop's doing.
     expect(dark['foreground.3']).not.toBe(dark.foreground);
+  });
+
+  it('inks a card’s art in foreground at the declared card opacity (F-247, ADR-0149)', () => {
+    const tree = draw(<Illustration name="plum-branch" color="foreground" tone="card" />);
+    expect(tree.UNSAFE_getByType(Svg).props['opacity']).toBe(nativeArtCardOpacity);
+    expect(nativeArtCardOpacity).toBe(0.31);
+    // DECOY: the backdrop keeps its own 0.15, so the card tone is not the backdrop's number again.
+    const backdrop = draw(<Illustration name="plum-branch" color="foreground" tone="backdrop" />);
+    expect(backdrop.UNSAFE_getByType(Svg).props['opacity']).toBe(nativeArtOpacity);
+    expect(nativeArtCardOpacity).not.toBe(nativeArtOpacity);
   });
 });
 

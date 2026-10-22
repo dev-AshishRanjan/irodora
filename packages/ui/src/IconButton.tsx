@@ -79,11 +79,14 @@ export type IconButtonProps = Omit<
       }
   );
 
+/** The glyph's drawn size where a surface names none, in dp. */
+export const ICON_BUTTON_SIZE = 24;
+
 export function IconButton({
   name,
   label,
   color = 'foreground',
-  size = 24,
+  size = ICON_BUTTON_SIZE,
   filled,
   selected,
   disabled = false,

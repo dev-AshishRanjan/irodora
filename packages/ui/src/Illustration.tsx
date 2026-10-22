@@ -67,7 +67,7 @@
 import { Fragment } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { nativeArtOpacity, nativeArtStroke } from '@irodora/design-tokens';
+import { nativeArtCardOpacity, nativeArtOpacity, nativeArtStroke } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
 
 /**
@@ -580,9 +580,11 @@ interface IllustrationBase {
    * How strongly it is inked (F-229's measurement).
    *
    * `figure` — the drawing is the content, at full strength. `backdrop` — it sits behind the
-   * content at the declared `opacity.art`, which is what 21 of the 33 drawn elements do.
+   * content at the declared `opacity.art`, which is what 21 of the 33 drawn elements do. `card` — it
+   * sits behind a card's text at the declared `opacity.artCard`, twice the backdrop's ink, as `06`
+   * draws its provenance branch (F-247, ADR-0149).
    */
-  readonly tone?: 'figure' | 'backdrop';
+  readonly tone?: 'figure' | 'backdrop' | 'card';
   /**
    * The line's width on screen, in dp, where a surface binds its drawing's own: `27`'s hanger
    * draws 2 dp (F-236). Everything else leaves it out and keeps `size.artStroke`.
@@ -608,13 +610,14 @@ interface QuietIllustration extends IllustrationBase {
 /**
  * The drawing behind a screen's content in `foreground`, at the declared `opacity.art` (F-242):
  * R9 §5 measures the backdrop art as *the `foreground` token at a declared opacity*, 0.15 of it,
- * and `01`'s plum branches are drawn so. Only as a backdrop: in `foreground` at full strength a
- * drawing is as loud as the sentence beside it, which the type above refuses.
+ * and `01`'s plum branches are drawn so — or behind a card's text at `opacity.artCard`, 0.31, as
+ * `06`'s provenance branch is (F-247). Only so: in `foreground` at full strength a drawing is as
+ * loud as the sentence beside it, which the type above refuses.
  */
 interface BackdropIllustration extends IllustrationBase {
   readonly name: IllustrationName;
   readonly color: 'foreground';
-  readonly tone: 'backdrop';
+  readonly tone: 'backdrop' | 'card';
   readonly tint?: never;
 }
 
@@ -675,7 +678,9 @@ export function Illustration(props: IllustrationProps): React.JSX.Element {
         height={height}
         viewBox={`0 0 ${String(boxWidth)} ${String(boxHeight)}`}
         fill="none"
-        opacity={tone === 'backdrop' ? nativeArtOpacity : 1}
+        opacity={
+          tone === 'backdrop' ? nativeArtOpacity : tone === 'card' ? nativeArtCardOpacity : 1
+        }
         accessible={false}
       >
         {draw(pen)}

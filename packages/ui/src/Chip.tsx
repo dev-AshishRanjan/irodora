@@ -156,6 +156,13 @@ interface ChipBadgeBase {
   readonly radius?: 'sm' | 'pill';
   /** The drawn height in dp: the element's own `dp.h`. Defaults to {@link BADGE_HEIGHT}. */
   readonly height?: number;
+  /**
+   * The words may wrap (F-247): the drawn height becomes a minimum and the badge no wider than the
+   * row it sits in. `06`'s *Family • Era • Season* pill holds more than one line on a narrow phone
+   * or in Japanese, and a line that does not fit wraps; it is never clipped (R9 §4 E3). Without it the
+   * badge is one line at its drawn height, as every other badge is drawn.
+   */
+  readonly wrap?: true;
   readonly script?: Script;
   readonly testID?: string;
 }
@@ -203,6 +210,7 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
     tint,
     radius = 'pill',
     height = BADGE_HEIGHT,
+    wrap,
     script = 'latin',
     testID,
   } = props;
@@ -211,6 +219,23 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
   // on the declared palette and sample, then painted (F-240, ADR-0131 §3).
   const ink = tint === undefined ? 'foreground' : inkOnSample(tint.hex, source).ink;
   const outlined = edge || (fill === undefined && tint === undefined);
+  const lines = wrap === true ? {} : { numberOfLines: 1 };
+  const words =
+    props.mono === true ? (
+      <Text face="mono" size={MONO_STEP} color={ink} script={script} {...lines}>
+        {label}
+      </Text>
+    ) : (
+      <Text
+        size={props.size ?? 'label'}
+        color={ink}
+        script={script}
+        numeric={props.numeric ?? false}
+        {...lines}
+      >
+        {label}
+      </Text>
+    );
   return (
     <View
       testID={testID}
@@ -219,7 +244,7 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
       accessibilityRole="text"
       accessibilityLabel={name ?? label}
       style={{
-        height,
+        ...(wrap === true ? { minHeight: height, maxWidth: '100%' as const } : { height }),
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'flex-start',
@@ -240,21 +265,8 @@ function Badge(props: ChipBadgeProps): React.JSX.Element {
           spectrum={glyphSpectrum(icon, colors)}
         />
       )}
-      {props.mono === true ? (
-        <Text face="mono" size={MONO_STEP} color={ink} script={script} numberOfLines={1}>
-          {label}
-        </Text>
-      ) : (
-        <Text
-          size={props.size ?? 'label'}
-          color={ink}
-          script={script}
-          numeric={props.numeric ?? false}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      )}
+      {/* With `wrap`, the words take the room left beside the glyph and wrap within it. */}
+      {wrap === true ? <View style={{ flexShrink: 1 }}>{words}</View> : words}
     </View>
   );
 }

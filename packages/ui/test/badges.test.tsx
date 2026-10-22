@@ -117,6 +117,33 @@ describe('the badges', () => {
     expect(style['height']).toBe(BADGE_HEIGHT);
   });
 
+  it('wraps its words when told: the drawn height a minimum, no wider than its row (06, F-247)', () => {
+    const words = 'Family: Ao (Blue) • Era: None • Season: Not assigned';
+    render(
+      <ThemeProvider theme="dark">
+        <Chip form="badge" label={words} fill="surface.2" height={22} wrap testID="w" />
+      </ThemeProvider>,
+    );
+    const style = styleOf('w');
+    expect([style['minHeight'], style['height'], style['maxWidth']]).toStrictEqual([
+      22,
+      undefined,
+      '100%',
+    ]);
+    expect(screen.getByText(words).props['numberOfLines']).toBeUndefined();
+  });
+
+  it('DECOY — without wrap a badge is one line at its drawn height', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Chip form="badge" label="Daylight" fill="surface.2" height={22} testID="d" />
+      </ThemeProvider>,
+    );
+    const style = styleOf('d');
+    expect([style['height'], style['minHeight']]).toStrictEqual([22, undefined]);
+    expect(screen.getByText('Daylight').props['numberOfLines']).toBe(1);
+  });
+
   it('draws a surface.2 fill and no edge (05, 12), and both on 21', () => {
     render(
       <ThemeProvider theme="dark">

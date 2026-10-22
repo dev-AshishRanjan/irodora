@@ -42,9 +42,10 @@ import { View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { Mark, type MarkProps } from './brand.js';
 import { Button, type ButtonProps } from './Button.js';
-import type { GlyphName } from './Glyph.js';
+import type { FillableGlyph, GlyphName } from './Glyph.js';
 import { Bilingual } from './bilingual.js';
-import { IconButton } from './IconButton.js';
+import { platformTapTarget } from './hitArea.js';
+import { ICON_BUTTON_SIZE, IconButton } from './IconButton.js';
 import type { Script } from './layout.js';
 import { Text, type TextWeight, type TypeSize } from './Text.js';
 import { useTheme } from './theme.js';
@@ -113,16 +114,22 @@ export interface AppBarBack {
   readonly testID?: string;
 }
 
-/** A trailing icon: a glyph, what it does, and its drawn size. */
-export interface AppBarIcon {
-  readonly glyph: GlyphName;
+/**
+ * A trailing icon: a glyph, what it does, and its drawn size — or a toggle (F-247): `06`'s bookmark
+ * moves from the platform header into the bar, and on is the glyph filled and an announced selected
+ * state, from one prop (ADR-0135 D2). Only a glyph with a filled drawing can be one.
+ */
+export type AppBarIcon = {
   readonly label: string;
   readonly onPress: () => void;
   /** The glyph's size in dp: the element's own. */
   readonly size?: number;
   readonly color?: 'foreground' | 'foreground.2';
   readonly testID?: string;
-}
+} & (
+  | { readonly glyph: GlyphName; readonly selected?: never }
+  | { readonly glyph: FillableGlyph; readonly selected: boolean }
+);
 
 /** A labelled button: the forms `Button` draws with a word. */
 type LabelledButton = Exclude<ButtonProps, { readonly icon: GlyphName }>;
@@ -134,6 +141,14 @@ export type AppBarTrailing =
         | readonly [AppBarIcon]
         | readonly [AppBarIcon, AppBarIcon]
         | readonly [AppBarIcon, AppBarIcon, AppBarIcon];
+      /**
+       * Keep each icon's whole target inside the bar (F-247). Android delivers no touch past a parent's
+       * bounds, so an icon's hit area beyond a row as tall as the icon is lost there (ADR-0114, F-237's
+       * S3). With it, the icons' row is the platform's target tall and widened by the hit area at each
+       * end, given back by an equal negative margin: nothing drawn moves. `06` draws three icons at a
+       * 33 dp pitch, so neighbouring targets still overlap between them — F-305's case.
+       */
+      readonly targetRoom?: true;
       readonly button?: never;
       readonly mark?: never;
     }
@@ -361,22 +376,39 @@ function TrailingControls({
   readonly trailing: AppBarTrailing;
   readonly gap: number;
 }): React.JSX.Element {
-  if (trailing.icons !== undefined)
+  if (trailing.icons !== undefined) {
+    /*
+     * THE TARGET'S ROOM (F-247): the row is the platform's target tall, and widened at each end by the
+     * widest hit area an icon in it reaches past its glyph, then given back, so the drawing stays put.
+     */
+    const target = platformTapTarget();
+    const reach = Math.max(
+      0,
+      ...trailing.icons.map((icon) => (target - (icon.size ?? ICON_BUTTON_SIZE)) / 2),
+    );
+    const room =
+      trailing.targetRoom === true
+        ? { minHeight: target, paddingHorizontal: reach, marginHorizontal: -reach }
+        : {};
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap }}>
-        {trailing.icons.map((icon) => (
-          <IconButton
-            key={icon.label}
-            name={icon.glyph}
-            label={icon.label}
-            onPress={icon.onPress}
-            {...(icon.size === undefined ? {} : { size: icon.size })}
-            {...(icon.color === undefined ? {} : { color: icon.color })}
-            {...(icon.testID === undefined ? {} : { testID: icon.testID })}
-          />
-        ))}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap, ...room }}>
+        {trailing.icons.map((icon) => {
+          const common = {
+            label: icon.label,
+            onPress: icon.onPress,
+            ...(icon.size === undefined ? {} : { size: icon.size }),
+            ...(icon.color === undefined ? {} : { color: icon.color }),
+            ...(icon.testID === undefined ? {} : { testID: icon.testID }),
+          };
+          return icon.selected === undefined ? (
+            <IconButton key={icon.label} name={icon.glyph} {...common} />
+          ) : (
+            <IconButton key={icon.label} name={icon.glyph} selected={icon.selected} {...common} />
+          );
+        })}
       </View>
     );
+  }
   if (trailing.button !== undefined) return <Button {...trailing.button} />;
   return <Mark {...trailing.mark} />;
 }

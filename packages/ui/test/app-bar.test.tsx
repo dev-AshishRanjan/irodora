@@ -15,7 +15,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeColors, nativeFamilies, nativeSpacing } from '@irodora/design-tokens';
 import {
@@ -25,9 +25,12 @@ import {
   APP_BAR_RULE,
   APP_BAR_RULE_TEST_ID,
   APP_BAR_STACKED,
+  IconButton,
+  platformTapTarget,
   Screen,
   Text,
   ThemeProvider,
+  type AppBarIcon,
   type AppBarProps,
 } from '../src/index.js';
 import { flattenStyle, type TestNode } from '../src/testing/index.js';
@@ -402,5 +405,88 @@ describe('Screen pins it above the scroller, and the inset moves into it (E-084)
             .find((n) => n !== undefined);
     const ground = find(root);
     expect(ground === undefined ? [] : idsOf(ground)).toStrictEqual(['bar', 'page']);
+  });
+});
+
+describe('06’s trailing icons (F-247)', () => {
+  const icons = (selected: boolean, targetRoom?: true): AppBarProps => ({
+    back: { glyph: 'back', label: 'Atlas', name: 'Back to Atlas', onPress: () => undefined },
+    trailing: {
+      ...(targetRoom === undefined ? {} : { targetRoom }),
+      icons: [
+        {
+          glyph: 'bookmark',
+          label: 'Bookmark this colour',
+          selected,
+          size: 18,
+          onPress: () => undefined,
+        },
+        { glyph: 'share', label: 'Share this colour’s card', size: 19, onPress: () => undefined },
+        { glyph: 'export', label: 'Export this colour', size: 18, onPress: () => undefined },
+      ],
+    },
+  });
+
+  it('draws a toggle filled and announces it selected, from one prop (ADR-0135 D2)', () => {
+    draw(<AppBar {...icons(true)} />);
+    const on = screen.getByRole('button', { name: 'Bookmark this colour' });
+    expect(on.props['accessibilityState']).toMatchObject({ selected: true });
+    const glyph = screen.UNSAFE_getAllByType(IconButton)[0];
+    expect(glyph?.props['selected']).toBe(true);
+    // DECOY: an action that is not a toggle announces no selected state at all.
+    const share = screen.getByRole('button', { name: 'Share this colour’s card' });
+    expect((share.props['accessibilityState'] as { selected?: boolean }).selected).toBeUndefined();
+  });
+
+  it('DECOY — off is announced as not selected, and a glyph with no filled drawing cannot be a toggle', () => {
+    draw(<AppBar {...icons(false)} />);
+    expect(
+      screen.getByRole('button', { name: 'Bookmark this colour' }).props['accessibilityState'],
+    ).toMatchObject({ selected: false });
+    // @ts-expect-error — share has no filled drawing, so it cannot be a toggle (rule 13).
+    const share: AppBarIcon = { glyph: 'share', label: 'S', selected: true, onPress: () => 0 };
+    expect(share.glyph).toBe('share');
+  });
+
+  /** The icons' row: the nearest view above the first icon that lays them out in a row. */
+  const rowStyle = (): Record<string, unknown> => {
+    const first = screen.UNSAFE_getAllByType(IconButton)[0];
+    for (let n = first?.parent ?? null; n !== null; n = n.parent) {
+      const style = flattenStyle(n.props['style']);
+      if (style['flexDirection'] === 'row') return style;
+    }
+    return {};
+  };
+
+  it.each(['ios', 'android'] as const)(
+    'keeps each icon’s whole target inside the bar on %s, nothing drawn moving',
+    (os) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        draw(<AppBar {...icons(false, true)} />);
+        const target = platformTapTarget(os);
+        // The widest reach is the smallest glyph's: (target − 18) / 2.
+        const reach = (target - 18) / 2;
+        expect(rowStyle()).toMatchObject({
+          minHeight: target,
+          paddingHorizontal: reach,
+          marginHorizontal: -reach,
+        });
+        // Each icon's own hit area lies within the row's room: its slop never reaches past the padding.
+        for (const icon of screen.UNSAFE_getAllByType(IconButton)) {
+          const size = Number(icon.props['size']);
+          expect((target - size) / 2).toBeLessThanOrEqual(reach);
+        }
+      } finally {
+        replaced.restore();
+      }
+    },
+  );
+
+  it('DECOY — without targetRoom the row is as tall as its icons, with no room around them', () => {
+    draw(<AppBar {...icons(false)} />);
+    const style = rowStyle();
+    expect(style['minHeight']).toBeUndefined();
+    expect(style['paddingHorizontal']).toBeUndefined();
   });
 });
