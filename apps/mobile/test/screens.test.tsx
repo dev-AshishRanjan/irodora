@@ -44,6 +44,7 @@ import {
   EmptyState,
   Glyph,
   Illustration,
+  readoutRowName,
   STATE_TEST_IDS,
   TAB_INDICATOR_TEST_ID,
   TabBar,
@@ -93,6 +94,8 @@ import {
   STATES as COLOUR_DETAIL_STATES,
 } from '../src/screens/ColourDetail';
 import {
+  combinationCaption,
+  nameLine,
   provenanceBody,
   provenanceLead,
   readoutRows,
@@ -185,7 +188,7 @@ import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@
 import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
-import { isMessageKey, t, type MessageKey } from '../src/i18n/index';
+import { isMessageKey, t, type Locale, type MessageKey } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
 import {
@@ -861,6 +864,64 @@ function DetailPage(props: Partial<ColourDetailProps>): React.JSX.Element {
       {...props}
     />
   );
+}
+
+/**
+ * 06's elements, as the colour page draws them (F-247). A rule, the stacked layer, the cards and a
+ * table's parts are found by their own ids; the words are the entry's, through the page's own
+ * functions, in each locale. Everything else — the glyphs, the plum branch, the catalogue's words,
+ * the AppBar, the ReadoutTable and the ActionBar — is found by what its own record implies.
+ */
+function detailLocators(): Readonly<Record<string, Locator>> {
+  const say = (locale: Locale) => (key: MessageKey) => message(locale, key);
+  const scriptOf = (locale: Locale) => (locale === 'ja' ? 'japanese' : 'latin');
+  const rows = (locale: Locale) =>
+    readoutRows(DETAIL, say(locale), displayP3Of(DETAIL.entry.color.xyz));
+  const table = 'detail.readout.table';
+  const combos = wearableCombinations(DETAIL, DETAIL_WARDROBE, DETAIL_RANKING);
+  const out: Record<string, Locator> = {
+    '06.header-rule': { by: 'testID', id: APP_BAR_RULE_TEST_ID },
+    '06.swatch.stack': { by: 'testID', id: 'detail.stack' },
+    '06.kanji': { by: 'value', text: () => DETAIL.entry.name.kanji },
+    '06.kana': { by: 'value', text: () => DETAIL.entry.name.kana },
+    '06.name': { by: 'value', text: () => nameLine(DETAIL) },
+    '06.taxonomy': {
+      by: 'value',
+      text: (locale) => taxonomyLine(DETAIL, say(locale), scriptOf(locale)),
+    },
+    '06.readout': { by: 'testID', id: 'detail.readout' },
+    // The column rule is the label cell's edge, drawn by every row: the first row's is the element.
+    '06.readout.table.divider': { by: 'testID', id: `${table}.hex.divider` },
+    '06.readout.table.srgb.separator': { by: 'testID', id: `${table}.srgb.bar` },
+    '06.readout.table.srgb.p3-label': { by: 'testID', id: `${table}.srgb.also.label` },
+    '06.readout.table.srgb.p3-value': { by: 'testID', id: `${table}.srgb.also.value` },
+    '06.provenance': { by: 'testID', id: 'detail.provenance' },
+    // One paragraph: the classification's bold run, then the source, its type and its licence.
+    '06.provenance.body': {
+      by: 'value',
+      text: (locale) =>
+        `${provenanceLead(DETAIL, say(locale))}${locale === 'ja' ? '：' : ': '}${provenanceBody(DETAIL, say(locale))}`,
+    },
+    '06.combinations': { by: 'testID', id: 'detail.combinations' },
+  };
+  for (const key of ['hex', 'oklch', 'cielab', 'srgb'] as const) {
+    // A row is one named group: found by its accessible name, which says every value in it.
+    out[`06.readout.table.${key}`] = {
+      by: 'value',
+      text: (locale) => {
+        const row = rows(locale).find((r) => r.key === key)!;
+        return readoutRowName(row.label, row.value, row.also, row.note);
+      },
+    };
+    out[`06.readout.table.${key}.value`] = { by: 'testID', id: `${table}.${key}.value` };
+  }
+  for (const c of combos) {
+    const n = String(c.rank);
+    out[`06.combinations.item-${n}.photo`] = { by: 'testID', id: `detail.combination.${n}.photo` };
+    out[`06.combinations.item-${n}.rank`] = { by: 'testID', id: `detail.combination.${n}.rank` };
+    out[`06.combinations.item-${n}.caption`] = { by: 'value', text: () => combinationCaption(c) };
+  }
+  return out;
 }
 
 /** Every slot filled, the top locked: an outfit the Lab can save (F-238). */
@@ -5737,6 +5798,24 @@ const ENROLLED: readonly Enrolled[] = [
     superseded: { '05.tabs.compass.icon': 'C1', '05.tabs.search.icon': 'C1' },
   },
   {
+    /*
+     * 06, THE COLOUR PAGE (F-247), drawn whole: every drawn action wired, a season on its pill, and
+     * three of the person's garments, the first photographed. In Japanese it is 06's layout in 26's
+     * words (P2; inventory-surfaces.json), so the same elements are found in both locales. 06 draws
+     * no tab bar, so nothing is superseded.
+     */
+    surface: '06.screen',
+    root: 'detail.surface',
+    render: (theme) =>
+      draw(
+        <View testID="detail.surface">
+          <DetailPage />
+        </View>,
+        theme,
+      ),
+    locators: detailLocators(),
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -5933,6 +6012,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       for (const surface of [
         '01.screen',
         '05.screen',
+        '06.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -6104,6 +6184,20 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       expectOnly(
         findingsFor('05.screen', without(json, 'atlas.family.ao.dot'), live),
         '05.filters.family.ao.dot',
+      );
+    });
+
+    it('06: the stacked layer, the readout’s bar and a garment’s caption are each found as themselves (F-247)', () => {
+      const { json, live } = drawnAs('06.screen');
+      expectOnly(findingsFor('06.screen', without(json, 'detail.stack'), live), '06.swatch.stack');
+      expectOnly(
+        findingsFor('06.screen', without(json, 'detail.readout.table.srgb.bar'), live),
+        '06.readout.table.srgb.separator',
+      );
+      const second = wearableCombinations(DETAIL, DETAIL_WARDROBE, DETAIL_RANKING)[1]!;
+      expectOnly(
+        findingsFor('06.screen', withoutText(json, combinationCaption(second)), live),
+        '06.combinations.item-2.caption',
       );
     });
 

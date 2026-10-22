@@ -3,6 +3,7 @@
   "enrolled": [
     "01.screen",
     "05.screen",
+    "06.screen",
     "14.splash",
     "27.wardrobe-empty",
     "27.lens-working",
@@ -13,6 +14,6 @@
     "00.board": "The vocabulary board: it governs words, parts and type (P3), and draws no screen a route renders.",
     "14.icon": "The launcher icon: an asset, held by generate-brand-assets --check and gate 16, not a screen.",
     "25.screen": "The light palette over 01 (P2): its layout is 01's, built by F-242 and swept as 01.screen in both palettes, Washi among them.",
-    "26.screen": "Japanese over 06 (P2): its layout is 06's, built and enrolled by F-247."
+    "26.screen": "Japanese over 06 (P2): built by F-247 and swept as 06.screen in Japanese; 26’s three headings are the ja catalogue’s words."
   }
 }
