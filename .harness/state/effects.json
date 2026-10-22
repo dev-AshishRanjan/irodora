@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-21",
+  "updated": "2026-10-22",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -593,7 +593,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue. F-246: the Atlas’s catalogue changed — 05’s ten keys in (atlas.titleJa, compare, finder, searchPlaceholder, family, heading, moreFilters and the facets sheet’s three names), the old screen’s six out (unused keys fail i18n.test), atlas.palettes re-valued to Palettes and the ja atlas.title to 色図鑑; the /atlas capture anchor moved from atlas.title (now one line holding both scripts, which a Maestro text selector cannot match by its English alone) to atlas.family, and the journey opens a colour by its kanji (a card prints no English). generate-e2e-flows --check resolves both.",
+      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue. F-246: the Atlas’s catalogue changed — 05’s ten keys in (atlas.titleJa, compare, finder, searchPlaceholder, family, heading, moreFilters and the facets sheet’s three names), the old screen’s six out (unused keys fail i18n.test), atlas.palettes re-valued to Palettes and the ja atlas.title to 色図鑑; the /atlas capture anchor moved from atlas.title (now one line holding both scripts, which a Maestro text selector cannot match by its English alone) to atlas.family, and the journey opens a colour by its kanji (a card prints no English). generate-e2e-flows --check resolves both. F-247 added the colour page’s keys (06’s headings, actions and app bar names, the pill’s words, the review line, the empty card) and removed the 33 only the old page read (detail.*, coord.xyz and the gamut lines, prov.*, rel.*, cvd.normal, target.arm), each with no reader left (the unused-key scan).",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
       "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves. F-091 ADDED A READER THAT IS NOT THE APP AND THAT `tsc` CANNOT SEE. The Atlas journey selects on the strings the app renders, so its spec names MESSAGE KEYS and scripts/generate-e2e-flows.mjs resolves them through this file — imported, not parsed, under Node 24 type stripping, so it is the object the app renders from rather than a regex’s opinion of it. The completeness mechanism that makes this link safe cannot reach a JSON spec: a renamed key breaks `ja` and every call site at compile time, and the journey silently not at all. So the guard here is a SECOND one — `generate-e2e-flows.mjs --check`, in `lint` — and it matters more than usual because the journey CANNOT BE RUN on this workstation (no JDK, no emulator; F-091 criteria 2 to 4 are attested). A hand-written flow would have gone wrong at the first rename with every gate green, which is why ADR-0086 generates it instead. F-139 ADDED TWO KEYS THAT ARE CONTROLS RATHER THAN PROSE — `browse.add` and `export.buildPalette`. A missing one is still a `tsc` failure, which is this link working; what is new is that the string is now an ACCESSIBLE NAME as well as a label, so a wrong or absent translation is an unusable control rather than an untranslated sentence. `browse.add` is deliberately reused by three screens (wardrobe, outfit builder, shopping check) because they point at ONE destination: three labels for one action would drift, and somebody who learned the word on one screen would meet a different one on the next.",
       "confidence": 0.95,
@@ -919,10 +919,6 @@
         {
           "kind": "gate",
           "ref": "test"
-        },
-        {
-          "kind": "file",
-          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -934,7 +930,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/the-palette-schema-now-runs-on-a-phone.md",
-      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it. SEEN ON A SCREEN, UNPLANNED (F-224 review): ColourDetail lists every palette containing the entry, so from 2026.09.3 the 28 entries that are kasane layers show kasane rows there, each labelled with the palette ROLE word — 夏影, a green layer of 夏野, reads \"夏野 · Neutral\". Nothing asserts it and the layer order is not shown. It is not wrong data, and the colour page is rebuilt to mockup 06 by F-247, which decides what that section becomes; recorded here so F-247 starts from it rather than discovering it.",
+      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it. SEEN ON A SCREEN, UNPLANNED (F-224 review): ColourDetail lists every palette containing the entry, so from 2026.09.3 the 28 entries that are kasane layers show kasane rows there, each labelled with the palette ROLE word — 夏影, a green layer of 夏野, reads \"夏野 · Neutral\". Nothing asserts it and the layer order is not shown. It is not wrong data, and the colour page is rebuilt to mockup 06 by F-247, which decides what that section becomes; recorded here so F-247 starts from it rather than discovering it. F-247 rebuilt the colour page to 06, which lists no palettes (ADR-0147): the page no longer reads them, so it left this link; the kasane note the link carried is answered — palettes are 10’s.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -2607,7 +2603,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:lint — `padding` takes a SpacingStep and nothing else, so the spacing gate still sees every inset in the app as a token rather than a number; a literal cannot be passed. gate:test — the layout conformance subjects assert the padding lands on the rendered node, and a screen that sets neither `Screen padding` nor a body padding is not a case the primitives can express silently: `Screen` still defaults to `xl2`, so opting out is a deliberate `padding=\"xs\"` at the call site.",
+      "guard": "gate:lint — `padding` takes a SpacingStep and nothing else, so the spacing gate still sees every inset in the app as a token rather than a number; a literal cannot be passed. gate:test — the layout conformance subjects assert the padding lands on the rendered node, and a screen that sets neither `Screen padding` nor a body padding is not a case the primitives can express silently: `Screen` still defaults to `xl2`, so opting out is a deliberate `padding=\"xs\"` at the call site. F-247: the colour page bleeds (Screen scroll={false} bleed) and pads each block itself, as the Atlas does — colour-detail-fidelity.test reads each block’s inset against 06.json, and the screen-insets pin was re-captured for its subjects.",
       "memory": "memory/effects/the-page-inset-is-what-stops-a-colour-bleeding.md",
       "rationale": "A FULL-BLEED HERO IS A LAYOUT PROBLEM, NOT A STYLING ONE. `Screen` has always owned the page inset — that is why every screen in the app lines up — and an inset is exactly the thing that stops a colour reaching the edge. F-148 needed one colour to bleed and everything below it to stay aligned, so the inset moved off the page and onto the content: `Screen padding=\"xs\"`, and the body `Stack` pads itself. THE TWO ALTERNATIVES WERE BOTH WORSE. A negative margin needs the `style` escape hatch the primitives exist to refuse, and it puts a magic number next to a token scale. Wrapping the body in a `Surface` gets padding for free but paints elevation nobody asked for, which on this page would put a card between the eye and the colour. THE LATENT RISK IS DOUBLE PADDING: a screen that keeps the `Screen` default AND pads its body now insets twice, and nothing fails — it just looks wrong by 24px. That is invisible to every gate, because both values are legal tokens. The mitigation is that `padding` on a flow is opt-in and unset everywhere except here; the moment a second screen wants it, the pattern is worth a rule rather than a prop.",
       "confidence": 0.85,
@@ -2945,7 +2941,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "gate:lint — no numeric `width`, `height` or `size` in a screen may exceed 264, which is 320pt minus the largest padding a screen applies either side. Both offending constants are now derived from `useWindowDimensions()`, which cannot overflow because it is computed from what it has to fit inside.",
+      "guard": "gate:lint — no numeric `width`, `height` or `size` in a screen may exceed 264, which is 320pt minus the largest padding a screen applies either side. Both offending constants are now derived from `useWindowDimensions()`, which cannot overflow because it is computed from what it has to fit inside. F-247: 06’s 299 dp sample and its 298 dp layer are named constants (HERO_HEIGHT, STACK_HEIGHT) in src/detail.ts, each recomputed from 06.json by colour-detail-fidelity.test; verify-viewport refused the first draft’s `{ height: 298 }`.",
       "memory": "memory/effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md",
       "rationale": "TWO FIXED PIXEL WIDTHS OVERFLOWED MOST PHONES, and the arithmetic is not close. `CELL_PHOTO = 160` in a two-column grid needs 332 with its gap; a 360pt Android leaves 304 after padding and a 320pt iPhone SE leaves 264 — so the wardrobe gallery overflowed on EVERY phone narrower than about 390pt, which is most Android hardware. `HERO = 320` on the colour page needs the full 320 and an SE offers 312. Both are mine, from F-148 and F-150, and both are the same mistake made twice within two features: a size picked against one imagined screen. WHAT MAKES THIS INVISIBLE TO EVERY EXISTING CHECK is that react-test-renderer does not lay anything out. The conformance suite reads a tree, the contrast gate reads colours, and neither has a viewport — so a number larger than the screen is indistinguishable from a number that fits. It took a person holding a phone. THE FIX IS NOT A SMALLER NUMBER, and that is the part worth keeping: a smaller constant is wrong on a different device. Deriving from `useWindowDimensions()` makes the size a consequence of the space rather than a guess about it, and it re-renders on rotation and on a foldable opening, which a constant cannot. The gate cannot check layout — it says so on every run — but it can check the shape that shipped twice.",
       "confidence": 0.85,
@@ -3428,7 +3424,7 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "verify-claims.mjs reads ja.ts with Japanese patterns: 13 of the 30 banned constructions can match Japanese — eight before F-219 — seven from F-172 and one from F-155 — and five more from F-219 (a percentage match, an absolute CVD-safety claim, a verdict on a score, institution grade, a spectrum the camera never measures). The lint refuses a scanned script for which it holds no pattern (\"COVERS NOTHING\"), and verify-claims-proof watches that refusal happen by dropping the non-ASCII patterns, besides one red case per Japanese pattern and the product's real Japanese copy as a case that must stay green. NOT GUARDED: whether the Japanese patterns match what a person would actually write. The lint prints its scope on every run — patterns that can match Japanese, and how many files of it — so a green result reads as coverage of that scope, not as a review; F-172 owes the review. (Superseded 2026-09-14 in F-219: this guard read \"NONE YET\", which stopped being true when F-172 landed.) F-246: 05’s ja copy (日本に着想を得た色, のオリジナル色, the field’s placeholder, the facets sheet’s names) passes verify:claims, and atlas.test holds the two words that are claims about the corpus true of every entry: the title’s 日本に着想を得た色 (every entry japanese-inspired) and the count’s Original (every classification one the catalogue calls original), each with a planted decoy.",
+      "guard": "verify-claims.mjs reads ja.ts with Japanese patterns: 13 of the 30 banned constructions can match Japanese — eight before F-219 — seven from F-172 and one from F-155 — and five more from F-219 (a percentage match, an absolute CVD-safety claim, a verdict on a score, institution grade, a spectrum the camera never measures). The lint refuses a scanned script for which it holds no pattern (\"COVERS NOTHING\"), and verify-claims-proof watches that refusal happen by dropping the non-ASCII patterns, besides one red case per Japanese pattern and the product's real Japanese copy as a case that must stay green. NOT GUARDED: whether the Japanese patterns match what a person would actually write. The lint prints its scope on every run — patterns that can match Japanese, and how many files of it — so a green result reads as coverage of that scope, not as a review; F-172 owes the review. (Superseded 2026-09-14 in F-219: this guard read \"NONE YET\", which stopped being true when F-172 landed.) F-246: 05’s ja copy (日本に着想を得た色, のオリジナル色, the field’s placeholder, the facets sheet’s names) passes verify:claims, and atlas.test holds the two words that are claims about the corpus true of every entry: the title’s 日本に着想を得た色 (every entry japanese-inspired) and the count’s Original (every classification one the catalogue calls original), each with a planted decoy. F-247’s Japanese words (26’s three headings, 色図鑑に戻る, the empty card) pass the Japanese claims patterns; detail.test holds every word the page adds free of 伝統, Traditional, Heritage, Historical and Verified, with a planted 伝統 as the decoy.",
       "memory": "memory/effects/the-claims-lint-only-speaks-english.md",
       "rationale": "THE JAPANESE HOME SCREEN CALLED AN ESTIMATE A MEASUREMENT. `home.lastReading` read 最後の測定 and `home.noReadings` read まだ測定がありません — 測定 is MEASUREMENT, and ADR-0031 binds that word to `reference` and `calibrated`, the two sources with an instrument behind them. A camera reading is `estimated`. Golden rule 11, broken at the front door, and found only because F-164 happened to be rewriting that copy. THE GATE WAS GREEN AND CORRECT BY ITS OWN LIGHTS: `verify-claims.mjs` walks EVERY file in the repository, `ja.ts` included, and all eleven banned patterns are ASCII — the ones about exactness, about a colour being the true or actual one, about a numeric accuracy percentage, about laboratory or professional grading, about guarantees, and about the app doing the measuring itself. So half the product's user-facing copy has never been checked for the rule the product cares about most. THE SHAPE IS NEW: every blind spot recorded before this was a checker that could not SEE its subject — a style engine resolving in Metro, colour arriving as an SVG prop, a signature reading the wrong axis. This one read every byte and had nothing to say, because what it knows how to recognise is written in one language. A CHECKER'S SCOPE CAN BE DEFINED BY ITS PATTERNS RATHER THAN BY ITS FILE LIST, and from outside those look identical: \"it scans everything\" and \"it checks everything\" are different claims, and the first is the one that gets stated. SIX OF THE EIGHT USES WERE FINE, which is the half that decides the fix: the `measure` screen says お手持ちの測定器の値を入力すると — enter the values from your own measuring device — and that is exactly the provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific overstatements, as the English list already does, and doing that in Japanese needs somebody who reads it. Recorded as F-172 rather than half-done.",
       "confidence": 0.95,
@@ -4011,6 +4007,14 @@
         {
           "kind": "gate",
           "ref": "a11y"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/detail.ts#wearableCombinations"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wardrobe/coverage.ts#rankingContext"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4018,7 +4022,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "THE APP NOW HANDS THE ENGINE A PROFILE FOR SOMEBODY WHO HAS NONE, AND `personalKnown` IS THE ONLY THING STOPPING THAT BECOMING A FALSE CLAIM. `NO_EVIDENCE_PROFILE` carries full-range intervals so nothing is constrained, and confidence 0 on every axis so nothing reaches a score — but `intervalFit` still returns 1 on all four, so the explanation object reports a PERFECT FIT on four dimensions nobody has measured. `shownFactors` returns empty without a profile and `shownScore` shows the pairing figure instead of the blend; both are asserted, and the conformance registry renders both branches in both themes so the two trees are measured rather than assumed. WHAT IS NOT GUARDED: a future caller that reads `recommendations` directly and formats it itself. Nothing stops that, and it would look entirely reasonable — the fields are public and populated. The defence is that `wear.ts` is the only module that builds the no-evidence profile, and it exports the two readers beside it.",
+      "guard": "THE APP NOW HANDS THE ENGINE A PROFILE FOR SOMEBODY WHO HAS NONE, AND `personalKnown` IS THE ONLY THING STOPPING THAT BECOMING A FALSE CLAIM. `NO_EVIDENCE_PROFILE` carries full-range intervals so nothing is constrained, and confidence 0 on every axis so nothing reaches a score — but `intervalFit` still returns 1 on all four, so the explanation object reports a PERFECT FIT on four dimensions nobody has measured. `shownFactors` returns empty without a profile and `shownScore` shows the pairing figure instead of the blend; both are asserted, and the conformance registry renders both branches in both themes so the two trees are measured rather than assumed. WHAT IS NOT GUARDED: a future caller that reads `recommendations` directly and formats it itself. Nothing stops that, and it would look entirely reasonable — the fields are public and populated. The defence is that `wear.ts` is the only module that builds the no-evidence profile, and it exports the two readers beside it. F-247: a second reader — the colour page orders the person’s garments with this profile when none is stored, and prints the order only: colour-detail-states.test finds no %, score or word of fit on the combinations card in either language, with a planted figure as the decoy.",
       "memory": "memory/effects/a-zero-confidence-profile-still-reports-a-perfect-fit.md",
       "rationale": "CRITERION 3 ASKED THAT SOMEBODY WITH NO PROFILE STILL GET THE ANSWERS THAT DO NOT NEED ONE. `recommendOutfit` requires a `PersonalProfile` and half its blend is *does this suit me*, which is unanswerable without one. The engine already had the answer: `scoreColor` returns `NO_EVIDENCE_SCORE` when no dimension carries confidence, and its docblock names this exact case — *\"a profile nobody has filled in is zero across the board\"*. So the app supplies that profile rather than the engine growing a nullable parameter, and no score is implemented twice. THE TRAP IS ONE LAYER DOWN. Confidence 0 removes the personal half from every SCORE and leaves it fully populated in every EXPLANATION, because `fits` is computed before the weights are applied. A screen that drew the factors it was given would say \"your lightness range suits this\" to somebody who has never told the product anything — which is NFR-21 broken in the most confident-sounding way available. That is why `personalKnown` is a returned VALUE and not a confidence field a caller is trusted to check.",
       "confidence": 0.9,
@@ -4248,10 +4252,6 @@
         },
         {
           "kind": "file",
-          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
-        },
-        {
-          "kind": "file",
           "ref": "apps/mobile/src/screens/Combinations.tsx"
         },
         {
@@ -4265,6 +4265,10 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4272,7 +4276,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE SECOND CONTEXT IN THIS APP, AND THE RULE THAT MAKES CONTEXTS SAFE HERE IS KEPT: screens take props and the ROUTE reads the hook, so every screen with an arming affordance is still renderable by the conformance suite without a provider. `Chrome` reads the hook directly and is allowed to, because it is the root chrome rather than a screen. `useTarget` THROWS outside a provider rather than returning a null-ish default — a screen silently behaving as though nothing were armed is indistinguishable from a disarmed target, which is the failure this feature exists against. The disarm has its own decoy: the value must come back `null`, because a disarm that merely stopped rendering the bar would leave every arming assertion passing. THE BAR IS A REGISTERED CONFORMANCE SUBJECT even though it is not a screen — it renders above every screen while a target is armed, and a surface the suite never saw would be the one piece of persistent UI whose contrast and announcement nothing had checked. WHAT IS NOT GUARDED: that a real navigation preserves it. The test re-renders the provider with a different subtree, which is the closest a unit test gets; an actual route change is the e2e gate’s, and that gate is pending.",
+      "guard": "THE SECOND CONTEXT IN THIS APP, AND THE RULE THAT MAKES CONTEXTS SAFE HERE IS KEPT: screens take props and the ROUTE reads the hook, so every screen with an arming affordance is still renderable by the conformance suite without a provider. `Chrome` reads the hook directly and is allowed to, because it is the root chrome rather than a screen. `useTarget` THROWS outside a provider rather than returning a null-ish default — a screen silently behaving as though nothing were armed is indistinguishable from a disarmed target, which is the failure this feature exists against. The disarm has its own decoy: the value must come back `null`, because a disarm that merely stopped rendering the bar would leave every arming assertion passing. THE BAR IS A REGISTERED CONFORMANCE SUBJECT even though it is not a screen — it renders above every screen while a target is armed, and a surface the suite never saw would be the one piece of persistent UI whose contrast and announcement nothing had checked. WHAT IS NOT GUARDED: that a real navigation preserves it. The test re-renders the provider with a different subtree, which is the closest a unit test gets; an actual route change is the e2e gate’s, and that gate is pending. F-247: the colour page arms through 06’s *Hold as Target in Lens* — the screen calls onHoldAsTarget(slug) (colour-detail-states.test, by a press), and the route arms, then opens the Lens (a route-source assertion there: arm( before /lens).",
       "memory": "memory/effects/a-mailbox-and-a-target-are-opposite-shapes.md",
       "rationale": "REPORTED AS *\"scan a colour and check its similarity/difference against a target colour\"*. This is the target half; F-201 is the Lens answering against it, and nothing here computes a difference. THE SHAPE WAS THE DECISION. `lens/handoff.ts` is module state with NO subscribers, deliberately — a one-shot mailbox that exactly one screen collects. A target is the opposite on both axes: it is read everywhere, so surfaces must re-render when it changes, and it must NOT be consumed by the first reader. Copying the mailbox would have produced a target that vanished the moment something looked at it. So it is a context — the second in this app — and it follows `appearance.tsx`, which is the first and states its own reason: written from a screen several routes down, read at the root, with expo-router owning everything between. IT IS DELIBERATELY NOT PERSISTED, unlike the appearance: a target is something somebody is doing now, and one that survived a restart would be a comparison nobody remembered arming.",
       "confidence": 0.9,
@@ -5249,7 +5253,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced. F-221: the inventory sweep in screens.test asserts every element of an ENROLLED surface is drawn, in both themes and both languages, counted inside the surface's own root with statically hidden nodes left out, one locator per element and an element per locator (31 elements: 14.splash and 27's four cards), with a removal decoy for each kind of locator; the composer crops a framed mockup to its inventory's screen, read live. F-246: 05.json measured (chip, pill, count and placeholder at caption; the title at body 600, raw.emDp 17.8; the heading at label 600), the era rebound to corpus:entry.taxonomy.season, the finder’s action corrected to /atlas/find, the overflow’s action declared, E1/E3 departures and two garbled-text notDesign boxes added; PRD §10 closes OQ-17, OQ-18 and OQ-43; R9 §2, §4, §8 and §11 updated.",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang waiting on a question PRD §10 still lists; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Its keys, enums and patterns are read from mockups/inventory.schema.json, so a key the schema does not name fails, and an inventory with no elements or no screen fails. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 61 failures and 6 cases that must pass — one per branch the single review could weaken with the proof still green; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed. F-222 closed OQ-9: its seven bindings (03, 13, 22, 23) were rebound to defined computations in the one commit that removed it from PRD §10, which this gate forced. F-221: the inventory sweep in screens.test asserts every element of an ENROLLED surface is drawn, in both themes and both languages, counted inside the surface's own root with statically hidden nodes left out, one locator per element and an element per locator (31 elements: 14.splash and 27's four cards), with a removal decoy for each kind of locator; the composer crops a framed mockup to its inventory's screen, read live. F-246: 05.json measured (chip, pill, count and placeholder at caption; the title at body 600, raw.emDp 17.8; the heading at label 600), the era rebound to corpus:entry.taxonomy.season, the finder’s action corrected to /atlas/find, the overflow’s action declared, E1/E3 departures and two garbled-text notDesign boxes added; PRD §10 closes OQ-17, OQ-18 and OQ-43; R9 §2, §4, §8 and §11 updated. F-247 edited 06.json and 26.json (OQ-19 closed, ADR-0145: the lower regions fitted, no overhangs) and corrected 06’s drawn actions and two unmeasured weights.",
       "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
       "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it. F-232 (2026-09-28): 00, 05, 09, 12, 15, 17 and 23 re-recorded from measurement (control tokens, plate radii, dots, the switch's true track, 12's level3 fills, 05's filled chips, 17's options as ui:Chip); the schema gains `raw.trackPx`/`thumbPx`/`glyphPx` and ADR-0115's plate rule in the `component` description, held by icon-control-forms.test (30 icon-only controls, 15 plated, 15 bare, with an ambiguous decoy). Control defaults are now DERIVED from these records (E-157).",
       "confidence": 0.9,
@@ -5586,6 +5590,10 @@
         {
           "kind": "gate",
           "ref": "lint"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5594,7 +5602,7 @@
         "mobile"
       ],
       "severity": "medium",
-      "guard": "packages/design-tokens/test/manifest.test.ts refuses a line outside [0.25, 3] dp, an opacity outside (0, 1] and — the one worth having — an opacity past half the foreground, which is not a backdrop any more; each watched failing, with a decoy accepting both ends of each range and the declared 0.5 and 0.15. emit.test.ts asserts both values in the TypeScript, React Native and CSS targets. packages/ui/test/illustrations.test.tsx asserts every stroked shape renders at the declared line at 48, 96 and 240 dp — across grids of 24, 32, 48, 60 and 96 units, with a decoy showing a line fixed in grid units would not hold — and that a backdrop carries the declared opacity while a figure carries 1. Token reach: nativeArtStroke and nativeArtOpacity are read by Illustration; ART_STROKE and ART_OPACITY are declared unreached on the web binding with their reason.",
+      "guard": "packages/design-tokens/test/manifest.test.ts refuses a line outside [0.25, 3] dp, an opacity outside (0, 1] and — the one worth having — an opacity past half the foreground, which is not a backdrop any more; each watched failing, with a decoy accepting both ends of each range and the declared 0.5 and 0.15. emit.test.ts asserts both values in the TypeScript, React Native and CSS targets. packages/ui/test/illustrations.test.tsx asserts every stroked shape renders at the declared line at 48, 96 and 240 dp — across grids of 24, 32, 48, 60 and 96 units, with a decoy showing a line fixed in grid units would not hold — and that a backdrop carries the declared opacity while a figure carries 1. Token reach: nativeArtStroke and nativeArtOpacity are read by Illustration; ART_STROKE and ART_OPACITY are declared unreached on the web binding with their reason. F-247 adds opacity.artCard (0.31, ADR-0149), 06’s card art, read through Illustration tone=\"card\": illustrations.test inks it at 0.31 with the backdrop’s 0.15 as decoy, and the manifest parser holds it within (0, 0.5].",
       "feature": "F-229",
       "memory": "memory/effects/art-is-the-foreground-at-a-measured-opacity.md",
       "rationale": "F-229 measured every element the inventories bind an illustration to and found the art drawn two ways: a backdrop at 0.10-0.18 of the theme's foreground (median 0.15) and a figure at 0.80-0.96, with a line of 1 px at 2 px/dp. No declared colour token matches the backdrop ink — the nearest are chart.5 and chart.4 at deltaE00 4.6-7, which are a chart ramp and mean something else — so the art is the foreground token at a declared opacity rather than a colour of its own. Medium: the values reach every drawing at once, and the arithmetic that converts the line into each drawing's own grid is where one drawing could silently drift from the set.",
@@ -5989,10 +5997,6 @@
           "ref": "apps/mobile/assets/fonts/NotoSansJP-Subset.ttf"
         },
         {
-          "kind": "file",
-          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
-        },
-        {
           "kind": "gate",
           "ref": "content"
         }
@@ -6006,7 +6010,7 @@
       "severity": "high",
       "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing.",
       "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
-      "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step.",
+      "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step. F-247: the colour page no longer prints the Japanese names of the palettes holding a colour (ADR-0147), so it left this link; its own new Japanese words are catalogue words, held by the same coverage check.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -6312,7 +6316,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy. F-246: 05’s title re-measured at body 600 and its heading at label 600, both inside the type census; the caption readings below 12 dp are comments, not raw.emDp.",
+      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy. F-246: 05’s title re-measured at body 600 and its heading at label 600, both inside the type census; the caption readings below 12 dp are comments, not raw.emDp. F-247 binds two measured steps, kanjiHero (06.kanji, 50.5) and kanjiHeroJa (26.hero.kanji, 39.2), each at its element’s outline-measured em; their two census rows are discharged.",
       "memory": "memory/effects/the-caption-is-the-median-of-what-the-mockups-draw.md",
       "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set. F-230: an inventory re-reading can now also MOVE A MEASURED STEP — the median of its bound elements — or move an element across the 4 dp line, which the census reports as unbound or no longer owed.",
       "confidence": 0.85,
@@ -6477,15 +6481,15 @@
         },
         {
           "kind": "file",
-          "ref": "apps/mobile/src/bookmarks.tsx"
-        },
-        {
-          "kind": "file",
           "ref": "scripts/verify-a11y-proof.mjs"
         },
         {
           "kind": "symbol",
           "ref": "packages/ui/src/SearchField.tsx#SearchFieldProps"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/AppBar.tsx#AppBarTrailing.targetRoom"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6497,7 +6501,7 @@
         "packages/design-tokens"
       ],
       "severity": "critical",
-      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44. SINCE F-324 the a11y mutation proof (verify-a11y-proof.mjs, ci.yml “Gate 8 — a11y mutation proof”) plants a LabelledButton with no hitSlop and requires gate 8 to report tap-target; it fails as UNRUNNABLE when Button stops reaching the target through hitArea(height, height). F-246: the drawn SearchField (05, 26.5 dp) keeps its touch container at max(platformTapTarget(), height), centred on the drawn box by negative margins, with the outline and glyph drawn under it (atlas-forms.test, decoy: without a height it is the filled field it was). F-246’s review (M7): the drawn field’s touch container is asserted on iOS (44) and Android (48) both, the platform replaced around the render.",
+      "guard": "packages/ui/test/hit-area.test.tsx: platformTapTarget is 44 on iOS and 48 on Android (Platform.OS switched), and the tap-target rule is run end to end on a 34.5 × 18 dp control with and without its slop (three decoys: none, too little, enough). Every control form is a conformance subject, so `tap-target` reads each one's drawn size plus hitSlop in every theme; button-forms, switch, slider, segmented-choice and icon-button tests assert the reach on both platforms. SINCE F-237 a control placed inside another brings a parent the size of its target: SearchField puts its trailing toggle in a box platformTapTarget() wide, at the trailing edge and full height, and a field holding one is at least that tall (48 on Android, past the field’s own 44, found by F-237’s review); 06’s toggle sits in a platformTapTarget() square in the header’s slot. search-field.test and bookmarks.test assert each box and that glyph plus slop reach the target exactly, rendered as iOS AND as Android (jest.replaceProperty on Platform.OS), with a decoy that a field without a toggle keeps its 44. SINCE F-324 the a11y mutation proof (verify-a11y-proof.mjs, ci.yml “Gate 8 — a11y mutation proof”) plants a LabelledButton with no hitSlop and requires gate 8 to report tap-target; it fails as UNRUNNABLE when Button stops reaching the target through hitArea(height, height). F-246: the drawn SearchField (05, 26.5 dp) keeps its touch container at max(platformTapTarget(), height), centred on the drawn box by negative margins, with the outline and glyph drawn under it (atlas-forms.test, decoy: without a height it is the filled field it was). F-246’s review (M7): the drawn field’s touch container is asserted on iOS (44) and Android (48) both, the platform replaced around the render. F-247: the header box that held 06’s bookmark is gone with the platform header; the app bar’s trailing row makes the target’s room instead (targetRoom, E-216), held by app-bar.test on iOS and on Android, and bookmarks.test holds the colour page to asking for it.",
       "memory": "memory/effects/the-target-is-the-hit-area-and-the-rule-adds-it-back.md",
       "rationale": "ADR-0114: a control is drawn at its mockup's size and reaches the platform target through `hitSlop = hitArea(w, h)`. The chain is manifest (`tapTarget`, `tapTargetAndroid`) → `hitArea` → every control → `tapTargetReach` in the conformance rule. Change the manifest values and every control's hit area moves; change `hitArea`'s arithmetic or the rule's reading and a control can fall short with the gate green. The hit area is each control's OWN (hitSlop is refused by type), because a caller that shrank it would take the target away. Hit areas can overlap on a dense row (12's chips at a 26 dp pitch): the rule judges one control at a time, so an overlap is a device attestation."
     },
@@ -6692,7 +6696,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "c10-exceptions.test's group block (eight stops per group in every theme, the two element exceptions retired, a wrong element leaves the drawn one uncovered, a group without elements or beside a token refused, a stale group reported, one runtime exception per stop); spectrum.test (the stops in order, laid over the silhouette, the one-ink decoy); the conformance colour-literal rule over both spectrum buttons in every palette; verify-token-reach (every stop named literally).",
+      "guard": "c10-exceptions.test's group block (eight stops per group in every theme, the two element exceptions retired, a wrong element leaves the drawn one uncovered, a group without elements or beside a token refused, a stale group reported, one runtime exception per stop); spectrum.test (the stops in order, laid over the silhouette, the one-ink decoy); the conformance colour-literal rule over both spectrum buttons in every palette; verify-token-reach (every stop named literally). F-247: 06.provenance.review’s green is minted as glyph.seal (ADR-0149) and carried by a token group; its element exception is retired, held by the same group block.",
       "memory": "memory/effects/a-minted-group-carries-its-elements-forward.md",
       "rationale": "ADR-0110's amendment: a colour a mockup draws is minted as tokens and declared as a token GROUP exception that carries the elements drawing it, retiring the element exception in the same change. Rename or add a stop and four readers move: Glyph's literal list (the reach check cannot see a constructed name), the chroma check, the runtime's per-token expansion, and coverage. F-244, F-257 and F-262 mint the same way."
     },
@@ -6903,6 +6907,10 @@
         {
           "kind": "test",
           "ref": "packages/ui/test/action-bar.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
         }
       ],
       "scope": [
@@ -6910,7 +6918,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json).",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy.",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -7149,9 +7157,13 @@
         {
           "kind": "test",
           "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
-      "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes.",
+      "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes. F-247: 06’s readout is ReadoutTable form=\"table\", its parts carrying ids under the caller’s (label, value, divider, bar, the second value’s two runs, and a note in the row’s own script for E2; readout.test), and every value is a Figure that names its space (detail.test).",
       "memory": "memory/effects/a-figure-says-what-it-is-and-where-it-was-computed.md",
       "rationale": "FR-61 asks for each value's space named beside it, and most drawings print a bare figure. The printed text and the spoken name are both built from one Figure, so a change to figureText or figureName reaches every display at once, and a number printed without a Figure has no name."
     },
@@ -7242,7 +7254,7 @@
           "ref": ".harness/state/feature_list.json#F-260"
         }
       ],
-      "guard": "The type census (type-scale.test.ts): every governing element drawn more than 4 dp from every board step is bound to a measured step or owed in .harness/verification/type-census.json, both ways, with a planted decoy. verify-token-reach.mjs (uncached) fails once an owed row's owner is done while the row is still owed — closedBy's rule — and names any reader of a measured step but brand.tsx. F-230'S REVIEW FOUND THIS GUARD DEAD: the refusal sat inside `declarations()` behind `override === undefined`, and `run()` passes `null`, so it had never run. It is now its own step (`owedRows`), and `--prove` plants a row owed by a done feature and one owed by no feature and watches both refused.",
+      "guard": "The type census (type-scale.test.ts): every governing element drawn more than 4 dp from every board step is bound to a measured step or owed in .harness/verification/type-census.json, both ways, with a planted decoy. verify-token-reach.mjs (uncached) fails once an owed row's owner is done while the row is still owed — closedBy's rule — and names any reader of a measured step but brand.tsx. F-230'S REVIEW FOUND THIS GUARD DEAD: the refusal sat inside `declarations()` behind `override === undefined`, and `run()` passes `null`, so it had never run. It is now its own step (`owedRows`), and `--prove` plants a row owed by a done feature and one owed by no feature and watches both refused. F-247: MEASURED_STEP_READERS adds the colour page, the one reader of the two kanji steps; verify-token-reach --prove plants a reader elsewhere and is refused.",
       "memory": "memory/effects/a-measured-type-step-is-owed-by-the-feature-that-builds-it.md",
       "rationale": "ADR-0121 answers OQ-13 with a RULE, so it reaches every feature that sets type a mockup draws off the scale. 06's and 26's kanji (F-247), 20's card kanji (F-253) and 22's figures (F-258, through MetricTile) are drawn more than 4 dp from every step and each owes a measured step; 01's tagline (F-242) and 17's slider labels (F-260) are within 4 dp and take board steps. The owed rows are a declaration file read by the uncached reach script, not the feature list read by a cached test, which would key every test on every claim."
     },
@@ -8124,7 +8136,7 @@
           "ref": "test"
         }
       ],
-      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129. F-246: the Atlas keeps STATES { absent: empty }; two witness subjects added (a season chosen, more filters open).",
+      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129. F-246: the Atlas keeps STATES { absent: empty }; two witness subjects added (a season chosen, more filters open). F-247: the colour page’s STATES is unchanged; its subjects are now 06’s — whole, bookmarked, an empty wardrobe and nothing to rank (27’s card, shown empty), outside sRGB, and not in this corpus.",
       "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
       "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
     },
@@ -8703,7 +8715,7 @@
           "ref": "apps/mobile/test/inventory.ts#supersededFindings"
         }
       ],
-      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211.",
+      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211. F-247 enrolled 06.screen (inventory-surfaces.json), swept in both locales with three decoys: the stacked layer, the readout’s bar and a garment’s caption each named when gone.",
       "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
       "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
     },
@@ -8762,7 +8774,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test. SINCE F-238 the root layout mounts a second provider beside it (LookbookProvider, E-205); bookmarks.test’s route assertions still hold, and lookbook.test mirrors them. F-246: the toggle stays in 05’s drawn field; Clear moved to the heading row (ADR-0143 D6). bookmarks.test is adapted — the card’s name (atlasCardName), the family chip, and a query that is only a name (kage: no family word, no lexicon term, no hex, asserted) — with every decoy kept.",
+      "guard": "apps/mobile/test/bookmarks.test.tsx: the provider reads once, writes then reads back, writes nothing for a no-op, and a throwing store leaves the set as stored (decoy); 06’s toggle is named, announces its state and asks for the opposite; the Atlas lists only bookmarked colours in corpus order; combines with a query matching three entries, one bookmarked — count 1 with the toggle on (decoy: toggle off, the query’s own count) — and with a family filter over two bookmarks in two families; shows 00’s caption with none bookmarked (decoy: bookmarks exist, none match — the filters’ caption), and Clear turns it off; and the three routes are asserted from source — the layout mounts the provider with deviceRepository(), the colour page draws ColourBookmark in headerRight, the Atlas route passes the set — with a decoy route that does not. The screens registry renders the Atlas toggle off and on, none bookmarked, and 06’s toggle off and on, in every condition. The store half is bookmark.test, bookmark-durability, bookmark-atomicity and the force-quit test. SINCE F-238 the root layout mounts a second provider beside it (LookbookProvider, E-205); bookmarks.test’s route assertions still hold, and lookbook.test mirrors them. F-246: the toggle stays in 05’s drawn field; Clear moved to the heading row (ADR-0143 D6). bookmarks.test is adapted — the card’s name (atlasCardName), the family chip, and a query that is only a name (kage: no family word, no lexicon term, no hex, asserted) — with every decoy kept. F-247: 06’s toggle moved from the platform header into the colour page’s own app bar — the route passes bookmarked={bookmarked.has(slug)} and onBookmark, hides the header, and draws no headerRight (bookmarks.test, with a decoy route source that still does); the toggle is named, announces its state and asks for the opposite on the rebuilt page.",
       "memory": "memory/effects/the-bookmark-set-is-written-on-06-and-read-on-05.md",
       "rationale": "A bookmark is written on 06 and read back on 05 through one provider, so a change to how the set is stored or read reaches both screens, and dropping either control breaks the feature silently: no way to bookmark, or a write nothing reads (OQ-39). F-246 and F-247 rebuild both screens, which is where a control goes missing; the route assertions fail if either is dropped, and both features’ notes say what to keep. The provider reads once because nothing else writes; an in-app restore or erase (F-263) must make it read again. NOT GUARDED: layout inside the native header (a device capture), and encryption at rest, which depends on SQLCipher being built in (F-336)."
     },
@@ -8961,9 +8973,13 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
         }
       ],
-      "guard": "apps/mobile/test/wardrobe-coverage.test.ts: a count through coverageContext equals one through a context written out by hand (the oracle, with outfits to count so equality is not two zeros); undefined without a profile; a garment with no slot is left out (decoy); the Wardrobe route calls the helpers and assembles no context of its own, read from source, with shopping.tsx as the decoy that still does. home-states.test.tsx holds the pill with coverage and without (R9 §4 E2). F-242’s review (S5): Home’s route is read from source too — it calls the helpers, assembles nothing of its own, and re-reads on focus (useFocusEffect).",
+      "guard": "apps/mobile/test/wardrobe-coverage.test.ts: a count through coverageContext equals one through a context written out by hand (the oracle, with outfits to count so equality is not two zeros); undefined without a profile; a garment with no slot is left out (decoy); the Wardrobe route calls the helpers and assembles no context of its own, read from source, with shopping.tsx as the decoy that still does. home-states.test.tsx holds the pill with coverage and without (R9 §4 E2). F-242’s review (S5): Home’s route is read from source too — it calls the helpers, assembles nothing of its own, and re-reads on focus (useFocusEffect). F-247: rankingContext beside coverageContext — the same four parts, with the no-evidence profile where none is stored (wardrobe-coverage.test: equal to a context written by hand; NO_EVIDENCE_PROFILE only without a profile, decoy).",
       "memory": "memory/effects/one-coverage-context-for-the-pill-and-the-dial.md",
       "rationale": "01’s count pill and 11’s coverage dial print the same count of valid outfits, so they are assembled from one context: a second inline copy would let the front door and the Wardrobe disagree the first time the profile, rules, weights or reference set moved. shopping.tsx still assembles its own; F-258 moves it."
     },
@@ -8999,9 +9015,13 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
-      "guard": "packages/ui/test/illustrations.test.tsx: a backdrop in foreground inks every shape in foreground at nativeArtOpacity (decoy: the default ink is not foreground), and a figure in foreground without the hanger’s tint does not compile (@ts-expect-error).",
+      "guard": "packages/ui/test/illustrations.test.tsx: a backdrop in foreground inks every shape in foreground at nativeArtOpacity (decoy: the default ink is not foreground), and a figure in foreground without the hanger’s tint does not compile (@ts-expect-error). F-247: tone=\"card\" joins the backdrop as the second form `foreground` may take, inked at opacity.artCard; the colour page’s provenance branch is its reader (colour-detail-fidelity.test).",
       "memory": "memory/effects/the-backdrop-ink-is-foreground-at-the-art-opacity.md",
       "rationale": "R9 §5 measures the backdrop art as the foreground token at the declared opacity (0.15). Home is the first surface to draw it so; every backdrop from F-243 on can. opacity.art (E-136) is what keeps a foreground drawing faint, so a change to it moves every such backdrop at once. NOT GUARDED: the drawing’s orientation in each placement, which is for the capture’s comparison."
     },
@@ -9168,6 +9188,188 @@
       "guard": "apps/mobile/test/atlas.test.ts: each chip’s dot is a member of its group, drawn in that entry’s own hex with its own provenance, and the same member whatever order the entries come in; a group with no members has no dot to draw (decoy). The inventory sweep finds each of 05’s six dots by its own id, with a decoy that one gone is named. F-246’s review (S1): the chosen member’s summed ΔE00 is the least among its group’s, the earlier slug on a tie, checked for every group; a decoy shows the medoid is not simply the first member by slug, a planted foreign colour at the medoid’s own Lab is never chosen, and a dot is worked out over the list it is given (the cache is keyed on the list, which it ignored before).",
       "memory": "memory/effects/a-family-chips-dot-is-its-groups-medoid.md",
       "rationale": "05 draws each family chip with a dot of the family’s colour, and no entry is that colour by name, so the dot is chosen by a stated rule (ADR-0143 D4): the member whose summed CIEDE2000 to the others, over each published Lab, is least, ties to the earlier slug. A publish that adds, removes or moves a group’s members can move its dot, and a taxonomy change that moves a family between groups moves two. The dot is a real corpus colour with reference provenance (rule 12). NOT GUARDED: that the medoid looks like the family to a person — that is the capture’s."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-247",
+      "id": "E-213",
+      "severity": "high",
+      "scope": [
+        "mobile",
+        "packages"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/detail.ts#readoutRows"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/engine.ts#displayP3Of"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/color-spaces/src/rgb.ts#xyzToDisplayP3"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/colour-detail-fidelity.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/detail.test.ts, over all 120 entries: hex, OKLCh, CIELAB and sRGB are the bundle’s derivation; Display-P3 is displayP3Of(entry.color.xyz) at 3 decimals, and the decoy is that it is not the sRGB bytes ÷ 255 (06’s own error); every value names its space; only the entry outside sRGB carries the nearest-rendering note, with its ΔE00, and an in-gamut entry carries none (decoy). The conversion itself is golden-tested in packages/color-spaces.",
+      "memory": "memory/effects/the-p3-row-is-the-engines-conversion-of-the-records-xyz.md",
+      "rationale": "06 prints a Display-P3 triple that is its sRGB values ÷ 255 — a plausible wrong answer. The bundle carries no P3, so the page asks the engine (engine.ts, the single import site) to convert the record’s canonical XYZ at render. Fed the gamut-mapped sRGB, or the bytes ÷ 255, it would print a triple that looks right and is not; and the one entry outside sRGB prints a hex that is only the nearest rendering, which the row must say (rule 11, E2)."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-247",
+      "id": "E-214",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/outfit/builder.ts#rankForSlot"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/outfit/builder.ts#regenerate"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/detail.ts#wearableCombinations"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wear.ts#NO_EVIDENCE_PROFILE"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/outfit-builder.test.ts unchanged (the Lab’s proposals, the same locks over a reordered wardrobe); apps/mobile/test/detail.test.ts: the colour page’s order equals scoreOutfit worked by hand over a small wardrobe with the colour as a top, ties by garment id; a second top never appears (decoy); a type with no slot is excluded; at most three, numbered 1–3; an empty wardrobe and one of tops alone give none.",
+      "memory": "memory/effects/one-ranking-for-the-lab-and-the-colour-page.md",
+      "rationale": "The Outfit Lab’s proposals and 06’s Wearable Combinations rank by one function, extracted from regenerate with no change to what it returns (ADR-0148). A change to the ranking — its tie-break, how the chosen pieces are scored, a slot’s words — re-orders both, silently, and the colour page shows the order with no score beside it, so nothing on the page would look wrong."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-247",
+      "id": "E-215",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/wear/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/card/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/profile/export.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/export/subject.ts#exportSubjectFor"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/with/[id].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/colour-detail-states.test.tsx fires every drawn control and reads its handler’s argument, with the decoy that an absent handler is an absent control; a route-source test there holds each push target the route makes; export-subject.test: exportSubjectFor gives the colour when its slug resolves, the latest palette bare, and falls back for an unknown slug (decoys); verify-route-targets and verify-reachability in lint.",
+      "memory": "memory/effects/06s-drawn-actions-open-routes-other-features-rebuild.md",
+      "rationale": "06’s drawn actions open routes that F-248 (07), F-253 (20), F-263 (18), F-245 (the Lens’s 04), F-259 (24) and F-256 (12) rebuild (ADR-0147 D3). A later rebuild of any of them that renames or drops its route, or an export route that stops reading `slug` and exports the latest palette, breaks a control on this page while every test of that other surface stays green."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-247",
+      "id": "E-216",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/AppBar.tsx#AppBarTrailing.targetRoom"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/hitArea.ts#platformTapTarget"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-305"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/app-bar.test.tsx: with targetRoom the trailing row is the platform’s target tall and each icon’s size plus its slop lies inside the row, as iOS and as Android (Platform.OS replaced), with the decoy that without it the row is as tall as its icons; bookmarks.test holds the colour page to asking for it. The overlap of three targets at 06’s pitch is F-305’s, and the device check is attested.",
+      "memory": "memory/effects/a-target-reaches-its-size-only-inside-its-parent-on-android.md",
+      "rationale": "Android delivers a touch only inside the parent’s bounds, so a 21.5 dp glyph’s slop past a row as tall as its glyphs is a target in the rule and not on a phone (F-237’s review, S3). targetRoom makes the row the target tall and gives the slop back as padding, so the drawn positions stay where 06 draws them. A change to the slop arithmetic, or an app bar that drops the flag, shrinks the real target without failing a render test that cannot see Android’s clipping."
     }
   ]
 }

@@ -51,3 +51,10 @@ because the payload matches, ask who reads it and what reading does. The payload
 informative thing about a channel.
 
 [[a-shared-channel-widens-by-type-or-it-widens-by-lie]]
+
+## F-247: the colour page arms through 06's *Hold as Target*
+
+The colour page's arming moved to `06`'s outlined action, *Hold as Target in Lens*. The rule stays: the
+screen calls `onHoldAsTarget(slug)` and the ROUTE reads the context, arms, and then opens the Lens,
+which shows `04` while a target is armed. `colour-detail-states.test` fires the button; a route-source
+assertion there holds `arm(` before `/lens`.

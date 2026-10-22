@@ -79,3 +79,8 @@ curation whatever its `sourceType`** (F-196 made the same rule unconditional for
 and it has **at least two layers**. When Palette Studio offers mockup `16`'s *kasane* kind
 (F-251), the palette a person saves must carry `japanese-inspired` or `editorial`, or the parser
 refuses it. That is the rule working, not something to route around.
+
+## F-247: the colour page left this link
+
+`06` lists no palettes, so the rebuilt colour page no longer reads the palettes holding a colour
+(ADR-0147). The kasane note this link carried is answered: palettes are `10`'s.

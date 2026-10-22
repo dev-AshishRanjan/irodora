@@ -69,3 +69,8 @@ does, at 32 × 32 of 44.
 
 **A change to how a control reaches the target moves this anchor too.** The proof fails loudly when
 it cannot plant, so the next move shows up in CI as UNRUNNABLE rather than as a quiet pass.
+
+## F-247: the header box became the app bar's room
+
+The box F-237 gave `06`'s bookmark left with the platform header. Its job — a parent as tall as the
+target, so Android delivers the slop — is now `AppBar`'s `targetRoom` ([[a-target-reaches-its-size-only-inside-its-parent-on-android]]).

@@ -46,3 +46,9 @@ the printed field, never prose that stays off-screen.
 script would pass the proof and be caught only by the next name whose glyph is missing. The
 guard was watched failing on real content (seven glyphs, 2026-09-24), which is evidence it
 works today, not a check that it keeps working.
+
+## F-247: the colour page left this link
+
+The colour page no longer prints the Japanese names of the palettes holding a colour (ADR-0147). Its own
+new Japanese words — `26`'s three headings, the back control's name, the empty card — are catalogue
+words, and the same coverage check reads them.

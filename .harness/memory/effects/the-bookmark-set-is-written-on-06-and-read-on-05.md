@@ -40,3 +40,10 @@ missing. So the route assertions name both, and each feature's notes say what to
 
 `LookbookProvider` (E-205) sits inside `BookmarksProvider`. The route assertions here still hold,
 and `lookbook.test` mirrors them.
+
+## F-247: 06's toggle is in 06's own app bar
+
+The colour page draws `06`'s app bar, so the toggle is its first trailing icon — `selected` filled and
+announced — and the route passes `bookmarked={bookmarked.has(slug)}` and `onBookmark`, with the platform
+header hidden and no `headerRight`. `bookmarks.test` holds the route to that, with a decoy source that
+still draws the header's bookmark.
