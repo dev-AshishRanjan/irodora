@@ -183,28 +183,54 @@ export function regenerate(input: RegenerateInput): readonly SlotProposal[] {
   const locked = draft.filter((p) => p.locked);
   const lockedSlots = new Set(locked.map((p) => p.slot));
   const lockedPieces = locked.map(pieceOf);
-  const engine = engineProfile(profile);
-  const componentWeights = outfitWeights(weights);
+  const context: RankingContext = {
+    profile: engineProfile(profile),
+    rules,
+    weights: outfitWeights(weights),
+    reference,
+  };
 
   return OUTFIT_SLOTS.filter((slot) => !lockedSlots.has(slot)).map((slot) => ({
     slot,
-    ranked: wardrobe
-      .filter((g) => slotFor(g) === slot)
-      .map((garment) => ({
-        garment,
-        // THE ENGINE SCORES THE WHOLE OUTFIT, locks included. Scoring the candidate alone would
-        // answer a different question — "is this a good jumper" rather than "is this a good
-        // jumper WITH those trousers" — and the second is the one FR-33 asks.
-        score: scoreOutfit(
-          [...lockedPieces, { slot, color: colorOf(garment.color) }],
-          reference,
-          engine,
-          rules,
-          componentWeights,
-        ),
-      }))
-      .sort(compareRanked),
+    ranked: rankForSlot(slot, lockedPieces, wardrobe, context),
   }));
+}
+
+/** What a garment is ranked against: the engine's profile, the rules, the weights and the reference. */
+export interface RankingContext {
+  readonly profile: PersonalProfile;
+  readonly rules: RuleSet;
+  readonly weights: ReturnType<typeof outfitWeights>;
+  readonly reference: readonly Candidate[];
+}
+
+/**
+ * The wardrobe's garments that fill a slot, each scored WITH the pieces already chosen, best first
+ * (F-247: the builder's one ranking, extracted from `regenerate` with no change to what it returns,
+ * so the colour page's *Wearable Combinations* ranks exactly as the builder does — E-214).
+ */
+export function rankForSlot(
+  slot: OutfitSlot,
+  chosen: readonly OutfitPiece[],
+  wardrobe: readonly StoredGarment[],
+  context: RankingContext,
+): readonly RankedGarment[] {
+  return wardrobe
+    .filter((g) => slotFor(g) === slot)
+    .map((garment) => ({
+      garment,
+      // THE ENGINE SCORES THE WHOLE OUTFIT, the chosen pieces included. Scoring the candidate alone
+      // would answer a different question — "is this a good jumper" rather than "is this a good
+      // jumper WITH those trousers" — and the second is the one FR-33 asks.
+      score: scoreOutfit(
+        [...chosen, { slot, color: colorOf(garment.color) }],
+        context.reference,
+        context.profile,
+        context.rules,
+        context.weights,
+      ),
+    }))
+    .sort(compareRanked);
 }
 
 /**

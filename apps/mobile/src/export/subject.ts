@@ -16,7 +16,7 @@
  * the file, made by the layer least able to know.
  */
 
-import { CORPUS_LABEL } from '../corpus';
+import { CORPUS_LABEL, type PublishedEntry } from '../corpus';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
 import { ruleSet } from '../rules';
 import type { ExportColour, ExportSubject } from '@irodora/export';
@@ -60,11 +60,37 @@ function lchHue(a: number, b: number): number {
 export function paletteSubject(palette: StoredPalette): ExportSubject {
   return {
     title: palette.nameEn,
-    envelope: {
-      engine: ENGINE_VERSION,
-      corpus: CORPUS_LABEL,
-      rules: ruleSet().versionId,
-    },
+    envelope: envelope(),
     colours: palette.members.map((member) => colourOf(member)),
+  };
+}
+
+/** The versions that produced a file (FR-10): read, never composed. One envelope for every subject. */
+function envelope(): ExportSubject['envelope'] {
+  return { engine: ENGINE_VERSION, corpus: CORPUS_LABEL, rules: ruleSet().versionId };
+}
+
+/**
+ * One corpus colour, ready to export (F-247, ADR-0147: `06`'s export glyph). Every coordinate is the
+ * bundle's own derivation, read and never recomputed, for the reason `colourOf` gives; the English
+ * name is the title, as a palette's is.
+ */
+export function colourSubject(entry: PublishedEntry): ExportSubject {
+  const { derived } = entry;
+  return {
+    title: entry.entry.name.en,
+    envelope: envelope(),
+    colours: [
+      {
+        id: entry.entry.slug,
+        name: entry.entry.name.en,
+        hex: derived.hex,
+        lab: [derived.lab[0], derived.lab[1], derived.lab[2]],
+        lch: [derived.lch[0], derived.lch[1], derived.lch[2]],
+        oklch: [derived.oklch[0], derived.oklch[1], derived.oklch[2]],
+        // A corpus colour is a reference, as `colorFor` declares it.
+        source: 'reference',
+      },
+    ],
   };
 }

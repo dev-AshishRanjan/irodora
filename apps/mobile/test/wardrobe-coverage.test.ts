@@ -21,7 +21,8 @@ import { toWorking } from '../src/profile/store';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
 import { colorOf } from '../src/wardrobe';
-import { coverageContext, placeableGarments } from '../src/wardrobe/coverage';
+import { coverageContext, placeableGarments, rankingContext } from '../src/wardrobe/coverage';
+import { NO_EVIDENCE_PROFILE } from '../src/wear';
 import { referenceSet } from '../src/wardrobe/reference';
 
 function rowOf(slug: string): SavedColorRow {
@@ -164,6 +165,23 @@ describe('the context a valid outfit is counted against', () => {
     expect([...ours.combinations].sort()).toStrictEqual([...theirs.combinations].sort());
     // The fixture makes outfits to count, so equality above is not two zeros.
     expect(ours.valid).toBeGreaterThan(0);
+  });
+});
+
+describe('the context a garment is ranked against (F-247, ADR-0148)', () => {
+  it('is the coverage context where a profile is stored (the same four, the oracle)', () => {
+    const ranking = rankingContext(STORED);
+    const counted = coverageContext(STORED);
+    expect(ranking.profile).toStrictEqual(counted?.profile);
+    expect(ranking.weights).toStrictEqual(counted?.weights);
+    expect(ranking.rules.versionId).toBe(counted?.rules.versionId);
+    expect(ranking.reference).toHaveLength(counted?.reference.length ?? -1);
+  });
+
+  it('is the no-evidence profile where none is stored, so an order can still be given', () => {
+    expect(rankingContext(null).profile).toBe(NO_EVIDENCE_PROFILE);
+    // DECOY: the counted context still refuses to exist without a profile.
+    expect(coverageContext(null)).toBeUndefined();
   });
 });
 

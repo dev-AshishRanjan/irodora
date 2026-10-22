@@ -69,32 +69,11 @@ export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
  * blank line on the screen a reader is using to decide whether to trust us.
  */
 /**
- * Classification → its label.
- *
- * Exported since F-023 so the card uses the SAME map. Two copies of the FR-23 vocabulary would
- * drift, and the one that drifts would be the one on the artefact that leaves the app with none
- * of its context.
+ * The record's vocabulary → catalogue keys: written once, in `../detail` (F-247), and the
+ * classification's re-exported here for the colour card, which reads it from this screen (F-023).
  */
-export const CLASSIFICATION_KEYS = {
-  historical: 'classification.historical',
-  traditional: 'classification.traditional',
-  'modern-japanese': 'classification.modern-japanese',
-  'japanese-inspired': 'classification.japanese-inspired',
-  editorial: 'classification.editorial',
-} as const satisfies Record<string, MessageKey>;
-
-const SOURCE_TYPE_KEYS = {
-  measurement: 'sourceType.measurement',
-  publication: 'sourceType.publication',
-  'museum-record': 'sourceType.museum-record',
-  editorial: 'sourceType.editorial',
-  standard: 'sourceType.standard',
-} as const satisfies Record<string, MessageKey>;
-
-const INDEPENDENCE_KEYS = {
-  independent: 'independence.independent',
-  self: 'independence.self',
-} as const satisfies Record<string, MessageKey>;
+import { CLASSIFICATION_KEYS, INDEPENDENCE_KEYS, SOURCE_TYPE_KEYS } from '../detail';
+export { CLASSIFICATION_KEYS };
 
 const ROLE_KEYS = {
   anchor: 'role.anchor',

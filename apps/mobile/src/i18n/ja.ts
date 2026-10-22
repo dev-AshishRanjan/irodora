@@ -143,11 +143,16 @@ export const ja: Record<MessageKey, string> = {
   'detail.editorialNotes': '編集メモ',
   'detail.notFound': 'この版にその色はありません。',
   'detail.notRecorded': '記録なし',
+  'detail.era': '時代',
+  'detail.eraNone': 'なし',
+  'detail.seasonNone': '指定なし',
+  'detail.nearestSrgb': 'もっとも近いsRGB表示',
   'coord.xyz': 'XYZ (D65)',
   'coord.lab': 'CIELAB',
   'coord.lch': 'CIELCh',
   'coord.oklch': 'OKLCh',
   'coord.rgb': 'sRGB',
+  'coord.displayP3': 'Display-P3',
   'coord.inGamut': 'sRGBの範囲内',
   'coord.outOfGamut': 'sRGBの範囲外。下の16進はもっとも近いsRGBの表示',
   'coord.renderDifference': '画面に描かれる色との差',
@@ -915,6 +920,8 @@ export const NOTATION_KEYS: readonly MessageKey[] = [
   'coord.lch',
   'coord.oklch',
   'coord.rgb',
+  // F-247: the wide-gamut space 06 and 26 print beside sRGB.
+  'coord.displayP3',
   // F-019. Units and space names, on every metric FR-48 asks for. Each one passes
   // NOTATION_SHAPE and the length cap; a phrase could not be added here.
   'unit.deltaE00',

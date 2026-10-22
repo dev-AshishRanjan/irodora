@@ -30,12 +30,24 @@ import { fromSpace, type Color } from '@irodora/color-core';
 import { deltaE00 } from '@irodora/color-difference';
 import {
   oklchToXyz,
+  xyzToDisplayP3,
   xyzToLab,
   xyzToOklch,
   xyzToSrgb,
   srgbToHex,
   type Triple,
 } from '@irodora/color-spaces';
+
+/**
+ * A corpus colour in Display P3 (F-247, ADR-0146 D4): the engine's conversion of the record's own
+ * canonical XYZ — not of the gamut-mapped sRGB, which would carry the mapping's loss into a wider
+ * space. The bundle carries no P3, so this is a derived answer at render, beside the CVD simulation:
+ * a pass-through, as everything here is. A component may fall outside [0, 1]; it is returned as
+ * converted, and the screen says so rather than clamping it.
+ */
+export function displayP3Of(xyz: Triple): Triple {
+  return xyzToDisplayP3(xyz);
+}
 
 /** A colour the app can show, with every number the engine's. */
 export interface DisplayColour {

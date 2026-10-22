@@ -21,7 +21,8 @@
 import { outfitWeights, parseWeightContent } from '@irodora/recommendation';
 import type { CoverageContext, CoverageGarment } from '@irodora/optimization';
 import type { StoredGarment, StoredPersonalProfile } from '@irodora/store';
-import { engineProfile, slotFor } from '../outfit/builder';
+import { engineProfile, slotFor, type RankingContext } from '../outfit/builder';
+import { NO_EVIDENCE_PROFILE } from '../wear';
 import { toWorking } from '../profile/store';
 import { ruleSet } from '../rules';
 import { WEIGHTS_TEXT } from '../rules/generated/weights';
@@ -41,8 +42,17 @@ export function placeableGarments(garments: readonly StoredGarment[]): readonly 
 /** What a valid outfit is counted against, or `undefined` when no profile is stored. */
 export function coverageContext(stored: StoredPersonalProfile | null): CoverageContext | undefined {
   if (stored === null) return undefined;
+  return rankingContext(stored);
+}
+
+/**
+ * What a garment is ranked against (F-247): the same four as {@link coverageContext}, and without a
+ * stored profile the no-evidence profile (E-101), whose fit weighs nothing — so an ORDER can still be
+ * given, and the screen that shows it prints no score, no factor and no word of fit (ADR-0148 D2).
+ */
+export function rankingContext(stored: StoredPersonalProfile | null): RankingContext {
   return {
-    profile: engineProfile(toWorking(stored)),
+    profile: stored === null ? NO_EVIDENCE_PROFILE : engineProfile(toWorking(stored)),
     rules: ruleSet(),
     weights: outfitWeights(parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json')),
     reference: referenceSet(),

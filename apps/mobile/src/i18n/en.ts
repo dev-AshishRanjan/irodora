@@ -157,11 +157,18 @@ export const en = {
   'detail.editorialNotes': 'Editorial notes',
   'detail.notFound': 'That colour is not in this corpus version.',
   'detail.notRecorded': 'Not recorded',
+  // 06's pill and provenance card (F-247, ADR-0146): an absent era or season is stated, never blank.
+  'detail.era': 'Era',
+  'detail.eraNone': 'None',
+  'detail.seasonNone': 'Not assigned',
+  // The one entry outside sRGB: its hex is the nearest rendering, and the row says by how much (E2).
+  'detail.nearestSrgb': 'nearest sRGB rendering',
   'coord.xyz': 'XYZ (D65)',
   'coord.lab': 'CIELAB',
   'coord.lch': 'CIELCh',
   'coord.oklch': 'OKLCh',
   'coord.rgb': 'sRGB',
+  'coord.displayP3': 'Display-P3',
   'coord.inGamut': 'Fits inside sRGB',
   'coord.outOfGamut': 'Outside sRGB — the hex below is the nearest sRGB rendering',
   'coord.renderDifference': 'Difference to what the screen draws',
