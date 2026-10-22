@@ -52,8 +52,8 @@ These come from reading only. Nothing was run.
    - The app reads only `RULES_OCCASION = 'default'` (`src/rules.ts`). A screen that chooses an occasion needs a new reader.
 4. **07's intelligence card binds four things, and §8 binds three.**
    - **Harmony.** `engine:harmony.relationship` has no implementation. `scoreOutfit` classifies no relationship (ADR-0124's alternatives row; `outfit-score.ts` 174–180), and `@irodora/color-harmony` only generates. §8's `07` row lists fit, separation and contrast and says *exists*; it does not bind the harmony value.
-   - **Fit.** "94% Match (Cool-Muted profile)" is OQ-32 plus E2.
-   - **Separation.** "98% Separation (Protan/Deutan Safe)" is E2: the figure is `cvdAccessibility`, the worst pair over three deficiencies at severity 1.
+   - **Fit.** "94% Match (Cool-Muted profile)" is OQ-32 plus E2. (claims-ok: quotes the drawn construction this line resolves)
+   - **Separation.** "98% Separation (Protan/Deutan Safe)" is E2: the figure is `cvdAccessibility`, the worst pair over three deficiencies at severity 1. (claims-ok: quotes the drawn construction this line resolves)
    - **Contrast.** "6.2:1 (APCA Passed)" is E2. Nothing defines which pair; `compare.ts#compare(a, b)` gives `wcagRatio`, `apcaBOnA` and `apcaAOnB` for two entries.
 5. **Done criteria the rebuild would break if 07 were read literally.**
    - F-195 c1: ranked trouser and shoe candidates *with the reason for each*. c3: someone with no profile is told which half is missing.
@@ -863,7 +863,7 @@ Declared in Increment 0 (Appendix E). All three block release.
 | **Decided on** | The delegation of 2026-10-05 (R9 §11): *"For all OQ, when needed decide for yourself. Think, reason and research before deciding. Be professional and enterprise grade."* |
 
 ## Context
-07 prints *"94% Match (Cool-Muted profile)"*; 13 prints *"92% (Cool-Muted Match)"*. E2 already removes *Match*. OQ-32 asks
+07 prints *"94% Match (Cool-Muted profile)"*; 13 prints *"92% (Cool-Muted Match)"*. E2 already removes *Match*. OQ-32 asks (claims-ok: quotes the drawn construction this line resolves)
 about the note: the seasonal label beside the score, something else, or nothing. F-223 c3 requires the label beside the
 ranges it summarises.
 

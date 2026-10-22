@@ -71,36 +71,100 @@
       "copy": null
     },
     {
-      "id": "07.title",
+      "id": "07.back.label",
       "order": 3,
       "parent": "07.header",
       "component": "ui:Text",
       "box": {
-        "x": 175,
-        "y": 150,
-        "w": 443,
-        "h": 28
+        "x": 176,
+        "y": 154,
+        "w": 113,
+        "h": 19
       },
       "dp": {
-        "x": 49,
-        "y": 9,
-        "w": 301.5,
-        "h": 19
+        "x": 49.5,
+        "y": 11.5,
+        "w": 77,
+        "h": 13
       },
       "tokens": {
         "fg": "text.primary"
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 500
       },
       "icon": null,
       "illustration": null,
       "binding": "corpus:entry.name.romaji",
+      "action": "navigate:/atlas/[slug]",
+      "raw": {
+        "emDp": 17.7
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.divider",
+      "order": 4,
+      "parent": "07.header",
+      "component": null,
+      "box": {
+        "x": 299,
+        "y": 150,
+        "w": 2,
+        "h": 28
+      },
+      "dp": {
+        "x": 133.5,
+        "y": 9,
+        "w": 1.5,
+        "h": 19
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.title",
+      "order": 5,
+      "parent": "07.header",
+      "component": "ui:Text",
+      "box": {
+        "x": 310,
+        "y": 154,
+        "w": 307,
+        "h": 19
+      },
+      "dp": {
+        "x": 141,
+        "y": 11.5,
+        "w": 209,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.title",
       "action": null,
       "raw": {
-        "emDp": 26
+        "emDp": 17.7
       },
       "copy": {
         "shape": "heading",
@@ -109,7 +173,7 @@
     },
     {
       "id": "07.anchor",
-      "order": 4,
+      "order": 6,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -137,11 +201,14 @@
       "measured": {
         "bg": "#1F2126"
       },
+      "raw": {
+        "cornerPx": 12.25
+      },
       "copy": null
     },
     {
       "id": "07.anchor.swatch",
-      "order": 5,
+      "order": 7,
       "parent": "07.anchor",
       "component": "ui:Swatch",
       "box": {
@@ -165,11 +232,14 @@
       "illustration": null,
       "binding": "corpus:entry.hex",
       "action": null,
+      "raw": {
+        "cornerPx": 9.75
+      },
       "copy": null
     },
     {
       "id": "07.anchor.name",
-      "order": 6,
+      "order": 8,
       "parent": "07.anchor",
       "component": "ui:Text",
       "box": {
@@ -203,7 +273,7 @@
     },
     {
       "id": "07.anchor.category",
-      "order": 7,
+      "order": 9,
       "parent": "07.anchor",
       "component": "ui:Text",
       "box": {
@@ -228,7 +298,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:anchor.category",
+      "binding": "static:outfit.top",
       "action": null,
       "copy": {
         "shape": "label",
@@ -237,7 +307,7 @@
     },
     {
       "id": "07.occasion",
-      "order": 8,
+      "order": 10,
       "parent": null,
       "component": "ui:ChoiceGroup",
       "box": {
@@ -254,18 +324,21 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "static:wear.occasion",
       "action": null,
+      "raw": {
+        "cornerPx": 8.5
+      },
       "copy": null
     },
     {
       "id": "07.occasion.selected",
-      "order": 9,
+      "order": 11,
       "parent": "07.occasion",
       "component": null,
       "box": {
@@ -282,18 +355,21 @@
       },
       "tokens": {
         "bg": "action.primary",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": "select:occasion.office",
+      "raw": {
+        "cornerPx": 4.5
+      },
       "copy": null
     },
     {
       "id": "07.occasion.casual",
-      "order": 10,
+      "order": 12,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -325,7 +401,7 @@
     },
     {
       "id": "07.occasion.selected.dot",
-      "order": 11,
+      "order": 13,
       "parent": "07.occasion.selected",
       "component": null,
       "box": {
@@ -351,8 +427,42 @@
       "copy": null
     },
     {
+      "id": "07.occasion.office",
+      "order": 14,
+      "parent": "07.occasion.selected",
+      "component": "ui:Text",
+      "box": {
+        "x": 246,
+        "y": 411,
+        "w": 147,
+        "h": 17
+      },
+      "dp": {
+        "x": 97.5,
+        "y": 186.5,
+        "w": 100,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "ground"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.occasion.office",
+      "action": "select:occasion.office",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
       "id": "07.occasion.classic",
-      "order": 12,
+      "order": 15,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -375,8 +485,8 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:wear.occasion.classic",
-      "action": "select:occasion.classic",
+      "binding": "static:wear.occasion.japaneseInspired",
+      "action": "select:occasion.japaneseInspired",
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -384,7 +494,7 @@
     },
     {
       "id": "07.occasion.evening",
-      "order": 13,
+      "order": 16,
       "parent": "07.occasion",
       "component": "ui:Text",
       "box": {
@@ -407,8 +517,8 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:wear.occasion.evening",
-      "action": "select:occasion.evening",
+      "binding": "static:wear.occasion.formal",
+      "action": "select:occasion.formal",
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -416,7 +526,7 @@
     },
     {
       "id": "07.slots.slot-1",
-      "order": 14,
+      "order": 17,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -432,12 +542,12 @@
         "h": 125.5
       },
       "tokens": {
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.1.hex",
+      "binding": "engine:wear.slot.1.hex",
       "action": null,
       "measured": {
         "bg": "#576775"
@@ -446,7 +556,7 @@
     },
     {
       "id": "07.slots.slot-2",
-      "order": 15,
+      "order": 18,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -462,12 +572,12 @@
         "h": 124.5
       },
       "tokens": {
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.2.hex",
+      "binding": "engine:wear.slot.2.hex",
       "action": null,
       "measured": {
         "bg": "#CDC4B9"
@@ -476,7 +586,7 @@
     },
     {
       "id": "07.slots.slot-1.title",
-      "order": 16,
+      "order": 19,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -508,7 +618,7 @@
     },
     {
       "id": "07.slots.slot-2.title",
-      "order": 17,
+      "order": 20,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -540,7 +650,7 @@
     },
     {
       "id": "07.slots.slot-2.hex",
-      "order": 18,
+      "order": 21,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -564,7 +674,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.2.hex",
+      "binding": "engine:wear.slot.2.hex",
       "action": null,
       "copy": {
         "shape": "value",
@@ -573,7 +683,7 @@
     },
     {
       "id": "07.slots.slot-1.hex",
-      "order": 19,
+      "order": 22,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -597,7 +707,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.1.hex",
+      "binding": "engine:wear.slot.1.hex",
       "action": null,
       "copy": {
         "shape": "value",
@@ -606,7 +716,7 @@
     },
     {
       "id": "07.slots.slot-2.name",
-      "order": 20,
+      "order": 23,
       "parent": "07.slots.slot-2",
       "component": "ui:Text",
       "box": {
@@ -629,7 +739,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.2.name",
+      "binding": "engine:wear.slot.2.name",
       "action": null,
       "copy": {
         "shape": "label",
@@ -639,7 +749,7 @@
     },
     {
       "id": "07.slots.slot-1.name",
-      "order": 21,
+      "order": 24,
       "parent": "07.slots.slot-1",
       "component": "ui:Text",
       "box": {
@@ -662,7 +772,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.1.name",
+      "binding": "engine:wear.slot.1.name",
       "action": null,
       "copy": {
         "shape": "label",
@@ -672,7 +782,7 @@
     },
     {
       "id": "07.slots.slot-2.swap",
-      "order": 22,
+      "order": 25,
       "parent": "07.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -687,11 +797,19 @@
         "w": 80.5,
         "h": 27
       },
-      "tokens": {},
-      "type": null,
+      "tokens": {
+        "bg": "level3",
+        "fg": "text.primary",
+        "radius": "sm"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": "refresh",
       "illustration": null,
-      "binding": null,
+      "binding": "static:wear.swap",
       "action": "select:slot.2.swap",
       "copy": {
         "shape": "label",
@@ -700,7 +818,7 @@
     },
     {
       "id": "07.slots.slot-2.lock",
-      "order": 23,
+      "order": 26,
       "parent": "07.slots.slot-2",
       "component": "ui:Button",
       "box": {
@@ -715,11 +833,19 @@
         "w": 71.5,
         "h": 28
       },
-      "tokens": {},
-      "type": null,
+      "tokens": {
+        "bg": "level3",
+        "fg": "text.primary",
+        "radius": "sm"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": "lock-solid",
       "illustration": null,
-      "binding": null,
+      "binding": "static:wear.lock",
       "action": "toggle:slot.2.lock",
       "copy": {
         "shape": "label",
@@ -728,7 +854,7 @@
     },
     {
       "id": "07.slots.slot-3",
-      "order": 24,
+      "order": 27,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -744,12 +870,12 @@
         "h": 99.5
       },
       "tokens": {
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.3.hex",
+      "binding": "engine:wear.slot.3.hex",
       "action": null,
       "measured": {
         "bg": "#1F2025"
@@ -758,7 +884,7 @@
     },
     {
       "id": "07.slots.slot-4",
-      "order": 25,
+      "order": 28,
       "parent": null,
       "component": "app:OutfitSlot",
       "box": {
@@ -774,12 +900,12 @@
         "h": 99.5
       },
       "tokens": {
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.4.hex",
+      "binding": "engine:wear.slot.4.hex",
       "action": null,
       "measured": {
         "bg": "#323B44"
@@ -788,7 +914,7 @@
     },
     {
       "id": "07.slots.slot-3.title",
-      "order": 26,
+      "order": 29,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -820,7 +946,7 @@
     },
     {
       "id": "07.slots.slot-3.swap",
-      "order": 27,
+      "order": 30,
       "parent": "07.slots.slot-3",
       "component": "ui:Button",
       "box": {
@@ -835,11 +961,17 @@
         "w": 56,
         "h": 23
       },
-      "tokens": {},
-      "type": null,
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": "refresh",
       "illustration": null,
-      "binding": null,
+      "binding": "static:wear.swap",
       "action": "select:slot.3.swap",
       "copy": {
         "shape": "label",
@@ -848,7 +980,7 @@
     },
     {
       "id": "07.slots.slot-4.title",
-      "order": 28,
+      "order": 31,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -880,26 +1012,32 @@
     },
     {
       "id": "07.slots.slot-4.swap",
-      "order": 29,
+      "order": 32,
       "parent": "07.slots.slot-4",
       "component": "ui:Button",
       "box": {
-        "x": 573,
-        "y": 716,
-        "w": 65,
-        "h": 18
+        "x": 565,
+        "y": 708,
+        "w": 82,
+        "h": 34
       },
       "dp": {
-        "x": 320,
-        "y": 394,
-        "w": 44.5,
-        "h": 12.5
+        "x": 314.5,
+        "y": 389,
+        "w": 56,
+        "h": 23
       },
-      "tokens": {},
-      "type": null,
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": "refresh",
       "illustration": null,
-      "binding": null,
+      "binding": "static:wear.swap",
       "action": "select:slot.4.swap",
       "copy": {
         "shape": "label",
@@ -908,7 +1046,7 @@
     },
     {
       "id": "07.slots.slot-3.hex",
-      "order": 30,
+      "order": 33,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -932,7 +1070,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.3.hex",
+      "binding": "engine:wear.slot.3.hex",
       "action": null,
       "copy": {
         "shape": "value",
@@ -941,7 +1079,7 @@
     },
     {
       "id": "07.slots.slot-4.hex",
-      "order": 31,
+      "order": 34,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -965,7 +1103,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.4.hex",
+      "binding": "engine:wear.slot.4.hex",
       "action": null,
       "copy": {
         "shape": "value",
@@ -974,7 +1112,7 @@
     },
     {
       "id": "07.slots.slot-3.name",
-      "order": 32,
+      "order": 35,
       "parent": "07.slots.slot-3",
       "component": "ui:Text",
       "box": {
@@ -997,7 +1135,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.3.name",
+      "binding": "engine:wear.slot.3.name",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1007,7 +1145,7 @@
     },
     {
       "id": "07.slots.slot-4.name",
-      "order": 33,
+      "order": 36,
       "parent": "07.slots.slot-4",
       "component": "ui:Text",
       "box": {
@@ -1030,7 +1168,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "store:outfit.slot.4.name",
+      "binding": "engine:wear.slot.4.name",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1040,7 +1178,7 @@
     },
     {
       "id": "07.intelligence",
-      "order": 34,
+      "order": 37,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1068,11 +1206,14 @@
       "measured": {
         "bg": "#1F1F25"
       },
+      "raw": {
+        "cornerPx": 12.5
+      },
       "copy": null
     },
     {
       "id": "07.intelligence.title",
-      "order": 35,
+      "order": 38,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1106,7 +1247,7 @@
     },
     {
       "id": "07.intelligence.harmony.label",
-      "order": 36,
+      "order": 39,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1140,7 +1281,7 @@
     },
     {
       "id": "07.intelligence.harmony.value",
-      "order": 37,
+      "order": 40,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1165,7 +1306,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:harmony.relationship",
+      "binding": "engine:wear.harmony",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1174,7 +1315,7 @@
     },
     {
       "id": "07.intelligence.fit.label",
-      "order": 38,
+      "order": 41,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1208,7 +1349,7 @@
     },
     {
       "id": "07.intelligence.fit.value",
-      "order": 39,
+      "order": 42,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1233,7 +1374,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:personalFit",
+      "binding": "engine:wear.fit",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1242,7 +1383,7 @@
     },
     {
       "id": "07.intelligence.cvd.label",
-      "order": 40,
+      "order": 43,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1276,7 +1417,7 @@
     },
     {
       "id": "07.intelligence.cvd.value",
-      "order": 41,
+      "order": 44,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1301,7 +1442,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:separation",
+      "binding": "engine:wear.separation",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1310,7 +1451,7 @@
     },
     {
       "id": "07.intelligence.contrast.label",
-      "order": 42,
+      "order": 45,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1344,7 +1485,7 @@
     },
     {
       "id": "07.intelligence.contrast.value",
-      "order": 43,
+      "order": 46,
       "parent": "07.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1369,7 +1510,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:contrast",
+      "binding": "engine:wear.contrast",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1378,7 +1519,7 @@
     },
     {
       "id": "07.intelligence.rule",
-      "order": 44,
+      "order": 47,
       "parent": "07.intelligence",
       "component": null,
       "box": {
@@ -1405,7 +1546,7 @@
     },
     {
       "id": "07.substitutions.warmer",
-      "order": 45,
+      "order": 48,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1422,13 +1563,16 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "pill"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:substitution.warmer",
+      "binding": "engine:wear.alternative.warmer",
       "action": "select:substitution.warmer",
+      "raw": {
+        "cornerPx": 8
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1436,7 +1580,7 @@
     },
     {
       "id": "07.substitutions.contrast",
-      "order": 46,
+      "order": 49,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1453,13 +1597,16 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "pill"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:substitution.contrast",
+      "binding": "engine:wear.alternative.contrast",
       "action": "select:substitution.contrast",
+      "raw": {
+        "cornerPx": 8
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1467,7 +1614,7 @@
     },
     {
       "id": "07.substitutions.monochrome",
-      "order": 47,
+      "order": 50,
       "parent": "07.intelligence",
       "component": "ui:Chip",
       "box": {
@@ -1484,13 +1631,16 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "pill"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:substitution.monochrome",
+      "binding": "engine:wear.alternative.monochrome",
       "action": "select:substitution.monochrome",
+      "raw": {
+        "cornerPx": 8
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1498,7 +1648,7 @@
     },
     {
       "id": "07.actions",
-      "order": 48,
+      "order": 51,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1525,7 +1675,7 @@
     },
     {
       "id": "07.actions.save",
-      "order": 49,
+      "order": 52,
       "parent": "07.actions",
       "component": "ui:Button",
       "box": {
@@ -1548,7 +1698,7 @@
       "icon": null,
       "illustration": null,
       "binding": "static:wear.saveToLab",
-      "action": "submit:outfit.save",
+      "action": "navigate:/wardrobe/outfit",
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1556,7 +1706,7 @@
     },
     {
       "id": "07.actions.export",
-      "order": 50,
+      "order": 53,
       "parent": "07.actions",
       "component": "ui:Button",
       "box": {
@@ -1629,12 +1779,52 @@
     },
     {
       "what": "garbled-text",
-      "note": "a stray prime mark after the colour name in the header",
+      "note": "a stray prime mark after the colour name in the header (F-248: the prime alone; the name is the back word)",
       "box": {
-        "x": 175,
+        "x": 285,
         "y": 153,
-        "w": 114,
+        "w": 5,
+        "h": 8
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "\"Badge\" after \"Harmony\" — a component name printed in the label (§2, F-248)",
+      "box": {
+        "x": 214,
+        "y": 954,
+        "w": 62,
+        "h": 20
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "\"Card\" at the end of the card title — a component name (§2, F-248)",
+      "box": {
+        "x": 553,
+        "y": 888,
+        "w": 50,
         "h": 21
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "\"Color\" in the card title, on a screen the en-GB catalogue spells \"Colour\" (§2, F-248)",
+      "box": {
+        "x": 256,
+        "y": 888,
+        "w": 55,
+        "h": 21
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "a stray bullet after slots 2–4’s names (F-248)",
+      "box": {
+        "x": 530,
+        "y": 600,
+        "w": 8,
+        "h": 8
       }
     },
     {
@@ -1700,9 +1890,39 @@
   ],
   "departures": [
     {
+      "rule": "E1",
+      "element": "07.anchor.name",
+      "why": "the colour the page was opened for, as kanji, romaji and hex; 07’s Ai-nezumi is sample content (ADR-0151)"
+    },
+    {
+      "rule": "E1",
+      "element": "07.slots.slot-2.name",
+      "why": "each slot is the engine’s ranking for it, named by the corpus colour (romaji and English); 07’s garment and material words are sample content (ADR-0151)"
+    },
+    {
+      "rule": "E2",
+      "element": "07.occasion.classic",
+      "why": "the four segments are FR-34’s published weightings, each by its own word: Office (office and minimal are two profiles), Japanese-inspired (no classic weighting exists, FR-23), Formal (no evening weighting is published) (ADR-0151)"
+    },
+    {
+      "rule": "E2",
+      "element": "07.intelligence.harmony.value",
+      "why": "the warm–cool relation the outfit’s harmony component measures, in words; no engine names a geometric relationship for a set of colours yet (F-349), and \"Kasane\" is a claim about tradition (ADR-0151)"
+    },
+    {
+      "rule": "E2",
+      "element": "07.substitutions.monochrome",
+      "why": "the pills are the engine’s four axes (warmer, cooler, lighter, higher contrast); no monochrome axis exists (ADR-0152)"
+    },
+    {
+      "rule": "E4",
+      "element": "07.slots.slot-2",
+      "why": "a slot’s sheet (its rank, its reasons and Open · Shop for this · Add to wardrobe), the Locked badge on a locked slot out of hand, and the disabled save with its line when no profile is stored — capabilities FR-31, FR-11, F-195, F-199 and ADR-0136 require that 07 does not draw (ADR-0152)"
+    },
+    {
       "rule": "E2",
       "element": "07.intelligence.fit.value",
-      "why": "the FR-29 personal-fit score stays; the word that makes it a match to a seasonal type does not (§4 E2, C12). Whether the seasonal label is drawn beside the score instead, with no ranges beside it, is OQ-32"
+      "why": "the FR-32 personal-fit figure stays; \"Match\" and the seasonal type do not (§4 E2, C12). OQ-32 closed by ADR-0150: the note names whose profile the figure was computed against — \"(your profile)\" — and with no profile there is no figure"
     },
     {
       "rule": "E2",
@@ -1736,15 +1956,17 @@
         "07.slots.slot-1.name",
         "07.slots.slot-2.title",
         "07.slots.slot-2.hex",
-        "07.slots.slot-2.name"
+        "07.slots.slot-2.name",
+        "07.slots.slot-3.swap",
+        "07.slots.slot-4.swap"
       ],
-      "resolution": "text sits on the sample as 07 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)",
+      "resolution": "text sits on the sample as 07 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3); F-248 widens it to the compact Swaps drawn on the sample, whose words and edge take the same ink (ADR-0153)",
       "flippedByUser": false
     },
     {
       "id": "C12",
       "elements": ["07.intelligence.fit.value"],
-      "resolution": "the seasonal label is derived from the four ranges by F-223, with an ADR",
+      "resolution": "the seasonal label is derived from the four ranges by F-223 and appears only on 23 beside them; OQ-32 closed by ADR-0150 — the fit note names the profile, never a type",
       "flippedByUser": false
     }
   ]

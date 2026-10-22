@@ -1437,7 +1437,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-32",
+      "binding": "static:wear.fit.yours",
       "action": null,
       "copy": {
         "shape": "value",

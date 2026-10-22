@@ -221,7 +221,9 @@ export default {
       label: B(111, 912, 128, 20),
       value: B(357, 911, 47, 21),
       note: B(418, 911, 225, 25),
-      noteBinding: 'oq:OQ-32', // the seasonal label beside the fit score, with no ranges beside it
+      // OQ-32 closed by ADR-0150 (F-248): the note names whose profile the figure was computed
+      // against — "(your profile)", or "(an earlier profile)" for a stored figure — never a type.
+      noteBinding: 'static:wear.fit.yours',
     }),
     rule(2, 947),
     ...component('contrast', {

@@ -77,7 +77,9 @@ describe('the defaults are the inventories’, recomputed', () => {
           e.dp !== null,
       )
       .map((e) => e.dp?.h ?? NaN);
-    expect(heights).toHaveLength(31);
+    // F-248 measured 07’s three substitution pills as rounded rectangles (corners 7–9 px on a 33 px
+    // height, sm), not pills: 31 became 28.
+    expect(heights).toHaveLength(28);
     expect(half(median(heights))).toBe(CHIP_HEIGHT);
   });
 });

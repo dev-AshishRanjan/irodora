@@ -165,6 +165,10 @@ Two rules that matter more than the format:
 | [0147](0147-what-leaves-the-colour-page-and-where-each-drawn-action-goes.md) | What leaves the colour page, and where each drawn action goes | Accepted |
 | [0148](0148-wearable-combinations-are-the-persons-own-garments-the-engine-ranks-best-with-this-colour-as-a-top.md) | Wearable Combinations are the person's own garments the engine ranks best with this colour as a top | Accepted |
 | [0149](0149-06s-card-art-is-inked-at-its-measured-0-31-and-its-review-seals-green-is-minted.md) | 06's card art is inked at its measured 0.31, and its review seal's green is minted | Accepted |
+| [0150](0150-the-personal-fit-note-names-the-profile-the-figure-was-computed-against-never-a-type.md) | The personal-fit note names the profile the figure was computed against, never a type | Accepted |
+| [0151](0151-07s-occasions-slots-and-figures-say-what-the-engine-computes.md) | 07's occasions, slots and figures say what the engine computes | Accepted |
+| [0152](0152-what-07s-controls-do-and-what-it-keeps-that-it-does-not-draw.md) | What 07's controls do, and what it keeps that it does not draw | Accepted |
+| [0153](0153-07s-composition-its-inks-and-its-kimono.md) | 07's composition, its inks, and its kimono | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

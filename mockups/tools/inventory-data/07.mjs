@@ -29,11 +29,11 @@ const slotText = (n, parts) => {
     title: label(`${p}.title`, parts.title, p, `static:wear.slot.${n}`, {
       copy: { shape: 'label', script: 'latin' },
     }),
-    hex: label(`${p}.hex`, parts.hex, p, `store:outfit.slot.${n}.hex`, {
+    hex: label(`${p}.hex`, parts.hex, p, `engine:wear.slot.${n}.hex`, {
       type: text('sans', 'label', 400, { tabular: true }),
       copy: { shape: 'value', script: 'figures' },
     }),
-    name: label(`${p}.name`, parts.name, p, `store:outfit.slot.${n}.name`, {
+    name: label(`${p}.name`, parts.name, p, `engine:wear.slot.${n}.name`, {
       type: text('sans', 'body'),
       copy: { shape: 'label', script: 'latin', lines: parts.lines },
     }),
@@ -76,21 +76,29 @@ const [harmonyL, harmonyV] = row(
   'harmony',
   B(135, 954, 141, 20),
   B(312, 954, 210, 20),
-  'engine:harmony.relationship',
+  'engine:wear.harmony',
 );
-const [fitL, fitV] = row('fit', B(135, 987, 158, 15), B(312, 986, 274, 20), 'engine:personalFit');
-const [cvdL, cvdV] = row('cvd', B(134, 1019, 138, 17), B(312, 1019, 322, 20), 'engine:separation');
+const [fitL, fitV] = row('fit', B(135, 987, 158, 15), B(312, 986, 274, 20), 'engine:wear.fit');
+const [cvdL, cvdV] = row(
+  'cvd',
+  B(134, 1019, 138, 17),
+  B(312, 1019, 322, 20),
+  'engine:wear.separation',
+);
 const [contrastL, contrastV] = row(
   'contrast',
   B(134, 1052, 126, 16),
   B(312, 1051, 174, 21),
-  'engine:contrast',
+  'engine:wear.contrast',
 );
 const pill = (key, box) =>
   el(`07.substitutions.${key}`, 'ui:Chip', box, {
     parent: '07.intelligence',
-    tokens: { border: 'border.subtle', radius: 'pill' },
-    binding: `engine:substitution.${key}`,
+    // F-248: corners 7–9 px against a 33 px height (sm), outlined. Each is an alternative of the slot in
+    // hand, relative to the colour it shows (ADR-0152); the drawn three are a count (E1).
+    tokens: { border: 'border.subtle', radius: 'sm' },
+    raw: { cornerPx: 8 },
+    binding: `engine:wear.alternative.${key}`,
     action: `select:substitution.${key}`,
     copy: { shape: 'label', script: 'latin' },
   });
@@ -111,23 +119,46 @@ export default {
       icon: 'back',
       action: 'navigate:/atlas/[slug]',
     }),
-    el('07.title', 'ui:Text', B(175, 150, 443, 28), {
+    // F-248 split the header line into what it draws: the back word (the colour's romaji), a 2 px rule,
+    // and the title. F-220 recorded one 443 px box with raw.emDp 26, which was pixels: every word inks
+    // 19 px (caps and ascenders, 0.73 em), 26 px an em, 17.7 dp — body, within 4 dp. The back word and
+    // the title read one weight, heavier than the body-400 texts in the same ink (stems 3 px against 2
+    // at a like em): 500, as recorded.
+    el('07.back.label', 'ui:Text', B(176, 154, 113, 19), {
       parent: '07.header',
       tokens: { fg: 'text.primary' },
-      type: text('sans', 'title', 500),
+      type: text('sans', 'body', 500),
       binding: 'corpus:entry.name.romaji',
+      action: 'navigate:/atlas/[slug]',
+      copy: { shape: 'label', script: 'latin' },
+      raw: { emDp: 17.7 },
+    }),
+    el('07.divider', null, B(299, 150, 2, 28), {
+      parent: '07.header',
+      tokens: { fg: 'border.subtle' },
+    }),
+    el('07.title', 'ui:Text', B(310, 154, 307, 19), {
+      parent: '07.header',
+      tokens: { fg: 'text.primary' },
+      type: text('sans', 'body', 500),
+      binding: 'static:wear.title',
       copy: { shape: 'heading', script: 'latin' },
-      raw: { emDp: 26 },
+      raw: { emDp: 17.7 },
     }),
     // ---- the anchor piece
+    // F-248: the card's corners fit 12–12.5 px (8.3 dp, md); the swatch's 9.5–10 px (6.6 dp, sm), with a
+    // 1 px light line at its edge (#616D79 against the sample's #5A6A77) — the default keyline.
     el('07.anchor', 'ui:Card', B(129, 237, 512, 104), {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1F2126' },
+      raw: { cornerPx: 12.25 },
     }),
     el('07.anchor.swatch', 'ui:Swatch', B(146, 251, 76, 76), {
       parent: '07.anchor',
       tokens: { keyline: 'keyline', radius: 'sm' },
       binding: 'corpus:entry.hex',
+      // A 1 px line is a hairline, the default: raw.keylinePx records only a line wider than that (C20).
+      raw: { cornerPx: 9.75 },
     }),
     el('07.anchor.name', 'ui:Text', B(239, 265, 236, 23), {
       parent: '07.anchor',
@@ -140,19 +171,36 @@ export default {
       parent: '07.anchor',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'label'),
-      binding: 'store:anchor.category',
+      // F-248 (ADR-0151): the slot word — the colour is the top; *Shirt* is sample content (E1).
+      binding: 'static:outfit.top',
       copy: { shape: 'label', script: 'latin' },
     }),
     // ---- occasion: a segmented control
+    // F-248: the container's corners fit 8.5 px (5.8 dp) and the chosen segment's 4.5 px (3.1 dp) — sm
+    // and sm less the segment's 2.5 dp inset, exactly; F-232's note read md.
     el('07.occasion', 'ui:ChoiceGroup', B(129, 397, 533, 43), {
-      tokens: { border: 'border.subtle', radius: 'md' },
+      tokens: { border: 'border.subtle', radius: 'sm' },
       binding: 'static:wear.occasion',
+      raw: { cornerPx: 8.5 },
     }),
     el('07.occasion.selected', null, B(213, 400, 185, 36), {
       parent: '07.occasion',
-      tokens: { bg: 'action.primary', radius: 'md' },
+      tokens: { bg: 'action.primary', radius: 'sm' },
       action: 'select:occasion.office',
+      raw: { cornerPx: 4.5 },
     }),
+    // F-248: the chosen segment's word, which F-220 recorded only as its pill and dot; on the white
+    // pill, in the ground's ink. Office is the published weighting (ADR-0151); *Minimalist* is E2.
+    label(
+      '07.occasion.office',
+      B(246, 411, 147, 17),
+      '07.occasion.selected',
+      'static:wear.occasion.office',
+      {
+        tokens: { fg: 'ground' },
+        action: 'select:occasion.office',
+      },
+    ),
     // Its leading dot (F-232's review): 12.4 px across in the pill's ink, #18191E at its core.
     el('07.occasion.selected.dot', null, B(225, 411, 12, 12), {
       parent: '07.occasion.selected',
@@ -165,25 +213,27 @@ export default {
       '07.occasion.classic',
       B(413, 411, 141, 17),
       '07.occasion',
-      'static:wear.occasion.classic',
-      { action: 'select:occasion.classic' },
+      'static:wear.occasion.japaneseInspired',
+      { action: 'select:occasion.japaneseInspired' },
     ),
     label(
       '07.occasion.evening',
       B(584, 411, 62, 17),
       '07.occasion',
-      'static:wear.occasion.evening',
-      { action: 'select:occasion.evening' },
+      'static:wear.occasion.formal',
+      { action: 'select:occasion.formal' },
     ),
     // ---- the four slots
+    // F-248: the tiles' corners fit 14.5–15 / 11 / 10–13 / 12–12.5 px (10.0 · 7.5 · 7.8 · 8.3 dp): two
+    // nearer md and two nearer sm, siblings drawn alike, so the smaller on a tie — sm (§2).
     el('07.slots.slot-1', 'app:OutfitSlot', B(116, 495, 261, 184), {
-      tokens: { radius: 'md' },
-      binding: 'store:outfit.slot.1.hex',
+      tokens: { radius: 'sm' },
+      binding: 'engine:wear.slot.1.hex',
       measured: { bg: '#576775' },
     }),
     el('07.slots.slot-2', 'app:OutfitSlot', B(391, 496, 259, 183), {
-      tokens: { radius: 'md' },
-      binding: 'store:outfit.slot.2.hex',
+      tokens: { radius: 'sm' },
+      binding: 'engine:wear.slot.2.hex',
       measured: { bg: '#CDC4B9' },
     }),
     s1.title,
@@ -195,39 +245,57 @@ export default {
     // F-228: 07 draws its Swap buttons with the single circular arrow it also uses for refresh, not the
     // two-headed arrow 13 draws for swap. The ACTION is a swap; the GLYPH is refresh's, and the icon
     // field records the glyph, so one name draws one shape across the set.
+    // F-248: slot 2's Swap and Lock are filled #31363E (surface.3 is #323742) with light words — the
+    // tonal level-3 button; corners 7.5–8.5 px (sm). The padlock is 07's gold (C10).
     el('07.slots.slot-2.swap', 'ui:Button', B(407, 627, 118, 40), {
       parent: '07.slots.slot-2',
+      tokens: { bg: 'level3', fg: 'text.primary', radius: 'sm' },
+      type: text('sans', 'body'),
+      binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.2.swap',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('07.slots.slot-2.lock', 'ui:Button', B(532, 626, 105, 41), {
       parent: '07.slots.slot-2',
+      tokens: { bg: 'level3', fg: 'text.primary', radius: 'sm' },
+      type: text('sans', 'body'),
+      binding: 'static:wear.lock',
       icon: 'lock-solid',
       action: 'toggle:slot.2.lock',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('07.slots.slot-3', 'app:OutfitSlot', B(117, 694, 259, 146), {
-      tokens: { radius: 'md' },
-      binding: 'store:outfit.slot.3.hex',
+      tokens: { radius: 'sm' },
+      binding: 'engine:wear.slot.3.hex',
       measured: { bg: '#1F2025' },
     }),
     el('07.slots.slot-4', 'app:OutfitSlot', B(391, 694, 259, 146), {
-      tokens: { radius: 'md' },
-      binding: 'store:outfit.slot.4.hex',
+      tokens: { radius: 'sm' },
+      binding: 'engine:wear.slot.4.hex',
       measured: { bg: '#323B44' },
     }),
     // tops 708–716 chain into one row: read left to right
     s3.title,
+    // F-248: the compact Swaps are outlined, their words and edge on the sample itself — in the ink the
+    // sample takes (C8, ADR-0153); corners 7.5 px (sm).
     el('07.slots.slot-3.swap', 'ui:Button', B(279, 708, 82, 34), {
       parent: '07.slots.slot-3',
+      tokens: { radius: 'sm' },
+      type: text('sans', 'label'),
+      binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.3.swap',
       copy: { shape: 'label', script: 'latin' },
     }),
     s4.title,
-    el('07.slots.slot-4.swap', 'ui:Button', B(573, 716, 65, 18), {
+    // F-248: F-220 read only its ink (65 × 18 px); it is drawn alike its sibling on slot 3, outlined, so
+    // it takes the sibling's box at its own place.
+    el('07.slots.slot-4.swap', 'ui:Button', B(565, 708, 82, 34), {
       parent: '07.slots.slot-4',
+      tokens: { radius: 'sm' },
+      type: text('sans', 'label'),
+      binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.4.swap',
       copy: { shape: 'label', script: 'latin' },
@@ -237,9 +305,11 @@ export default {
     s3.name,
     s4.name,
     // ---- the colour intelligence card
+    // F-248: its leading corners fit 12.5 px (8.5 dp, md); the trailing edge runs 1 px short of the frame.
     el('07.intelligence', 'ui:Card', B(117, 866, 549, 363), {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1F1F25' },
+      raw: { cornerPx: 12.5 },
     }),
     el('07.intelligence.title', 'ui:Text', B(134, 888, 469, 21), {
       parent: '07.intelligence',
@@ -267,11 +337,12 @@ export default {
     el('07.actions', 'ui:ActionBar', B(103, 1249, 564, 100), {
       tokens: { border: 'border.subtle' },
     }),
+    // F-248 (ADR-0152): the save hands the combination to the Outfit Lab, which opens with it.
     el('07.actions.save', 'ui:Button', B(124, 1279, 257, 54), {
       parent: '07.actions',
       tokens: { bg: 'action.primary', radius: 'pill' },
       binding: 'static:wear.saveToLab',
-      action: 'submit:outfit.save',
+      action: 'navigate:/wardrobe/outfit',
       copy: { shape: 'label', script: 'latin' },
     }),
     el('07.actions.export', 'ui:Button', B(395, 1281, 255, 50), {
@@ -301,8 +372,28 @@ export default {
     },
     {
       what: 'garbled-text',
-      note: 'a stray prime mark after the colour name in the header',
-      box: B(175, 153, 114, 21),
+      note: 'a stray prime mark after the colour name in the header (F-248: the prime alone; the name is the back word)',
+      box: B(285, 153, 5, 8),
+    },
+    {
+      what: 'leaked-label',
+      note: '"Badge" after "Harmony" — a component name printed in the label (§2, F-248)',
+      box: B(214, 954, 62, 20),
+    },
+    {
+      what: 'leaked-label',
+      note: '"Card" at the end of the card title — a component name (§2, F-248)',
+      box: B(553, 888, 50, 21),
+    },
+    {
+      what: 'garbled-text',
+      note: '"Color" in the card title, on a screen the en-GB catalogue spells "Colour" (§2, F-248)',
+      box: B(256, 888, 55, 21),
+    },
+    {
+      what: 'garbled-text',
+      note: 'a stray bullet after slots 2–4’s names (F-248)',
+      box: B(530, 600, 8, 8),
     },
     {
       what: 'leaked-label',
@@ -337,9 +428,39 @@ export default {
   ],
   departures: [
     {
+      rule: 'E1',
+      element: '07.anchor.name',
+      why: 'the colour the page was opened for, as kanji, romaji and hex; 07’s Ai-nezumi is sample content (ADR-0151)',
+    },
+    {
+      rule: 'E1',
+      element: '07.slots.slot-2.name',
+      why: 'each slot is the engine’s ranking for it, named by the corpus colour (romaji and English); 07’s garment and material words are sample content (ADR-0151)',
+    },
+    {
+      rule: 'E2',
+      element: '07.occasion.classic',
+      why: 'the four segments are FR-34’s published weightings, each by its own word: Office (office and minimal are two profiles), Japanese-inspired (no classic weighting exists, FR-23), Formal (no evening weighting is published) (ADR-0151)',
+    },
+    {
+      rule: 'E2',
+      element: '07.intelligence.harmony.value',
+      why: 'the warm–cool relation the outfit’s harmony component measures, in words; no engine names a geometric relationship for a set of colours yet (F-349), and "Kasane" is a claim about tradition (ADR-0151)',
+    },
+    {
+      rule: 'E2',
+      element: '07.substitutions.monochrome',
+      why: 'the pills are the engine’s four axes (warmer, cooler, lighter, higher contrast); no monochrome axis exists (ADR-0152)',
+    },
+    {
+      rule: 'E4',
+      element: '07.slots.slot-2',
+      why: 'a slot’s sheet (its rank, its reasons and Open · Shop for this · Add to wardrobe), the Locked badge on a locked slot out of hand, and the disabled save with its line when no profile is stored — capabilities FR-31, FR-11, F-195, F-199 and ADR-0136 require that 07 does not draw (ADR-0152)',
+    },
+    {
       rule: 'E2',
       element: '07.intelligence.fit.value',
-      why: 'the FR-29 personal-fit score stays; the word that makes it a match to a seasonal type does not (§4 E2, C12). Whether the seasonal label is drawn beside the score instead, with no ranges beside it, is OQ-32',
+      why: 'the FR-32 personal-fit figure stays; "Match" and the seasonal type do not (§4 E2, C12). OQ-32 closed by ADR-0150: the note names whose profile the figure was computed against — "(your profile)" — and with no profile there is no figure',
     },
     {
       rule: 'E2',
@@ -375,15 +496,18 @@ export default {
         '07.slots.slot-2.title',
         '07.slots.slot-2.hex',
         '07.slots.slot-2.name',
+        '07.slots.slot-3.swap',
+        '07.slots.slot-4.swap',
       ],
       resolution:
-        'text sits on the sample as 07 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)',
+        'text sits on the sample as 07 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3); F-248 widens it to the compact Swaps drawn on the sample, whose words and edge take the same ink (ADR-0153)',
       flippedByUser: false,
     },
     {
       id: 'C12',
       elements: ['07.intelligence.fit.value'],
-      resolution: 'the seasonal label is derived from the four ranges by F-223, with an ADR',
+      resolution:
+        'the seasonal label is derived from the four ranges by F-223 and appears only on 23 beside them; OQ-32 closed by ADR-0150 — the fit note names the profile, never a type',
       flippedByUser: false,
     },
   ],
