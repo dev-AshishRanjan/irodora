@@ -688,7 +688,7 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
-  /** `07`, `15` and `16`: a solid padlock under a heavy shackle. Their gold is OQ-37. */
+  /** `07`, `15` and `16`: a solid padlock under a heavy shackle, in `glyph.lock` where drawn (ADR-0153). */
   'lock-solid': (p) => (
     <>
       {solid(rrect(5, 10.5, 14, 10.5, 2), p, 'body')}

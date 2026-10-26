@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { parseWeightContent } from '@irodora/recommendation';
 import { OutfitBuilder } from '../../../src/screens/OutfitBuilder';
@@ -10,6 +10,7 @@ import { activeProfile, toWorking } from '../../../src/profile/store';
 import { deviceRepository } from '../../../src/store/repository';
 import { useLookbook } from '../../../src/lookbook';
 import { outfitEnvelope } from '../../../src/outfit/lookbook';
+import { labDraftFrom, takeCombination } from '../../../src/outfit/fromWear';
 
 /**
  * The route. Navigation options, and the wires the screen cannot make itself.
@@ -34,6 +35,16 @@ export default function OutfitRoute(): React.JSX.Element {
   const router = useRouter();
   const repo = deviceRepository();
   const stored = activeProfile(repo);
+  const wardrobe = repo.listGarments();
+  /*
+   * 07'S HAND-OFF, TAKEN ONCE IN AN INITIALISER (F-248, ADR-0152 D5), as the add route takes its offer:
+   * `takeCombination` consumes, so a re-render cannot hand it back. The Lab opens with the owned
+   * garment nearest each of its colours, the top locked; opened any other way, it starts empty.
+   */
+  const [initialDraft] = useState(() => {
+    const handed = takeCombination();
+    return handed === null ? undefined : labDraftFrom(handed, wardrobe);
+  });
 
   const context = useMemo(
     () => ({
@@ -87,7 +98,8 @@ export default function OutfitRoute(): React.JSX.Element {
       {context.profile === null || envelope === null ? null : (
         <OutfitBuilder
           store={repo}
-          wardrobe={repo.listGarments()}
+          wardrobe={wardrobe}
+          {...(initialDraft === undefined ? {} : { initialDraft })}
           context={{
             profile: context.profile,
             rules: context.rules,

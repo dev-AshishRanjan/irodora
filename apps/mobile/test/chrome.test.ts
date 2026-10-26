@@ -119,7 +119,6 @@ const PLATFORM_HEADER: Readonly<Record<string, string>> = {
   'atlas/find': 'F-250 (09)',
   'atlas/nearby/[slug]': 'F-254 (21)',
   'atlas/palettes': 'F-251 (10, 16)',
-  'atlas/wear/[slug]': 'F-248 (07)',
   'atlas/with/[slug]': 'F-252 (19)',
   'atlas/with/reading/[id]': 'F-259 (24)',
   'profile/export': 'F-263 (18)',

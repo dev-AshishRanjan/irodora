@@ -205,7 +205,7 @@
           "colour": "aki-batake"
         }
       },
-      "anchor": "wear.title"
+      "anchor": "wear.intelligence"
     },
     {
       "route": "/atlas/with/[slug]",

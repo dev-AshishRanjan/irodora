@@ -300,6 +300,16 @@ const CVD_HEXES: readonly string[] = allEntries().flatMap((e) =>
 
 const SAMPLE_HEXES: readonly string[] = [...CORPUS_HEXES, ...CVD_HEXES];
 
+/** Every handler `07` takes (F-248): an absent handler is an absent control, so all are supplied. */
+const WEAR_HANDLERS = {
+  onBack: () => undefined,
+  onSaveToLab: () => undefined,
+  onExport: () => undefined,
+  onOpenColour: () => undefined,
+  onShopFor: () => undefined,
+  onAddToWardrobe: () => undefined,
+} as const;
+
 /**
  * The pair Compare opens on in these assertions.
  *
@@ -1536,27 +1546,43 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
-     * WEAR IT, WITH A PROFILE (F-195). The blended figure, and the four explanation lines the
-     * engine returns for every candidate.
+     * WEAR IT, `07` AS DRAWN (F-248): Office, slot 2 in hand with its Swap and Lock, the compact Swap
+     * on slots 3 and 4, the card's four figures with a profile, the pills, and both actions — every
+     * handler supplied, so every control is drawn.
      *
-     * `static` like the rest: its interactive parts are Card, ChoiceGroup, Button and Swatch,
-     * each registered in packages/ui where the suite makes them render their states.
+     * `static` like the rest: its interactive parts are Button, Chip, ChoiceGroup and Swatch, each
+     * registered in packages/ui where the suite makes them render their states.
      */
     name: 'screens/Wear',
     shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} />, theme),
+      draw(
+        <Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} {...WEAR_HANDLERS} />,
+        theme,
+      ),
   },
   {
     /*
-     * WEAR IT, WITH NO PROFILE — the branch criterion 3 is entirely about, and a genuinely
-     * different tree: the pairing figure under a different label, NO explanation lines, and a
-     * card naming the half that is missing with the way to fix it. A subject that rendered
-     * only the profiled branch would leave all of that measured by nothing.
+     * WEAR IT, WITH NO PROFILE: a genuinely different tree — no fit figure, the save disabled with its
+     * reason in the bar's note (ADR-0150, ADR-0152 D5). A subject that rendered only the profiled
+     * branch would leave all of that measured by nothing.
      */
     name: 'screens/Wear (no profile)',
+    shows: showing(WEAR_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={null} {...WEAR_HANDLERS} />, theme),
+  },
+  {
+    /*
+     * SLOT 4 IN HAND, SLOT 2 LOCKED: the Swap and Lock move to the outer layer, and slot 2 out of hand
+     * shows 13's Locked badge where its compact Swap was (ADR-0152 D2, E4) — two trees `07` as drawn
+     * never renders.
+     */
+    name: 'screens/Wear (slot 4 in hand, slot 2 locked)',
     shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
@@ -1564,25 +1590,30 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(
         <Wear
           slug={BOTH_COST_BRANCHES.entry.slug}
-          profile={null}
-          onBuildProfile={() => undefined}
+          profile={WEARER}
+          initial={{ inHand: 'outer', locked: { trouser: true, shoe: false, outer: false } }}
+          {...WEAR_HANDLERS}
         />,
         theme,
       ),
   },
   {
     /*
-     * A SLOT THAT IS NOT THE DEFAULT. `trouser` asks the engine for tops and shoes instead, so
-     * this renders two slot headings the subjects above never draw — and proves the control
-     * changes the answer rather than only the label.
+     * A SLOT'S SHEET OPEN (ADR-0152 D4): the rank, the figure and its four reasons, `wear.what`, and
+     * Open · Shop for this · Add to wardrobe — what the old page drew per candidate (F-195, F-199).
      */
-    name: 'screens/Wear (trouser)',
+    name: 'screens/Wear (the slot sheet open)',
     shows: showing(WEAR_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(
-        <Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} initialSlot="trouser" />,
+        <Wear
+          slug={BOTH_COST_BRANCHES.entry.slug}
+          profile={WEARER}
+          initialSheet="trouser"
+          {...WEAR_HANDLERS}
+        />,
         theme,
       ),
   },
@@ -2141,28 +2172,6 @@ const SCREENS: readonly ConformanceSubject[] = [
           store={fakeWardrobe()}
           imageSource={fakeImageSource()}
           offered={{ kind: 'corpus', slug: allEntries()[0]!.entry.slug }}
-        />,
-        theme,
-      ),
-  },
-  {
-    /*
-     * A RANKED COLOUR WITH SOMEWHERE TO GO (F-199). The candidate cards carry three named
-     * controls and are no longer a single target, so this renders a tree none of the Wear
-     * subjects above does.
-     */
-    name: 'screens/Wear (with destinations)',
-    shows: showing(WEAR_STATES),
-    kind: 'static',
-    sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) =>
-      draw(
-        <Wear
-          slug={BOTH_COST_BRANCHES.entry.slug}
-          profile={WEARER}
-          onOpenColour={() => undefined}
-          onShopFor={() => undefined}
-          onAddToWardrobe={() => undefined}
         />,
         theme,
       ),
@@ -2826,7 +2835,8 @@ const SCREENS: readonly ConformanceSubject[] = [
     shows: showing(WEAR_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Wear slug="no-such-colour" profile={WEARER} />, theme),
+    render: (_state, theme) =>
+      draw(<Wear slug="no-such-colour" profile={WEARER} onBack={() => undefined} />, theme),
   },
   {
     /*

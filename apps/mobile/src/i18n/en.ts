@@ -702,16 +702,14 @@ export const en = {
    * without a profile only the second is available, and a screen that showed the blend under
    * either name would be reporting a number that means less than it looks like it means.
    */
-  'wear.title': 'Wear it',
+  'wear.title': 'Wear It • Outfit Combinations',
   'wear.what':
     'Colours ranked for the other slots, with the basis for each. A ranking, not advice about what to wear.',
-  'wear.slot': 'This colour is a',
   'wear.open': 'Wear it',
   'wear.overall': 'Overall',
   'wear.pairing': 'With this colour',
   'wear.noProfile':
     'No profile yet, so half of each ranking is missing: how a colour sits with this one is figured, how it suits you is not.',
-  'wear.buildProfile': 'Build a profile',
   'wear.none': 'No colour in the corpus fits this slot.',
   /*
    * F-196 — CURATED, AS OPPOSED TO GENERATED.
@@ -767,20 +765,23 @@ export const en = {
   /*
    * F-208 — THE FOUR AXES, WHICH THE ENGINE HAS BEEN COMPUTING SINCE F-030.
    *
-   * `alternativesFor` labels each alternative with the direction it moves in relative to the
-   * TOP PICK, not to the colour in hand — so these read as "like that one, but …" rather than
-   * as a claim about the garment. FR-38 names the four verbatim.
+   * Each alternative is labelled with the direction it moves in relative to the colour the slot
+   * SHOWS (`alternativesAround`, F-248; the ranking's top pick until a Swap), not to the colour in
+   * hand — so these read as "like that one, but …" rather than as a claim about the garment.
+   * FR-38 names the four verbatim.
    *
    * WORDS, BECAUSE THE SWATCH CANNOT SAY THIS. A warmer colour does not look "warmer" beside
    * a cooler one without being told which is which, and ADR-0076 already had this argument at
    * the engine level: a grey whose hue angle sits at 66° is not warm.
    */
-  'alt.warmer': 'Warmer',
-  'alt.cooler': 'Cooler',
-  'alt.lighter': 'Lighter',
-  'alt.higherContrast': 'More contrast',
-  /** The heading over them. Not "alternatives" — that word promises a replacement. */
-  'wear.alternatives': 'Or, one step along',
+  /*
+   * F-248: `07` draws each as an instruction that leads a pill — *Make Warmer: + Ochre Trousers* —
+   * so the words are its, and no heading stands over them.
+   */
+  'alt.warmer': 'Make Warmer',
+  'alt.cooler': 'Make Cooler',
+  'alt.lighter': 'Make Lighter',
+  'alt.higherContrast': 'Higher Contrast',
   /*
    * F-248 — `07`, THE COMBINATION: the words `wear.ts` builds its lines from.
    *
@@ -807,6 +808,29 @@ export const en = {
   'wear.fit.yours': '(your profile)',
   'wear.fit.none': 'No profile yet',
   'wear.cvdModel': 'Protan/Deutan/Tritan · Machado 2009',
+  /*
+   * F-248 — `07`'S OWN LABELS. The card's title and *Harmony:* drop the component words *Card* and
+   * *Badge* 07 printed (§2), and *Colour* is en-GB (ADR-0151 D5). The save says why it cannot be
+   * used without a profile, on a line in the bar, because the Lab draws nothing without one
+   * (ADR-0152 D5). *Locked* is `lab.locked`, 13's word: one word, one key.
+   */
+  'wear.occasion': 'Occasion',
+  'wear.swap': 'Swap',
+  'wear.lock': 'Lock',
+  'wear.intelligence': 'Deterministic Colour Intelligence & Accessibility',
+  'wear.harmony': 'Harmony:',
+  'wear.fit': 'Personal Fit Score:',
+  'wear.cvd': 'CVD Distinction:',
+  'wear.contrast': 'Contrast Ratio:',
+  'wear.saveToLab': 'Save to Outfit Lab',
+  'wear.saveNeedsProfile': 'Build a profile to use the Outfit Lab.',
+  'wear.exportTokens': 'Export Palette Tokens',
+  /** The slot's sheet (ADR-0152 D4): where this colour stands in its ranking, and the sheet's names. */
+  'wear.rank': 'Rank',
+  'wear.unranked': 'Not ranked under this occasion',
+  'wear.sheetClose': 'Close the slot and go back to the combination',
+  'wear.sheetHandle': 'Slot panel',
+  'wear.sheetHandleHint': 'Makes the slot panel larger or smaller',
   /*
    * F-200 — THE TARGET.
    *

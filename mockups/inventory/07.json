@@ -804,7 +804,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": "refresh",
@@ -840,7 +840,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": "lock-solid",
@@ -966,7 +966,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": "refresh",
@@ -1032,7 +1032,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": "refresh",
@@ -1565,7 +1565,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:wear.alternative.warmer",
@@ -1599,7 +1603,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:wear.alternative.contrast",
@@ -1633,7 +1641,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:wear.alternative.monochrome",
@@ -1694,7 +1706,11 @@
         "bg": "action.primary",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:wear.saveToLab",
@@ -1725,7 +1741,11 @@
         "border": "border.subtle",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:wear.exportTokens",

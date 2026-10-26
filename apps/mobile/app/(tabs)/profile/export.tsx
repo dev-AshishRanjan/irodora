@@ -15,7 +15,8 @@ import { deviceRepository } from '../../../src/store/repository';
  * ## A colour, or the most recent palette, and why not a chooser
  *
  * The colour page's export glyph opens this route with the colour's `slug` (F-247, ADR-0147), and
- * that colour is the subject. Opened bare, the subject is the palette saved most recently. A picker
+ * that colour is the subject; `07`'s *Export Palette Tokens* opens it with the combination's
+ * `colours` (F-248, ADR-0152 D6), and those are. Opened bare, the subject is the palette saved most recently. A picker
  * would be a second surface for something Palette Studio already lists, and FR-51 asks that an
  * export can be produced rather than that this screen own palette selection.
  *
@@ -25,9 +26,13 @@ import { deviceRepository } from '../../../src/store/repository';
 export default function ExportRoute(): React.JSX.Element {
   const router = useRouter();
   // Typed OPTIONAL, because it is: a bare open carries no parameter.
-  const params = useLocalSearchParams<{ slug?: string | string[] }>();
+  const params = useLocalSearchParams<{ slug?: string | string[]; colours?: string | string[] }>();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-  const subject = useMemo(() => exportSubjectFor(slug, deviceRepository().listPalettes()), [slug]);
+  const colours = Array.isArray(params.colours) ? params.colours[0] : params.colours;
+  const subject = useMemo(
+    () => exportSubjectFor(slug, deviceRepository().listPalettes(), colours),
+    [slug, colours],
+  );
 
   return (
     <>

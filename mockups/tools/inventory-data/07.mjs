@@ -97,6 +97,8 @@ const pill = (key, box) =>
     // F-248: corners 7–9 px against a 33 px height (sm), outlined. Each is an alternative of the slot in
     // hand, relative to the colour it shows (ADR-0152); the drawn three are a count (E1).
     tokens: { border: 'border.subtle', radius: 'sm' },
+    // Their words ink 13 px in capitals and 16 with a descender (12.1 and 11.7 dp an em): caption.
+    type: text('sans', 'caption'),
     raw: { cornerPx: 8 },
     binding: `engine:wear.alternative.${key}`,
     action: `select:substitution.${key}`,
@@ -246,11 +248,14 @@ export default {
     // two-headed arrow 13 draws for swap. The ACTION is a swap; the GLYPH is refresh's, and the icon
     // field records the glyph, so one name draws one shape across the set.
     // F-248: slot 2's Swap and Lock are filled #31363E (surface.3 is #323742) with light words — the
-    // tonal level-3 button; corners 7.5–8.5 px (sm). The padlock is 07's gold (C10).
+    // tonal level-3 button; corners 7.5–8.5 px (sm). The padlock is 07's gold (C10). Their words (F-248,
+    // increment 6): "Swap" inks 18 px with its descender (13.2 dp an em) and "Lock" 16 px without one
+    // (14.9 dp), a mean of 14.05 — label, not the body increment 1 assumed. The turn inks 18 × 18 px and
+    // the padlock 17 × 22 px.
     el('07.slots.slot-2.swap', 'ui:Button', B(407, 627, 118, 40), {
       parent: '07.slots.slot-2',
       tokens: { bg: 'level3', fg: 'text.primary', radius: 'sm' },
-      type: text('sans', 'body'),
+      type: text('sans', 'label'),
       binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.2.swap',
@@ -259,7 +264,7 @@ export default {
     el('07.slots.slot-2.lock', 'ui:Button', B(532, 626, 105, 41), {
       parent: '07.slots.slot-2',
       tokens: { bg: 'level3', fg: 'text.primary', radius: 'sm' },
-      type: text('sans', 'body'),
+      type: text('sans', 'label'),
       binding: 'static:wear.lock',
       icon: 'lock-solid',
       action: 'toggle:slot.2.lock',
@@ -278,11 +283,12 @@ export default {
     // tops 708–716 chain into one row: read left to right
     s3.title,
     // F-248: the compact Swaps are outlined, their words and edge on the sample itself — in the ink the
-    // sample takes (C8, ADR-0153); corners 7.5 px (sm).
+    // sample takes (C8, ADR-0153); corners 7.5 px (sm). Their word inks 16 px with its descender (11.7 dp
+    // an em): caption, nearer than label. The turn inks 15 × 15 px (14 × 15 on slot 4).
     el('07.slots.slot-3.swap', 'ui:Button', B(279, 708, 82, 34), {
       parent: '07.slots.slot-3',
       tokens: { radius: 'sm' },
-      type: text('sans', 'label'),
+      type: text('sans', 'caption'),
       binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.3.swap',
@@ -294,7 +300,7 @@ export default {
     el('07.slots.slot-4.swap', 'ui:Button', B(565, 708, 82, 34), {
       parent: '07.slots.slot-4',
       tokens: { radius: 'sm' },
-      type: text('sans', 'label'),
+      type: text('sans', 'caption'),
       binding: 'static:wear.swap',
       icon: 'refresh',
       action: 'select:slot.4.swap',
@@ -338,9 +344,13 @@ export default {
       tokens: { border: 'border.subtle' },
     }),
     // F-248 (ADR-0152): the save hands the combination to the Outfit Lab, which opens with it.
+    // F-248: the two actions' words ink 16 px without a descender and 18 with one (14.9 and 13.2 dp an
+    // em): label. The bar's rule is the 2 px line at 1261–1262, under the leaked label, 16 px above
+    // the buttons; the bar has no fill of its own.
     el('07.actions.save', 'ui:Button', B(124, 1279, 257, 54), {
       parent: '07.actions',
       tokens: { bg: 'action.primary', radius: 'pill' },
+      type: text('sans', 'label'),
       binding: 'static:wear.saveToLab',
       action: 'navigate:/wardrobe/outfit',
       copy: { shape: 'label', script: 'latin' },
@@ -348,6 +358,7 @@ export default {
     el('07.actions.export', 'ui:Button', B(395, 1281, 255, 50), {
       parent: '07.actions',
       tokens: { border: 'border.subtle', radius: 'pill' },
+      type: text('sans', 'label'),
       binding: 'static:wear.exportTokens',
       action: 'navigate:/profile/export',
       copy: { shape: 'label', script: 'latin' },

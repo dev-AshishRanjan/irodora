@@ -602,16 +602,14 @@ export const ja: Record<MessageKey, string> = {
   'combo.value-contrast': '明暗の対比',
   'combo.chroma-contrast': '鮮やかさの対比',
   // F-195 — see en.ts for why the slot names are not repeated here.
-  'wear.title': '合わせて着る',
+  'wear.title': '着てみる • コーディネートの組み合わせ',
   'wear.what':
     'ほかの部位の色を順位づけし、その根拠を示します。順位であって、何を着るべきかという助言ではありません。',
-  'wear.slot': 'この色の部位',
   'wear.open': '合わせて着る',
   'wear.overall': '総合',
   'wear.pairing': 'この色との相性',
   'wear.noProfile':
     'プロフィールが未作成のため、順位の半分が欠けています。この色との相性は算出できますが、あなたに似合うかは算出できません。',
-  'wear.buildProfile': 'プロフィールを作成',
   'wear.none': 'この部位に合う色は、収録の色にはありません。',
   // F-196 — see en.ts: curated and generated are two different claims.
   'combos.curated': '選定',
@@ -641,11 +639,10 @@ export const ja: Record<MessageKey, string> = {
   // codepoints for text the app never renders — the content gate caught U+5019 from an
   // earlier draft of this very comment, which is the check working exactly as intended. Even
   // NAMING the character costs the subset a codepoint, so it is named by its code point.
-  'alt.warmer': '暖かめ',
-  'alt.cooler': '涼しめ',
-  'alt.lighter': '明るめ',
-  'alt.higherContrast': 'コントラスト強め',
-  'wear.alternatives': '一歩ずらすなら',
+  'alt.warmer': '暖かく',
+  'alt.cooler': '涼しく',
+  'alt.lighter': '明るく',
+  'alt.higherContrast': 'コントラストを強く',
   /*
    * F-248 — `07`, THE COMBINATION: the words `wear.ts` builds its lines from. See the note in en.
    */
@@ -665,6 +662,22 @@ export const ja: Record<MessageKey, string> = {
   'wear.fit.yours': '（あなたのプロフィール）',
   'wear.fit.none': 'プロフィール未作成',
   'wear.cvdModel': '1型・2型・3型・Machado 2009',
+  'wear.occasion': '場面',
+  'wear.swap': '入れ替え',
+  'wear.lock': '固定',
+  'wear.intelligence': '決定論的な色分析とアクセシビリティ',
+  'wear.harmony': '調和：',
+  'wear.fit': 'パーソナル適合度：',
+  'wear.cvd': '色覚での識別：',
+  'wear.contrast': 'コントラスト比：',
+  'wear.saveToLab': 'アウトフィットラボに保存',
+  'wear.saveNeedsProfile': 'アウトフィットラボを使うには、プロフィールを作成してください。',
+  'wear.exportTokens': 'パレットトークンを書き出す',
+  'wear.rank': '順位',
+  'wear.unranked': 'この場面の順位にはありません',
+  'wear.sheetClose': 'スロットを閉じて組み合わせに戻る',
+  'wear.sheetHandle': 'スロットパネル',
+  'wear.sheetHandleHint': 'スロットパネルを大きく、または小さくします',
   // F-200 — see en.ts: the bar names the activity, not the noun.
   'target.armed': '比較対象',
   'target.disarm': '比較をやめる',

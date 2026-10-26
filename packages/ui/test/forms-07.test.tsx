@@ -1,5 +1,5 @@
 /**
- * The forms `07` draws, added to four components (F-248, ADR-0153). Each is additive: without its
+ * The forms `07` draws, added to five components (F-248, ADR-0153). Each is additive: without its
  * prop the component draws exactly what it drew before, and each test below holds that default as
  * its decoy.
  *
@@ -11,10 +11,12 @@
  *   cannot fit.
  * - `ActionBar note`: the line that says why an action cannot be used.
  * - `AppBarBack.weight`: the back word's weight, forwarded.
+ * - `Swatch height: 'fill'`: a slot tile's sample, a layer the tile's words and controls size, so its
+ *   accessible node never swallows theirs.
  */
 
-import { render, screen } from '@testing-library/react-native';
-import { ScrollView } from 'react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { ScrollView, View } from 'react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, type Theme } from '@irodora/design-tokens';
 import {
@@ -24,6 +26,7 @@ import {
   ChoiceGroup,
   Glyph,
   sampleInk,
+  Swatch,
   Text,
   ThemeProvider,
   type Sample,
@@ -179,6 +182,7 @@ describe('ChoiceGroup segmented, sized by its words (07, ADR-0153 D6)', () => {
         options={OPTIONS}
         value="office"
         onChange={noop}
+        testID="occasion"
         segmented={{
           mark: 'dot',
           selectedFill: 'accent',
@@ -202,10 +206,92 @@ describe('ChoiceGroup segmented, sized by its words (07, ADR-0153 D6)', () => {
     expect(scroll.props['horizontal']).toBe(true);
   });
 
+  it('spans the room it is laid out in, measured, and asks no share of a height', () => {
+    group('content');
+    const groupStyle = () =>
+      flattenStyle(
+        screen
+          .UNSAFE_getAllByProps({ accessibilityLabel: 'Occasion' })
+          .find((n) => typeof n.type === 'string')?.props['style'],
+      );
+    // Never grown into: a scroller's content has no room to grow into until something says so.
+    expect(groupStyle()['flexGrow']).toBeUndefined();
+    // DECOY: before it is laid out, the group is its words' width and claims no room.
+    expect(groupStyle()['minWidth']).toBeUndefined();
+    fireEvent(screen.getByTestId('occasion'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 352, height: 30 } },
+    });
+    expect(groupStyle()['minWidth']).toBe(352);
+  });
+
   it('DECOY: the default shares the row equally and does not scroll', () => {
     group();
     for (const s of segmentStyles()) expect(s['flex']).toBe(1);
     expect(screen.UNSAFE_queryAllByType(ScrollView)).toHaveLength(0);
+  });
+});
+
+describe('Swatch as 07’s slot tile: a filled height, apart from what is drawn on it (F-248)', () => {
+  /** The sample's own view: the one painted the sample's hex (no keyline, so there is one). */
+  const sampleStyle = (): Readonly<Record<string, unknown>> => {
+    const host = screen
+      .UNSAFE_getAllByType(View)
+      .find((v) => flattenStyle(v.props['style'])['backgroundColor'] === LIGHT.hex);
+    return flattenStyle(host?.props['style']);
+  };
+  const tile = (form: { readonly height?: 'fill'; readonly group?: false }) =>
+    draw(
+      <View style={{ height: 120 }}>
+        <Swatch
+          name="Rikyu-shira-cha"
+          hex={LIGHT.hex}
+          color={LIGHT.color}
+          width="fill"
+          keyline={false}
+          {...form}
+        >
+          <Text size="label" on={LIGHT}>
+            Slot 2 (Trousers)
+          </Text>
+          <Button variant="secondary" label="Swap" on={LIGHT} onPress={noop} testID="swap" />
+        </Swatch>
+      </View>,
+    );
+
+  it('grows to its container’s height, declaring none of its own and never collapsing', () => {
+    tile({ height: 'fill' });
+    const style = sampleStyle();
+    expect([style['flexGrow'], style['flex'], style['height']]).toStrictEqual([
+      1,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('DECOY: without it the sample is the size it was given, and does not grow', () => {
+    tile({});
+    const style = sampleStyle();
+    expect([style['flexGrow'], style['height']]).toStrictEqual([undefined, 60]);
+  });
+
+  it('apart, names the sample as an image beside its children, which each stay reachable', () => {
+    tile({ height: 'fill', group: false });
+    const image = screen.getByRole('image');
+    expect(image.props['accessibilityLabel']).toMatch(/^Rikyu-shira-cha\. Hex CDC4B9\./);
+    // No button but the child's own: the sample is no target, and the control is not inside one.
+    expect(screen.getAllByRole('button').map((b) => String(b.props['testID']))).toStrictEqual([
+      'swap',
+    ]);
+    expect(screen.getByText('Slot 2 (Trousers)')).toBeTruthy();
+  });
+
+  it('DECOY: grouped by default, the sample is one button that holds its children', () => {
+    tile({ height: 'fill' });
+    const outer = screen
+      .getAllByRole('button')
+      .find((b) => String(b.props['accessibilityLabel']).startsWith('Rikyu-shira-cha'));
+    expect(outer).toBeDefined();
+    expect(screen.queryByRole('image')).toBeNull();
   });
 });
 

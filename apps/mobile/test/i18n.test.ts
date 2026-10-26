@@ -225,12 +225,12 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
   });
 
   it('DECOY — the `alt.` prefix carries no screen copy, so no partition is needed', () => {
-    // The heading over the section is `wear.alternatives`, deliberately NOT `alt.title` — if
-    // it were, the reverse pin above would demand the engine emit it. Both sides asserted, so
-    // this cannot pass by matching nothing.
+    // `07` draws no heading over the pills (F-248): the axis word leads each one, so there is no
+    // `alt.title` — which the reverse pin above would demand the engine emit. Both sides asserted,
+    // so this cannot pass by matching nothing.
     expect(ALTERNATIVE_MESSAGE_KEYS.length).toBeGreaterThan(0);
     expect(MESSAGE_KEYS.some((k) => k.startsWith('alt.') && k.split('.').length !== 2)).toBe(false);
-    expect('wear.alternatives' in en).toBe(true);
+    expect('alt.title' in en).toBe(false);
   });
   it('DECOY — the engine prefix does not swallow the screen copy beside it', () => {
     // `combos.title` would be demanded of the engine by a looser filter, and the engine does

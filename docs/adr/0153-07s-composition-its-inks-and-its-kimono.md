@@ -35,9 +35,27 @@ kimono line-art at its top right.
   same ink. F-220's `raw.emDp` 26 was pixels.
 - **D5. `glyph.lock` `#C8A145`**, in every palette, `nonText`, paired with nothing (the word carries
   the state). It is a token group carrying `07`, `15` and `16`'s padlocks.
-- **D6. Segments sized by their words** (`fit: 'content'`), as `07` draws them.
+- **D6. Segments sized by their words** (`fit: 'content'`), as `07` draws them. *Amended in
+  increment 6:* the group spans the room the control is laid out in, **measured** (`onLayout` → its
+  `minWidth`), and the segments share what their words leave. It does not grow into a scroller's
+  content, which has no width until something says so — and which React Native's test mock draws
+  without the row that would let the broken-flex-chain check (F-213) see it is one.
 - **D7. The kimono** is outside the frame (§2, `07.json` notDesign), and no stroke of it falls inside
   `07.screen`. It is not built.
+- **D8. A slot tile is a sample with its words and controls on it, never inside its accessible node**
+  (increment 6). `Swatch` is an accessible pressable that groups what it holds into one node, so a
+  control drawn on it would be one a screen reader cannot reach. The tile is a `Swatch` of a filled
+  height (`height: 'fill'`, grown to the tile) **apart from its children** (`group={false}`): the
+  sample is announced as an image beside them. On a ranked slot a press target lies under the words —
+  which let a touch through and are read through its name — and Swap, Lock and the Locked badge are
+  its siblings. The words are the sample's children, so every check that finds a text's ground by its
+  ancestors judges them against the sample.
+- **D9. The type steps, read** (increment 6): slot 2's *Swap* and *Lock* ink 18 px with a descender
+  and 16 without (13.2 and 14.9 dp an em) — **label**, not the body increment 1 assumed; the compact
+  *Swap* inks 16 px with its descender (11.7 dp) — **caption**; the pills 13 and 16 px (12.1 and
+  11.7 dp) — caption; the two actions 16 and 18 px — label. The glyphs: the turn inks 18 px on slot 2
+  and 15 on 3 and 4, the padlock 22, the back arrow 20, each sized by (ink − line) × 24 ÷ its path's
+  extent as F-247's are. Each reading is in `07.mjs`.
 
 ## Alternatives, and what each costs
 
@@ -56,7 +74,8 @@ kimono line-art at its top right.
 ## Consequences
 
 - `@irodora/ui` gains additive forms (`Button on`, `ChoiceGroup` content-fit segments, `ActionBar`
-  note, a back word's weight); `glyph.lock` is minted.
+  note, a back word's weight, and `Swatch`'s filled height and `group={false}`); `glyph.lock` is
+  minted.
 
 ## Revisit when
 

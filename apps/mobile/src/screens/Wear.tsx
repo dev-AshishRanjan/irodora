@@ -1,420 +1,769 @@
 /**
- * Wear it (FR-31, FR-73).
+ * Wear It — `07`, the outfit combination (FR-31, FR-32, FR-34, FR-38; F-248).
  *
- * ## The feature
+ * ## The page
  *
- * A colour goes in a slot and the engine ranks colours for the others. `recommendOutfit` has
- * been exported since **F-030** and called by nothing; this is the surface it never had.
+ * A colour is the top, and the engine fills the other three slots — trousers, shoes, and an outer
+ * layer — under the occasion chosen. A card says what the engine computed about the four together,
+ * and the pills offer the slot in hand one step along each axis. Everything is built exactly as `07`
+ * draws it ([`R9-MOCKUP-FIDELITY.md`](../../../../docs/design/R9-MOCKUP-FIDELITY.md), rule 14); what
+ * `07` does not draw and a done criterion needs is listed there (§4 E4) and decided by ADR-0152.
  *
  * ## Nothing here computes
  *
- * [`../wear.ts`](../wear.ts) builds the pool and resolves the slot; `recommendOutfit` produces
- * every number. This file formats and labels — the same division `Combinations`, `Contemporary`
- * and `Compare` keep.
+ * [`../wear.ts`](../wear.ts) builds the combination — the rankings under the occasion's published
+ * weighting, the colour each slot shows, the alternatives around it, the card's four figures — and
+ * every number in it is the engine's. This file lays it out and words it, the division every rebuilt
+ * screen keeps.
  *
  * ## The two things this screen may never do
  *
- * **It may not say what anybody should wear.** These are ranked colours with a stated basis, and
- * a product that turned a score into an instruction would be doing what ADR-0031 exists to
- * prevent, in the place people most want to be told what to do.
+ * **It may not say what anybody should wear.** These are ranked colours with a stated basis; the
+ * sheet says so in `wear.what`, and the claims lint holds the wording in both languages.
  *
- * **It may not show a number that means less than it looks like it means.** Without a profile
- * the personal half of every blend is the engine's no-evidence midpoint, so the blend is pulled
- * toward the middle for every candidate — the ORDER is right and the MAGNITUDE is an artefact.
- * `shownScore` picks the honest figure, and the missing half is named rather than hidden.
+ * **It may not show a number that means less than it looks like it means.** Without a profile there
+ * is no fit figure at all (ADR-0150), the sheet shows the pairing figure and names the missing half,
+ * and the save to the Lab — which draws nothing without a profile — says why it cannot be used.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import type { OutfitSlot, PersonalProfile } from '@irodora/recommendation';
 import {
   Button,
   Card,
   ChoiceGroup,
+  Chip,
   EmptyState,
   Row,
   Screen,
+  Sheet,
   Stack,
   Swatch,
   Text,
+  useTheme,
+  type Action,
+  type Sample,
 } from '@irodora/ui';
-import type { Alternative, OutfitRecommendation, RankedCandidate } from '@irodora/recommendation';
-import { OUTFIT_SLOTS, shownFactors, shownScore, wearWith, type OutfitSlot } from '../wear';
-import { colorFor, entryBySlug } from '../corpus';
-import { ruleSet } from '../rules';
+import { colorFor, type PublishedEntry } from '../corpus';
+import { isMessageKey } from '../i18n/index';
 import { useMessages } from '../i18n/useMessages';
-import { isMessageKey, type MessageKey } from '../i18n/index';
-import type { PersonalProfile } from '@irodora/recommendation';
+import { capitalised } from '../notation';
+import type { WornCombination } from '../outfit/fromWear';
 import type { ScreenStates } from '../states';
+import { rankingContext } from '../wardrobe/coverage';
+import {
+  anchorLine,
+  ANCHOR,
+  BACK_GLYPH,
+  backName,
+  chooseOccasion,
+  contrastLine,
+  DIVIDER,
+  ENGINE_SLOT,
+  EXPORT,
+  fitLine,
+  HARMONY_KEYS,
+  LABEL_COLUMN,
+  LOCK_GLYPH,
+  OCCASION,
+  OCCASION_KEYS,
+  PILL,
+  pillLabel,
+  putInHand,
+  RESTING_WEAR,
+  SAVE,
+  separationLine,
+  shownFactors,
+  shownScore,
+  SLOT_TITLE_KEYS,
+  slotName,
+  substitute,
+  swap,
+  SWAP,
+  SWAP_COMPACT,
+  SWAP_COMPACT_GLYPH,
+  SWAP_GLYPH,
+  toggleLock,
+  WEAR_APP_BAR,
+  WEAR_OCCASIONS,
+  wearCombination,
+  type RankedSlot,
+  type WearSlot,
+  type WearState,
+} from '../wear';
 
 /**
  * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
- * does not hold the colour this screen is about, or no garment in a slot goes with it.
+ * does not hold the colour this screen is about.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
+
+/** The words drawn on a tile are read through its press target, so they are hidden once. */
+const HIDDEN = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: 'no-hide-descendants' as const,
+};
 
 export interface WearProps {
   /** The colour in hand. A route parameter, so a miss is a state rather than a crash. */
   readonly slug: string;
   /**
-   * The person to score against, or `null` for somebody who has not built a profile.
-   *
-   * Injected rather than read here, for the reason every other screen in this app injects its
-   * ports: a branch that depends on device state is a branch no conformance subject can render,
-   * and criterion 3 is entirely about that branch.
+   * The person to score against, or `null` for somebody who has not built a profile. Injected for
+   * the reason every screen injects its ports: a branch that depends on device state is a branch no
+   * conformance subject can render.
    */
   readonly profile?: PersonalProfile | null;
-  /** Which slot the colour starts in. Injected so a test can reach all three. */
-  readonly initialSlot?: OutfitSlot;
-  /** Open a colour. Supplied by the route; absent in the conformance suite. */
+  /** Where the page starts: `07` as drawn (Office, slot 2 in hand) unless a test says otherwise. */
+  readonly initial?: Partial<WearState>;
+  /** A slot whose sheet starts open: a test reaches the sheet with it. */
+  readonly initialSheet?: RankedSlot;
+  /** `07.back`: back to the colour. */
+  readonly onBack?: () => void;
+  /** `07.actions.save`: hand the combination to the Outfit Lab (ADR-0152 D5). */
+  readonly onSaveToLab?: (combination: WornCombination) => void;
+  /** `07.actions.export`: export the combination's colours, the colour in hand first (D6). */
+  readonly onExport?: (colours: readonly string[]) => void;
+  /** The sheet's *Open this colour*. */
   readonly onOpenColour?: (slug: string) => void;
-  /** Build a profile. Supplied by the route; the way out of the no-profile state. */
-  readonly onBuildProfile?: () => void;
-  /**
-   * Take this colour to the shopping check, carrying the slot it was ranked for (F-199).
-   *
-   * The slot is the reason this belongs here and not on the combinations screen: a ranked
-   * candidate is the only colour in this product that HAS one.
-   */
-  readonly onShopFor?: ((slug: string, slot: OutfitSlot) => void) | undefined;
-  /** Offer this colour to the wardrobe. Nothing is stored until the person saves (F-199). */
-  readonly onAddToWardrobe?: ((slug: string) => void) | undefined;
+  /** The sheet's *Shop for this*, carrying the slot it was ranked for (F-199). */
+  readonly onShopFor?: (slug: string, slot: OutfitSlot) => void;
+  /** The sheet's *Add to wardrobe*: an offer; nothing is stored until the person saves (F-199). */
+  readonly onAddToWardrobe?: (slug: string) => void;
 }
-
-/** How many candidates are drawn per slot. FR-31 asks for 5 trousers and 4 shoes; this shows 6. */
-const SHOWN_PER_SLOT = 6;
-
-/** The size a candidate colour is drawn at. Large enough to judge against the source. */
-const CANDIDATE = 56;
-
-/**
- * The swatch on an alternative.
- *
- * Smaller than a ranked candidate on purpose: an alternative is a sideways step from the top
- * pick, not a fifth thing competing with the four above it, and the size is the only channel
- * that says so without a sentence.
- */
-const ALTERNATIVE = 40;
 
 export function Wear({
   slug,
   profile = null,
-  initialSlot,
+  initial,
+  initialSheet,
+  onBack,
+  onSaveToLab,
+  onExport,
   onOpenColour,
-  onBuildProfile,
   onShopFor,
   onAddToWardrobe,
 }: WearProps): React.JSX.Element {
+  const { colors } = useTheme();
   const { t, script } = useMessages();
-  const [slot, setSlot] = useState<OutfitSlot>(initialSlot ?? 'top');
-
+  const [state, setState] = useState<WearState>({ ...RESTING_WEAR, ...initial });
+  const [sheet, setSheet] = useState<RankedSlot | null>(initialSheet ?? null);
   /*
-   * ONE LOOKUP, AND THE NULL COMES FROM IT.
-   *
-   * An earlier draft asked `entryBySlug` here, returned on null, and then asserted that
-   * `wearWith` could not be null either — a relationship between two calls that the compiler
-   * cannot see and that would become a crash the day `wearWith` gained a second reason to
-   * refuse. The lint refused it, correctly.
+   * WHAT AN OUTFIT IS SCORED AGAINST BESIDE ITS RULES: the Lab's own weights and reference (E-208),
+   * neither of which depends on a person — the profile is passed on its own, and the rules are the
+   * state's occasion's, read in `wearCombination` so the page cannot rank under one occasion while its
+   * control shows another.
    */
-  const answer = wearWith(slug, slot, profile, ruleSet());
-  if (answer === null)
+  const context = useMemo(() => rankingContext(null), []);
+  const combination = useMemo(
+    () => wearCombination(slug, state, profile, context),
+    [slug, state, profile, context],
+  );
+
+  const bar = { height: WEAR_APP_BAR, inset: nativeSpacing.md, gap: nativeSpacing.sm, script };
+
+  if (combination === null)
     return (
-      <Screen title={t('wear.title')} script={script}>
-        {/*
-          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
-          back, already on this screen — a second control would be a second way to do one thing.
-        */}
-        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
+      /*
+        A COLOUR THIS CORPUS DOES NOT HOLD (F-236, E4, ADR-0128 §6): 00's caption under the app bar,
+        whose back is the way out — a second control would be a second way to do one thing.
+      */
+      <Screen
+        scroll={false}
+        bleed
+        script={script}
+        appBar={{
+          ...bar,
+          ...(onBack === undefined
+            ? {}
+            : {
+                back: {
+                  glyph: 'back' as const,
+                  name: t('detail.backToAtlas'),
+                  size: BACK_GLYPH,
+                  onPress: onBack,
+                },
+              }),
+        }}
+      >
+        <View style={{ padding: nativeSpacing.md }}>
+          <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
+        </View>
       </Screen>
     );
 
+  const { anchor, slots, rankings, alternatives, intelligence, personalKnown } = combination;
+  const anchorSample: Sample = { hex: anchor.derived.hex, color: colorFor(anchor.entry) };
+  const romaji = capitalised(anchor.entry.name.romaji);
+  const slotOf = (key: RankedSlot): WearSlot | undefined => slots.find((s) => s.key === key);
+  const inHandLocked = state.locked[state.inHand];
+
   /*
-   * DESTRUCTURED, because TypeScript drops the null narrowing inside the two components declared
-   * below — a closure does not carry the guard, and the alternative is the assertion the lint
-   * just refused.
+   * WHAT THE TWO ACTIONS CARRY: the combination as `07` shows it, the colour in hand first. The Lab
+   * has three slots, so the outer layer stays here (F-257); the export takes all four.
    */
-  const { source: found, personalKnown, recommendations } = answer;
-  const sourceName = `${found.entry.name.kanji} ${found.entry.name.en}`;
+  const shownSlug = (key: RankedSlot): string | null => slotOf(key)?.entry?.entry.slug ?? null;
+  const worn: WornCombination = {
+    top: anchor.entry.slug,
+    trouser: shownSlug('trouser'),
+    shoe: shownSlug('shoe'),
+  };
+  const colours = [
+    anchor.entry.slug,
+    ...slots.flatMap((s) => (s.entry === null ? [] : [s.entry.entry.slug])),
+  ];
 
-  /** One candidate: the colour, the figure it earned, and why — when there is a why. */
-  function One({ candidate }: { readonly candidate: RankedCandidate }): React.JSX.Element {
-    const entry = entryBySlug(candidate.id);
-    const factors = shownFactors(candidate, personalKnown);
+  const actions: Action[] = [
+    ...(onSaveToLab === undefined
+      ? []
+      : [
+          {
+            label: t('wear.saveToLab'),
+            height: SAVE,
+            radius: 'pill' as const,
+            step: 'label' as const,
+            script,
+            // THE LAB DRAWS NOTHING WITHOUT A PROFILE, so the save is disabled with its reason in the
+            // bar's note (ADR-0152 D5, E4) rather than leading somewhere empty.
+            disabled: !personalKnown,
+            onPress: () => {
+              onSaveToLab(worn);
+            },
+          },
+        ]),
+    ...(onExport === undefined
+      ? []
+      : [
+          {
+            variant: 'secondary' as const,
+            edge: 'border' as const,
+            label: t('wear.exportTokens'),
+            height: EXPORT,
+            radius: 'pill' as const,
+            step: 'label' as const,
+            script,
+            onPress: () => {
+              onExport(colours);
+            },
+          },
+        ]),
+  ];
+  const [first, second] = actions;
+  const actionBar =
+    first === undefined
+      ? undefined
+      : {
+          actions: second === undefined ? ([first] as const) : ([first, second] as const),
+          rule: true,
+          gap: nativeSpacing.sm,
+          // `07.actions`: rule → buttons 10.9 dp and buttons → foot 10.9, `sm`; the sides 14.3 and 11.6,
+          // one value, `md` (the trailing side named in ADR-0153).
+          padding: { top: nativeSpacing.sm, bottom: nativeSpacing.sm, side: nativeSpacing.md },
+          ...(onSaveToLab !== undefined && !personalKnown
+            ? { note: t('wear.saveNeedsProfile') }
+            : {}),
+          script,
+        };
+
+  /**
+   * One of the four slots, drawn on its colour (`07.slots.slot-n`): `slot` is `null` for the colour in
+   * hand. A function the render calls rather than a component it declares — one declared in a render
+   * is a new type every render, and React would remount all four tiles on every Swap.
+   */
+  function tile(
+    slot: WearSlot | null,
+    entry: PublishedEntry | null,
+    titleKey: (typeof SLOT_TITLE_KEYS)[keyof typeof SLOT_TITLE_KEYS],
+  ): React.JSX.Element {
+    const title = t(titleKey);
+    if (entry === null)
+      // A RANKING WITH NOTHING IN IT: the slot's title and the sentence, on the page's own ground.
+      return (
+        <View
+          style={{
+            flex: 1,
+            padding: nativeSpacing.sm,
+            gap: nativeSpacing.xs,
+            borderRadius: nativeRadius.sm,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text size="label" color="foreground" numeric script={script}>
+            {title}
+          </Text>
+          <Text size="label" color="foreground.2" script={script}>
+            {t('wear.none')}
+          </Text>
+        </View>
+      );
+
+    const sample: Sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
+    const name = slotName(entry, slot === null);
+    const key = slot?.key;
+    const inHand = key !== undefined && key === state.inHand;
+    const locked = slot?.locked ?? false;
+    const ranking = key === undefined ? [] : rankings[key].ranked;
+    /*
+     * THE TILE'S CONTROL (out of hand): the compact Swap on the sample, or 13's Locked badge when the
+     * slot is locked (ADR-0152 D2, E4) — a locked slot's colour does not move, so a Swap would do
+     * nothing.
+     */
+    const trailing =
+      key === undefined || inHand ? null : locked ? (
+        <Chip
+          form="badge"
+          icon="lock"
+          fill="surface.3"
+          radius="sm"
+          label={t('lab.locked')}
+          script={script}
+        />
+      ) : (
+        <Button
+          variant="secondary"
+          on={sample}
+          label={t('wear.swap')}
+          name={`${t('wear.swap')} ${title}`}
+          glyph="refresh"
+          glyphAt="trailing"
+          glyphSize={SWAP_COMPACT_GLYPH}
+          height={SWAP_COMPACT}
+          radius="sm"
+          step="caption"
+          script={script}
+          onPress={() => {
+            setState((s) => swap(s, key, ranking));
+          }}
+          testID={`wear.slot.${key}.swap`}
+        />
+      );
+    /** The words a ranked tile is read by, through its press target; the anchor's are read as text. */
+    const words = key === undefined ? {} : HIDDEN;
+
     return (
-      /*
-        NOT PRESSABLE AS A WHOLE, DELIBERATELY (F-199).
-
-        `Card` makes the whole card one target (F-184), and this one now carries controls —
-        putting buttons inside a pressable card nests pressables, which `ChoiceGroup` refused
-        for the same reason one feature earlier. Three named controls also make "one
-        interaction" true rather than "one interaction once you find the right part of the card".
-      */
-      <Card
-        level="1"
-        footer={
-          entry === null ? undefined : (
-            <Row gap="sm" wrap>
-              {onOpenColour === undefined ? null : (
-                <Button
-                  label={t('wear.openColour')}
-                  variant="secondary"
-                  onPress={() => {
-                    onOpenColour(candidate.id);
-                  }}
-                  script={script}
-                />
-              )}
-              {onShopFor === undefined ? null : (
-                <Button
-                  label={t('wear.shopFor')}
-                  variant="secondary"
-                  onPress={() => {
-                    onShopFor(candidate.id, candidate.slot);
-                  }}
-                  script={script}
-                />
-              )}
-              {onAddToWardrobe === undefined ? null : (
-                <Button
-                  label={t('wear.addToWardrobe')}
-                  variant="secondary"
-                  onPress={() => {
-                    onAddToWardrobe(candidate.id);
-                  }}
-                  script={script}
-                />
-              )}
-            </Row>
-          )
-        }
-        header={
-          <Row gap="sm" align="center">
-            {entry === null ? null : (
-              <Swatch
-                caption="name"
-                name={entry.entry.name.en}
-                hex={entry.derived.hex}
-                color={colorFor(entry.entry)}
-                size={CANDIDATE}
-                script={script}
+      <View style={{ flex: 1 }} testID={`wear.slot.${key ?? 'top'}`}>
+        <Swatch
+          name={name}
+          hex={entry.derived.hex}
+          color={sample.color}
+          width="fill"
+          height="fill"
+          corner="sm"
+          keyline={false}
+          group={false}
+        >
+          <View pointerEvents="box-none" style={{ flexGrow: 1, padding: nativeSpacing.sm }}>
+            {key === undefined ? null : (
+              /*
+                THE PRESS TARGET, UNDER THE WORDS (ADR-0152 D1): the slot in hand, and its sheet. It
+                lies under the tile's words, which let a touch through to it, and beside its controls,
+                never around them — a control inside another is one a screen reader cannot reach.
+              */
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${title}, ${name}`}
+                accessibilityState={{ selected: inHand }}
+                onPress={() => {
+                  setState((s) => putInHand(s, key));
+                  setSheet(key);
+                }}
+                style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+                testID={`wear.slot.${key}.open`}
               />
             )}
-            <Stack gap="xs">
-              <Text size="body" color="foreground" script={script} heading>
-                {entry === null ? candidate.id : `${entry.entry.name.kanji} ${entry.entry.name.en}`}
+            <Row pointerEvents="box-none" gap="xs" align="start">
+              <View pointerEvents="none" style={{ flex: 1 }} {...words}>
+                <Text size="label" on={sample} numeric script={script}>
+                  {title}
+                </Text>
+              </View>
+              {trailing}
+            </Row>
+            {/*
+              title → hex → name at `xs`, each tighter than the scale (named, ADR-0153 D1): the line
+              insets already part them.
+            */}
+            <View
+              pointerEvents="none"
+              style={{ gap: nativeSpacing.xs, marginTop: nativeSpacing.xs }}
+              {...words}
+            >
+              <Text size="label" on={sample} numeric selectable>
+                {entry.derived.hex}
               </Text>
-              {/*
-                THE FIGURE, AND WHICH FIGURE IT IS. Named in the label rather than left as a bare
-                number, because "match" and "how it sits with that colour" are different claims
-                and only one of them is available without a profile.
-              */}
+              <Text size="body" on={sample}>
+                {name}
+              </Text>
+            </View>
+            {key === undefined || !inHand ? null : (
+              /*
+                THE SLOT IN HAND (ADR-0152 D1, D2): Swap and Lock under its name, each the tonal level-3
+                button `07` fills them with (ADR-0153 D2). Lock is a toggle announced as selected; its
+                padlock is `glyph.lock`, and its word — *Lock* or *Locked* — carries the state, so the
+                gold is never the only channel.
+              */
+              <View style={{ marginTop: nativeSpacing.xs }}>
+                <Row gap="xs" wrap>
+                  <Button
+                    variant="tonal"
+                    level={3}
+                    label={t('wear.swap')}
+                    name={`${t('wear.swap')} ${title}`}
+                    glyph="refresh"
+                    glyphAt="trailing"
+                    glyphSize={SWAP_GLYPH}
+                    height={SWAP}
+                    radius="sm"
+                    step="label"
+                    script={script}
+                    disabled={locked}
+                    onPress={() => {
+                      setState((s) => swap(s, key, ranking));
+                    }}
+                    testID={`wear.slot.${key}.swap`}
+                  />
+                  <Button
+                    variant="tonal"
+                    level={3}
+                    label={locked ? t('lab.locked') : t('wear.lock')}
+                    name={`${locked ? t('lab.locked') : t('wear.lock')} ${title}`}
+                    glyph="lock-solid"
+                    glyphTint="glyph.lock"
+                    glyphAt="trailing"
+                    glyphSize={LOCK_GLYPH}
+                    height={SWAP}
+                    radius="sm"
+                    step="label"
+                    script={script}
+                    selected={locked}
+                    onPress={() => {
+                      setState((s) => toggleLock(s, key, ranking));
+                    }}
+                    testID={`wear.slot.${key}.lock`}
+                  />
+                </Row>
+              </View>
+            )}
+          </View>
+        </Swatch>
+      </View>
+    );
+  }
+
+  /** The card's rows (`07.intelligence.*`): a label column, and the engine's figure in words. */
+  const contrast = contrastLine(intelligence.contrast);
+  const rows: readonly { readonly key: string; readonly label: string; readonly value: string }[] =
+    [
+      { key: 'harmony', label: t('wear.harmony'), value: t(HARMONY_KEYS[intelligence.harmony]) },
+      { key: 'fit', label: t('wear.fit'), value: fitLine(intelligence.fit, t, script) },
+      {
+        key: 'cvd',
+        label: t('wear.cvd'),
+        value: separationLine(intelligence.separation, t, script),
+      },
+      // No trousers to measure the top against, no contrast row: a figure nobody computed is not drawn.
+      ...(contrast === null
+        ? []
+        : [{ key: 'contrast', label: t('wear.contrast'), value: contrast }]),
+    ];
+
+  /** The slot whose sheet is open, and what it holds (ADR-0152 D4). */
+  const opened = sheet === null ? undefined : slotOf(sheet);
+  const candidate = opened?.candidate ?? null;
+  const openedEntry = opened?.entry ?? null;
+  const factors = candidate === null ? [] : shownFactors(candidate, personalKnown);
+
+  return (
+    <Screen
+      scroll={false}
+      bleed
+      script={script}
+      appBar={{
+        ...bar,
+        ...(onBack === undefined
+          ? {}
+          : {
+              back: {
+                glyph: 'back' as const,
+                label: romaji,
+                name: backName(anchor, t, script),
+                size: BACK_GLYPH,
+                weight: 500 as const,
+                onPress: onBack,
+              },
+            }),
+        // `07.divider` and `07.title`: the rule and the page's name, each at body 500 (ADR-0153 D4).
+        divider: DIVIDER,
+        title: {
+          text: t('wear.title'),
+          align: 'leading',
+          placement: 'bar',
+          layout: 'inline',
+          size: 'body',
+          weight: 500,
+        },
+      }}
+      {...(actionBar === undefined ? {} : { actionBar })}
+    >
+      <ScrollView
+        testID="wear.scroll"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: nativeSpacing.xl, paddingBottom: nativeSpacing.md }}
+      >
+        {/* `07.anchor`: the colour in hand, at the page's inset. */}
+        <View style={{ paddingHorizontal: nativeSpacing.md }}>
+          <Card level="1" padding="sm" radius="md" testID="wear.anchor">
+            <Row gap="sm" align="center">
+              <Swatch
+                size={ANCHOR}
+                corner="sm"
+                name={anchor.entry.name.en}
+                hex={anchor.derived.hex}
+                color={anchorSample.color}
+              />
+              {/* name → category at `xs`: tighter than the scale, named (ADR-0153 D1). */}
+              <View style={{ flex: 1, gap: nativeSpacing.xs }}>
+                <Text size="body" weight={500} color="foreground" numeric selectable>
+                  <Text size="body" weight={500} color="foreground" script="japanese">
+                    {anchor.entry.name.kanji}
+                  </Text>
+                  {anchorLine(anchor).slice(anchor.entry.name.kanji.length)}
+                </Text>
+                <Text size="label" color="foreground.2" script={script}>
+                  {t('outfit.top')}
+                </Text>
+              </View>
+            </Row>
+          </Card>
+        </View>
+
+        {/* `07.occasion`: FR-34's published weightings, each segment sized by its words (D6). */}
+        <View
+          style={{
+            marginTop: nativeSpacing.xl,
+            paddingLeft: nativeSpacing.md,
+            paddingRight: nativeSpacing.xs,
+          }}
+        >
+          <ChoiceGroup
+            label={t('wear.occasion')}
+            options={WEAR_OCCASIONS.map((o) => ({ value: o, label: t(OCCASION_KEYS[o]) }))}
+            value={state.occasion}
+            onChange={(o) => {
+              if (o !== null) setState((s) => chooseOccasion(s, o));
+            }}
+            segmented={{
+              mark: 'dot',
+              selectedFill: 'accent',
+              radius: 'sm',
+              height: OCCASION,
+              fit: 'content',
+            }}
+            script={script}
+            testID="wear.occasion"
+          />
+        </View>
+
+        {/* `07.slots`: four tiles, two to a row, each row as tall as its taller tile. */}
+        <View
+          style={{
+            marginTop: nativeSpacing.xl,
+            paddingHorizontal: nativeSpacing.sm,
+            gap: nativeSpacing.sm,
+          }}
+        >
+          <Row gap="sm" align="stretch">
+            {tile(null, anchor, SLOT_TITLE_KEYS.top)}
+            {tile(
+              slotOf('trouser') ?? null,
+              slotOf('trouser')?.entry ?? null,
+              SLOT_TITLE_KEYS.trouser,
+            )}
+          </Row>
+          <Row gap="sm" align="stretch">
+            {tile(slotOf('shoe') ?? null, slotOf('shoe')?.entry ?? null, SLOT_TITLE_KEYS.shoe)}
+            {tile(slotOf('outer') ?? null, slotOf('outer')?.entry ?? null, SLOT_TITLE_KEYS.outer)}
+          </Row>
+        </View>
+
+        {/*
+          `07.intelligence`: the four figures and the slot in hand's pills. Inset `sm` leading and `xs`
+          trailing, as drawn (the trailing 0.7 dp named, ADR-0153 D1).
+        */}
+        <View
+          style={{
+            marginTop: nativeSpacing.md,
+            paddingLeft: nativeSpacing.sm,
+            paddingRight: nativeSpacing.xs,
+          }}
+        >
+          <Card level="1" padding="sm" radius="md" testID="wear.intelligence">
+            <Text size="body" weight={600} color="foreground" script={script} heading>
+              {t('wear.intelligence')}
+            </Text>
+            {/* The rows at `xs` apart: tighter than the scale, named (ADR-0153 D1). */}
+            <View style={{ marginTop: nativeSpacing.lg, gap: nativeSpacing.xs }}>
+              {rows.map((r) => (
+                <Row key={r.key} align="start" testID={`wear.intelligence.${r.key}`}>
+                  <View style={{ width: LABEL_COLUMN }}>
+                    <Text size="label" color="foreground.2" script={script}>
+                      {r.label}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text size="label" color="foreground" script={script} numeric>
+                      {r.value}
+                    </Text>
+                  </View>
+                </Row>
+              ))}
+            </View>
+            {/* `07.intelligence.rule`: it runs `sm − xs` past the card's padding, ending `xs` short. */}
+            <View
+              testID="wear.intelligence.rule"
+              style={{
+                marginTop: nativeSpacing.sm,
+                marginRight: -(nativeSpacing.sm - nativeSpacing.xs),
+                height: 1,
+                backgroundColor: colors.border,
+              }}
+            />
+            {/*
+              THE PILLS (ADR-0152 D3): the slot in hand's alternatives, relative to the colour it shows,
+              as many as the engine returns. A locked slot does not move, so its pills are unavailable.
+            */}
+            <View style={{ marginTop: nativeSpacing.xl }}>
+              <Row gap="xs" wrap>
+                {alternatives.map((a) => (
+                  <Chip
+                    key={a.axis}
+                    label={pillLabel(a, state.inHand, t)}
+                    height={PILL}
+                    radius="sm"
+                    size="caption"
+                    disabled={inHandLocked}
+                    script={script}
+                    onPress={() => {
+                      setState((s) => substitute(s, s.inHand, a.candidate.id));
+                    }}
+                    testID={`wear.pill.${a.axis}`}
+                  />
+                ))}
+              </Row>
+            </View>
+          </Card>
+        </View>
+      </ScrollView>
+
+      {/*
+        THE SLOT'S SHEET (ADR-0152 D4, E4): `03`'s floating sheet. What the old page drew per candidate
+        — its rank, its figures and reasons or the missing half, `wear.what`, and where it can go — for
+        the colour the slot shows.
+      */}
+      <Sheet
+        form="floating"
+        open={opened !== undefined}
+        onOpenChange={(open) => {
+          if (!open) setSheet(null);
+        }}
+        title={opened === undefined ? t('wear.title') : t(SLOT_TITLE_KEYS[opened.key])}
+        closeLabel={t('wear.sheetClose')}
+        handleLabel={t('wear.sheetHandle')}
+        handleHint={t('wear.sheetHandleHint')}
+        testID="wear.sheet"
+        {...(opened === undefined || openedEntry === null
+          ? {}
+          : {
+              footer: (
+                <Row gap="sm" wrap>
+                  {onOpenColour === undefined ? null : (
+                    <Button
+                      variant="secondary"
+                      label={t('wear.openColour')}
+                      script={script}
+                      onPress={() => {
+                        onOpenColour(openedEntry.entry.slug);
+                      }}
+                    />
+                  )}
+                  {onShopFor === undefined ? null : (
+                    <Button
+                      variant="secondary"
+                      label={t('wear.shopFor')}
+                      script={script}
+                      onPress={() => {
+                        onShopFor(openedEntry.entry.slug, ENGINE_SLOT[opened.key]);
+                      }}
+                    />
+                  )}
+                  {onAddToWardrobe === undefined ? null : (
+                    <Button
+                      variant="secondary"
+                      label={t('wear.addToWardrobe')}
+                      script={script}
+                      onPress={() => {
+                        onAddToWardrobe(openedEntry.entry.slug);
+                      }}
+                    />
+                  )}
+                </Row>
+              ),
+            })}
+      >
+        {opened === undefined || openedEntry === null ? null : (
+          <Stack gap="sm">
+            <Text size="body" weight={500} color="foreground" heading>
+              {slotName(openedEntry, false)}
+            </Text>
+            <Text size="label" color="foreground.2" script={script} numeric>
+              {opened.rank === null
+                ? t('wear.unranked')
+                : `${t('wear.rank')} ${String(opened.rank)} / ${String(opened.of)}`}
+            </Text>
+            {candidate === null ? null : (
+              /*
+                THE FIGURE, AND WHICH FIGURE IT IS: the blend with a profile, the pairing without one —
+                named, because only one of them is available without a person (F-195).
+              */
               <Row gap="sm">
-                <Text size="caption" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script}>
                   {personalKnown ? t('wear.overall') : t('wear.pairing')}
                 </Text>
-                <Text size="caption" color="foreground.2" numeric selectable>
+                <Text size="label" color="foreground" numeric selectable>
                   {String(shownScore(candidate, personalKnown))}
                 </Text>
               </Row>
-            </Stack>
-          </Row>
-        }
-      >
-        {/*
-          ALL FOUR FACTORS, ALWAYS, OR NONE AT ALL. FR-29 asks for a per-factor explanation and
-          the engine returns every factor in order — a missing one is not an absent opinion, so
-          none is filtered for being neutral. Without a profile there are none to draw: the
-          object would report a perfect fit on four axes nobody has measured (see `wear.ts`).
-        */}
-        <Stack gap="xs">
-          {factors.map((f, i) => (
-            <Text
-              key={`${candidate.id}-${String(i)}`}
-              size="caption"
-              color="foreground.2"
-              script={script}
-            >
-              {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
-            </Text>
-          ))}
-        </Stack>
-      </Card>
-    );
-  }
-
-  /**
-   * One alternative: the direction, in words, and the colour that goes that way.
-   *
-   * **THE AXIS IS THE HEADING, AND IT IS WORDS.** A warmer colour does not look "warmer" beside
-   * a cooler one unless something says which is which — the swatch cannot carry this, and
-   * ADR-0076 had the same argument at the engine level when a grey at 66° was offered as warm.
-   *
-   * Same `Card` shape as a ranked candidate, at a smaller weight, rather than a new component:
-   * the screen already has an idiom for an optional handler, and reusing it keeps these inside
-   * a component the conformance suite covers.
-   */
-  function AlternativeCard({ alt }: { readonly alt: Alternative }): React.JSX.Element {
-    const entry = entryBySlug(alt.candidate.id);
-    return (
-      <Card
-        level="1"
-        footer={
-          entry === null || onOpenColour === undefined ? undefined : (
-            <Button
-              label={t('wear.openColour')}
-              variant="secondary"
-              onPress={() => {
-                onOpenColour(alt.candidate.id);
-              }}
-              script={script}
-            />
-          )
-        }
-        header={
-          <Row gap="sm" align="center">
-            {entry === null ? null : (
-              <Swatch
-                caption="name"
-                name={entry.entry.name.en}
-                hex={entry.derived.hex}
-                color={colorFor(entry.entry)}
-                size={ALTERNATIVE}
-                script={script}
-              />
             )}
-            <Stack gap="xs">
-              <Text size="body" color="foreground" script={script} heading>
-                {t(`alt.${alt.axis}` as MessageKey)}
-              </Text>
+            {/*
+              ALL FOUR FACTORS, OR NONE, AND THE MISSING HALF NAMED: without a profile the explanation
+              object reports a perfect fit on four axes nobody measured (`wear.ts`), so it is not drawn.
+            */}
+            {personalKnown ? (
+              <Stack gap="xs">
+                {factors.map((f, i) => (
+                  <Text
+                    key={`${String(i)}-${f.messageKey}`}
+                    size="caption"
+                    color="foreground.2"
+                    script={script}
+                  >
+                    {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
+                  </Text>
+                ))}
+              </Stack>
+            ) : (
               <Text size="caption" color="foreground.2" script={script}>
-                {entry === null
-                  ? alt.candidate.id
-                  : `${entry.entry.name.kanji} ${entry.entry.name.en}`}
+                {t('wear.noProfile')}
               </Text>
-            </Stack>
-          </Row>
-        }
-      />
-    );
-  }
-
-  /**
-   * The alternatives for one slot, or nothing at all.
-   *
-   * **NO BRANCH FILLS A MISSING AXIS.** The engine omits an axis it has no candidate for —
-   * *"three real ones and a missing fourth is an honest answer, while four where one is
-   * mislabelled is not"* — and this maps what it returned. A screen that rendered four slots
-   * and filled the gap would be inventing the one thing the engine refused to.
-   *
-   * An empty set draws NOTHING, heading included. A heading over nothing is this screen’s
-   * version of "0 results".
-   *
-   * AN ALTERNATIVE ALREADY IN THE LIST ABOVE IS NOT A DUPLICATE: the label is the content, and
-   * "like that, but cooler" is a different statement from "fourth". It can equally be a colour
-   * the list never reached — `alternativesFor` searches every ranked candidate up to the
-   * engine’s shortlist bound of 64, and six are shown.
-   */
-  function Alternatives({ rec }: { readonly rec: OutfitRecommendation }): React.JSX.Element | null {
-    if (rec.alternatives.length === 0) return null;
-    return (
-      <Stack gap="xs">
-        <Text size="caption" color="foreground.2" script={script}>
-          {t('wear.alternatives')}
-        </Text>
-        {rec.alternatives.map((a) => (
-          <AlternativeCard key={a.axis} alt={a} />
-        ))}
-      </Stack>
-    );
-  }
-  /** One slot's ranking. */
-  function Slot({ rec }: { readonly rec: OutfitRecommendation }): React.JSX.Element {
-    const shown = rec.ranked.slice(0, SHOWN_PER_SLOT);
-    return (
-      <Stack gap="sm">
-        <Text size="body" color="foreground" script={script} heading>
-          {t(`outfit.${rec.slot}` as MessageKey)}
-        </Text>
-        {shown.length === 0 ? (
-          <EmptyState message={t('wear.none')} resolvedHere script={script} />
-        ) : (
-          shown.map((c) => <One key={c.id} candidate={c} />)
-        )}
-        {shown.length === 0 ? null : <Alternatives rec={rec} />}
-      </Stack>
-    );
-  }
-
-  return (
-    <Screen title={t('wear.title')} script={script}>
-      {/*
-        WHAT THIS IS, AND WHAT IT IS NOT. NFR-21's weight falls here: a ranked list is not an
-        instruction. The claims lint holds the wording in both languages.
-      */}
-      <Text size="label" color="foreground.2" script={script}>
-        {t('wear.what')}
-      </Text>
-
-      <Card
-        level="2"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {sourceName}
-          </Text>
-        }
-      >
-        <Stack gap="sm">
-          <Swatch
-            caption="name"
-            name={found.entry.name.en}
-            hex={found.derived.hex}
-            color={colorFor(found.entry)}
-            script={script}
-          />
-          {/*
-            THE SLOT IS CHOSEN, NOT ASSUMED (criterion 1). Without this control "a colour
-            resolves into a slot" would mean "we picked one for you" — and the engine's answer
-            genuinely differs: a colour in the trouser slot asks for tops and shoes instead.
-          */}
-          <ChoiceGroup
-            label={t('wear.slot')}
-            options={OUTFIT_SLOTS.map((s) => ({
-              value: s,
-              label: t(`outfit.${s}` as MessageKey),
-            }))}
-            value={slot}
-            onChange={(v) => {
-              if (v !== null) setSlot(v);
-            }}
-            script={script}
-          />
-        </Stack>
-      </Card>
-
-      {/*
-        THE MISSING HALF, NAMED (criterion 3). The other answers stand — which is why this sits
-        beside them rather than replacing them, the shape `shopping.ts` already uses for exactly
-        this state.
-      */}
-      {personalKnown ? null : (
-        <Card level="1">
-          <Stack gap="sm">
-            <Text size="label" color="foreground.2" script={script}>
-              {t('wear.noProfile')}
-            </Text>
-            {onBuildProfile === undefined ? null : (
-              <Button
-                label={t('wear.buildProfile')}
-                variant="secondary"
-                onPress={onBuildProfile}
-                script={script}
-              />
             )}
+            <Text size="caption" color="foreground.2" script={script}>
+              {t('wear.what')}
+            </Text>
           </Stack>
-        </Card>
-      )}
-
-      {recommendations.map((rec) => (
-        <Slot key={rec.slot} rec={rec} />
-      ))}
+        )}
+      </Sheet>
     </Screen>
   );
 }

@@ -59,6 +59,7 @@
  * its own.
  */
 
+import { useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { RadioGroup as HeroRadioGroup } from 'heroui-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
@@ -463,6 +464,14 @@ export function ChoiceGroup<V extends string>({
 }: ChoiceGroupProps<V>): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
+  /*
+   * THE ROOM A CONTENT-FIT ROW HAS (F-248), measured: the group is at least that wide, so where the
+   * words leave room the segments share it, and where they do not the row scrolls. Measured rather
+   * than grown into, because a scroller's content has no width to grow into until something says so.
+   * `null` until laid out — the segments are then their words' width, which is what they never go
+   * below.
+   */
+  const [room, setRoom] = useState<number | null>(null);
   const all: readonly Entry[] = [
     ...(clearLabel === undefined
       ? []
@@ -507,8 +516,8 @@ export function ChoiceGroup<V extends string>({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          // Content-fit: the group fills the row where its words leave room, and the segments share it.
-          ...(content ? { flexGrow: 1 } : {}),
+          // Content-fit: the group spans the room it has where its words leave some, and the segments share it.
+          ...(content && room !== null ? { minWidth: room } : {}),
           height,
           padding: Math.max(0, SEGMENT_INSET - border),
           borderRadius: nativeRadius[segmented.radius ?? 'pill'],
@@ -546,7 +555,16 @@ export function ChoiceGroup<V extends string>({
       </HeroRadioGroup>
     );
     return (
-      <View testID={testID}>
+      <View
+        testID={testID}
+        {...(content
+          ? {
+              onLayout: (e: { nativeEvent: { layout: { width: number } } }) => {
+                setRoom(e.nativeEvent.layout.width);
+              },
+            }
+          : {})}
+      >
         {/*
           No caption: the mockups draw a segmented row without one, and the screen places its own
           label. The name is still the group's, announced below.
@@ -555,13 +573,9 @@ export function ChoiceGroup<V extends string>({
           /*
             CONTENT-FIT SCROLLS WHERE IT CANNOT FIT (F-248): the segments keep their words' width, so a
             row wider than its screen scrolls sideways, as 05's family row does, instead of cutting a
-            word. Where it fits, the group grows to the row and the segments share the rest.
+            word. Where it fits, the group spans the measured room and the segments share the rest.
           */
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1 }}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {group}
           </ScrollView>
         ) : (

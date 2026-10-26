@@ -469,6 +469,42 @@ export function wearCombination(
   };
 }
 
+/* ------------------------------------------------------------------ 07's drawn sizes */
+/*
+ * Each from `07.json` at its 0.6809 dp a pixel, to the half dp; `wear-fidelity.test` recomputes every
+ * one. A glyph's size is (ink − line) × 24 ÷ its path's extent, as F-247's are: the back arrow spans
+ * 12 units, the turn 17, and the padlock, a solid drawing with no line, 17.7.
+ */
+
+/** The app bar: `07.header`, 54 px. */
+export const WEAR_APP_BAR = 37;
+/** The back arrow: 20 px of ink. */
+export const BACK_GLYPH = 24;
+/** The rule between the back word and the title: 28 px. */
+export const DIVIDER = 19;
+/** The anchor's sample: 76 px. */
+export const ANCHOR = 51.5;
+/** The occasion control: 43 px. */
+export const OCCASION = 29.5;
+/** Slot 2's *Swap* and *Lock*: 40 and 41 px, siblings drawn alike, so one height. */
+export const SWAP = 27.5;
+/** Their turn: 18 px of ink. */
+export const SWAP_GLYPH = 15;
+/** Their padlock: 22 px of ink. */
+export const LOCK_GLYPH = 20.5;
+/** Slots 3 and 4's compact *Swap*: 34 px. */
+export const SWAP_COMPACT = 23;
+/** Its turn: 15 px of ink. */
+export const SWAP_COMPACT_GLYPH = 12;
+/** A substitution pill: 33 px. */
+export const PILL = 22.5;
+/** *Save to Outfit Lab*: 54 px. */
+export const SAVE = 37;
+/** *Export Palette Tokens*: 50 px. */
+export const EXPORT = 34;
+/** The card's label column: its values start 178 px in. */
+export const LABEL_COLUMN = 121;
+
 /* ------------------------------------------------------------------ 07's words */
 
 type T = (key: MessageKey) => string;

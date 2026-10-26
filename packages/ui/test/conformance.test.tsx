@@ -3262,6 +3262,47 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(<Swatch name="Ai-nezumi" hex={hex} color={SAMPLE} {...form} />, theme),
   })),
+  /*
+   * 07'S SLOT TILE (F-248): a sample of a filled height, apart from what is drawn on it — the slot's
+   * title, its name and a Swap, each read or reached on its own, the sample an image beside them.
+   */
+  {
+    name: 'Swatch (07’s slot tile: a filled height, apart from its words and control)',
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: ['#CDC4B9'],
+    render: (_state, theme) =>
+      draw(
+        <View style={{ height: 120 }}>
+          <Swatch
+            name="Rikyu-shira-cha"
+            hex="#CDC4B9"
+            color={SAMPLE}
+            width="fill"
+            height="fill"
+            keyline={false}
+            group={false}
+          >
+            <View style={{ padding: 8, gap: 4 }}>
+              <Text size="label" numeric on={{ hex: '#CDC4B9', color: SAMPLE }}>
+                Slot 2 (Trousers)
+              </Text>
+              <Text size="body" on={{ hex: '#CDC4B9', color: SAMPLE }}>
+                Rikyu-shira-cha (Warm Ecru)
+              </Text>
+              <Button
+                variant="secondary"
+                label="Swap"
+                glyph="refresh"
+                on={{ hex: '#CDC4B9', color: SAMPLE }}
+                onPress={() => undefined}
+              />
+            </View>
+          </Swatch>
+        </View>,
+        theme,
+      ),
+  },
 ];
 
 /**

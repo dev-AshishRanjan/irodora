@@ -88,8 +88,13 @@ export interface SwatchProps {
   readonly size?: number;
   /** The sample's width in dp, or `fill` for a hero that spans its container. */
   readonly width?: number | 'fill';
-  /** The sample's height in dp. */
-  readonly height?: number;
+  /**
+   * The sample's height in dp, or `fill` for a sample that takes its container's height (F-248):
+   * `07`'s slot tiles, where the words and controls drawn over the sample size the tile, and the
+   * sample is a layer behind them rather than their parent — so its accessible node never swallows
+   * theirs. A filled height is at least the tap target, which its corner and hit area assume.
+   */
+  readonly height?: number | 'fill';
   /** The current choice. Carried by a checkmark as well as an edge — never colour alone. */
   readonly selected?: boolean;
   /**
@@ -138,6 +143,13 @@ export interface SwatchProps {
   readonly bleed?: boolean;
   /** Drawn on the sample: 01's hero names it there. Set its text with `Text on={sample}`. */
   readonly children?: React.ReactNode;
+  /**
+   * Whether the sample's accessible node holds what is drawn on it: yes by default, as 01's hero is
+   * named there. `false` for children that act or read on their own (`07`'s slot tiles, F-248): the
+   * sample is then an image beside them. Only without `onPress` — a pressable sample is one target,
+   * and its children cannot be another.
+   */
+  readonly group?: boolean;
 }
 
 /**
@@ -234,6 +246,7 @@ export function Swatch({
   caption,
   anchor,
   bleed = false,
+  group = true,
   children,
 }: SwatchProps): React.JSX.Element {
   const { colors, source, paint } = useTheme();
@@ -244,7 +257,16 @@ export function Swatch({
    * Scale only, on the micro step, gone entirely under reduced motion.
    */
   const press = usePress();
-  const tall = height ?? size;
+  // A FILLED HEIGHT IS ITS CONTAINER'S (F-248), and at least the target: so the target stands in for
+  // it wherever a number is needed — the corner, the width floor and the hit area.
+  const tallFill = height === 'fill';
+  const tall = tallFill ? platformTapTarget() : (height ?? size);
+  /*
+   * The sample's own height: a number, or the container's — GROWN to it rather than `flex: 1`, whose
+   * zero basis collapses a child of a parent with no height of its own: the words drawn on the sample
+   * set its height, and a row's taller sibling stretches it.
+   */
+  const sampleHeight = tallFill ? { flexGrow: 1 } : { height: tall };
   const wide = bleed ? 'fill' : (width ?? size);
   const fill = wide === 'fill';
   // A rectangle takes its corner from its shorter side; a filled width is at least as long as the
@@ -271,6 +293,22 @@ export function Swatch({
   const declaredWidth = fill ? Math.min(tall, platformTapTarget()) : wide;
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
+  /*
+   * APART FROM ITS CHILDREN (F-248): a sample that does nothing, whose children act or read on their
+   * own, is announced as an image beside them — its name on a node laid over the sample that holds
+   * nothing — rather than as a button grouping them into one node, where a screen reader reaches no
+   * control and hears none of the words.
+   */
+  const apart = !group && onPress === undefined;
+  const named = apart ? (
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={label}
+      pointerEvents="none"
+      style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+    />
+  ) : null;
 
   /*
    * THE LINE, THEN THE SAMPLE. The line sits around the sample inside the element's box, so the
@@ -286,7 +324,7 @@ export function Swatch({
     <View
       style={{
         width: fill ? '100%' : wide,
-        height: tall,
+        ...sampleHeight,
         padding: 1,
         borderWidth: keylineWidth - KEYLINE_INSET,
         borderColor: paint(edge.hex),
@@ -294,7 +332,14 @@ export function Swatch({
         borderRadius: lineRadius,
       }}
     >
-      <View style={{ flex: 1, backgroundColor: paint(hex), borderRadius: corner.sample }}>
+      <View
+        style={{
+          ...(tallFill ? { flexGrow: 1 } : { flex: 1 }),
+          backgroundColor: paint(hex),
+          borderRadius: corner.sample,
+        }}
+      >
+        {named}
         {children}
       </View>
     </View>
@@ -302,11 +347,12 @@ export function Swatch({
     <View
       style={{
         width: fill ? '100%' : wide,
-        height: tall,
+        ...sampleHeight,
         backgroundColor: paint(hex),
         borderRadius: corner.sample,
       }}
     >
+      {named}
       {children}
     </View>
   );
@@ -328,33 +374,25 @@ export function Swatch({
     );
   const outerRadius = anchor === undefined ? outline : outline + anchor.gap + anchor.ring;
 
-  return (
-    <AnimatedPressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
-      // All four announced. A swatch that is merely dimmed is unavailable to a sighted user
-      // and indistinguishable from an available one to everybody else.
-      accessibilityState={{ selected, disabled: inert, busy: loading }}
-      disabled={inert}
-      onPress={onPress}
-      // The target, grown around the drawing rather than drawn into it (ADR-0114).
-      hitSlop={hitArea(declaredWidth, tall)}
-      style={[
-        press.style,
-        {
-          minWidth: declaredWidth,
-          minHeight: tall,
-          ...(fill ? { alignSelf: 'stretch' as const } : { alignItems: 'center' as const }),
-          gap: nativeSpacing.sm,
-          // The selection frame and the focus edge sit outside the box and cost no layout.
-          overflow: 'visible',
-          opacity: inert ? 0.5 : 1,
-        },
-      ]}
-    >
-      <View style={fill ? { alignSelf: 'stretch' } : {}}>
+  /*
+   * THE BOX, shared by both outer elements: a pressable sample, and one apart from its children, which
+   * does nothing and so is a plain View no screen reader announces.
+   */
+  const box = {
+    minWidth: declaredWidth,
+    minHeight: tall,
+    ...(fill ? { alignSelf: 'stretch' as const } : { alignItems: 'center' as const }),
+    ...(tallFill ? { flexGrow: 1 } : {}),
+    gap: nativeSpacing.sm,
+    // The selection frame and the focus edge sit outside the box and cost no layout.
+    overflow: 'visible' as const,
+    opacity: inert ? 0.5 : 1,
+  };
+  const body = (
+    <>
+      <View
+        style={{ ...(fill ? { alignSelf: 'stretch' } : {}), ...(tallFill ? { flexGrow: 1 } : {}) }}
+      >
         {/*
           THE SHARED TREATMENT (F-176), drawn outside the sample (F-233): `accent` edge, or `ring`
           under focus, with `accent.muted` in the gap. First, so the sample covers its middle. A
@@ -379,6 +417,26 @@ export function Swatch({
           {loading ? `${name}…` : selected ? `✓ ${name}` : name}
         </Text>
       ) : null}
+    </>
+  );
+  if (apart) return <View style={box}>{body}</View>;
+
+  return (
+    <AnimatedPressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      // All four announced. A swatch that is merely dimmed is unavailable to a sighted user
+      // and indistinguishable from an available one to everybody else.
+      accessibilityState={{ selected, disabled: inert, busy: loading }}
+      disabled={inert}
+      onPress={onPress}
+      // The target, grown around the drawing rather than drawn into it (ADR-0114).
+      hitSlop={hitArea(declaredWidth, tall)}
+      style={[press.style, box]}
+    >
+      {body}
     </AnimatedPressable>
   );
 }

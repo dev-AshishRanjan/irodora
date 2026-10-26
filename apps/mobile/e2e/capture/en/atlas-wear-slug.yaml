@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/wear/aki-batake'
-- assertVisible: 'Wear it'
+- assertVisible: 'Deterministic Colour Intelligence & Accessibility'
 - waitForAnimationToEnd
 - takeScreenshot: capture
