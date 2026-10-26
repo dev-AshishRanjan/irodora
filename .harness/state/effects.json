@@ -9718,9 +9718,13 @@
         {
           "kind": "gate",
           "ref": "a11y"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-a11y-proof.mjs"
         }
       ],
-      "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette. F-248’s review (S4): apart with onPress, the sample’s named node is its press target under its children — forms-07.test (two stops, the sample then its control, the press reaching it); wear-states.test (each tile’s colour named once among a reader’s stops, its words hidden); wear-fidelity.test (each tile’s named node holds none of the tile’s controls).",
+      "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette. F-248’s review (S4): apart with onPress, the sample’s named node is its press target under its children — forms-07.test (two stops, the sample then its control, the press reaching it); wear-states.test (each tile’s colour named once among a reader’s stops, its words hidden); wear-fidelity.test (each tile’s named node holds none of the tile’s controls). Gate 8’s mutation proof (scripts/verify-a11y-proof.mjs) removes the FIRST accessibilityRole=\"button\" in Swatch.tsx, so whichever form comes first in the file must be one a conformance subject renders: the pressable tile subject draws the apart press form through every state, and the proof was watched failing without it (Tier 2 on e9bae6e) and passing with it.",
       "memory": "memory/effects/a-control-inside-an-accessible-sample-is-one-no-screen-reader-reaches.md",
       "rationale": "Swatch is an accessible pressable that groups what it holds. 07’s tiles carry Swap, Lock and the press target on the sample, so a change that makes the sample group its children again hides every one of them from a screen reader while every render test stays green."
     }

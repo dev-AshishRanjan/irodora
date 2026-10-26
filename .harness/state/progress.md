@@ -8,6 +8,122 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-26 — F-248 Wear is mockup 07
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** The Wear page is rebuilt to `07`: a colour in hand as the top, three slots the engine fills
+under one of FR-34's published weightings, a card of four figures, the slot in hand's pills, and the
+save to the Outfit Lab and the export. Increments `a5264f5` through this one. It is the fourth whole
+screen in the inventory sweep.
+
+- **Four decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0150 closes OQ-32.** The fit note names the profile the figure was computed against —
+    *(your profile)* — never a seasonal type; without a profile there is no figure.
+  - **ADR-0151: 07's occasions, slots and figures say what the engine computes.** Casual, Office,
+    Japanese-inspired and Formal are published weightings, each by its own word. The colour is the
+    top; the outer layer is ranked as a top. *Amended by the review:* the slots are placed so no colour
+    shows twice; the contrast is floored; the harmony says temperature.
+  - **ADR-0152: what 07's controls do.** The slot in hand carries Swap and Lock; a tile opens its sheet
+    (rank, figures and reasons, Open · Shop · Add); the save hands the combination to the Lab, once, and
+    is disabled without a profile with its reason in the bar. *Amended:* shopping from a slot takes two
+    interactions on 07 (F-199's note).
+  - **ADR-0153: 07's composition, its inks and its kimono.** Intervals by §2's snap; the compact Swaps
+    in the sample's ink; corners; the header at body 500; `glyph.lock` minted; the kimono outside the
+    frame. Amended through D10: the tile's structure, the type steps and glyphs read, the action bar.
+- **Built alongside:**
+  - `rules.ts#occasionRuleSet`; `wear.ts` (the occasions, slots, state and reducers, `placeSlots`,
+    `wearCombination`, the words); `outfit/fromWear.ts` (the Lab hand-off, taken once);
+    `export/subject.ts#combinationSubject` and the `colours` parameter.
+  - `packages/recommendation#alternativesAround` (`recommendForSlot`'s output unchanged).
+  - Additive in `@irodora/ui`: `Button on`, `glyphTint`, `selected`, plain `weight`; `ChoiceGroup`
+    content-fit segments (the measured room) and segment ids; `ActionBar note`; `AppBarBack.weight` and
+    the divider's id; `Swatch height: 'fill'` and `group={false}`.
+  - Token: `glyph.lock` (`#C8A145`), its element exception retired.
+- **Criterion 1:**
+  - The sweep finds 07's 53 elements on `07.screen` in both themes and languages, with five decoys.
+  - `wear-fidelity.test` holds order, grouping and proportion against `07.json`, every interval
+    recomputed from the measured pixels.
+  - `wear-states.test` holds what the page says and does, and that none of 07's sample content reaches
+    it.
+- **Records:**
+  - Effects: E-217 to E-224 new, each with a note. E-101, E-145, E-149, E-161, E-164, E-203, E-208 and
+    E-215 updated.
+  - Docs: R9 §4 E1/E2/E4, §6, §8; PRD §10 (OQ-32 closed).
+  - Verification files: `screen-insets` (Wear re-captured); `unreached-tokens` (the temporary
+    `glyph.lock` row closed); `inventory-surfaces` (`07.screen` enrolled); `conformance-sweep`.
+  - The e2e anchor moves to the intelligence card; the Japanese font subset is regenerated.
+
+**Review (once): FAIL as delivered**, with 7 significant and 13 minor findings. Every one is fixed or
+recorded.
+
+- **S1, fixed — the one that mattered.** Every one of the 120 colours showed one colour in slots 2, 3
+  and 4: each slot was ranked against the colour in hand alone, and the rankings share their first. The
+  CVD row read 0%, the harmony always agreed, and the export refused the duplicate for every colour.
+  Every test passed, because every fixture had the defect. `placeSlots` places the slots once; a test
+  now holds four different colours for every colour, occasion and profile, and the export test writes
+  what each page shows in all six formats.
+- **S2, fixed:** the contrast row floored (4.48 read 4.5:1).
+- **S3, fixed:** Lock's Japanese word changes with its state (固定 → 固定中).
+- **S4, fixed:** one screen-reader stop per tile; the sample's own node is the press target.
+- **S5, recorded:** two interactions to shop from a slot on 07 (ADR-0152 D4; F-199's note).
+- **S6, fixed:** the attested capture expects no profile, as `--erase-app-data` leaves it.
+- **S7, fixed:** *Shared Temperature*, not *Shared Warmth*; the engine's own sentence → **F-352**.
+- **M1–M11:** fixed. **M12** (the Japanese pill keeps an English colour name and an ASCII ": +") is for
+  OQ-5's reader; **M13** (the closed sheet's nodes in the test tree) is the Sheet's existing behaviour,
+  not verified on a device.
+- **Found after the review, by Tier 2's CI mirror:** gate 8's mutation proof stayed green with its
+  planted defect. It removes the first `accessibilityRole="button"` in `Swatch.tsx`, and S4's fix had
+  put a new one first — the press form of a sample apart from its children, which no conformance
+  subject rendered. A subject now draws that form through every state, and found its tap target
+  undeclared, now declared (`970c08b`). E-224 names the proof.
+
+**Gates run on the final tree (`970c08b`), each exit 0:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The CI mirror's gate 4, `pnpm test` over every package, and gate 8's mutation proof, both passed on
+  the same tree.
+- Tier 1 on the same tree, before its commit: ui 1,489 and mobile 1,720 passed.
+- Tier 2 on `e9bae6e`, the review's fixes: `pnpm turbo run test --force` passed 35 of 35.
+
+**Not green, and why:**
+
+- `pnpm turbo run test --force` on `970c08b` stopped on design-tokens' `on-sample` device-palette search
+  timing out at 120 s under the parallel load (F-348), 32 of 35 tasks done; the mirror's full test gate
+  passed on the same tree. It timed out on the first Tier 2 (`6733d09`) too, where the mirror's test gate
+  stopped on store's `outfit-force-quit` child — filed as **F-351**; each package passed alone (store
+  315/315, design-tokens 446/446, ui 1,484/1,484, mobile 1,708/1,708).
+- Increment 8's and 9's Tier 1 runs saw React Native Testing Library's cleanup pass jest's 5 s hook
+  timeout under load in suites F-317 does not name (ui sample-family, atlas-forms, conformance; mobile
+  screens, export-screen); each passed alone. Filed as **F-350**.
+- `pnpm security` exits 1 on gate 15: F-322's advisories, and two published since (GHSA-587h in vite
+  and launch-editor, GHSA-mrhx in zod), added to F-322's note. F-248 changed no dependency.
+- `node scripts/verify-ci.mjs --all` exits 1 on the two recorded reds: the iOS config half on win32, and
+  gate 15.
+
+**Not run:**
+
+- e2e and the fidelity capture: no Maestro or JDK here. The attestations are the person's:
+  - a release Android build;
+  - `pnpm fidelity:capture -- --erase-app-data`;
+  - `/atlas/wear/[slug]` compared with `07` (25's palette for Washi), with no profile, as the capture
+    leaves it;
+  - then a profile and a garment per slot, and the device taps: each occasion, Swap, Lock (TalkBack),
+    a pill, a tile's sheet, Shop, Add, Save to the Lab, Export, back;
+  - 200 % text, where F-344's clipping is expected.
+
+### Lessons
+
+[[a-fixture-that-shares-a-defect-cannot-find-it]] and
+[[an-inventorys-dp-are-rounded-so-a-snap-between-them-can-cross-a-midpoint]] (new).
+
+### Next
+
+The loop: F-249 (Compare is mockup 08), the lowest-id eligible feature. F-243 (and F-244 and F-245
+behind it) waits on OQ-8, which asks for mockups no agent may draw.
+
+---
+
 ## 2026-10-22 — F-247 The colour page is mockup 06, and its Japanese is mockup 26
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device
