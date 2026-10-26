@@ -673,6 +673,11 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ],
       ['ChoiceGroup (segmented, 12)', { selectedFill: 'surface.3', radius: 'sm', height: 23 }],
       ['ChoiceGroup (segmented, 02)', { dividers: true, height: 31 }],
+      // 07's occasions (F-248): each segment sized by its words.
+      [
+        'ChoiceGroup (segmented, 07, sized by its words)',
+        { selectedFill: 'accent', radius: 'sm', height: 29.5, fit: 'content' },
+      ],
     ] as const
   ).map(([name, segmented]): ConformanceSubject => ({
     name,
@@ -1074,6 +1079,23 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         'Button (tonal, level 3)',
         { label: 'Build an outfit', variant: 'tonal', level: 3, glyph: 'arrow-right' },
       ],
+      // 07's in-hand Lock (F-248): tonal level 3, its padlock in glyph.lock, a toggle announced.
+      [
+        'Button (tonal, level 3, the gold padlock)',
+        {
+          label: 'Locked',
+          variant: 'tonal',
+          level: 3,
+          glyph: 'lock-solid',
+          glyphTint: 'glyph.lock',
+          selected: true,
+        },
+      ],
+      // 07's back word, drawn at 500 (F-248).
+      [
+        'Button (plain, back word at 500)',
+        { label: 'Ai-nezumi', variant: 'plain', glyph: 'back', weight: 500, height: 13 },
+      ],
     ] as const
   ).map(([name, form]): ConformanceSubject => ({
     name,
@@ -1088,6 +1110,37 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           focused={state === 'focus'}
           testID={state}
         />,
+        theme,
+      ),
+  })),
+  /*
+   * 07'S COMPACT SWAP ON A SAMPLE (F-248, C8, ADR-0153 D2): drawn on a sample of its own, as it is on
+   * a slot tile, so its words, glyph and outline are judged against what they sit on rather than
+   * against the page — a light sample, where the dark ink is taken, and a dark one.
+   */
+  ...(['#CDC4B9', '#1F2025'] as const).map((hex): ConformanceSubject => ({
+    name: `Button (secondary, on a sample ${hex})`,
+    kind: 'interactive',
+    forbiddenNames: ['icon', 'glyph'],
+    sampleValues: [hex],
+    render: (state, theme) =>
+      draw(
+        <Painted>
+          {(paint) => (
+            <View style={{ backgroundColor: paint(hex), padding: 8 }}>
+              <Button
+                variant="secondary"
+                label="Swap"
+                glyph="refresh"
+                on={{ hex, color: SAMPLE }}
+                disabled={state === 'disabled'}
+                loading={state === 'loading'}
+                focused={state === 'focus'}
+                testID={state}
+              />
+            </View>
+          )}
+        </Painted>,
         theme,
       ),
   })),
@@ -3014,6 +3067,17 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       [
         '24 (one plain)',
         { actions: [{ variant: 'plain', label: 'Create an outfit with this', height: 18 }] },
+      ],
+      // 07's bar without a stored profile (F-248): the save disabled, and the line that says why.
+      [
+        '07 (a disabled save and its note)',
+        {
+          actions: [
+            { label: 'Save to Outfit Lab', height: 37, disabled: true },
+            { variant: 'secondary', edge: 'border', label: 'Export Palette Tokens', height: 34 },
+          ],
+          note: 'Build a profile to use the Outfit Lab.',
+        },
       ],
     ] as const satisfies readonly (readonly [string, ActionBarProps])[]
   ).map(([name, props]): ConformanceSubject => ({

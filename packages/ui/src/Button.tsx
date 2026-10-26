@@ -80,6 +80,8 @@ import {
   type OwnedAccessibility,
   type RefuseOwnedAccessibility,
 } from './ownedAccessibility.js';
+import type { Sample } from './inkOnSample.js';
+import { sampleInk } from './sampleInk.js';
 import { FocusRing } from './selection.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
@@ -188,6 +190,17 @@ type LabelledBase = Shared & {
   readonly step?: 'body' | 'label' | 'caption';
   /** The side padding: `md` by default; `05`'s pills draw `sm`. */
   readonly inset?: 'sm' | 'md';
+  /**
+   * The glyph's ink, where the drawing tints it apart from the words (F-248): `07`'s padlock is gold
+   * on its *Lock* (ADR-0110, `glyph.lock`). Decorative: the word carries the state.
+   */
+  readonly glyphTint?: 'glyph.lock';
+  /**
+   * A toggle's state (F-248, `07`'s *Lock*): announced as selected. It draws nothing of its own; the
+   * caller says the state in the words too (*Lock* / *Locked*), so it is never colour or a state
+   * flag alone (golden rule 13).
+   */
+  readonly selected?: boolean;
   readonly icon?: never;
   readonly plate?: never;
   readonly shape?: never;
@@ -199,20 +212,36 @@ type PrimaryProps = LabelledBase & {
   readonly edge?: never;
   readonly level?: never;
   readonly ink?: never;
+  readonly on?: never;
+  readonly weight?: never;
 };
 type SecondaryProps = LabelledBase & {
   readonly variant: 'secondary';
   /** The outline: board 00's `border.strong` (the default), or the screens' `border.subtle`. */
   readonly edge?: 'border' | 'border.strong';
+  /**
+   * The colour sample the button is drawn ON (F-248, C8): its words sit on the sample itself, so its
+   * words, glyph and outline take the ink the sample takes for text (ADR-0116) — the one that clears
+   * 4.5:1 against it in this palette — rather than a theme token, which a dark sample in a light
+   * palette would swallow. `edge` is then not drawn.
+   */
+  readonly on?: Sample;
   readonly level?: never;
   readonly ink?: never;
+  readonly weight?: never;
 };
 type PlainProps = LabelledBase & {
   readonly variant: 'plain';
   /** The label's ink: `foreground`, or `foreground.2` where the chrome draws it secondary. */
   readonly ink?: 'foreground' | 'foreground.2';
+  /**
+   * The words' weight: board 00's 400 by default; 500 where the screen draws its back word heavier
+   * (`07`, F-248, measured).
+   */
+  readonly weight?: 400 | 500;
   readonly edge?: never;
   readonly level?: never;
+  readonly on?: never;
 };
 type TonalProps = LabelledBase & {
   readonly variant: 'tonal';
@@ -220,6 +249,8 @@ type TonalProps = LabelledBase & {
   readonly level: 2 | 3;
   readonly edge?: never;
   readonly ink?: never;
+  readonly on?: never;
+  readonly weight?: never;
 };
 
 type LabelledProps = PrimaryProps | SecondaryProps | PlainProps | TonalProps;
@@ -269,6 +300,7 @@ interface PaintProps {
   readonly edge: 'border' | 'border.strong' | undefined;
   readonly level: 2 | 3 | undefined;
   readonly ink: 'foreground' | 'foreground.2' | undefined;
+  readonly weight: 400 | 500 | undefined;
 }
 
 function labelledPaint(
@@ -291,7 +323,7 @@ function labelledPaint(
         background: 'transparent',
         edge: undefined,
         ink: props.ink ?? 'foreground',
-        weight: 400,
+        weight: props.weight ?? 400,
         padded: false,
       };
     case 'tonal':
@@ -333,21 +365,32 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     ink,
     step = 'body',
     inset = 'md',
+    glyphTint,
+    selected,
+    on,
+    weight,
     ...rest
   } = props;
-  const { colors } = useTheme();
+  const { colors, source, paint: painted } = useTheme();
   if (name !== undefined && !name.toLocaleLowerCase().includes(label.toLocaleLowerCase()))
     throw new TypeError(
       `Button: the name "${name}" does not contain the visible label "${label}" (WCAG 2.5.3)`,
     );
   const inert = disabled || loading;
-  const paint = labelledPaint({ variant, edge, level, ink }, colors);
+  const paint = labelledPaint({ variant, edge, level, ink, weight }, colors);
+  /*
+   * ON A SAMPLE (F-248, C8): the words, the glyph and the outline take the sample's text ink, solved on
+   * the declared palette and painted as `Text on` paints it, so the three are one ink that clears
+   * 4.5:1 against the colour they sit on.
+   */
+  const onInk = on === undefined ? undefined : painted(sampleInk(on.hex, source).hex);
+  const edgeColor = onInk ?? paint.edge;
   const side = glyph === undefined ? undefined : (glyphAt ?? glyphSide(glyph));
   const glyphNode =
     glyph === undefined ? null : (
       <Glyph
         name={glyph}
-        color={colors[paint.ink]}
+        color={glyphTint === undefined ? (onInk ?? colors[paint.ink]) : colors[glyphTint]}
         size={glyphSize ?? nativeType[script][step].fontSize}
       />
     );
@@ -362,7 +405,11 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
       accessibilityLabel={name ?? label}
       // Both flags, from the same two props. HeroUI sets `disabled` and nothing else, so a
       // visually-busy control would be silent to a screen reader without this.
-      accessibilityState={{ disabled: inert, busy: loading }}
+      accessibilityState={{
+        disabled: inert,
+        busy: loading,
+        ...(selected === undefined ? {} : { selected }),
+      }}
       isDisabled={inert}
       // Scale is a transform. The default, `scale-highlight`, cross-fades a background colour
       // — see the note above; verify-motion.mjs rejects a component that allows it.
@@ -389,8 +436,8 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
          * draws an outline and nothing inside it (F-232).
          */
         backgroundColor: paint.background,
-        borderWidth: paint.edge === undefined ? 0 : 1,
-        ...(paint.edge === undefined ? {} : { borderColor: paint.edge }),
+        borderWidth: edgeColor === undefined ? 0 : 1,
+        ...(edgeColor === undefined ? {} : { borderColor: edgeColor }),
         // Every declared state renders DIFFERENTLY. A component that returns the same tree for
         // default and disabled has defined the state in name only, and the conformance suite
         // rejects exactly that. Press feedback is HeroUI's scale, which the tree shows as a
@@ -404,9 +451,15 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
         type scale, the bundled face for Japanese (F-152), Dynamic Type, and the weight board 00
         draws — body at 500 on the primary, 400 on the others.
       */}
-      <Text size={step} weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
-        {loading ? `${label}…` : label}
-      </Text>
+      {on === undefined ? (
+        <Text size={step} weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
+          {loading ? `${label}…` : label}
+        </Text>
+      ) : (
+        <Text size={step} weight={paint.weight} on={on} script={script} numberOfLines={1}>
+          {loading ? `${label}…` : label}
+        </Text>
+      )}
       {side === 'trailing' ? glyphNode : null}
       <FocusRing visible={focused} radius={nativeRadius[radius]} />
     </HeroButton>

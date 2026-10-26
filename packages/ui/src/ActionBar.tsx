@@ -29,6 +29,9 @@
  */
 
 import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
+import type { Script } from './layout.js';
+import { Text } from './Text.js';
 import { Button, type ButtonProps } from './Button.js';
 import type { GlyphName } from './Glyph.js';
 import { useTheme } from './theme.js';
@@ -58,6 +61,14 @@ export interface ActionBarProps {
   readonly rule?: boolean;
   readonly padding?: { readonly top?: number; readonly bottom?: number; readonly side?: number };
   readonly gap?: number;
+  /**
+   * One line under the actions saying why one cannot be used (F-248): `07`'s *Save to Outfit Lab*
+   * without a stored profile. Disabled controls are not focusable on every platform, so the reason is
+   * in the bar as words, and announced politely when it appears. Absent, the bar is as before.
+   */
+  readonly note?: string;
+  /** The note's script, for its face (F-152). */
+  readonly script?: Script;
   readonly testID?: string;
 }
 
@@ -68,30 +79,51 @@ export function ActionBar({
   rule = true,
   padding = {},
   gap = ACTION_BAR_GAP,
+  note,
+  script = 'latin',
   testID,
 }: ActionBarProps): React.JSX.Element {
   const { colors } = useTheme();
+  const frame = {
+    paddingTop: padding.top ?? ACTION_BAR_TOP,
+    paddingBottom: padding.bottom ?? ACTION_BAR_BOTTOM,
+    paddingHorizontal: padding.side ?? ACTION_BAR_SIDE,
+    ...(fill === undefined ? {} : { backgroundColor: colors[fill] }),
+    ...(rule ? { borderTopWidth: ACTION_BAR_RULE, borderTopColor: colors.border } : {}),
+  };
+  const buttons = actions.map((action) => (
+    // In a row each action takes an equal share, as the screens' two-action bars draw them (06 07 08
+    // 13 20 26, within 2 dp). 03's footer draws 149 and 136 dp; that is F-244's to settle.
+    <View key={action.label} style={layout === 'row' ? { flex: 1 } : {}}>
+      <Button {...action} />
+    </View>
+  ));
+  if (note === undefined)
+    return (
+      <View
+        testID={testID}
+        accessibilityRole="toolbar"
+        style={{ flexDirection: layout, gap, ...frame }}
+      >
+        {buttons}
+      </View>
+    );
+  /*
+   * WITH A NOTE (F-248): the actions keep their row, and the reason one of them cannot be used is a
+   * line of words under it, `xs` below, announced politely when it appears. The frame is the bar's.
+   */
   return (
-    <View
-      testID={testID}
-      accessibilityRole="toolbar"
-      style={{
-        flexDirection: layout,
-        gap,
-        paddingTop: padding.top ?? ACTION_BAR_TOP,
-        paddingBottom: padding.bottom ?? ACTION_BAR_BOTTOM,
-        paddingHorizontal: padding.side ?? ACTION_BAR_SIDE,
-        ...(fill === undefined ? {} : { backgroundColor: colors[fill] }),
-        ...(rule ? { borderTopWidth: ACTION_BAR_RULE, borderTopColor: colors.border } : {}),
-      }}
-    >
-      {actions.map((action) => (
-        // In a row each action takes an equal share, as the screens' two-action bars draw them (06 07 08
-        // 13 20 26, within 2 dp). 03's footer draws 149 and 136 dp; that is F-244's to settle.
-        <View key={action.label} style={layout === 'row' ? { flex: 1 } : {}}>
-          <Button {...action} />
-        </View>
-      ))}
+    <View testID={testID} accessibilityRole="toolbar" style={{ gap: nativeSpacing.xs, ...frame }}>
+      <View style={{ flexDirection: layout, gap }}>{buttons}</View>
+      <Text
+        size="caption"
+        color="foreground.2"
+        script={script}
+        accessibilityLiveRegion="polite"
+        {...(testID === undefined ? {} : { testID: `${testID}.note` })}
+      >
+        {note}
+      </Text>
     </View>
   );
 }

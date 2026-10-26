@@ -117,6 +117,8 @@ export interface AppBarBack {
    * `IconButton`'s own size alone.
    */
   readonly size?: number;
+  /** The word's weight, where the screen draws it heavier than board 00's 400: `07`'s 500 (F-248). */
+  readonly weight?: 500;
   readonly testID?: string;
 }
 
@@ -378,6 +380,7 @@ function BackControl({
       script={script}
       onPress={back.onPress}
       {...(back.size === undefined ? {} : { glyphSize: back.size })}
+      {...(back.weight === undefined ? {} : { weight: back.weight })}
       {...id}
     />
   );

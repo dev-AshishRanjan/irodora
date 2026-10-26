@@ -59,7 +59,7 @@
  * its own.
  */
 
-import { View } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { RadioGroup as HeroRadioGroup } from 'heroui-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { CHIP_HEIGHT } from './Chip.js';
@@ -126,6 +126,13 @@ export interface Segmented {
   readonly height?: number;
   /** `02` rules a line between two unchosen segments. */
   readonly dividers?: boolean;
+  /**
+   * How the row shares its width (F-248): `equal` (the default) gives every segment the same share;
+   * `content` sizes each by its words, as `07` draws them (57 · 126 · 116 · 61 dp), and shares the
+   * room left over. Where the words are wider than the row — a narrow phone, large text — the row
+   * scrolls sideways rather than cut a word (§4 E3).
+   */
+  readonly fit?: 'equal' | 'content';
 }
 
 /**
@@ -315,7 +322,8 @@ function Segment({
       // width floor is the height, so no drawn segment is widened.
       hitSlop={hitArea(height, height)}
       style={{
-        flex: 1,
+        // Sized by its words, sharing what is left, never shrunk below them (`fit: 'content'`).
+        ...(segmented.fit === 'content' ? { flexGrow: 1, flexShrink: 0 } : { flex: 1 }),
         height,
         minWidth: height,
         flexDirection: 'row',
@@ -488,56 +496,77 @@ export function ChoiceGroup<V extends string>({
     const height = segmented.height ?? SEGMENTED_HEIGHT;
     const edge = segmented.edge ?? 'border';
     const border = edge === 'none' ? 0 : 1;
+    const content = segmented.fit === 'content';
+    const group = (
+      <HeroRadioGroup
+        value={value ?? NONE}
+        onValueChange={onValueChange}
+        accessibilityLabel={label}
+        isDisabled={inert}
+        accessibilityState={{ disabled: inert, busy: loading }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          // Content-fit: the group fills the row where its words leave room, and the segments share it.
+          ...(content ? { flexGrow: 1 } : {}),
+          height,
+          padding: Math.max(0, SEGMENT_INSET - border),
+          borderRadius: nativeRadius[segmented.radius ?? 'pill'],
+          borderWidth: border,
+          ...(edge === 'none' ? {} : { borderColor: colors[edge] }),
+          backgroundColor:
+            segmented.ground === undefined ? 'transparent' : colors[segmented.ground],
+        }}
+      >
+        {all.map((o, i) => {
+          const next = all[i + 1];
+          const divide =
+            segmented.dividers === true && next !== undefined && !o.chosen && !next.chosen;
+          return [
+            <Segment
+              key={o.value}
+              value={o.value}
+              label={o.label}
+              disabled={o.disabled}
+              chosen={o.chosen}
+              focused={o.focused}
+              script={script}
+              numeric={o.numeric}
+              segmented={segmented}
+            />,
+            divide ? (
+              <View
+                key={o.value + '|'}
+                pointerEvents="none"
+                style={{ width: 1, height: height / 2, backgroundColor: colors.border }}
+              />
+            ) : null,
+          ];
+        })}
+      </HeroRadioGroup>
+    );
     return (
       <View testID={testID}>
         {/*
           No caption: the mockups draw a segmented row without one, and the screen places its own
           label. The name is still the group's, announced below.
         */}
-        <HeroRadioGroup
-          value={value ?? NONE}
-          onValueChange={onValueChange}
-          accessibilityLabel={label}
-          isDisabled={inert}
-          accessibilityState={{ disabled: inert, busy: loading }}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            height,
-            padding: Math.max(0, SEGMENT_INSET - border),
-            borderRadius: nativeRadius[segmented.radius ?? 'pill'],
-            borderWidth: border,
-            ...(edge === 'none' ? {} : { borderColor: colors[edge] }),
-            backgroundColor:
-              segmented.ground === undefined ? 'transparent' : colors[segmented.ground],
-          }}
-        >
-          {all.map((o, i) => {
-            const next = all[i + 1];
-            const divide =
-              segmented.dividers === true && next !== undefined && !o.chosen && !next.chosen;
-            return [
-              <Segment
-                key={o.value}
-                value={o.value}
-                label={o.label}
-                disabled={o.disabled}
-                chosen={o.chosen}
-                focused={o.focused}
-                script={script}
-                numeric={o.numeric}
-                segmented={segmented}
-              />,
-              divide ? (
-                <View
-                  key={o.value + '|'}
-                  pointerEvents="none"
-                  style={{ width: 1, height: height / 2, backgroundColor: colors.border }}
-                />
-              ) : null,
-            ];
-          })}
-        </HeroRadioGroup>
+        {content ? (
+          /*
+            CONTENT-FIT SCROLLS WHERE IT CANNOT FIT (F-248): the segments keep their words' width, so a
+            row wider than its screen scrolls sideways, as 05's family row does, instead of cutting a
+            word. Where it fits, the group grows to the row and the segments share the rest.
+          */
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
+            {group}
+          </ScrollView>
+        ) : (
+          group
+        )}
       </View>
     );
   }

@@ -451,7 +451,7 @@ Gates: Tier 1, including `verify-mockups` and `mockup-inventory --check` in lint
 
 - `glyph.lock` in every palette, as a token group carrying `07.slots.slot-2.lock`, `15.security.badge` and `16.slots.slot-1.locked`; the element exception is retired.
 - `c10-exceptions.test`; `generate-design-tokens.mjs`; `DESIGN-SYSTEM.md`.
-- A temporary `unreached-tokens.json` row (`closedBy` F-248), removed in 6.
+- A temporary `unreached-tokens.json` row (`closedBy` F-248), removed in 4, where `Button`'s `glyphTint` first reads the token (the a11y gate's token-reach check refuses a declared-unreached token that has a reader).
 - If the header's em is more than 4 dp from every step: a measured step per ADR-0121, with census and `MEASURED_STEP_READERS`.
 - Gates: Tier 1, `generate-design-tokens --check`, `verify-token-reach` (and `--prove`), `pnpm test:contrast`, `pnpm test:cvd`.
 
