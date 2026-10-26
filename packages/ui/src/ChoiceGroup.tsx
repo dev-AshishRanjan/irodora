@@ -296,6 +296,7 @@ function Segment({
   script,
   numeric = false,
   segmented,
+  testID,
 }: {
   readonly value: string;
   readonly label: string;
@@ -305,6 +306,8 @@ function Segment({
   readonly script: Script;
   readonly numeric?: boolean;
   readonly segmented: Segmented;
+  /** `<group's id>.<value>`, and its dot `.dot`: how a sweep finds a drawn segment (F-248). */
+  readonly testID?: string | undefined;
 }): React.JSX.Element {
   const { colors } = useTheme();
   const press = usePress();
@@ -319,6 +322,7 @@ function Segment({
       isDisabled={disabled}
       accessibilityLabel={label}
       accessibilityState={{ selected: chosen, disabled }}
+      {...(testID === undefined ? {} : { testID })}
       // Drawn at the segment's height; the rest of the target is in the hit area (ADR-0114). The
       // width floor is the height, so no drawn segment is widened.
       hitSlop={hitArea(height, height)}
@@ -340,6 +344,7 @@ function Segment({
       <SelectionDot
         visible={chosen && (segmented.mark ?? 'dot') === 'dot'}
         color={colors[tone.ink]}
+        {...(testID === undefined ? {} : { testID: `${testID}.dot` })}
       />
       <Text
         size="label"
@@ -542,6 +547,7 @@ export function ChoiceGroup<V extends string>({
               script={script}
               numeric={o.numeric}
               segmented={segmented}
+              testID={testID === undefined ? undefined : `${testID}.${o.value}`}
             />,
             divide ? (
               <View

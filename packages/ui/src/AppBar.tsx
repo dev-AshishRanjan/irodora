@@ -74,6 +74,8 @@ export const APP_BAR_RULE = 1;
 
 /** The rule's test id: the one way an inventory's header rule (`05.header-rule`) is found (F-246). */
 export const APP_BAR_RULE_TEST_ID = 'app-bar.rule';
+/** The divider between the back control and the title (`19`, `07`): the sweep finds it by this. */
+export const APP_BAR_DIVIDER_TEST_ID = 'app-bar.divider';
 
 interface TitleBase {
   readonly text: string;
@@ -246,6 +248,7 @@ export function AppBar({
           {leading}
           {divider === undefined || back === undefined ? null : (
             <View
+              testID={APP_BAR_DIVIDER_TEST_ID}
               style={{ width: APP_BAR_RULE, height: divider, backgroundColor: colors.border }}
             />
           )}

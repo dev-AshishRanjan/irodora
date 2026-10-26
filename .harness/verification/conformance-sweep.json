@@ -9,9 +9,9 @@
   "claims": {
     "$comment": "F-221 (ADR-0134 D3): every tree rendered in every condition, read as paragraphs, visual lines (paragraphs side by side in a row) and accessible names, against the claims lint patterns. pnpm fidelity:capture reads a device capture the same way.",
     "textsRead": {
-      "paragraph": 26612,
-      "line": 4922,
-      "name": 12800
+      "paragraph": 23748,
+      "line": 4202,
+      "name": 12576
     },
     "patterns": 30,
     "findings": 0
@@ -23,15 +23,16 @@
       "01.screen",
       "05.screen",
       "06.screen",
+      "07.screen",
       "27.wardrobe-empty",
       "27.lens-working",
       "27.lens-refused",
       "27.lens-permission"
     ],
-    "elementsAsserted": 188,
-    "renders": 32,
+    "elementsAsserted": 241,
+    "renders": 36,
     "superseded": 2,
-    "owed": 20,
+    "owed": 19,
     "notWhole": {
       "00.board": "The vocabulary board: it governs words, parts and type (P3), and draws no screen a route renders.",
       "14.icon": "The launcher icon: an asset, held by generate-brand-assets --check and gate 16, not a screen.",

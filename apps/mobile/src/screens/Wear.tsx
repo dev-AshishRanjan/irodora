@@ -341,9 +341,11 @@ export function Wear({
       );
     /** The words a ranked tile is read by, through its press target; the anchor's are read as text. */
     const words = key === undefined ? {} : HIDDEN;
+    /** The tile's id, and its words' (`.title`, `.hex`, `.name`): the colour in hand's is `top`. */
+    const id = `wear.slot.${key ?? 'top'}`;
 
     return (
-      <View style={{ flex: 1 }} testID={`wear.slot.${key ?? 'top'}`}>
+      <View style={{ flex: 1 }} testID={id}>
         <Swatch
           name={name}
           hex={entry.derived.hex}
@@ -375,7 +377,7 @@ export function Wear({
             )}
             <Row pointerEvents="box-none" gap="xs" align="start">
               <View pointerEvents="none" style={{ flex: 1 }} {...words}>
-                <Text size="label" on={sample} numeric script={script}>
+                <Text size="label" on={sample} numeric script={script} testID={`${id}.title`}>
                   {title}
                 </Text>
               </View>
@@ -390,10 +392,10 @@ export function Wear({
               style={{ gap: nativeSpacing.xs, marginTop: nativeSpacing.xs }}
               {...words}
             >
-              <Text size="label" on={sample} numeric selectable>
+              <Text size="label" on={sample} numeric selectable testID={`${id}.hex`}>
                 {entry.derived.hex}
               </Text>
-              <Text size="body" on={sample}>
+              <Text size="body" on={sample} testID={`${id}.name`}>
                 {name}
               </Text>
             </View>

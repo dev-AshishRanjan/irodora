@@ -37,6 +37,7 @@ jest.mock('expo-localization', () => ({
 }));
 
 import {
+  APP_BAR_DIVIDER_TEST_ID,
   APP_BAR_RULE_TEST_ID,
   Appear,
   Arrival,
@@ -105,6 +106,15 @@ import {
 } from '../src/detail';
 import { displayP3Of } from '../src/engine';
 import { rankingContext } from '../src/wardrobe/coverage';
+import {
+  anchorLine,
+  contrastLine,
+  fitLine,
+  HARMONY_KEYS,
+  RESTING_WEAR,
+  separationLine,
+  wearCombination,
+} from '../src/wear';
 import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
 import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
 import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
@@ -940,6 +950,75 @@ function detailLocators(): Readonly<Record<string, Locator>> {
     out[`06.combinations.item-${n}.rank`] = { by: 'testID', id: `detail.combination.${n}.rank` };
     out[`06.combinations.item-${n}.caption`] = { by: 'value', text: () => combinationCaption(c) };
   }
+  return out;
+}
+
+/** `07` as the sweep draws it (F-248): the subject's colour, as drawn, with a profile. */
+const WEAR_SHOWN = (() => {
+  const shown = wearCombination(
+    BOTH_COST_BRANCHES.entry.slug,
+    RESTING_WEAR,
+    WEARER,
+    rankingContext(null),
+  );
+  if (shown === null) throw new Error('the Wear fixture stopped resolving');
+  return shown;
+})();
+
+/**
+ * Where the sweep finds 07's elements that their records do not name (F-248): the generic parts by
+ * their ids, the values through the screen's own functions. The four tiles are `wear.slot.<key>`,
+ * the colour in hand's `top`; the three pills are the first three the engine returns, in its order.
+ */
+function wearLocators(): Readonly<Record<string, Locator>> {
+  const say = (locale: Locale) => (key: MessageKey) => message(locale, key);
+  const scriptOf = (locale: Locale) => (locale === 'ja' ? 'japanese' : 'latin');
+  const { anchor, intelligence, alternatives } = WEAR_SHOWN;
+  const out: Record<string, Locator> = {
+    '07.back.label': { by: 'value', text: () => capitalisedRomaji(anchor.entry.name.romaji) },
+    '07.divider': { by: 'testID', id: APP_BAR_DIVIDER_TEST_ID },
+    '07.anchor': { by: 'testID', id: 'wear.anchor' },
+    '07.anchor.name': { by: 'value', text: () => anchorLine(anchor) },
+    // The chosen segment and its dot, by the group's ids: `<group>.<value>` and `.dot`.
+    '07.occasion.selected': { by: 'testID', id: 'wear.occasion.office' },
+    '07.occasion.selected.dot': { by: 'testID', id: 'wear.occasion.office.dot' },
+    '07.intelligence': { by: 'testID', id: 'wear.intelligence' },
+    '07.intelligence.harmony.value': {
+      by: 'value',
+      text: (locale) => message(locale, HARMONY_KEYS[intelligence.harmony]),
+    },
+    '07.intelligence.fit.value': {
+      by: 'value',
+      text: (locale) => fitLine(intelligence.fit, say(locale), scriptOf(locale)),
+    },
+    '07.intelligence.cvd.value': {
+      by: 'value',
+      text: (locale) => separationLine(intelligence.separation, say(locale), scriptOf(locale)),
+    },
+    '07.intelligence.contrast.value': {
+      by: 'value',
+      text: () => contrastLine(intelligence.contrast) ?? '',
+    },
+    '07.intelligence.rule': { by: 'testID', id: 'wear.intelligence.rule' },
+  };
+  const tiles = [
+    ['1', 'top'],
+    ['2', 'trouser'],
+    ['3', 'shoe'],
+    ['4', 'outer'],
+  ] as const;
+  for (const [n, key] of tiles) {
+    out[`07.slots.slot-${n}`] = { by: 'testID', id: `wear.slot.${key}` };
+    out[`07.slots.slot-${n}.hex`] = { by: 'testID', id: `wear.slot.${key}.hex` };
+    out[`07.slots.slot-${n}.name`] = { by: 'testID', id: `wear.slot.${key}.name` };
+  }
+  const pills = ['warmer', 'contrast', 'monochrome'] as const;
+  pills.forEach((drawn, i) => {
+    const axis = alternatives[i]?.axis;
+    if (axis === undefined)
+      throw new Error(`the Wear fixture offers fewer than ${String(i + 1)} pills`);
+    out[`07.substitutions.${drawn}`] = { by: 'testID', id: `wear.pill.${axis}` };
+  });
   return out;
 }
 
@@ -5835,6 +5914,24 @@ const ENROLLED: readonly Enrolled[] = [
     locators: detailLocators(),
   },
   {
+    /*
+     * 07, WEAR IT (F-248), drawn as it is drawn: Office, slot 2 in hand, a profile, every handler
+     * wired. 07 draws no tab bar, so nothing is superseded; its occasion and harmony words, its pills'
+     * axes and its fit note are departures 07.json lists (ADR-0151, ADR-0152), found by the words the
+     * page draws for them.
+     */
+    surface: '07.screen',
+    root: 'wear.surface',
+    render: (theme) =>
+      draw(
+        <View testID="wear.surface">
+          <Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} {...WEAR_HANDLERS} />
+        </View>,
+        theme,
+      ),
+    locators: wearLocators(),
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -6032,6 +6129,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '01.screen',
         '05.screen',
         '06.screen',
+        '07.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -6217,6 +6315,28 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       expectOnly(
         findingsFor('06.screen', withoutText(json, combinationCaption(second)), live),
         '06.combinations.item-2.caption',
+      );
+    });
+
+    it('07: the divider, a tile’s hex, the third pill and the fit are each found as themselves (F-248)', () => {
+      const { json, live } = drawnAs('07.screen');
+      expectOnly(
+        findingsFor('07.screen', without(json, APP_BAR_DIVIDER_TEST_ID), live),
+        '07.divider',
+      );
+      expectOnly(
+        findingsFor('07.screen', without(json, 'wear.slot.trouser.hex'), live),
+        '07.slots.slot-2.hex',
+      );
+      const third = WEAR_SHOWN.alternatives[2]!;
+      expectOnly(
+        findingsFor('07.screen', without(json, `wear.pill.${third.axis}`), live),
+        '07.substitutions.monochrome',
+      );
+      const fit = fitLine(WEAR_SHOWN.intelligence.fit, (key) => message('en', key), 'latin');
+      expectOnly(
+        findingsFor('07.screen', withoutText(json, fit), live),
+        '07.intelligence.fit.value',
       );
     });
 
