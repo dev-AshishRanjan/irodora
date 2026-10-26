@@ -1916,6 +1916,11 @@
     },
     {
       "rule": "E1",
+      "element": "07.anchor.category",
+      "why": "the slot word alone, Top: the colour in hand is the top (ADR-0151 D2, D3); 07’s Shirt is a garment of its sample, and its brackets and slash are notation (F-248’s review, M6)"
+    },
+    {
+      "rule": "E1",
       "element": "07.slots.slot-2.name",
       "why": "each slot is the engine’s ranking for it, named by the corpus colour (romaji and English); 07’s garment and material words are sample content (ADR-0151)"
     },

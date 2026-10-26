@@ -25,7 +25,7 @@ import {
   RESTING_WEAR,
   separationLine,
   shownFactors,
-  shownId,
+  placeSlots,
   shownScore,
   SLOT_TITLE_KEYS,
   SLOT_WORD_KEYS,
@@ -37,6 +37,7 @@ import {
   wearCombination,
   wearWith,
   type WearOccasion,
+  type WearCombination,
   type WearState,
 } from '../src/wear';
 import { allEntries, colorFor } from '../src/corpus';
@@ -236,26 +237,51 @@ describe('07’s occasions are FR-34’s published weightings (ADR-0151 D1, E-22
     const pick = (slug: string, occasion: WearOccasion) =>
       combination(slug, { ...RESTING_WEAR, occasion }).slots[0]?.entry?.entry.slug;
     expect(SLUGS.some((slug) => pick(slug, 'office') !== pick(slug, 'casual'))).toBe(true);
-    // DECOY: the same occasion twice gives the same pick for every colour.
+    // And the same occasion twice gives the same pick for every colour: the ranking is deterministic.
     expect(SLUGS.every((slug) => pick(slug, 'office') === pick(slug, 'office'))).toBe(true);
   });
 });
 
 describe('07’s slots resolve for every colour (ADR-0151 D2)', () => {
   it('fills the three ranked slots for every corpus colour, never with the colour in hand', () => {
-    for (const slug of SLUGS) {
-      const shown = combination(slug);
-      expect(shown.slots.map((s) => s.key)).toStrictEqual([...RANKED_SLOTS]);
-      for (const s of shown.slots) {
-        expect(s.entry?.entry.slug).not.toBe(slug);
-        expect([s.rank, s.locked]).toStrictEqual([1, false]);
+    for (const occasion of WEAR_OCCASIONS)
+      for (const slug of SLUGS) {
+        const shown = combination(slug, { ...RESTING_WEAR, occasion });
+        expect(shown.slots.map((s) => s.key)).toStrictEqual([...RANKED_SLOTS]);
+        for (const s of shown.slots) {
+          expect(s.entry?.entry.slug).not.toBe(slug);
+          // Placed from its own ranking, so it has a rank there, and none is locked at rest.
+          expect([s.rank !== null, s.locked]).toStrictEqual([true, false]);
+        }
+        for (const key of RANKED_SLOTS)
+          expect(shown.rankings[key].ranked.map((r) => r.id)).not.toContain(slug);
+        // FR-31's counts, for a top, under every occasion.
+        expect(shown.rankings.trouser.ranked.length).toBeGreaterThanOrEqual(5);
+        expect(shown.rankings.shoe.ranked.length).toBeGreaterThanOrEqual(4);
       }
-      for (const key of RANKED_SLOTS)
-        expect(shown.rankings[key].ranked.map((r) => r.id)).not.toContain(slug);
-      // FR-31's counts, for a top.
-      expect(shown.rankings.trouser.ranked.length).toBeGreaterThanOrEqual(5);
-      expect(shown.rankings.shoe.ranked.length).toBeGreaterThanOrEqual(4);
-    }
+  });
+
+  /*
+   * ONE COLOUR ONCE (F-248's review, S1). Each slot is ranked against the colour in hand alone, so the
+   * rankings share their first; before `placeSlots`, every colour showed one colour in all three slots,
+   * and the export refused the duplicate. Every colour, every occasion, with a profile and without.
+   */
+  it('shows four different colours for every corpus colour, every occasion, with a profile and without', () => {
+    const repeats: string[] = [];
+    for (const profile of [SOMEBODY, null])
+      for (const occasion of WEAR_OCCASIONS)
+        for (const slug of SLUGS) {
+          const shown = wearCombination(slug, { ...RESTING_WEAR, occasion }, profile, CONTEXT)!;
+          const ids = [slug, ...shown.slots.map((s) => s.entry?.entry.slug)];
+          if (new Set(ids).size !== 4) repeats.push(`${occasion} ${slug}: ${ids.join(', ')}`);
+        }
+    expect(repeats).toStrictEqual([]);
+  });
+
+  it('DECOY: the three rankings share their first, so taking each ranking’s first would repeat it', () => {
+    const shown = combination(A);
+    const firsts = RANKED_SLOTS.map((k) => shown.rankings[k].ranked[0]?.id);
+    expect(new Set(firsts).size).toBeLessThan(3);
   });
 
   it('ranks the outer layer as a top, and only the outer layer', () => {
@@ -278,43 +304,84 @@ describe('07’s slots resolve for every colour (ADR-0151 D2)', () => {
 });
 
 describe('what a person does on 07 (ADR-0152)', () => {
-  const ranking = combination(A).rankings.trouser.ranked;
-  const shownTrouser = (state: WearState) => shownId(state, 'trouser', ranking);
+  const resting = combination(A);
+  const ranking = resting.rankings.trouser.ranked;
+  /** The colours a state places. */
+  const placedBy = (state: WearState) => combination(A, state).placed;
+  const distinct = (state: WearState): boolean =>
+    new Set([A, ...Object.values(placedBy(state))]).size === 4;
 
-  it('Swap steps through the slot’s ranking and wraps at its end', () => {
+  it('places the trousers first, then each slot on the first colour its ranking offers that is free', () => {
+    const rankings = {
+      trouser: resting.rankings.trouser.ranked,
+      shoe: resting.rankings.shoe.ranked,
+      outer: resting.rankings.outer.ranked,
+    };
+    const placed = placeSlots(RESTING_WEAR, rankings);
+    expect(placed.trouser).toBe(rankings.trouser[0]?.id);
+    expect(placed.shoe).toBe(rankings.shoe.find((r) => r.id !== placed.trouser)?.id);
+    expect(placed.outer).toBe(
+      rankings.outer.find((r) => r.id !== placed.trouser && r.id !== placed.shoe)?.id,
+    );
+    expect(resting.placed).toStrictEqual(placed);
+  });
+
+  it('Swap steps to the next free colour in its ranking, never one another slot shows', () => {
     let state = RESTING_WEAR;
-    // One Swap per candidate, so the last one wraps back to the first.
-    const seen = ranking.map(() => {
-      state = swap(state, 'trouser', ranking);
-      return shownTrouser(state);
-    });
-    expect(seen).toStrictEqual([...ranking.slice(1), ranking[0]].map((r) => r?.id));
+    const elsewhere = new Set([resting.placed.shoe, resting.placed.outer]);
+    const next = ranking.slice(1).find((r) => !elsewhere.has(r.id))?.id;
+    state = swap(state, 'trouser', ranking, placedBy(state));
+    expect(placedBy(state).trouser).toBe(next);
+    // Through twice the ranking: every step moves, and the four colours stay four.
+    for (let i = 0; i < 2 * ranking.length; i += 1) {
+      const before = placedBy(state).trouser;
+      state = swap(state, 'trouser', ranking, placedBy(state));
+      expect({ step: i, moved: placedBy(state).trouser !== before }).toStrictEqual({
+        step: i,
+        moved: true,
+      });
+      expect({ step: i, distinct: distinct(state) }).toStrictEqual({ step: i, distinct: true });
+    }
   });
 
   it('a locked slot keeps its colour across Swap, a pill and an occasion', () => {
-    const locked = toggleLock(swap(RESTING_WEAR, 'trouser', ranking), 'trouser', ranking);
-    const held = shownTrouser(locked);
-    expect(held).toBe(ranking[1]?.id);
-    expect(shownTrouser(swap(locked, 'trouser', ranking))).toBe(held);
-    expect(shownTrouser(substitute(locked, 'trouser', ranking[2]!.id))).toBe(held);
-    expect(shownTrouser(chooseOccasion(locked, 'formal'))).toBe(held);
+    const swapped = swap(RESTING_WEAR, 'trouser', ranking, resting.placed);
+    const locked = toggleLock(swapped, 'trouser', placedBy(swapped));
+    const held = placedBy(locked).trouser;
+    expect(held).toBe(placedBy(swapped).trouser);
+    expect(placedBy(swap(locked, 'trouser', ranking, placedBy(locked))).trouser).toBe(held);
+    expect(placedBy(substitute(locked, 'trouser', ranking[5]!.id)).trouser).toBe(held);
+    const formal = chooseOccasion(locked, 'formal');
+    expect(placedBy(formal).trouser).toBe(held);
+    // And the others, placed again under the new occasion, never take the locked colour.
+    expect(distinct(formal)).toBe(true);
   });
 
   it('DECOY: an unlocked slot moves under each of the three', () => {
-    const open = swap(RESTING_WEAR, 'trouser', ranking);
-    expect(shownTrouser(swap(open, 'trouser', ranking))).toBe(ranking[2]?.id);
-    expect(shownTrouser(substitute(open, 'trouser', ranking[3]!.id))).toBe(ranking[3]?.id);
+    const open = swap(RESTING_WEAR, 'trouser', ranking, resting.placed);
+    const at = placedBy(open).trouser;
+    expect(placedBy(swap(open, 'trouser', ranking, placedBy(open))).trouser).not.toBe(at);
+    const held = Object.values(placedBy(open));
+    const free = ranking.find((r) => !held.includes(r.id))!.id;
+    expect(placedBy(substitute(open, 'trouser', free)).trouser).toBe(free);
     expect(chooseOccasion(open, 'formal').shown.trouser).toBeNull();
   });
 
   it('locking pins what is shown, and unlocking leaves it where it is', () => {
-    const locked = toggleLock(RESTING_WEAR, 'trouser', ranking);
-    expect(locked.shown.trouser).toBe(ranking[0]?.id);
-    const unlocked = toggleLock(locked, 'trouser', ranking);
+    const locked = toggleLock(RESTING_WEAR, 'trouser', resting.placed);
+    expect(locked.shown.trouser).toBe(resting.placed.trouser);
+    const unlocked = toggleLock(locked, 'trouser', placedBy(locked));
     expect([unlocked.locked.trouser, unlocked.shown.trouser]).toStrictEqual([
       false,
-      ranking[0]?.id,
+      resting.placed.trouser,
     ]);
+  });
+
+  it('a colour given to one slot that another shows moves the other, and is never shown twice', () => {
+    const shoeColour = resting.placed.shoe!;
+    const given = substitute(RESTING_WEAR, 'trouser', shoeColour);
+    expect(placedBy(given).trouser).toBe(shoeColour);
+    expect(distinct(given)).toBe(true);
   });
 
   it('a slot’s words put it in hand, and nothing else moves', () => {
@@ -334,11 +401,11 @@ describe('what a person does on 07 (ADR-0152)', () => {
   });
 
   it('the same actions give the same page', () => {
-    const act = () =>
-      putInHand(
-        swap(chooseOccasion(RESTING_WEAR, 'casual'), 'shoe', combination(A).rankings.shoe.ranked),
-        'shoe',
-      );
+    const act = () => {
+      const casual = chooseOccasion(RESTING_WEAR, 'casual');
+      const at = combination(A, casual);
+      return putInHand(swap(casual, 'shoe', at.rankings.shoe.ranked, at.placed), 'shoe');
+    };
     expect(combination(A, act())).toStrictEqual(combination(A, act()));
   });
 });
@@ -346,28 +413,54 @@ describe('what a person does on 07 (ADR-0152)', () => {
 describe('the slot in hand’s alternatives are around the colour it shows (FR-38, E-217)', () => {
   const resting = combination(A);
   const ranking = resting.rankings.trouser.ranked;
+  /** The trousers' ranking, less the colours the other slots show. */
+  const offered = (shown: WearCombination) => {
+    const elsewhere = new Set([shown.placed.shoe, shown.placed.outer]);
+    return shown.rankings.trouser.ranked.filter((r) => !elsewhere.has(r.id));
+  };
 
-  it('at rest, are the ranking’s own alternatives', () => {
-    expect(resting.alternatives).toStrictEqual(resting.rankings.trouser.alternatives);
-  });
-
-  it('after a Swap, are relative to the colour now shown', () => {
-    const swapped = combination(A, swap(RESTING_WEAR, 'trouser', ranking));
-    expect(swapped.alternatives).toStrictEqual(
+  it('at rest, are around the colour shown, among the colours no other slot shows', () => {
+    expect(resting.alternatives).toStrictEqual(
       alternativesAround(
-        { slot: 'top', color: colorFor(swapped.anchor.entry) },
-        ranking[1]!.id,
-        ranking,
+        { slot: 'top', color: colorFor(resting.anchor.entry) },
+        resting.placed.trouser!,
+        offered(resting),
         poolWithout(A),
         occasionRuleSet('office'),
       ),
     );
-    for (const a of swapped.alternatives) expect(a.candidate.id).not.toBe(ranking[1]?.id);
+  });
+
+  it('after a Swap, are relative to the colour now shown', () => {
+    const swapped = combination(A, swap(RESTING_WEAR, 'trouser', ranking, resting.placed));
+    expect(swapped.alternatives).toStrictEqual(
+      alternativesAround(
+        { slot: 'top', color: colorFor(swapped.anchor.entry) },
+        swapped.placed.trouser!,
+        offered(swapped),
+        poolWithout(A),
+        occasionRuleSet('office'),
+      ),
+    );
+    for (const a of swapped.alternatives) expect(a.candidate.id).not.toBe(swapped.placed.trouser);
+  });
+
+  it('never offer a colour another slot shows, for any corpus colour and slot in hand', () => {
+    const clashes: string[] = [];
+    for (const slug of SLUGS)
+      for (const inHand of RANKED_SLOTS) {
+        const shown = combination(slug, { ...RESTING_WEAR, inHand });
+        const elsewhere = RANKED_SLOTS.filter((k) => k !== inHand).map((k) => shown.placed[k]);
+        for (const a of shown.alternatives)
+          if (elsewhere.includes(a.candidate.id)) clashes.push(`${slug} ${inHand} ${a.axis}`);
+      }
+    expect(clashes).toStrictEqual([]);
   });
 
   it('follow the slot in hand', () => {
     const shoe = combination(A, putInHand(RESTING_WEAR, 'shoe'));
-    expect(shoe.alternatives).toStrictEqual(shoe.rankings.shoe.alternatives);
+    for (const a of shoe.alternatives) expect(a.candidate.slot).toBe('shoe');
+    expect(shoe.alternatives.length).toBeGreaterThan(0);
   });
 });
 
@@ -441,9 +534,34 @@ describe('07’s words', () => {
     expect(contrastLine(null)).toBeNull();
   });
 
-  it('names a harmony for every direction the component reports', () => {
-    for (const direction of ['supports', 'neutral', 'opposes'] as const)
-      expect(en[HARMONY_KEYS[direction]]).toBeTruthy();
+  /*
+   * FLOORED, NEVER ROUNDED (F-248's review, S2; ADR-0124). Each pair is a real corpus pair the review
+   * found rounding up across a threshold: a figure may say less than the pair reaches, never more.
+   */
+  it('never prints a contrast a pair does not reach', () => {
+    expect(contrastLine({ ratio: 4.48, lc: 44.59 })).toBe('4.4:1 · Lc 44');
+    expect(contrastLine({ ratio: 2.997, lc: 29.98 })).toBe('2.9:1 · Lc 29');
+    expect(contrastLine({ ratio: 4.5, lc: 45 })).toBe('4.5:1 · Lc 45');
+    // DECOY: rounding would have claimed the thresholds.
+    expect((4.48).toFixed(1)).toBe('4.5');
+    expect(Math.round(44.59)).toBe(45);
+  });
+
+  it('words each harmony direction by its own key, and says temperature, not warmth (S7)', () => {
+    expect(HARMONY_KEYS).toStrictEqual({
+      supports: 'wear.harmony.supports',
+      neutral: 'wear.harmony.neutral',
+      opposes: 'wear.harmony.opposes',
+    });
+    // The component measures how close the pieces sit on the warm–cool axis, whichever side: four
+    // cool colours close together are not "warmth".
+    expect([en['wear.harmony.supports'], en['wear.harmony.neutral']]).toStrictEqual([
+      'Shared Temperature',
+      'Mixed Temperature',
+    ]);
+    // DECOY: the three are three different words in each catalogue.
+    for (const catalogue of [en, ja])
+      expect(new Set(Object.values(HARMONY_KEYS).map((k) => catalogue[k])).size).toBe(3);
   });
 
   it('names the anchor, a slot and the back control in 07’s structures', () => {

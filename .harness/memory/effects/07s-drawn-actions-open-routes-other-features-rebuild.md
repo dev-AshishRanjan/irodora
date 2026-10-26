@@ -21,6 +21,13 @@ The targets are held where `06`'s are (E-215): read from the route's source, per
 moved to the wrong control is seen, and in the order that matters — the combination offered before the
 Lab opens.
 
+## The export refuses a colour twice
+
+The writers' `assertSubject` refuses a subject with a colour twice. When `07` showed one colour in
+three slots, *Export Palette Tokens* failed for every colour, and `export-subject.test` passed because
+it exported four colours of its own choosing. It now writes what each colour's page shows, as the page
+builds the list, in every format.
+
 ## What it does not guard
 
 - **What the opened screen does.** Each is its own feature's.

@@ -9433,7 +9433,7 @@
           "ref": "test"
         }
       ],
-      "guard": "packages/recommendation/test/outfit.test.ts: alternativesAround around the ranking’s top pick deep-equals recommendForSlot’s own alternatives (the no-change oracle); for every candidate in a ranking, each axis moves from THAT candidate; a different shown candidate gives a different answer (decoy). wear.test: after a Swap the slot in hand’s alternatives are around the colour it now shows. wear-alternatives.test: the pills are counted against the engine for each slot in hand and after a pill.",
+      "guard": "packages/recommendation/test/outfit.test.ts: alternativesAround around the ranking’s top pick deep-equals recommendForSlot’s own alternatives (the no-change oracle); for every candidate in a ranking, each axis moves from THAT candidate; a different shown candidate gives a different answer (decoy). wear.test: after a Swap the slot in hand’s alternatives are around the colour it now shows. wear-alternatives.test: the pills are counted against the engine for each slot in hand and after a pill. F-248’s review: the pills are computed over the slot in hand’s ranking less the colours the other slots show, so a pill never puts one colour in two slots — wear.test holds it for every corpus colour and every slot in hand.",
       "memory": "memory/effects/a-pill-is-warmer-than-the-colour-beside-it-or-it-is-false.md",
       "rationale": "A pill reading Make Warmer is a claim about the colour on screen. Alternatives relative to the ranking’s top pick are true until the first Swap and false after it; alternativesAround makes them relative to the shown candidate, and recommendForSlot’s output must not move for the screens that read it."
     },
@@ -9480,9 +9480,13 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wear.ts#placeSlots"
         }
       ],
-      "guard": "apps/mobile/test/wear.test.ts: every corpus colour’s three ranked slots are filled, never with the colour in hand, with FR-31’s counts; the trouser and shoe rankings equal the engine’s under the occasion’s weighting; the outer layer equals recommendForSlot for a second top (recommendOutfit would refuse it); harmony, fit and separation are scoreOutfit’s over the four pieces; contrast is compare()’s top against the trousers, the smaller |Lc|, with the decoy that the two directions differ; fit is null without a profile.",
+      "guard": "apps/mobile/test/wear.test.ts: every corpus colour’s three ranked slots are filled, never with the colour in hand, with FR-31’s counts; the trouser and shoe rankings equal the engine’s under the occasion’s weighting; the outer layer equals recommendForSlot for a second top (recommendOutfit would refuse it); harmony, fit and separation are scoreOutfit’s over the four pieces; contrast is compare()’s top against the trousers, the smaller |Lc|, with the decoy that the two directions differ; fit is null without a profile. F-248’s review (S1): the three rankings share their first, so the slots are placed in one pass (placeSlots) — wear.test holds four different colours for every corpus colour, every occasion, with a profile and without, with the decoy that the rankings’ firsts repeat; Swap steps to the next free colour and Lock pins the placed one. The contrast row is floored (S2), its boundaries asserted.",
       "memory": "memory/effects/the-combination-is-the-engines-four-pieces-scored-once.md",
       "rationale": "Everything 07 prints about the outfit is computed here. A fit figure drawn without a profile, an outer layer ranked through the call that refuses a second top, or a contrast pair that quietly changes, each reaches the card with every render green."
     },
@@ -9608,9 +9612,13 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/export/src/subject.ts#assertSubject"
         }
       ],
-      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint.",
+      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint. F-248’s review (S1): the writers refuse a colour twice (assertSubject), so export-subject.test writes the combination every corpus colour shows, as the page builds it (shownColours), in all six formats, with the decoy that a colour twice is refused.",
       "memory": "memory/effects/07s-drawn-actions-open-routes-other-features-rebuild.md",
       "rationale": "07’s actions open screens that 13, 18, 22 and 12 rebuild. A rebuild that renames a route, or an export that stops reading colours, breaks 07’s actions without a failure on 07."
     },
@@ -9648,7 +9656,7 @@
           "ref": "a11y"
         }
       ],
-      "guard": "packages/ui/test/forms-07.test.tsx: on a light and a dark sample, in both themes, the words, glyph and outline are sampleInk’s ink, the two inks differ, and without on the outline and words are the theme’s (decoy). The conformance suite draws the Button on a light and a dark sample of its own, in every palette including the derived ones, and measures its words against the sample.",
+      "guard": "packages/ui/test/forms-07.test.tsx: on a light and a dark sample, in both themes, the words, glyph and outline are sampleInk’s ink, the two inks differ, and without on the outline and words are the theme’s (decoy). The conformance suite draws the Button on a light and a dark sample of its own, in every palette including the derived ones, and measures its words against the sample. Over the whole corpus: apps/mobile/test/screens-sample-ink.test.ts measures sampleInk’s ink against every corpus colour in every palette (4.5:1, with the census of moved inks as its decoy), and forms-07.test proves the Button paints that ink — together the 120 × 4 the plan named.",
       "memory": "memory/effects/a-control-on-a-sample-takes-the-samples-ink.md",
       "rationale": "A control drawn on a colour sample cannot take a theme token for its words: dark words on a dark sample in Washi. The ink is the sample’s, chosen per sample, and a change to sampleInk or to how the Button paints moves every compact Swap on 07."
     },
@@ -9712,7 +9720,7 @@
           "ref": "a11y"
         }
       ],
-      "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette.",
+      "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette. F-248’s review (S4): apart with onPress, the sample’s named node is its press target under its children — forms-07.test (two stops, the sample then its control, the press reaching it); wear-states.test (each tile’s colour named once among a reader’s stops, its words hidden); wear-fidelity.test (each tile’s named node holds none of the tile’s controls).",
       "memory": "memory/effects/a-control-inside-an-accessible-sample-is-one-no-screen-reader-reaches.md",
       "rationale": "Swatch is an accessible pressable that groups what it holds. 07’s tiles carry Swap, Lock and the press target on the sample, so a change that makes the sample group its children again hides every one of them from a screen reader while every render test stays green."
     }

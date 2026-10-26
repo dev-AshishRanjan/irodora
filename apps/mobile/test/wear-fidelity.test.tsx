@@ -333,12 +333,22 @@ describe('grouping: what 07 draws together is together', () => {
       expect(
         sharedRow(byId(`wear.slot.${key}.title`), byId(`wear.slot.${key}.swap`)),
       ).not.toBeNull();
-    // No control is inside an accessible node that holds another (the sample is an image beside them).
-    const images = root.findAll(
-      (n) => typeof n.type === 'string' && n.props['accessibilityRole'] === 'image',
-    );
-    expect(images.length).toBe(4);
-    for (const image of images) expect(image.findAll((n) => n.type === Button)).toHaveLength(0);
+    /*
+     * THE SAMPLE'S NODE HOLDS NONE OF ITS CONTROLS (ADR-0153 D8). Each tile's sample names itself on
+     * one node — the press target on a ranked tile, an image on the colour in hand's — and its Swap and
+     * Lock are on the sample but are not that node's descendants. A grouping sample would hold them.
+     */
+    for (const [, key] of SLOTS) {
+      const named = root.findAll(
+        (n) => typeof n.type === 'string' && n.props['testID'] === `wear.slot.${key}.open`,
+      );
+      expect({ [key]: named.length }).toStrictEqual({ [key]: 1 });
+      expect(named[0]!.props['accessibilityRole']).toBe(key === 'top' ? 'image' : 'button');
+      const sample = byId(`wear.slot.${key}`).findByType(Swatch);
+      const controls = sample.findAll((n) => n.type === Button);
+      expect(controls.length).toBe(key === 'top' ? 0 : key === 'trouser' ? 2 : 1);
+      for (const control of controls) expect(isAncestor(named[0]!, control)).toBe(false);
+    }
   });
 
   it('each card row is its label beside its value; the pills and the rule are in the card', () => {
@@ -463,8 +473,10 @@ describe('proportion: every size and interval from 07.json', () => {
       swatch.tokens['radius'],
     ]);
     const line = text(anchorLine(SHOWN.anchor).slice(SHOWN.anchor.entry.name.kanji.length));
-    expect(nearest(line, Row) ?? sharedRow(sample, line)).not.toBeNull();
-    expect(sharedRow(sample, line)?.props['gap'] ?? nearest(sample, Row)?.props['gap']).toBe(
+    // The sample and the name's line share the card's row, at 07's interval between them.
+    const row = sharedRow(sample, line);
+    expect(row).not.toBeNull();
+    expect(nearest(sample, Row)?.props['gap']).toBe(
       snap(el('07.anchor.name').dp.x - right(swatch)),
     );
     // Name → category: tighter than the scale, named (ADR-0153 D1).

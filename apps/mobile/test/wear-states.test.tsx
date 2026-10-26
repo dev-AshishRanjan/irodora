@@ -33,10 +33,12 @@ import { rankingContext } from '../src/wardrobe/coverage';
 import {
   contrastLine,
   fitLine,
+  OCCASION_KEYS,
   pillLabel,
   RESTING_WEAR,
   separationLine,
   slotName,
+  swap,
   wearCombination,
   type RankedSlot,
   type WearCombination,
@@ -231,15 +233,31 @@ describe('every action 07 draws works, by the control a person touches (ADR-0152
     expect(slotOf(casual, 'trouser').entry!.entry.slug).not.toBe(
       slotOf(SHOWN, 'trouser').entry!.entry.slug,
     );
+    // And every other occasion, by its own segment: each of the three slots is that weighting's.
+    for (const occasion of ['office', 'japanese-inspired', 'formal'] as const) {
+      fireEvent.press(screen.getByRole('radio', { name: say(OCCASION_KEYS[occasion]) }));
+      const shown = at({ occasion });
+      for (const key of ['trouser', 'shoe', 'outer'] as const)
+        expect({ [occasion]: nameIn(key) }).toStrictEqual({
+          [occasion]: slotName(slotOf(shown, key).entry!, false),
+        });
+    }
   });
 
-  it('each Swap steps its own slot to the next in its ranking', () => {
+  it('each Swap steps its own slot to the next colour its ranking offers that no slot shows', () => {
     drawPage(handlers());
+    let state: WearState = RESTING_WEAR;
     for (const key of ['trouser', 'shoe', 'outer'] as const) {
-      const ranking = SHOWN.rankings[key].ranked;
+      const now = at(state);
+      const before = now.placed[key];
       fireEvent.press(screen.getByTestId(`wear.slot.${key}.swap`));
-      const next = allEntries().find((e) => e.entry.slug === ranking[1]?.id)!;
+      state = swap(state, key, now.rankings[key].ranked, now.placed);
+      const after = at(state);
+      const next = allEntries().find((e) => e.entry.slug === after.placed[key])!;
       expect({ [key]: nameIn(key) }).toStrictEqual({ [key]: slotName(next, false) });
+      // It moved, and the page still shows four colours.
+      expect(after.placed[key]).not.toBe(before);
+      expect(new Set([SLUG, ...Object.values(after.placed)]).size).toBe(4);
     }
   });
 
@@ -256,6 +274,38 @@ describe('every action 07 draws works, by the control a person touches (ADR-0152
     expect(stateOf(pill).disabled).toBe(true);
     fireEvent.press(screen.getByRole('radio', { name: say('wear.occasion.casual') }));
     expect(nameIn('trouser')).toBe(slotName(slotOf(SHOWN, 'trouser').entry!, false));
+  });
+
+  it('in Japanese, Lock’s word changes with its state, so the state is not only announced (S3)', () => {
+    drawPage(handlers(), { tag: 'ja-JP' });
+    const word = () =>
+      screen
+        .getByTestId('wear.slot.trouser.lock')
+        .findAll((n) => typeof n.props['children'] === 'string')
+        .map((n) => n.props['children'] as string)
+        .join('');
+    expect(word()).toContain(message('ja', 'wear.lock'));
+    fireEvent.press(screen.getByTestId('wear.slot.trouser.lock'));
+    expect(word()).toContain(message('ja', 'wear.locked'));
+    // DECOY: the two words differ, so the change is visible.
+    expect(message('ja', 'wear.locked')).not.toBe(message('ja', 'wear.lock'));
+  });
+
+  it('each tile is one stop for a screen reader: its colour named once, its words not read again (S4)', () => {
+    drawPage(handlers());
+    const tiles = [
+      slotName(SHOWN.anchor, true),
+      ...SHOWN.slots.map((s) => slotName(s.entry!, false)),
+    ];
+    for (const name of tiles) {
+      // The words drawn over the sample are hidden from a reader…
+      expect({ [name]: screen.queryAllByText(name).length }).toStrictEqual({ [name]: 0 });
+      // …because the sample's own node names the colour, once.
+      const named = screen.getAllByLabelText(name, { exact: false });
+      expect({ [name]: named.length }).toStrictEqual({ [name]: 1 });
+    }
+    // DECOY: hidden, the words are still drawn.
+    expect(screen.queryAllByText(tiles[1]!, { includeHiddenElements: true }).length).toBe(1);
   });
 
   it('DECOY: unlocked, the Swap and the pills are available', () => {
@@ -283,8 +333,9 @@ describe('every action 07 draws works, by the control a person touches (ADR-0152
     const outer = slotOf(SHOWN, 'outer').entry!;
     expect(screen.getAllByText(slotName(outer, false)).length).toBeGreaterThan(0);
     expect(
-      screen.getAllByText(`${say('wear.rank')} 1 / ${String(SHOWN.rankings.outer.ranked.length)}`)
-        .length,
+      screen.getAllByText(
+        `${say('wear.rank')} ${String(slotOf(SHOWN, 'outer').rank)} / ${String(SHOWN.rankings.outer.ranked.length)}`,
+      ).length,
     ).toBeGreaterThan(0);
     fireEvent.press(screen.getByRole('button', { name: say('wear.openColour') }));
     fireEvent.press(screen.getByRole('button', { name: say('wear.shopFor') }));
@@ -444,11 +495,27 @@ describe('the route sends each drawn action where ADR-0152 says (E-221)', () => 
     expect(sendsEveryAction(ROUTE.replace(save, labFirst))).toBe(false);
   });
 
+  /** Whether a Lab route takes the hand-off in a state initialiser and opens with its draft. */
+  const takesOnce = (source: string): boolean =>
+    /useState\(\(\) => \{\s*const handed = takeCombination\(\);/u.test(source) &&
+    source.includes('labDraftFrom(handed, wardrobe)') &&
+    source.includes('{...(initialDraft === undefined ? {} : { initialDraft })}');
+
   it('the Lab takes the hand-off once, in an initialiser, and opens with its draft', () => {
-    expect(LAB).toMatch(/useState\(\(\) => \{\s*const handed = takeCombination\(\);/u);
-    expect(LAB).toContain('labDraftFrom(handed, wardrobe)');
-    expect(LAB).toContain('initialDraft');
-    // DECOY: a take in the render body, outside an initialiser, is not what this finds.
-    expect('const handed = takeCombination();').not.toMatch(/useState\(\(\) => \{/u);
+    expect(takesOnce(LAB)).toBe(true);
+  });
+
+  it('DECOY: a take in the render body, or a draft never passed on, is refused (F-248’s review, M1)', () => {
+    // The take moved out of the initialiser, into the render body: re-run on every render.
+    const inBody = LAB.replace(
+      'const [initialDraft] = useState(() => {\n    const handed = takeCombination();',
+      'const handed = takeCombination();\n  const [initialDraft] = useState(() => {',
+    );
+    expect(inBody).not.toBe(LAB);
+    expect(takesOnce(inBody)).toBe(false);
+    // The draft built, and never handed to the Lab.
+    const dropped = LAB.replace('{...(initialDraft === undefined ? {} : { initialDraft })}', '');
+    expect(dropped).not.toBe(LAB);
+    expect(takesOnce(dropped)).toBe(false);
   });
 });

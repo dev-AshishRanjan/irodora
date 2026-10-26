@@ -146,10 +146,12 @@ export interface SwatchProps {
   /**
    * Whether the sample's accessible node holds what is drawn on it: yes by default, as 01's hero is
    * named there. `false` for children that act or read on their own (`07`'s slot tiles, F-248): the
-   * sample is then an image beside them. Only without `onPress` — a pressable sample is one target,
-   * and its children cannot be another.
+   * sample's name is then a node laid under them, beside them in the accessibility tree — an image, or
+   * with `onPress` the sample's own press target, which a touch reaches through children that let it.
    */
   readonly group?: boolean;
+  /** The id of the node that carries the sample's name: the sample itself, or apart, its named node. */
+  readonly testID?: string;
 }
 
 /**
@@ -247,6 +249,7 @@ export function Swatch({
   anchor,
   bleed = false,
   group = true,
+  testID,
   children,
 }: SwatchProps): React.JSX.Element {
   const { colors, source, paint } = useTheme();
@@ -294,21 +297,35 @@ export function Swatch({
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
   /*
-   * APART FROM ITS CHILDREN (F-248): a sample that does nothing, whose children act or read on their
-   * own, is announced as an image beside them — its name on a node laid over the sample that holds
-   * nothing — rather than as a button grouping them into one node, where a screen reader reaches no
-   * control and hears none of the words.
+   * APART FROM ITS CHILDREN (F-248): a sample whose children act or read on their own carries its name
+   * on a node laid over the sample, under them, that holds nothing — rather than on a button grouping
+   * them into one node, where a screen reader reaches no control and hears none of the words. A sample
+   * that does nothing names an image; one with `onPress` names its press target, the one node a reader
+   * stops at for the sample (F-248's review, S4), which a touch reaches through children that let it.
    */
-  const apart = !group && onPress === undefined;
-  const named = apart ? (
+  const apart = !group;
+  const fills = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;
+  const id = testID === undefined ? {} : { testID };
+  const named = !apart ? null : onPress === undefined ? (
     <View
       accessible
       accessibilityRole="image"
       accessibilityLabel={label}
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+      style={fills}
+      {...id}
     />
-  ) : null;
+  ) : (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected, disabled: inert, busy: loading }}
+      disabled={inert}
+      onPress={onPress}
+      style={fills}
+      {...id}
+    />
+  );
 
   /*
    * THE LINE, THEN THE SAMPLE. The line sits around the sample inside the element's box, so the
@@ -435,6 +452,7 @@ export function Swatch({
       // The target, grown around the drawing rather than drawn into it (ADR-0114).
       hitSlop={hitArea(declaredWidth, tall)}
       style={[press.style, box]}
+      {...id}
     >
       {body}
     </AnimatedPressable>

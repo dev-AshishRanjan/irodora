@@ -6457,7 +6457,8 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "notes": "FROM F-248 (2026-10-26, ADR-0152 D4 amended): on 07, a slot’s colour reaches the shopping check in TWO interactions — the tile, then Shop for this in its sheet — where criterion 1 asks for one. 07 draws no control for it and rule 14 forbids adding one to the tile, so the cost is recorded rather than built around; the check itself and the slot it carries are unchanged."
     },
     {
       "id": "F-200",
@@ -8589,13 +8590,13 @@
         },
         {
           "criterion": "The fidelity harness captures the route beside mockup 07 in both themes and both locales, and a person has compared each pair and recorded the result",
-          "verifiedBy": "A person runs `pnpm fidelity:capture -- --erase-app-data` on an Android device or emulator at 384 dp with a non-debuggable build of the final commit. /atlas/wear/[slug] is captured in Sumi/Washi × en/ja and composed beside 07 (25’s palette for Washi). Recorded in progress.md under F-248. Expected and not defects: a corpus colour in place of 07’s; the occasion words (Office, Japanese-inspired, Formal); (your profile) beside the fit figure; the contrast as ratio · Lc; the harmony as the warm–cool relation; the canvas and card taller than drawn; the asymmetric trailing insets, as drawn.",
+          "verifiedBy": "A person runs `pnpm fidelity:capture -- --erase-app-data` on an Android device or emulator at 384 dp with a non-debuggable build of the final commit. /atlas/wear/[slug] is captured in Sumi/Washi × en/ja and composed beside 07 (25’s palette for Washi). Recorded in progress.md under F-248. THE CAPTURE ERASES THE APP’S DATA, so the page is captured with NO PROFILE (F-248’s review, S6). Expected and not defects: a corpus colour in place of 07’s, and four different colours across the anchor and the three slots; the anchor’s slot word Top in place of [Top / Shirt]; the occasion words (Office, Japanese-inspired, Formal); No profile yet in the fit row, with no figure; the save disabled, with its line in the bar; the CVD row with the model it was computed under; the contrast as ratio · Lc, floored; the harmony as the warm–cool relation (Shared Temperature, Mixed Temperature or Warm Against Cool); as many pills as the engine returns (up to four), each axis’s own words; the canvas and card taller than drawn; the action bar’s sides one step (sm), not 07’s 14.3 and 11.6 dp.",
           "blocks": "release",
           "status": "outstanding"
         },
         {
           "criterion": "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface",
-          "verifiedBy": "GATED except the device half: tsc + i18n.test, wear-states.test, test:a11y, test:contrast, test:cvd. ATTESTED on the capture’s device: each occasion re-ranks; Swap steps; Lock is announced by TalkBack; a pill substitutes; a tile opens its sheet; Shop for this carries the slot; Add to wardrobe stores nothing until saved; Save to Outfit Lab opens the Lab with the nearest owned garments and the top locked, and without a profile is disabled with its line; Export lists the four colours; back opens the colour page; at 200 % in en and ja rows, names and segments wrap or fit and nothing is cut, the drawn-height chips and buttons clip (F-344, recorded); the generated flows pass.",
+          "verifiedBy": "GATED except the device half: tsc + i18n.test, wear-states.test, test:a11y, test:contrast, test:cvd. ATTESTED on the capture’s device, after the capture (which erases the app’s data) and first building a profile and adding one garment each of a top, trousers and shoes: each occasion re-ranks; Swap steps, and the four colours stay four; Lock reads Locked (固定中 in Japanese) and is announced by TalkBack; a pill substitutes; a tile opens its sheet, and TalkBack stops once on each tile; Shop for this carries the slot; Add to wardrobe stores nothing until saved; Save to Outfit Lab opens the Lab with the nearest owned garments and the top locked, and without a profile is disabled with its line; Export writes the four colours; back opens the colour page; at 200 % in en and ja rows, names and segments wrap, fit or scroll and nothing is cut, the drawn-height chips and buttons clip (F-344, recorded); the generated flows pass.",
           "blocks": "release",
           "status": "outstanding"
         }
@@ -10931,7 +10932,7 @@
         "build",
         "security"
       ],
-      "notes": "FOUND DURING F-236 increment 12 (2026-10-09), running every gate. gitleaks and the key-material checks pass; the audit reports 18 advisories, 2 accepted with an expiry, and 9 unaccepted at a blocking severity (8 high, 1 critical). F-236 changed no dependency (no lockfile or package.json diff), so these come from the advisory database, not the change. When each was published, against gate 15’s last green run, is not known: F-236 did not run the gate before increment 12 (lesson an-increments-gate-list-is-a-floor-not-the-set). The gate is red on every commit until this lands, and release.yml calls ci.yml first, so no tag can produce an artefact meanwhile — hence `must`. The nine, each with a patched version the audit names: GHSA-pqg4-j6r4-53mv shell-quote >=1.8.4 <1.11.0 (critical; fixed 1.11.0); GHSA-6j4f-fj2g-mc7p brace-expansion <1.1.19 and >=4.0.0 <5.0.10; GHSA-qhr7-859c-m2p7 brace-expansion <1.1.20 and >=4.0.0 <5.0.11; GHSA-vfj7-8cjw-p6xm braces <=3.0.3 (fixed 3.0.4); GHSA-86w9-cpqp-85rv node-forge <=1.4.0 (fixed 1.4.1); GHSA-68fv-2mgg-jv7q source-map-js >=1.0.0 <1.2.2; GHSA-vc2v-76pw-4v95 compression <1.8.2. Unlike F-079 a fixed version exists for each, so overrides are possible — but most arrive through Expo and Metro (dev-time tooling), so the reachability argument and the toolchain verification are the work, not the version bump. Out of F-236’s scope (rule 2): recorded, not fixed there."
+      "notes": "FOUND DURING F-236 increment 12 (2026-10-09), running every gate. gitleaks and the key-material checks pass; the audit reports 18 advisories, 2 accepted with an expiry, and 9 unaccepted at a blocking severity (8 high, 1 critical). F-236 changed no dependency (no lockfile or package.json diff), so these come from the advisory database, not the change. When each was published, against gate 15’s last green run, is not known: F-236 did not run the gate before increment 12 (lesson an-increments-gate-list-is-a-floor-not-the-set). The gate is red on every commit until this lands, and release.yml calls ci.yml first, so no tag can produce an artefact meanwhile — hence `must`. The nine, each with a patched version the audit names: GHSA-pqg4-j6r4-53mv shell-quote >=1.8.4 <1.11.0 (critical; fixed 1.11.0); GHSA-6j4f-fj2g-mc7p brace-expansion <1.1.19 and >=4.0.0 <5.0.10; GHSA-qhr7-859c-m2p7 brace-expansion <1.1.20 and >=4.0.0 <5.0.11; GHSA-vfj7-8cjw-p6xm braces <=3.0.3 (fixed 3.0.4); GHSA-86w9-cpqp-85rv node-forge <=1.4.0 (fixed 1.4.1); GHSA-68fv-2mgg-jv7q source-map-js >=1.0.0 <1.2.2; GHSA-vc2v-76pw-4v95 compression <1.8.2. Unlike F-079 a fixed version exists for each, so overrides are possible — but most arrive through Expo and Metro (dev-time tooling), so the reachability argument and the toolchain verification are the work, not the version bump. Out of F-236’s scope (rule 2): recorded, not fixed there. FROM F-248 (2026-10-26): gate 15 now also reports two advisories published after this was filed, both high: GHSA-587h-7wmj-h5pm in vite >=8.2.0 <=8.2.3 (fixed 8.2.4) and launch-editor <=2.14.1 (fixed 2.14.2), and GHSA-mrhx-c7xc-m3w5 in zod <4.6.6 (fixed 4.6.6). The first criterion (pnpm security exits 0) already covers them; each is resolved or dispositioned the same way as the nine. braces (GHSA-vfj7-8cjw-p6xm) no longer appears."
     },
     {
       "id": "F-323",
@@ -11632,6 +11633,79 @@
       ],
       "openQuestions": [],
       "notes": "FROM F-248 (ADR-0151 D4, 2026-10-22). 07 draws “Analogous Tonal Kasane” as an outfit’s harmony, 08 a pair’s relationship and 13 “(Analogous …)”. @irodora/color-harmony only GENERATES related colours; scoreOutfit classifies no relationship (ADR-0124’s alternatives), so no surface can name one honestly. Until this lands 07 prints the warm–cool relation its harmony component measures."
+    },
+    {
+      "id": "F-350",
+      "title": "Every rendered suite's cleanup finishes inside jest's hook timeout under a full run",
+      "requirements": [
+        "NFR-3"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "Under pnpm turbo run test --force with turbo's default concurrency, ten runs out of ten, no rendered suite fails on React Native Testing Library's afterEach cleanup exceeding jest's 5 s hook timeout — apps/mobile screens.test (the CVD preview over screens/Preferences) and export-screen.test, and packages/ui sample-family.test, atlas-forms.test and conformance.test (TabBar (lens active)) among them",
+        "The cleanup's cost is measured, and each suite either renders less per test or sets a hook timeout justified by that measurement, stated beside it — no assertion weakened, and no timeout raised past what the measurement needs"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "openQuestions": [],
+      "notes": "FROM F-248 (2026-10-26): F-317 records this for one ui suite; F-248's runs saw it in five more. Increment 8's Tier 1 (turbo test --filter='...[HEAD]' --concurrency=4) failed ui sample-family, atlas-forms and conformance (TabBar (lens active)) and mobile export-screen on 'Exceeded timeout of 5000 ms for a hook' — conformance took 428 s against its usual ~224; re-run at concurrency 2, the one failure was screens.test's CVD preview over screens/Preferences, the suite at 407 s against ~260. Every suite passed alone on the same tree (ui 1484/1484, mobile 1708/1708, screens.test 393/393). The registry grows with every rebuilt screen, so the margin shrinks with each. Package untouched by the cause in F-248's scope, so recorded rather than fixed there. Same class as F-306, F-317 and F-348."
+    },
+    {
+      "id": "F-351",
+      "title": "The outfit force-quit test's child reaches its cut when the whole suite runs at once",
+      "requirements": [
+        "NFR-3"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "packages/store/test/outfit-force-quit.test.ts passes under pnpm test (the CI mirror's gate 4) with turbo's default concurrency, ten runs out of ten: every child reaches its cut and prints CUT before it is killed",
+        "The fixture's budget for the child (test/fixtures/force-quit.ts) is measured and stated, so a slow machine is told apart from a child that never reached the cut — never by weakening the assertion that it did"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "openQuestions": [],
+      "notes": "FROM F-248 (2026-10-26): the CI mirror's gate 4 (verify-ci --all, on 6733d09) failed packages/store's outfit-force-quit.test at test/fixtures/force-quit.ts:109 — the child's stdout was empty where CUT was expected (killedAt, through everyCut) — while turbo ran 35 tasks; the package passes alone on the same tree, 315/315. Seen under load in F-247's runs too, and never recorded until now. Package untouched by F-248, so recorded rather than fixed there. Same class as F-306 and F-348."
+    },
+    {
+      "id": "F-352",
+      "title": "The outfit’s harmony sentence says temperature, not warmth, wherever it is read",
+      "requirements": [
+        "FR-11",
+        "FR-32"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "13"
+      ],
+      "acceptance": [
+        "outfit.harmony.supports (and its neighbours where they say the same) describes what the harmony component measures — how close the pieces sit on the warm–cool axis, whichever side — in en and ja (ja: 暖かみの方向 says warmth too), so four cool colours close together are not said to “share a warmth”",
+        "A test holds the sentence against an all-cool outfit the component scores as supporting, with an all-warm one as the decoy, and the claims lint passes"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "lint"
+      ],
+      "openQuestions": [],
+      "notes": "FROM F-248 (2026-10-26): F-248’s review (S7) found 07’s harmony row printing Shared Warmth for outfits whose four pieces are all cool — 232 of 480 default views — because the harmony component reports supports whenever the warm–cool spread is small, whatever its sign. 07’s words became Shared Temperature (ADR-0151 D4 amended); the engine’s own sentence, outfit.harmony.supports (“These colours share a warmth, so they read as chosen together.”), makes the same claim wherever the Lab and the lookbook read it, and is not F-248’s surface, so it is recorded rather than changed in its scope. Its Japanese (暖かみの方向がそろっていて…) says warmth too; 07’s own Japanese row (温度感が揃う) already says temperature. The Lab’s score lines are where the sentence is drawn, so 13 is its mockup."
     }
   ]
 }

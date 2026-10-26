@@ -268,9 +268,10 @@ export const SLOT_WORD_KEYS = {
 } as const satisfies Record<RankedSlot, MessageKey>;
 
 /**
- * What a person has done on `07` (ADR-0152): the occasion, the slot in hand, the colour each slot
- * shows (`null` is its ranking's first), and which slots are locked. Every change below is a pure
- * function of this and the rankings, so the same actions give the same page.
+ * What a person has done on `07` (ADR-0152): the occasion, the slot in hand, the colour each slot was
+ * given (`null`: none, so it shows the first its ranking offers that no other slot shows), and which
+ * slots are locked. Every change below is a pure function of this, the rankings and the placement, so
+ * the same actions give the same page.
  */
 export interface WearState {
   readonly occasion: WearOccasion;
@@ -287,33 +288,76 @@ export const RESTING_WEAR: WearState = {
   locked: { trouser: false, shoe: false, outer: false },
 };
 
-/** A slot's ranking, as far as the reducers need it. */
+/** A slot's ranking, as far as placement and the reducers need it. */
 type Ranking = readonly { readonly id: string }[];
 
-/** The id a slot shows: the one chosen, or its ranking's first. */
-export function shownId(state: WearState, slot: RankedSlot, ranking: Ranking): string | null {
-  return state.shown[slot] ?? ranking[0]?.id ?? null;
-}
+/** The colour each slot shows, by id; `null` only for a slot whose ranking has nothing left to give. */
+export type Placement = Readonly<Record<RankedSlot, string | null>>;
 
 /**
- * *Swap*: the next candidate in the slot's ranking, wrapping at its end (ADR-0152 D2). A locked slot
- * does not move. A shown id the ranking no longer holds (a locked colour the occasion dropped, then
- * unlocked) steps to the ranking's first.
+ * Where each colour goes — ONE COLOUR ONCE (ADR-0151 D2, amended after F-248's review, S1).
+ *
+ * Each slot is ranked against the colour in hand alone, so the three rankings share their first, and a
+ * page that showed each ranking's first showed one colour in all three slots — for every one of the 120
+ * colours, under every occasion. That is not a combination, and the export it fed refused it.
+ *
+ * So the slots are placed in one pass. A locked slot keeps its colour; then a slot given a colour keeps
+ * it where no slot before it holds it; then every other slot takes the first colour its ranking offers
+ * that no slot holds — each step in 07's order (trousers, shoes, the outer layer). The colour in hand is
+ * in no ranking.
  */
-export function swap(state: WearState, slot: RankedSlot, ranking: Ranking): WearState {
-  if (state.locked[slot] || ranking.length === 0) return state;
-  const at = ranking.findIndex((r) => r.id === shownId(state, slot, ranking));
-  const next = ranking[(at + 1) % ranking.length];
-  return next === undefined ? state : { ...state, shown: { ...state.shown, [slot]: next.id } };
+export function placeSlots(
+  state: WearState,
+  rankings: Readonly<Record<RankedSlot, Ranking>>,
+): Placement {
+  const placed: Record<RankedSlot, string | null> = { trouser: null, shoe: null, outer: null };
+  const taken = new Set<string>();
+  const claim = (slot: RankedSlot, id: string | null): void => {
+    if (id === null || taken.has(id)) return;
+    placed[slot] = id;
+    taken.add(id);
+  };
+  for (const slot of RANKED_SLOTS) if (state.locked[slot]) claim(slot, state.shown[slot]);
+  for (const slot of RANKED_SLOTS) if (!state.locked[slot]) claim(slot, state.shown[slot]);
+  for (const slot of RANKED_SLOTS)
+    if (placed[slot] === null)
+      claim(slot, rankings[slot].find((r) => !taken.has(r.id))?.id ?? null);
+  return placed;
+}
+
+/** The colours every slot but one shows: what that slot may not take. */
+const heldElsewhere = (placed: Placement, slot: RankedSlot): ReadonlySet<string> =>
+  new Set(RANKED_SLOTS.filter((k) => k !== slot).flatMap((k) => placed[k] ?? []));
+
+/**
+ * *Swap*: the next colour in the slot's ranking that no other slot shows, wrapping at its end
+ * (ADR-0152 D2). A locked slot does not move. A colour the ranking no longer holds (a locked colour the
+ * occasion dropped, then unlocked) steps to the ranking's first free colour.
+ */
+export function swap(
+  state: WearState,
+  slot: RankedSlot,
+  ranking: Ranking,
+  placed: Placement,
+): WearState {
+  if (state.locked[slot]) return state;
+  const elsewhere = heldElsewhere(placed, slot);
+  const at = ranking.findIndex((r) => r.id === placed[slot]);
+  for (let step = 1; step <= ranking.length; step += 1) {
+    const next = ranking[(at + step) % ranking.length];
+    if (next !== undefined && next.id !== placed[slot] && !elsewhere.has(next.id))
+      return { ...state, shown: { ...state.shown, [slot]: next.id } };
+  }
+  return state;
 }
 
 /** *Lock*: on or off. A locked slot keeps its colour across Swap, the pills and the occasion. */
-export function toggleLock(state: WearState, slot: RankedSlot, ranking: Ranking): WearState {
+export function toggleLock(state: WearState, slot: RankedSlot, placed: Placement): WearState {
   const locking = !state.locked[slot];
   return {
     ...state,
     // Locking pins what is shown NOW, so an occasion change cannot move it from under the lock.
-    shown: locking ? { ...state.shown, [slot]: shownId(state, slot, ranking) } : state.shown,
+    shown: locking ? { ...state.shown, [slot]: placed[slot] } : state.shown,
     locked: { ...state.locked, [slot]: locking },
   };
 }
@@ -357,6 +401,8 @@ export interface WearCombination {
   readonly anchor: PublishedEntry;
   readonly personalKnown: boolean;
   readonly slots: readonly WearSlot[];
+  /** The colour each slot shows, by id: what Swap and Lock act on (`placeSlots`). */
+  readonly placed: Placement;
   /** Each ranked slot's ranking, for Swap and the sheet. */
   readonly rankings: Readonly<Record<RankedSlot, OutfitRecommendation>>;
   /** The slot in hand's alternatives, relative to the colour it shows (FR-38, `alternativesAround`). */
@@ -416,9 +462,14 @@ export function wearCombination(
     outer: recommendForSlot(input, ENGINE_SLOT.outer, pool, scoredAs, rules),
   };
 
+  const placed = placeSlots(state, {
+    trouser: rankings.trouser.ranked,
+    shoe: rankings.shoe.ranked,
+    outer: rankings.outer.ranked,
+  });
   const slots = RANKED_SLOTS.map((key): WearSlot => {
     const { ranked } = rankings[key];
-    const id = shownId(state, key, ranked);
+    const id = placed[key];
     const index = ranked.findIndex((r) => r.id === id);
     return {
       key,
@@ -432,10 +483,11 @@ export function wearCombination(
   const slotOf = (key: RankedSlot): WearSlot | undefined => slots.find((s) => s.key === key);
 
   const inHand = slotOf(state.inHand)?.entry ?? null;
+  // The pills offer no colour another slot shows, so a pill never puts one colour in two slots.
+  const elsewhere = heldElsewhere(placed, state.inHand);
+  const offered = rankings[state.inHand].ranked.filter((r) => !elsewhere.has(r.id));
   const alternatives =
-    inHand === null
-      ? []
-      : alternativesAround(input, inHand.entry.slug, rankings[state.inHand].ranked, pool, rules);
+    inHand === null ? [] : alternativesAround(input, inHand.entry.slug, offered, pool, rules);
 
   const pieces: OutfitPiece[] = [
     input,
@@ -451,6 +503,7 @@ export function wearCombination(
     anchor,
     personalKnown: profile !== null,
     slots,
+    placed,
     rankings,
     alternatives,
     intelligence: {
@@ -467,6 +520,17 @@ export function wearCombination(
             },
     },
   };
+}
+
+/**
+ * The colours a combination shows, the colour in hand first: what `07`'s export carries (ADR-0152
+ * D6). Four different colours, by `placeSlots`, so the export never refuses a duplicate.
+ */
+export function shownColours(combination: WearCombination): readonly string[] {
+  return [
+    combination.anchor.entry.slug,
+    ...combination.slots.flatMap((s) => (s.entry === null ? [] : [s.entry.entry.slug])),
+  ];
 }
 
 /* ------------------------------------------------------------------ 07's drawn sizes */
@@ -553,10 +617,14 @@ export function separationLine(separation: number, t: T, script: Script): string
 /**
  * The contrast row: *‹ratio›:1 · Lc ‹n›* — two figures, because APCA has no ratio (FR-3). `null` when
  * there are no trousers to measure the top against; the row then draws no figure (R9 §4 E2).
+ *
+ * BOTH FLOORED, never rounded (F-248's review, S2; ADR-0124's rule for every printed figure): a pair
+ * at 4.48:1 rounded reads 4.5:1 and claims a threshold it does not reach, and Lc 44.6 reads 45.
  */
 export function contrastLine(contrast: { ratio: number; lc: number } | null): string | null {
   if (contrast === null) return null;
-  return `${contrast.ratio.toFixed(1)}:1 · Lc ${String(Math.round(contrast.lc))}`;
+  const ratio = Math.floor(contrast.ratio * 10) / 10;
+  return `${ratio.toFixed(1)}:1 · Lc ${String(Math.floor(contrast.lc))}`;
 }
 
 /** The back control's name: *Back to ‹Romaji›*, in each script's order. */

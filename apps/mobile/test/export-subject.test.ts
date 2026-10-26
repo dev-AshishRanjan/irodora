@@ -21,6 +21,9 @@ import {
 } from '../src/export/subject';
 import { allEntries, CORPUS_LABEL } from '../src/corpus';
 import { ruleSet } from '../src/rules';
+import { RESTING_WEAR, shownColours, wearCombination } from '../src/wear';
+import { rankingContext } from '../src/wardrobe/coverage';
+import { WRITERS } from '@irodora/export';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
 import type { SavedColorRow, StoredPalette } from '@irodora/store';
 
@@ -202,5 +205,39 @@ describe('the export route exports the combination 07 asked for', () => {
     ).toStrictEqual(colourSubject(four[0]!));
     expect(exportSubjectFor(undefined, [PALETTE], '')?.title).toBe(PALETTE.nameEn);
     expect(exportSubjectFor(undefined, [PALETTE])?.title).toBe(PALETTE.nameEn);
+  });
+});
+
+/*
+ * WHAT 07 EXPORTS, THROUGH EVERY WRITER (F-248's review, S1; E-221). The writers refuse a colour twice
+ * (`assertSubject`), and 07 once handed them its anchor and one colour three times — for every colour,
+ * so its export never worked. The combination each colour shows, as the screen builds it, written in
+ * every format.
+ */
+describe('the combination 07 shows exports in every format', () => {
+  it('for every corpus colour, as the page builds its list', () => {
+    const context = rankingContext(null);
+    const failures: string[] = [];
+    for (const e of allEntries()) {
+      const shown = wearCombination(e.entry.slug, RESTING_WEAR, null, context)!;
+      const subject = exportSubjectFor(undefined, [], shownColours(shown).join(COLOURS_SEPARATOR));
+      if (subject?.colours.length !== 4) {
+        failures.push(`${e.entry.slug}: ${String(subject?.colours.length ?? 0)} colours`);
+        continue;
+      }
+      for (const writer of WRITERS)
+        try {
+          writer.write(subject);
+        } catch (error) {
+          failures.push(`${e.entry.slug} ${writer.format}: ${String(error)}`);
+        }
+    }
+    expect(failures).toStrictEqual([]);
+  });
+
+  it('DECOY: a combination with a colour twice is refused, so the case above can fail', () => {
+    const [a, b] = allEntries();
+    const twice = combinationSubject([a!, b!, b!]);
+    expect(() => WRITERS[0].write(twice)).toThrow(/duplicate/i);
   });
 });

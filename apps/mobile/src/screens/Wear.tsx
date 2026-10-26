@@ -27,7 +27,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import type { OutfitSlot, PersonalProfile } from '@irodora/recommendation';
 import {
@@ -76,6 +76,7 @@ import {
   SAVE,
   separationLine,
   shownFactors,
+  shownColours,
   shownScore,
   SLOT_TITLE_KEYS,
   slotName,
@@ -193,7 +194,8 @@ export function Wear({
       </Screen>
     );
 
-  const { anchor, slots, rankings, alternatives, intelligence, personalKnown } = combination;
+  const { anchor, slots, placed, rankings, alternatives, intelligence, personalKnown } =
+    combination;
   const anchorSample: Sample = { hex: anchor.derived.hex, color: colorFor(anchor.entry) };
   const romaji = capitalised(anchor.entry.name.romaji);
   const slotOf = (key: RankedSlot): WearSlot | undefined => slots.find((s) => s.key === key);
@@ -209,10 +211,7 @@ export function Wear({
     trouser: shownSlug('trouser'),
     shoe: shownSlug('shoe'),
   };
-  const colours = [
-    anchor.entry.slug,
-    ...slots.flatMap((s) => (s.entry === null ? [] : [s.entry.entry.slug])),
-  ];
+  const colours = shownColours(combination);
 
   const actions: Action[] = [
     ...(onSaveToLab === undefined
@@ -334,20 +333,30 @@ export function Wear({
           step="caption"
           script={script}
           onPress={() => {
-            setState((s) => swap(s, key, ranking));
+            setState((s) => swap(s, key, ranking, placed));
           }}
           testID={`wear.slot.${key}.swap`}
         />
       );
-    /** The words a ranked tile is read by, through its press target; the anchor's are read as text. */
-    const words = key === undefined ? {} : HIDDEN;
+    /*
+     * ONE STOP PER TILE (F-248's review, S4): the sample's own node carries the slot's title, its name,
+     * its hex and its provenance — the press target on a ranked tile, an image on the colour in hand's —
+     * so the words drawn over it are hidden once rather than read twice.
+     */
+    const words = HIDDEN;
     /** The tile's id, and its words' (`.title`, `.hex`, `.name`): the colour in hand's is `top`. */
     const id = `wear.slot.${key ?? 'top'}`;
 
     return (
       <View style={{ flex: 1 }} testID={id}>
+        {/*
+          THE SAMPLE IS THE PRESS TARGET, UNDER THE WORDS (ADR-0152 D1): on a ranked tile it puts the slot
+          in hand and opens its sheet. Its node lies under the tile's words, which let a touch through,
+          and beside its controls, never around them — a control inside another is one a screen reader
+          cannot reach (ADR-0153 D8).
+        */}
         <Swatch
-          name={name}
+          name={`${title}, ${name}`}
           hex={entry.derived.hex}
           color={sample.color}
           width="fill"
@@ -355,26 +364,17 @@ export function Wear({
           corner="sm"
           keyline={false}
           group={false}
-        >
-          <View pointerEvents="box-none" style={{ flexGrow: 1, padding: nativeSpacing.sm }}>
-            {key === undefined ? null : (
-              /*
-                THE PRESS TARGET, UNDER THE WORDS (ADR-0152 D1): the slot in hand, and its sheet. It
-                lies under the tile's words, which let a touch through to it, and beside its controls,
-                never around them — a control inside another is one a screen reader cannot reach.
-              */
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${title}, ${name}`}
-                accessibilityState={{ selected: inHand }}
-                onPress={() => {
+          testID={`${id}.open`}
+          {...(key === undefined
+            ? {}
+            : {
+                onPress: () => {
                   setState((s) => putInHand(s, key));
                   setSheet(key);
-                }}
-                style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-                testID={`wear.slot.${key}.open`}
-              />
-            )}
+                },
+              })}
+        >
+          <View pointerEvents="box-none" style={{ flexGrow: 1, padding: nativeSpacing.sm }}>
             <Row pointerEvents="box-none" gap="xs" align="start">
               <View pointerEvents="none" style={{ flex: 1 }} {...words}>
                 <Text size="label" on={sample} numeric script={script} testID={`${id}.title`}>
@@ -406,7 +406,8 @@ export function Wear({
                 padlock is `glyph.lock`, and its word — *Lock* or *Locked* — carries the state, so the
                 gold is never the only channel.
               */
-              <View style={{ marginTop: nativeSpacing.xs }}>
+              // A touch between the two buttons reaches the sample's press target under them.
+              <View pointerEvents="box-none" style={{ marginTop: nativeSpacing.xs }}>
                 <Row gap="xs" wrap>
                   <Button
                     variant="tonal"
@@ -422,15 +423,15 @@ export function Wear({
                     script={script}
                     disabled={locked}
                     onPress={() => {
-                      setState((s) => swap(s, key, ranking));
+                      setState((s) => swap(s, key, ranking, placed));
                     }}
                     testID={`wear.slot.${key}.swap`}
                   />
                   <Button
                     variant="tonal"
                     level={3}
-                    label={locked ? t('lab.locked') : t('wear.lock')}
-                    name={`${locked ? t('lab.locked') : t('wear.lock')} ${title}`}
+                    label={locked ? t('wear.locked') : t('wear.lock')}
+                    name={`${locked ? t('wear.locked') : t('wear.lock')} ${title}`}
                     glyph="lock-solid"
                     glyphTint="glyph.lock"
                     glyphAt="trailing"
@@ -441,7 +442,7 @@ export function Wear({
                     script={script}
                     selected={locked}
                     onPress={() => {
-                      setState((s) => toggleLock(s, key, ranking));
+                      setState((s) => toggleLock(s, key, placed));
                     }}
                     testID={`wear.slot.${key}.lock`}
                   />
@@ -519,16 +520,21 @@ export function Wear({
         <View style={{ paddingHorizontal: nativeSpacing.md }}>
           <Card level="1" padding="sm" radius="md" testID="wear.anchor">
             <Row gap="sm" align="center">
+              {/*
+                ONE STOP FOR THE COLOUR (F-248's review, M7): the sample is an image named by the line
+                beside it, and does nothing, so it is no button; the line, drawn, is read through it.
+              */}
               <Swatch
                 size={ANCHOR}
                 corner="sm"
-                name={anchor.entry.name.en}
+                name={anchorLine(anchor)}
                 hex={anchor.derived.hex}
                 color={anchorSample.color}
+                group={false}
               />
               {/* name → category at `xs`: tighter than the scale, named (ADR-0153 D1). */}
               <View style={{ flex: 1, gap: nativeSpacing.xs }}>
-                <Text size="body" weight={500} color="foreground" numeric selectable>
+                <Text size="body" weight={500} color="foreground" numeric selectable {...HIDDEN}>
                   <Text size="body" weight={500} color="foreground" script="japanese">
                     {anchor.entry.name.kanji}
                   </Text>

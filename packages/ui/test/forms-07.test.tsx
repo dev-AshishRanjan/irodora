@@ -293,6 +293,42 @@ describe('Swatch as 07’s slot tile: a filled height, apart from what is drawn 
     expect(outer).toBeDefined();
     expect(screen.queryByRole('image')).toBeNull();
   });
+
+  /*
+   * APART, WITH onPress (F-248's review, S4): the sample's named node is its press target, laid under
+   * its children — one stop for the sample, and its children's controls their own stops beside it.
+   */
+  it('apart with onPress, names its press target under its children, which keep their own', () => {
+    const press = jest.fn();
+    draw(
+      <View style={{ height: 120 }}>
+        <Swatch
+          name="Slot 2 (Trousers), Rikyu-shira-cha"
+          hex={LIGHT.hex}
+          color={LIGHT.color}
+          width="fill"
+          height="fill"
+          keyline={false}
+          group={false}
+          onPress={press}
+          testID="tile.open"
+        >
+          <Button variant="secondary" label="Swap" on={LIGHT} onPress={noop} testID="swap" />
+        </Swatch>
+      </View>,
+    );
+    const target = screen.getByTestId('tile.open');
+    expect(target.props['accessibilityRole']).toBe('button');
+    expect(String(target.props['accessibilityLabel'])).toMatch(/^Slot 2 \(Trousers\), Rikyu/);
+    // Two stops, in order: the sample, then its control — not one holding the other.
+    expect(screen.getAllByRole('button').map((b) => String(b.props['testID']))).toStrictEqual([
+      'tile.open',
+      'swap',
+    ]);
+    expect(screen.queryByRole('image')).toBeNull();
+    fireEvent.press(target);
+    expect(press).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('ActionBar’s note (07’s disabled save, ADR-0152 D5)', () => {

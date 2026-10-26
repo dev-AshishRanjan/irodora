@@ -6340,6 +6340,15 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       );
     });
 
+    it('07: three Swaps are located by one word, so one fewer is reported (F-248’s review, M5)', () => {
+      const { json, live } = drawnAs('07.screen');
+      const found = findingsFor('07.screen', without(json, 'wear.slot.outer.swap'), live);
+      // One finding for the word they share, naming all three and the count it fell short by.
+      expect(found).toStrictEqual([
+        '07.slots.slot-2.swap, 07.slots.slot-3.swap, 07.slots.slot-4.swap: not drawn — text:Swap found 2 time(s), needed 3',
+      ]);
+    });
+
     it('05: a supersession counts only where the inventory lists it under its conflict (ADR-0144)', () => {
       const enrolled = enrolledAs('05.screen');
       const inventory = inventoryOf(enrolled);

@@ -190,7 +190,31 @@ All four rest on R9 §11's widened delegation of 2026-10-05: *"For all OQ, when 
 
 ## Implementing session's decisions on this design
 
-*(Empty at hand-off. Record every change from this plan here, with its reason, as F-246 and F-247 did.)*
+Each change from this plan, with its reason.
+
+- **Slot 2's Swap and Lock are the tonal level-3 button**, not `Button on` filled: 07 fills them
+  `#31363E`, `surface.3`'s own value, with light words on their fill (ADR-0153 D2). Only the compact
+  Swaps sit on the sample, so only they take its ink.
+- **The occasion control, its segments and the pills are `sm`**, not `md` and `pill`: increment 1's
+  corner readings (ADR-0153 D3).
+- **Type steps, read in increment 6** (ADR-0153 D9): slot 2's buttons `label`, the compact Swaps and
+  pills `caption`, the actions `label`, the save at board 00's primary 500 (D10).
+- **The action bar** starts at its rule, its sides one step (`sm`), the card → bar `lg` (D10): the
+  fidelity test found the box measured from the leaked label above it.
+- **Locked**: the toggle has a word of its own, `wear.locked` (固定中), so the Japanese state shows;
+  13's badge keeps `lab.locked`. The plan's `wear.locked` stands; the first build reused `lab.locked`,
+  which reads 固定 for both states in Japanese (review, S3).
+- **The tile** is a `Swatch` of a filled height, apart from its children (`group={false}`), its own
+  named node the press target — `Swatch` gained both forms (ADR-0153 D8). The plan's separate press
+  target named the colour a second time (review, S4).
+- **Placement** (ADR-0151 D2 amended): the plan ranked each slot and showed its first, which put one
+  colour in all three slots for every colour; `placeSlots` places them once (review, S1).
+- **Contrast floored, harmony in temperature's words** (ADR-0151 D4 amended; review, S2, S7).
+- **The sheet holds no sample of its own**: its colour is the tile it opened from, drawn above it.
+- **Not built, with why**: the built-over-drawn height totals (a test tree has no layout, so the totals
+  would be arithmetic restating the constants); the 120 × 4 Button contrast as a render (the ink is
+  `sampleInk`'s, which `screens-sample-ink.test` measures over the corpus in every palette).
+- **Shopping from a slot** takes two interactions (ADR-0152 D4 amended; F-199's note; review, S5).
 
 ---
 

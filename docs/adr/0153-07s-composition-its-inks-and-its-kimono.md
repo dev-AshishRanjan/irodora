@@ -49,7 +49,12 @@ kimono line-art at its top right.
   sample is announced as an image beside them. On a ranked slot a press target lies under the words —
   which let a touch through and are read through its name — and Swap, Lock and the Locked badge are
   its siblings. The words are the sample's children, so every check that finds a text's ground by its
-  ancestors judges them against the sample.
+  ancestors judges them against the sample. *Amended after F-248's review, S4 and M7:* **one stop per
+  tile.** The sample's own named node is the tile's press target (`Swatch group={false} onPress`), named
+  with the slot's title, its colour, hex and provenance; the words drawn over it are hidden, so nothing
+  is read twice. The colour in hand's tile and the anchor card's sample are images, named the same way,
+  their lines hidden. The slot in hand is no longer announced as selected: a selected `Swatch` draws a
+  frame `07` does not, and the slot in hand is told by its Swap and Lock, each named with the slot.
 - **D9. The type steps, read** (increment 6): slot 2's *Swap* and *Lock* ink 18 px with a descender
   and 16 without (13.2 and 14.9 dp an em) — **label**, not the body increment 1 assumed; the compact
   *Swap* inks 16 px with its descender (11.7 dp) — **caption**; the pills 13 and 16 px (12.1 and

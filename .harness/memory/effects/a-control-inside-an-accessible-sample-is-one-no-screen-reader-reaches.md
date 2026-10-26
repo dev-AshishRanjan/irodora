@@ -21,6 +21,13 @@ children are each reached on their own; `height: 'fill'` lets the words set the 
 taller tile stretch its sibling. The words stay the sample's children, so every check that finds a text's
 ground by its ancestors judges them against the sample (ADR-0153 D8).
 
+## One stop, not two (F-248's review, S4)
+
+Apart from its children, the sample first named itself as an image while the tile's own press target
+named the colour again, so a reader heard each tile twice. With `onPress`, the sample's named node is
+now the tile's press target itself, named with the slot, the colour, its hex and its provenance, and the
+words drawn over it are hidden: one stop for the sample, one for each control.
+
 ## What it does not guard
 
 - **VoiceOver and TalkBack themselves.** The attested device check reaches each control.

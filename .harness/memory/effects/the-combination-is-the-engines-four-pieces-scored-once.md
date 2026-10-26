@@ -24,6 +24,15 @@ Three failures would each reach the card with every render green:
 - **The contrast pair.** It is the top against the trousers, the outfit's two largest areas, and the
   smaller magnitude of APCA's two directions, so the figure never overstates (rule 11).
 
+## One colour once (F-248's review, S1)
+
+Each slot is ranked against the colour in hand alone, so the three rankings share their first. The
+first build showed each ranking's first, and so showed one colour in all three slots — for all 120
+colours, under every occasion — while every test passed, because every fixture had the same defect and
+none asked whether the four were different. The CVD row then read 0% and the export refused the
+duplicate. `placeSlots` places the slots in one pass, and `wear.test` now asks the question directly,
+for every colour, occasion and profile.
+
 ## What it does not guard
 
 - **That the four pieces are a good outfit.** That is the engine's claim, with its rationales.

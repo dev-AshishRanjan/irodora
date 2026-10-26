@@ -787,8 +787,10 @@ export const en = {
    *
    * The occasions are FR-34's published weightings, each by its own word (ADR-0151 D1): no
    * "Minimalist Office", "Japanese Classic" or "Evening", because no weighting by those names is
-   * published. The harmony row is the harmony component's warm–cool relation (D4), in the words
-   * `outfit.harmony.*` already uses, never a geometric name the engine cannot classify (F-349). The
+   * published. The harmony row is the harmony component's warm–cool relation (D4) — how close the
+   * pieces sit on that axis, whichever side — so its words are TEMPERATURE's: *Shared Warmth* read as
+   * "all warm" beside four cool colours (F-248's review, S7; ADR-0151 D4 amended). Never a geometric
+   * name the engine cannot classify (F-349). The
    * fit note names the profile the figure was computed against, never a type (ADR-0150).
    * "Separation" is `cvd.separation` (F-198): one word, one key.
    */
@@ -802,8 +804,8 @@ export const en = {
   'wear.slot.3': 'Slot 3 (Shoes)',
   'wear.slot.4': 'Slot 4 (Outerwear)',
   'wear.slotWord.outer': 'Outerwear',
-  'wear.harmony.supports': 'Shared Warmth',
-  'wear.harmony.neutral': 'Mixed Warmth',
+  'wear.harmony.supports': 'Shared Temperature',
+  'wear.harmony.neutral': 'Mixed Temperature',
   'wear.harmony.opposes': 'Warm Against Cool',
   'wear.fit.yours': '(your profile)',
   'wear.fit.none': 'No profile yet',
@@ -812,11 +814,14 @@ export const en = {
    * F-248 — `07`'S OWN LABELS. The card's title and *Harmony:* drop the component words *Card* and
    * *Badge* 07 printed (§2), and *Colour* is en-GB (ADR-0151 D5). The save says why it cannot be
    * used without a profile, on a line in the bar, because the Lab draws nothing without one
-   * (ADR-0152 D5). *Locked* is `lab.locked`, 13's word: one word, one key.
+   * (ADR-0152 D5). The Lock toggle reads *Lock* or *Locked* — `wear.locked`, a word of its own, so
+   * that in Japanese the two differ too (固定 and 固定中; F-248's review, S3) — and a locked slot out of
+   * hand shows 13's badge, `lab.locked`.
    */
   'wear.occasion': 'Occasion',
   'wear.swap': 'Swap',
   'wear.lock': 'Lock',
+  'wear.locked': 'Locked',
   'wear.intelligence': 'Deterministic Colour Intelligence & Accessibility',
   'wear.harmony': 'Harmony:',
   'wear.fit': 'Personal Fit Score:',

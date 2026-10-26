@@ -665,6 +665,7 @@ export const ja: Record<MessageKey, string> = {
   'wear.occasion': '場面',
   'wear.swap': '入れ替え',
   'wear.lock': '固定',
+  'wear.locked': '固定中',
   'wear.intelligence': '決定論的な色分析とアクセシビリティ',
   'wear.harmony': '調和：',
   'wear.fit': 'パーソナル適合度：',

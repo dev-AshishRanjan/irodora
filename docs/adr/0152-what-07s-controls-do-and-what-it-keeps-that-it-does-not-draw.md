@@ -29,7 +29,10 @@ that are done criteria and that `07` does not draw:
   (`alternativesAround`), as many as the engine returns.
 - **D4. The slot sheet** (`03`'s floating sheet, E4) holds the rank, the candidate's figures and
   factors (or the pairing figure and the missing half), `wear.what`, and *Open this colour · Shop for
-  this · Add to wardrobe*.
+  this · Add to wardrobe*. *Amended after F-248's review, S5:* F-199's first criterion — a colour in a
+  combination reaches the shopping check **in one interaction** — becomes two on `07`: the tile, then
+  *Shop for this*. `07` draws no control for it, and rule 14 forbids adding one to the tile, so the
+  cost is this decision's, recorded here and on F-199; the check itself is unchanged.
 - **D5. Save to Outfit Lab** hands the combination to the Lab, once. The Lab drafts the nearest owned
   garment per slot, with the top locked. Without a profile the button is disabled, with its reason on
   a line in the bar (E4): the Lab draws nothing without one.

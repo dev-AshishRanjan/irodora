@@ -31,18 +31,28 @@ under `top`. It names no geometric relationship for a set of colours.
   - Outerwear is ranked by `recommendForSlot` as a top, since the builder files coats under top.
   - `OUTFIT_SLOTS`, coverage, the Lab and the lookbook keep three. A fourth engine slot would count
     zero valid outfits for any wardrobe without a coat; it is F-257's question.
+  - **One colour once** (*amended after F-248's review, S1*). Each slot is ranked against the colour in
+    hand alone, so the three rankings share their first; showing each ranking's first put one colour in
+    all three slots, for all 120 colours, and the export refused the duplicate. The slots are placed in
+    one pass (`placeSlots`): a locked slot keeps its colour, then a slot given one keeps it where no
+    slot before it holds it, then every other slot takes the first colour its ranking offers that no
+    slot holds, in 07's order. Swap steps to the next free colour, and the pills offer none another slot
+    shows.
 - **D3. Names.**
   - Slot 1 is `‹Romaji› ‹English›`; slots 2–4 are `‹Romaji› (‹English›)`, as drawn.
   - The anchor is `‹kanji› ‹Romaji› (‹hex›)`, with the slot word.
   - Garment and material words (*Linen Shirt*, *Wool Slacks*, *Derby*, *Trench*) are E1.
 - **D4. The card's values.**
-  - **Harmony:** the warm–cool relation the outfit's harmony component measures: *Shared Warmth*,
-    *Mixed Warmth* or *Warm Against Cool*. A geometric name needs a classifier the engine lacks
-    (F-349).
+  - **Harmony:** the warm–cool relation the outfit's harmony component measures: *Shared
+    Temperature*, *Mixed Temperature* or *Warm Against Cool* (*amended after F-248's review, S7*: the
+    component measures how close the pieces sit on the warm–cool axis, whichever side, so *Shared
+    Warmth* was false beside four cool colours; the Japanese 温度感が揃う always said temperature). A
+    geometric name needs a classifier the engine lacks (F-349).
   - **Fit:** ADR-0150.
   - **CVD:** `cvdAccessibility`'s worst-pair separation, with *Protan/Deutan/Tritan · Machado 2009*.
   - **Contrast:** the WCAG ratio and the smaller |Lc| between the top and the trousers (the outfit's
-    two largest areas), from `compare()`. APCA has no ratio.
+    two largest areas), from `compare()`. APCA has no ratio. Both **floored** (*amended after F-248's
+    review, S2*; ADR-0124's rule): 4.48 rounded reads 4.5:1, a threshold the pair does not reach.
 - **D5. Copy.** *Harmony:* and the card's title drop the component words *Badge* and *Card* (§2), and
   *Colour* is en-GB. The back word is the colour's romaji, named *Back to ‹Romaji›*.
 
