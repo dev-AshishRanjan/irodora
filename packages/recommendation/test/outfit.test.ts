@@ -14,6 +14,7 @@ import { fromXyz, type Color } from '@irodora/color-core';
 import { xyzToOklch } from '@irodora/color-spaces';
 import {
   ALTERNATIVE_AXES,
+  alternativesAround,
   OUTFIT_SLOTS,
   pairingFit,
   parseWeightContent,
@@ -21,6 +22,7 @@ import {
   recommendOutfit,
   ruleSetFor,
   SHORTLIST_LIMIT,
+  temperatureOf,
   type Candidate,
   type PersonalProfile,
   type RuleSet,
@@ -219,6 +221,53 @@ describe('alternatives move along a named dimension (FR-38)', () => {
     // And no duplicates were invented to pad it.
     const ids = result.alternatives.map((a) => a.candidate.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+/*
+ * ALTERNATIVES AROUND THE SHOWN CANDIDATE (F-248, E-217). 07 lets a person step through a slot's
+ * ranking, and its pills must move from the colour on screen — not from the top pick the ranking
+ * started at — or a pill reading "warmer" names a colour that is not.
+ */
+describe('alternatives around the candidate a person is shown (F-248)', () => {
+  const trouser = recommendForSlot(INPUT, 'trouser', POOL, profile(), RULES);
+  const around = (id: string) => alternativesAround(INPUT, id, trouser.ranked, POOL, RULES);
+  const oklch = (id: string) => xyzToOklch(POOL.find((c) => c.id === id)!.color.xyz);
+  const warmth = (id: string) => {
+    const [, c, h] = oklch(id);
+    return temperatureOf(c, h, RULES.poles);
+  };
+
+  it('is the ranking’s own alternatives around its top pick (the no-change oracle)', () => {
+    expect(around(trouser.ranked[0]!.id)).toStrictEqual(trouser.alternatives);
+  });
+
+  it('moves each axis from the SHOWN candidate, for every candidate in the ranking', () => {
+    const [gl] = xyzToOklch(INPUT.color.xyz);
+    for (const shown of trouser.ranked.slice(0, 12)) {
+      const alternatives = around(shown.id);
+      const ids = alternatives.map((a) => a.candidate.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(ids).not.toContain(shown.id);
+      for (const { axis, candidate } of alternatives) {
+        const [l] = oklch(candidate.id);
+        const [sl] = oklch(shown.id);
+        if (axis === 'warmer') expect(warmth(candidate.id)).toBeGreaterThan(warmth(shown.id));
+        if (axis === 'cooler') expect(warmth(candidate.id)).toBeLessThan(warmth(shown.id));
+        if (axis === 'lighter') expect(l).toBeGreaterThan(sl);
+        if (axis === 'higherContrast') expect(Math.abs(l - gl)).toBeGreaterThan(Math.abs(sl - gl));
+      }
+    }
+  });
+
+  it('DECOY: a different shown candidate gives a different answer', () => {
+    const first = around(trouser.ranked[0]!.id);
+    const others = trouser.ranked.slice(1, 12).map((r) => around(r.id));
+    expect(others.some((o) => JSON.stringify(o) !== JSON.stringify(first))).toBe(true);
+  });
+
+  it('gives none for a candidate the ranking does not hold', () => {
+    expect(around('no-such-colour')).toStrictEqual([]);
   });
 });
 

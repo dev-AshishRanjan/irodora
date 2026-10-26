@@ -311,13 +311,7 @@ export function recommendOutfit(
 
 /**
  * Alternatives: the best candidate that moves along each named axis, relative to the top pick.
- *
- * **Relative to the top pick, not to the garment.** An alternative answers *"like that, but
- * warmer"*, and the thing it is "like" is what was recommended.
- *
- * An axis with no candidate is **omitted**, never filled with a duplicate or the next-best
- * unrelated colour. FR-38 asks for at least three labelled alternatives; three real ones and a
- * missing fourth is an honest answer, while four where one is mislabelled is not.
+ * The ranking's own answer, and exactly what {@link alternativesAround} gives for the top pick.
  */
 function alternativesFor(
   input: OutfitInput,
@@ -326,6 +320,31 @@ function alternativesFor(
   rules: RuleSet,
 ): readonly Alternative[] {
   const best = ranked[0];
+  return best === undefined ? [] : alternativesAround(input, best.id, ranked, candidates, rules);
+}
+
+/**
+ * Alternatives relative to the candidate a person is SHOWN: the best candidate in `ranked` that
+ * moves along each named axis from `shownId` (F-248).
+ *
+ * **Relative to the shown candidate, not to the garment.** An alternative answers *"like that, but
+ * warmer"*, and the thing it is "like" is what is on screen. The ranking's own alternatives are
+ * relative to its top pick; once a person steps to another candidate (07's *Swap*), a pill reading
+ * *warmer* must be warmer than THAT one, or the label is false beside the colour it names.
+ *
+ * An axis with no candidate is **omitted**, never filled with a duplicate or the next-best
+ * unrelated colour. FR-38 asks for at least three labelled alternatives; three real ones and a
+ * missing fourth is an honest answer, while four where one is mislabelled is not. A `shownId`
+ * that is not in `ranked` gives none.
+ */
+export function alternativesAround(
+  input: OutfitInput,
+  shownId: string,
+  ranked: readonly RankedCandidate[],
+  candidates: readonly Candidate[],
+  rules: RuleSet,
+): readonly Alternative[] {
+  const best = ranked.find((r) => r.id === shownId);
   if (best === undefined) return [];
   const byId = new Map(candidates.map((c) => [c.id, c]));
   const bestColor = byId.get(best.id);

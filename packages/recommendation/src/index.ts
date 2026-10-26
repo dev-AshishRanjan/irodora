@@ -65,6 +65,7 @@ export { isLargeArea, OUTFIT_SLOTS, SLOT_AREA, type OutfitSlot } from './slots.j
 
 export {
   ALTERNATIVE_AXES,
+  alternativesAround,
   pairingCoherence,
   pairingFit,
   PAIRING_WEIGHT,
