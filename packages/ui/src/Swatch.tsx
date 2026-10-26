@@ -322,7 +322,9 @@ export function Swatch({
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
       onPress={onPress}
-      style={fills}
+      // It fills the sample, whose box is at least the target (`box` below); the floor is declared here
+      // too, so the target is a number a check can read rather than an inference from the layout.
+      style={{ ...fills, minWidth: declaredWidth, minHeight: tall }}
       {...id}
     />
   );

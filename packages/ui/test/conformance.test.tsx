@@ -3303,6 +3303,43 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * 07'S SLOT TILE, PRESSED (F-248's review, S4): apart from its children with `onPress`, the sample's
+   * named node is the tile's press target, under its words — a control of its own, so it is held to
+   * every control's rules here in every state. Without this subject the form renders nowhere the suite
+   * looks, and gate 8's proof planted a missing role there that nothing saw.
+   */
+  {
+    name: 'Swatch (07’s slot tile, pressable: its press target under its words)',
+    kind: 'interactive',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: ['#CDC4B9'],
+    render: (state, theme) =>
+      draw(
+        <View style={{ height: 120 }}>
+          <Swatch
+            name="Slot 2 (Trousers), Rikyu-shira-cha (Warm Ecru)"
+            hex="#CDC4B9"
+            color={SAMPLE}
+            width="fill"
+            height="fill"
+            keyline={false}
+            group={false}
+            disabled={state === 'disabled'}
+            loading={state === 'loading'}
+            onPress={() => undefined}
+            testID={state}
+          >
+            <View pointerEvents="none" style={{ padding: 8, gap: 4 }}>
+              <Text size="label" numeric on={{ hex: '#CDC4B9', color: SAMPLE }}>
+                Slot 2 (Trousers)
+              </Text>
+            </View>
+          </Swatch>
+        </View>,
+        theme,
+      ),
+  },
 ];
 
 /**
