@@ -50,6 +50,7 @@ import { rankingContext } from '../src/wardrobe/coverage';
 import {
   alternativesAround,
   OCCASIONS,
+  recommendForSlot,
   scoreOutfit,
   type PersonalProfile,
 } from '@irodora/recommendation';
@@ -262,6 +263,15 @@ describe('07’s slots resolve for every colour (ADR-0151 D2)', () => {
     expect(combination(A).rankings.outer.slot).toBe('top');
   });
 
+  it('ranks the outer layer through recommendForSlot, which a second top cannot be refused by (E-218)', () => {
+    // `recommendOutfit` refuses a second top, so a slot ranked through it would come back empty.
+    const input = { slot: 'top' as const, color: colorFor(allEntries()[0]!.entry) };
+    expect(combination(A).rankings.outer).toStrictEqual(
+      recommendForSlot(input, 'top', poolWithout(A), SOMEBODY, occasionRuleSet('office')),
+    );
+    expect(combination(A).rankings.outer.ranked.length).toBeGreaterThan(0);
+  });
+
   it('is null for a colour this corpus does not hold', () => {
     expect(wearCombination('no-such-colour', RESTING_WEAR, SOMEBODY, CONTEXT)).toBeNull();
   });
@@ -389,6 +399,17 @@ describe('07’s card says what the engine computes (ADR-0151 D4)', () => {
     // DECOY: the profile is what gives it one.
     expect(shown.personalKnown).toBe(true);
     expect(typeof shown.intelligence.fit).toBe('number');
+  });
+
+  it('DECOY: the two directions’ |Lc| differ for some colour, so taking the smaller is a choice', () => {
+    const differ = allEntries().some((e) => {
+      const shown = combination(e.entry.slug);
+      const trousers = shown.slots.find((s) => s.key === 'trouser')?.entry;
+      if (trousers === null || trousers === undefined) return false;
+      const pair = compare(shown.anchor, trousers).contrast;
+      return Math.round(Math.abs(pair.apcaBOnA)) !== Math.round(Math.abs(pair.apcaAOnB));
+    });
+    expect(differ).toBe(true);
   });
 
   it('measures contrast as the top against the trousers, the smaller |Lc| of the two directions', () => {

@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-22",
+  "updated": "2026-10-26",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -4015,6 +4015,10 @@
         {
           "kind": "symbol",
           "ref": "apps/mobile/src/wardrobe/coverage.ts#rankingContext"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear-states.test.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4022,7 +4026,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "THE APP NOW HANDS THE ENGINE A PROFILE FOR SOMEBODY WHO HAS NONE, AND `personalKnown` IS THE ONLY THING STOPPING THAT BECOMING A FALSE CLAIM. `NO_EVIDENCE_PROFILE` carries full-range intervals so nothing is constrained, and confidence 0 on every axis so nothing reaches a score — but `intervalFit` still returns 1 on all four, so the explanation object reports a PERFECT FIT on four dimensions nobody has measured. `shownFactors` returns empty without a profile and `shownScore` shows the pairing figure instead of the blend; both are asserted, and the conformance registry renders both branches in both themes so the two trees are measured rather than assumed. WHAT IS NOT GUARDED: a future caller that reads `recommendations` directly and formats it itself. Nothing stops that, and it would look entirely reasonable — the fields are public and populated. The defence is that `wear.ts` is the only module that builds the no-evidence profile, and it exports the two readers beside it. F-247: a second reader — the colour page orders the person’s garments with this profile when none is stored, and prints the order only: colour-detail-states.test finds no %, score or word of fit on the combinations card in either language, with a planted figure as the decoy.",
+      "guard": "THE APP NOW HANDS THE ENGINE A PROFILE FOR SOMEBODY WHO HAS NONE, AND `personalKnown` IS THE ONLY THING STOPPING THAT BECOMING A FALSE CLAIM. `NO_EVIDENCE_PROFILE` carries full-range intervals so nothing is constrained, and confidence 0 on every axis so nothing reaches a score — but `intervalFit` still returns 1 on all four, so the explanation object reports a PERFECT FIT on four dimensions nobody has measured. `shownFactors` returns empty without a profile and `shownScore` shows the pairing figure instead of the blend; both are asserted, and the conformance registry renders both branches in both themes so the two trees are measured rather than assumed. WHAT IS NOT GUARDED: a future caller that reads `recommendations` directly and formats it itself. Nothing stops that, and it would look entirely reasonable — the fields are public and populated. The defence is that `wear.ts` is the only module that builds the no-evidence profile, and it exports the two readers beside it. F-247: a second reader — the colour page orders the person’s garments with this profile when none is stored, and prints the order only: colour-detail-states.test finds no %, score or word of fit on the combinations card in either language, with a planted figure as the decoy. F-248: 07’s fit row reads null without a profile (ADR-0150) — no figure, no %; the slot sheet shows the pairing figure and names the missing half; the save to the Lab is disabled with its note. wear-states.test holds all three, with the profiled page as the decoy; wear.test holds the fit null without a profile.",
       "memory": "memory/effects/a-zero-confidence-profile-still-reports-a-perfect-fit.md",
       "rationale": "CRITERION 3 ASKED THAT SOMEBODY WITH NO PROFILE STILL GET THE ANSWERS THAT DO NOT NEED ONE. `recommendOutfit` requires a `PersonalProfile` and half its blend is *does this suit me*, which is unanswerable without one. The engine already had the answer: `scoreColor` returns `NO_EVIDENCE_SCORE` when no dimension carries confidence, and its docblock names this exact case — *\"a profile nobody has filled in is zero across the board\"*. So the app supplies that profile rather than the engine growing a nullable parameter, and no score is implemented twice. THE TRAP IS ONE LAYER DOWN. Confidence 0 removes the personal half from every SCORE and leaves it fully populated in every EXPLANATION, because `fits` is computed before the weights are applied. A screen that drew the factors it was given would say \"your lightness range suits this\" to somebody who has never told the product anything — which is NFR-21 broken in the most confident-sounding way available. That is why `personalKnown` is a returned VALUE and not a confidence field a caller is trusted to check.",
       "confidence": 0.9,
@@ -6008,7 +6012,7 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing.",
+      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing. F-248: the Japanese catalogue’s 感, 揃 and 替 regenerated into the subset; verify-font-coverage in gate:content.",
       "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
       "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step. F-247: the colour page no longer prints the Japanese names of the palettes holding a colour (ADR-0147), so it left this link; its own new Japanese words are catalogue words, held by the same coverage check.",
       "confidence": 0.9,
@@ -6169,7 +6173,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen. F-235 removed 04.gauge.chroma.bar from 04's C10 conflict and from the manifest's green exception together (ADR-0119: a bar carries no words, so its green would be a verdict by colour alone); the test requires both lists to move at once. F-230: mark-census.test.ts asserts `27.lens-working.mark` is the ONE mark among the exceptions, every other governing mark binds an ink within the ceiling in all four palettes, and only 00's and 25's marks sit outside the product (C4) — a planted status-colour mark refused.",
+      "guard": "`c10-exceptions.test.ts` walks every inventory. It collects each element in a `C10` conflict and each element binding one of ADR-0110's coloured glyphs, then requires each to be covered by exactly one element exception. Three tracks measured achromatic are named in the test, so their absence is on record. An exception naming an element no inventory draws fails, and so does one whose `mintedBy` is not a feature id. `checkChromaCeiling` reports an element exception whose every measured tint is under the ceiling, so a stale exception cannot pad the count. A decoy proves a dropped element is seen. F-235 removed 04.gauge.chroma.bar from 04's C10 conflict and from the manifest's green exception together (ADR-0119: a bar carries no words, so its green would be a verdict by colour alone); the test requires both lists to move at once. F-230: mark-census.test.ts asserts `27.lens-working.mark` is the ONE mark among the exceptions, every other governing mark binds an ink within the ceiling in all four palettes, and only 00's and 25's marks sit outside the product (C4) — a planted status-colour mark refused. F-248: glyph.lock is minted; 07, 15 and 16’s padlocks are carried by a token group and the element exception is retired (c10-exceptions.test).",
       "memory": "memory/effects/chroma-a-mockup-draws-before-a-token-exists-is-declared-by-element.md",
       "rationale": "C10 and ADR-0110 follow chroma the mockups draw on elements no token holds yet: gold HUDs, green verdicts, coloured icons. The feature that builds each surface mints its token. Until then, the chroma-ceiling count would have been blind to exactly the chroma the product is about to ship. So the manifest declares it by inventory element, and the inventories and the manifest are held together. When an inventory adds or renames a C10 element, the manifest must follow. When a feature mints the token, it replaces the element exception with a token exception or with nothing. F-232 (2026-09-28): the first two exceptions RETIRED by a mint — 00.controls.icon-wheel and 00.buttons.icon-palette — replaced by token-group exceptions that carry the elements forward, so coverage stays exactly once (E-159).",
       "confidence": 0.85,
@@ -6777,6 +6781,10 @@
         {
           "kind": "gate",
           "ref": "contrast"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Button.tsx#ButtonProps.on"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6788,7 +6796,7 @@
       ],
       "severity": "medium",
       "feature": "F-233",
-      "guard": "test:packages/ui/test/sample-ink.test.tsx — the rule is silent for text set with on={sample} and its moved ink is no colour literal; a token ink failing on #87795D is reported in every palette (the decoy); a ground that is no declared sample is left to colour-literal. The conformance suite's Text-on-a-sample, Swatch, Strip and FabricSwatch subjects exercise the exemption in four palettes.",
+      "guard": "test:packages/ui/test/sample-ink.test.tsx — the rule is silent for text set with on={sample} and its moved ink is no colour literal; a token ink failing on #87795D is reported in every palette (the decoy); a ground that is no declared sample is left to colour-literal. The conformance suite's Text-on-a-sample, Swatch, Strip and FabricSwatch subjects exercise the exemption in four palettes. F-248: Button’s on={sample} is a second consumer — its words, glyph and outline take the sample’s ink (forms-07.test, a light and a dark sample with the default tree as the decoy; conformance’s on-sample Button subjects in every palette, the derived ones included).",
       "memory": "memory/effects/text-on-a-sample-is-measured-whatever-chose-its-ink.md",
       "rationale": "The conformance rule `sample-ink` measures text on a declared sample, and the colour-literal rule exempts a moved ink or line BY VALUE, derived from the declared samples through sampleInk and sampleEdge. Change either function and the set of exempt values changes with it: a component still drawing the old value would become a literal, and one drawing a value the functions no longer return would be reported. The rule reads what is painted, not the import, so a component that calls sampleInk and discards the result still fails."
     },
@@ -6911,6 +6919,10 @@
         {
           "kind": "file",
           "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/wear/[slug].tsx"
         }
       ],
       "scope": [
@@ -6918,7 +6930,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy.",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways.",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -8715,7 +8727,7 @@
           "ref": "apps/mobile/test/inventory.ts#supersededFindings"
         }
       ],
-      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211. F-247 enrolled 06.screen (inventory-surfaces.json), swept in both locales with three decoys: the stacked layer, the readout’s bar and a garment’s caption each named when gone.",
+      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211. F-247 enrolled 06.screen (inventory-surfaces.json), swept in both locales with three decoys: the stacked layer, the readout’s bar and a garment’s caption each named when gone. F-248: 07.screen enrolled — inventory-surfaces.json, and screens.test’s ENROLLED with its locators and four decoys.",
       "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
       "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
     },
@@ -8977,9 +8989,17 @@
         {
           "kind": "file",
           "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wear.ts#wearCombination"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
         }
       ],
-      "guard": "apps/mobile/test/wardrobe-coverage.test.ts: a count through coverageContext equals one through a context written out by hand (the oracle, with outfits to count so equality is not two zeros); undefined without a profile; a garment with no slot is left out (decoy); the Wardrobe route calls the helpers and assembles no context of its own, read from source, with shopping.tsx as the decoy that still does. home-states.test.tsx holds the pill with coverage and without (R9 §4 E2). F-242’s review (S5): Home’s route is read from source too — it calls the helpers, assembles nothing of its own, and re-reads on focus (useFocusEffect). F-247: rankingContext beside coverageContext — the same four parts, with the no-evidence profile where none is stored (wardrobe-coverage.test: equal to a context written by hand; NO_EVIDENCE_PROFILE only without a profile, decoy).",
+      "guard": "apps/mobile/test/wardrobe-coverage.test.ts: a count through coverageContext equals one through a context written out by hand (the oracle, with outfits to count so equality is not two zeros); undefined without a profile; a garment with no slot is left out (decoy); the Wardrobe route calls the helpers and assembles no context of its own, read from source, with shopping.tsx as the decoy that still does. home-states.test.tsx holds the pill with coverage and without (R9 §4 E2). F-242’s review (S5): Home’s route is read from source too — it calls the helpers, assembles nothing of its own, and re-reads on focus (useFocusEffect). F-247: rankingContext beside coverageContext — the same four parts, with the no-evidence profile where none is stored (wardrobe-coverage.test: equal to a context written by hand; NO_EVIDENCE_PROFILE only without a profile, decoy). F-248: 07 scores its outfit with rankingContext(null)’s weights and reference and the occasion’s own rules (occasionRuleSet): wear.test ranks under each occasion exactly as the engine does under that weighting, and holds the card’s figures to scoreOutfit over the four pieces with that context.",
       "memory": "memory/effects/one-coverage-context-for-the-pill-and-the-dial.md",
       "rationale": "01’s count pill and 11’s coverage dial print the same count of valid outfits, so they are assembled from one context: a second inline copy would let the front door and the Wardrobe disagree the first time the profile, rules, weights or reference set moved. shopping.tsx still assembles its own; F-258 moves it."
     },
@@ -9329,7 +9349,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/colour-detail-states.test.tsx fires every drawn control and reads its handler’s argument, with the decoy that an absent handler is an absent control; a route-source test there reads each handler’s own body and holds its target — back navigates to /atlas, Hold arms before it opens the Lens — with decoys for a bare export, a back that only pops, swapped targets and the Lens opened first; export-subject.test: exportSubjectFor gives the colour when its slug resolves, the latest palette bare, and falls back for an unknown slug (decoys); verify-route-targets and verify-reachability in lint.",
+      "guard": "apps/mobile/test/colour-detail-states.test.tsx fires every drawn control and reads its handler’s argument, with the decoy that an absent handler is an absent control; a route-source test there reads each handler’s own body and holds its target — back navigates to /atlas, Hold arms before it opens the Lens — with decoys for a bare export, a back that only pops, swapped targets and the Lens opened first; export-subject.test: exportSubjectFor gives the colour when its slug resolves, the latest palette bare, and falls back for an unknown slug (decoys); verify-route-targets and verify-reachability in lint. F-248: /atlas/wear/[slug] is rebuilt to 07 with its path kept, so the route test here holds unchanged.",
       "memory": "memory/effects/06s-drawn-actions-open-routes-other-features-rebuild.md",
       "rationale": "06’s drawn actions open routes that F-248 (07), F-253 (20), F-263 (18), F-245 (the Lens’s 04), F-259 (24) and F-256 (12) rebuild (ADR-0147 D3). A later rebuild of any of them that renames or drops its route, or an export route that stops reading `slug` and exports the latest palette, breaks a control on this page while every test of that other surface stays green. Back is the Atlas itself: the page is opened from the Finder, Nearby, Wear, the combinations, a garment and the Lens, and back navigates to /atlas from each, as its name says (F-247’s review, S1)."
     },
@@ -9374,6 +9394,327 @@
       "guard": "packages/ui/test/app-bar.test.tsx: with targetRoom the trailing row is the platform’s target tall and each icon’s size plus its slop lies inside the row, as iOS and as Android (Platform.OS replaced), with the decoy that without it the row is as tall as its icons; bookmarks.test holds the colour page to asking for it. The overlap of three targets at 06’s pitch is F-305’s, and the device check is attested.",
       "memory": "memory/effects/a-target-reaches-its-size-only-inside-its-parent-on-android.md",
       "rationale": "Android delivers a touch only inside the parent’s bounds, so a 21.5 dp glyph’s slop past a row as tall as its glyphs is a target in the rule and not on a phone (F-237’s review, S3). targetRoom makes the row the target tall and gives the slop back as padding, so the drawn positions stay where 06 draws them. A change to the slop arithmetic, or an app bar that drops the flag, shrinks the real target without failing a render test that cannot see Android’s clipping."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-217",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/outfit.ts#alternativesAround"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit.ts#recommendForSlot"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wear.ts#wearCombination"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear-alternatives.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/recommendation/test/outfit.test.ts: alternativesAround around the ranking’s top pick deep-equals recommendForSlot’s own alternatives (the no-change oracle); for every candidate in a ranking, each axis moves from THAT candidate; a different shown candidate gives a different answer (decoy). wear.test: after a Swap the slot in hand’s alternatives are around the colour it now shows. wear-alternatives.test: the pills are counted against the engine for each slot in hand and after a pill.",
+      "memory": "memory/effects/a-pill-is-warmer-than-the-colour-beside-it-or-it-is-false.md",
+      "rationale": "A pill reading Make Warmer is a claim about the colour on screen. Alternatives relative to the ranking’s top pick are true until the first Swap and false after it; alternativesAround makes them relative to the shown candidate, and recommendForSlot’s output must not move for the screens that read it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-218",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/wear.ts#wearCombination"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit-score.ts#scoreOutfit"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare.ts#compare"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit.ts#recommendForSlot"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear-fidelity.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/wear.test.ts: every corpus colour’s three ranked slots are filled, never with the colour in hand, with FR-31’s counts; the trouser and shoe rankings equal the engine’s under the occasion’s weighting; the outer layer equals recommendForSlot for a second top (recommendOutfit would refuse it); harmony, fit and separation are scoreOutfit’s over the four pieces; contrast is compare()’s top against the trousers, the smaller |Lc|, with the decoy that the two directions differ; fit is null without a profile.",
+      "memory": "memory/effects/the-combination-is-the-engines-four-pieces-scored-once.md",
+      "rationale": "Everything 07 prints about the outfit is computed here. A fit figure drawn without a profile, an outer layer ranked through the call that refuses a second top, or a contrast pair that quietly changes, each reaches the card with every render green."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-219",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/outfit/fromWear.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/outfit.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/screens/OutfitBuilder.tsx#OutfitBuilderProps.initialDraft"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json#F-257"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/outfit-from-wear.test.ts: each slot takes the owned garment nearest the colour by ΔE00, ties by id whatever the wardrobe order, the top locked, an empty slot left empty, taken once (decoy: a second take is null), a second offer replacing the first. wear-states.test reads the Lab route’s source: it takes the hand-off once, in a state initialiser, and opens with labDraftFrom’s draft. F-257 carries a note.",
+      "memory": "memory/effects/a-hand-off-the-receiving-screen-forgets-opens-it-empty.md",
+      "rationale": "07’s save stores nothing: it hands the combination to the Lab, which opens with it. When F-257 rebuilds the Lab, a route that stops taking the hand-off makes the save open an empty Lab, and nothing on 07 fails."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-220",
+      "severity": "medium",
+      "scope": [
+        "mobile",
+        "content"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/rules.ts#occasionRuleSet"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wear.ts#wearCombination"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "content/rules"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/occasion-rules.test.ts: each of 07’s occasions reads the same versioned file as ruleSet(), weights to 1, and is built once; at least one differs from the default; default through it is exactly ruleSet() (decoy); a tampered weights text is refused for an occasion too, with the untouched file as the decoy; a version lacking one of them refuses it by name. wear.test: Office and Casual give different slot-2 picks for some colour, and the same occasion twice the same.",
+      "memory": "memory/effects/an-occasion-the-content-stops-publishing-breaks-a-page.md",
+      "rationale": "07 names four published weightings. A weights publish that drops one makes ruleSetFor throw on the page — by design, since a silent fallback would rank under a context nobody published — so the content and the screen’s list must move together."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-221",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/atlas/wear/[slug].tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/outfit.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/profile/export.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/export/subject.ts#exportSubjectFor"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/shopping.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint.",
+      "memory": "memory/effects/07s-drawn-actions-open-routes-other-features-rebuild.md",
+      "rationale": "07’s actions open screens that 13, 18, 22 and 12 rebuild. A rebuild that renames a route, or an export that stops reading colours, breaks 07’s actions without a failure on 07."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-222",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/Button.tsx#ButtonProps.on"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/sampleInk.ts#sampleInk"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "guard": "packages/ui/test/forms-07.test.tsx: on a light and a dark sample, in both themes, the words, glyph and outline are sampleInk’s ink, the two inks differ, and without on the outline and words are the theme’s (decoy). The conformance suite draws the Button on a light and a dark sample of its own, in every palette including the derived ones, and measures its words against the sample.",
+      "memory": "memory/effects/a-control-on-a-sample-takes-the-samples-ink.md",
+      "rationale": "A control drawn on a colour sample cannot take a theme token for its words: dark words on a dark sample in Washi. The ink is the sample’s, chosen per sample, and a change to sampleInk or to how the Button paints moves every compact Swap on 07."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-223",
+      "severity": "low",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/ChoiceGroup.tsx#Segmented.fit"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/forms-07.test.tsx: content-fit segments grow from their words and never shrink, in a row that scrolls; the group spans the room it is laid out in, measured, and asks no share of a height; the default shares the row equally and does not scroll (decoy). screens.test’s broken-flex-chain check runs over 07’s subjects. The 200 % text check is the person’s, on a device (attested).",
+      "memory": "memory/effects/a-segment-sized-by-its-words-scrolls-before-it-clips.md",
+      "rationale": "Segments sized by their words can be wider together than a 320 dp screen, or than 384 dp at 200 % text. The row scrolls rather than clipping a word; a change to the segment’s flex or to the measured room brings back either the clip or a row that does not fill."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-248",
+      "id": "E-224",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/Swatch.tsx#SwatchProps.group"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Swatch.tsx#SwatchProps.height"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette.",
+      "memory": "memory/effects/a-control-inside-an-accessible-sample-is-one-no-screen-reader-reaches.md",
+      "rationale": "Swatch is an accessible pressable that groups what it holds. 07’s tiles carry Swap, Lock and the press target on the sample, so a change that makes the sample group its children again hides every one of them from a screen reader while every render test stays green."
     }
   ]
 }

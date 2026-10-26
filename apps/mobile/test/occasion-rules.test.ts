@@ -7,7 +7,8 @@
  * the default one. The weighting's own arithmetic is the engine's, tested in its package.
  */
 
-import { OCCASIONS } from '@irodora/recommendation';
+import { OCCASIONS, parseWeightContent, ruleSetFor } from '@irodora/recommendation';
+import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
 import { occasionRuleSet, ruleSet, RULES_OCCASION } from '../src/rules';
 import { WEAR_OCCASIONS } from '../src/wear';
 import type * as Rules from '../src/rules';
@@ -44,6 +45,17 @@ describe('an occasion is a published weighting (E-220)', () => {
 
   it('names only occasions the engine knows', () => {
     for (const occasion of WEAR_OCCASIONS) expect(OCCASIONS).toContain(occasion);
+  });
+
+  it('a published version lacking one of them refuses it, by name, rather than falling back (E-220)', () => {
+    const published = parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.test.json');
+    const withoutFormal = {
+      ...published,
+      occasions: published.occasions.filter((o) => o.occasion !== 'formal'),
+    };
+    expect(() => ruleSetFor(withoutFormal, 'formal')).toThrow(/formal/);
+    // DECOY: the published version carries it.
+    expect(() => ruleSetFor(published, 'formal')).not.toThrow();
   });
 });
 
