@@ -782,6 +782,32 @@ export const en = {
   /** The heading over them. Not "alternatives" — that word promises a replacement. */
   'wear.alternatives': 'Or, one step along',
   /*
+   * F-248 — `07`, THE COMBINATION: the words `wear.ts` builds its lines from.
+   *
+   * The occasions are FR-34's published weightings, each by its own word (ADR-0151 D1): no
+   * "Minimalist Office", "Japanese Classic" or "Evening", because no weighting by those names is
+   * published. The harmony row is the harmony component's warm–cool relation (D4), in the words
+   * `outfit.harmony.*` already uses, never a geometric name the engine cannot classify (F-349). The
+   * fit note names the profile the figure was computed against, never a type (ADR-0150).
+   * "Separation" is `cvd.separation` (F-198): one word, one key.
+   */
+  'wear.back': 'Back to',
+  'wear.occasion.casual': 'Casual',
+  'wear.occasion.office': 'Office',
+  'wear.occasion.japaneseInspired': 'Japanese-inspired',
+  'wear.occasion.formal': 'Formal',
+  'wear.slot.1': 'Slot 1 (Top - Anchor)',
+  'wear.slot.2': 'Slot 2 (Trousers)',
+  'wear.slot.3': 'Slot 3 (Shoes)',
+  'wear.slot.4': 'Slot 4 (Outerwear)',
+  'wear.slotWord.outer': 'Outerwear',
+  'wear.harmony.supports': 'Shared Warmth',
+  'wear.harmony.neutral': 'Mixed Warmth',
+  'wear.harmony.opposes': 'Warm Against Cool',
+  'wear.fit.yours': '(your profile)',
+  'wear.fit.none': 'No profile yet',
+  'wear.cvdModel': 'Protan/Deutan/Tritan · Machado 2009',
+  /*
    * F-200 — THE TARGET.
    *
    * "Comparing against" rather than "target colour": the bar says what the product is DOING,

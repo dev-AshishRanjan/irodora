@@ -36,6 +36,7 @@ import {
   ruleSetFor,
   parseSeasonalRules,
   seasonalCellCount,
+  type Occasion,
   type RuleSet,
   type SeasonalRules,
 } from '@irodora/recommendation';
@@ -57,9 +58,10 @@ import {
 /**
  * The occasion the app reads.
  *
- * `default` and only `default`, because nothing in the app asks a question that varies by
- * occasion yet. Naming it here rather than threading it through means the day something does,
- * the change is visible as a change rather than as a parameter that was always there.
+ * `default`, for every question that does not vary by occasion. Naming it here rather than
+ * threading it through meant the day something did, the change was visible as a change rather
+ * than as a parameter that was always there: that day was F-248, and `07`'s occasion control
+ * reads {@link occasionRuleSet} beside this, which is unchanged.
  *
  * **Exported for the lookbook (F-238).** A rules version holds one weighting per occasion, so a
  * saved outfit's envelope names the occasion its score was weighted for — the day a second one is
@@ -68,6 +70,7 @@ import {
 export const RULES_OCCASION = 'default' as const;
 
 let cached: RuleSet | null = null;
+let cachedContent: ReturnType<typeof parseWeightContent> | null = null;
 
 /**
  * The published rule set, digest-verified.
@@ -78,6 +81,30 @@ let cached: RuleSet | null = null;
  */
 export function ruleSet(): RuleSet {
   if (cached !== null) return cached;
+  cached = ruleSetFor(verifiedWeights(), RULES_OCCASION);
+  return cached;
+}
+
+const byOccasion = new Map<Occasion, RuleSet>();
+
+/**
+ * The rule set for one of FR-34's published occasions (F-248): `07`'s occasion control ranks under
+ * it. The SAME verified file as {@link ruleSet} — one digest check, one count check — read for
+ * another weighting. `ruleSetFor` throws, naming the occasion, when the published weights lack it:
+ * a silent fallback would make "the office weighting" and "the weighting nobody configured"
+ * indistinguishable on screen. `ruleSet()` and {@link RULES_OCCASION} are unchanged.
+ */
+export function occasionRuleSet(occasion: Occasion): RuleSet {
+  const known = byOccasion.get(occasion);
+  if (known !== undefined) return known;
+  const rules = ruleSetFor(verifiedWeights(), occasion);
+  byOccasion.set(occasion, rules);
+  return rules;
+}
+
+/** The published weights, digest- and count-verified once, as both readers above need them. */
+function verifiedWeights(): ReturnType<typeof parseWeightContent> {
+  if (cachedContent !== null) return cachedContent;
 
   const actual = sha256(canonicalize(JSON.parse(WEIGHTS_TEXT)));
   if (actual !== WEIGHTS_DIGEST)
@@ -112,8 +139,8 @@ export function ruleSet(): RuleSet {
         'generations — run `node scripts/generate-rules-bundle.mjs`.',
     );
 
-  cached = ruleSetFor(content, RULES_OCCASION);
-  return cached;
+  cachedContent = content;
+  return content;
 }
 
 let cachedSeasonal: SeasonalRules | null = null;

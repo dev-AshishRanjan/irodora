@@ -12,7 +12,13 @@
  * know it.
  */
 
-import { colourSubject, exportSubjectFor, paletteSubject } from '../src/export/subject';
+import {
+  colourSubject,
+  COLOURS_SEPARATOR,
+  combinationSubject,
+  exportSubjectFor,
+  paletteSubject,
+} from '../src/export/subject';
 import { allEntries, CORPUS_LABEL } from '../src/corpus';
 import { ruleSet } from '../src/rules';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
@@ -166,5 +172,35 @@ describe('the export route exports the colour it was opened for', () => {
 
   it('DECOY: a slug this corpus does not hold falls back as a bare open does', () => {
     expect(exportSubjectFor('no-such-colour', [PALETTE])?.title).toBe(PALETTE.nameEn);
+  });
+});
+
+/*
+ * 07'S EXPORT (F-248, ADR-0152 D6, E-222): the combination `07` shows, in its order with the colour in
+ * hand first; one naming any colour this corpus does not hold is not exported in part.
+ */
+describe('the export route exports the combination 07 asked for', () => {
+  const four = allEntries().slice(0, 4);
+  const param = four.map((x) => x.entry.slug).join(COLOURS_SEPARATOR);
+
+  it('is every colour, in order, with the bundle’s derivation and the one envelope', () => {
+    const subject = combinationSubject(four);
+    expect(subject.colours).toStrictEqual(four.map((x) => colourSubject(x).colours[0]));
+    expect(subject.envelope).toStrictEqual(colourSubject(four[0]!).envelope);
+    expect(subject.title).toBe(four.map((x) => x.entry.name.en).join(' + '));
+  });
+
+  it('a colours parameter wins over the slug and the palettes', () => {
+    expect(exportSubjectFor(four[0]!.entry.slug, [PALETTE], param)).toStrictEqual(
+      combinationSubject(four),
+    );
+  });
+
+  it('DECOY: a colour the corpus does not hold, or no colours at all, and it falls back', () => {
+    expect(
+      exportSubjectFor(four[0]!.entry.slug, [PALETTE], `${param},no-such-colour`),
+    ).toStrictEqual(colourSubject(four[0]!));
+    expect(exportSubjectFor(undefined, [PALETTE], '')?.title).toBe(PALETTE.nameEn);
+    expect(exportSubjectFor(undefined, [PALETTE])?.title).toBe(PALETTE.nameEn);
   });
 });

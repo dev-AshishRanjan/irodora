@@ -71,40 +71,72 @@ function envelope(): ExportSubject['envelope'] {
 }
 
 /**
- * One corpus colour, ready to export (F-247, ADR-0147: `06`'s export glyph). Every coordinate is the
- * bundle's own derivation, read and never recomputed, for the reason `colourOf` gives; the English
- * name is the title, as a palette's is.
+ * A corpus colour as an export colour. Every coordinate is the bundle's own derivation, read and
+ * never recomputed, for the reason `colourOf` gives.
  */
-export function colourSubject(entry: PublishedEntry): ExportSubject {
+function corpusColour(entry: PublishedEntry): ExportColour {
   const { derived } = entry;
   return {
-    title: entry.entry.name.en,
-    envelope: envelope(),
-    colours: [
-      {
-        id: entry.entry.slug,
-        name: entry.entry.name.en,
-        hex: derived.hex,
-        lab: [derived.lab[0], derived.lab[1], derived.lab[2]],
-        lch: [derived.lch[0], derived.lch[1], derived.lch[2]],
-        oklch: [derived.oklch[0], derived.oklch[1], derived.oklch[2]],
-        // A corpus colour is a reference, as `colorFor` declares it.
-        source: 'reference',
-      },
-    ],
+    id: entry.entry.slug,
+    name: entry.entry.name.en,
+    hex: derived.hex,
+    lab: [derived.lab[0], derived.lab[1], derived.lab[2]],
+    lch: [derived.lch[0], derived.lch[1], derived.lch[2]],
+    oklch: [derived.oklch[0], derived.oklch[1], derived.oklch[2]],
+    // A corpus colour is a reference, as `colorFor` declares it.
+    source: 'reference',
   };
 }
 
 /**
- * What the export route exports (F-247, E-215): the colour the colour page asked for, when its slug
- * is one this corpus holds; otherwise the palette saved most recently, as before `06` had an export
- * glyph; otherwise nothing, and the screen says so. A slug the corpus does not hold names no colour,
- * so it falls back as a bare open does.
+ * One corpus colour, ready to export (F-247, ADR-0147: `06`'s export glyph). The English name is the
+ * title, as a palette's is.
+ */
+export function colourSubject(entry: PublishedEntry): ExportSubject {
+  return { title: entry.entry.name.en, envelope: envelope(), colours: [corpusColour(entry)] };
+}
+
+/**
+ * A combination, ready to export (F-248, ADR-0152 D6: `07`'s *Export Palette Tokens*): its colours
+ * in the order `07` draws them, the colour in hand first. The title is their English names joined,
+ * so the file says what is in it, and its filename is derived from that (`filenameFor`).
+ */
+export function combinationSubject(entries: readonly PublishedEntry[]): ExportSubject {
+  return {
+    title: entries.map((e) => e.entry.name.en).join(' + '),
+    envelope: envelope(),
+    colours: entries.map(corpusColour),
+  };
+}
+
+/** The separator between the slugs of the export route's `colours` parameter. */
+export const COLOURS_SEPARATOR = ',';
+
+/**
+ * The corpus colours a `colours` route parameter names, in its order — or `null` when it is absent,
+ * empty, or names any colour this corpus does not hold. A combination with a colour missing is not
+ * the combination somebody chose, so it is not exported in part.
+ */
+function combinationOf(colours: string | undefined): readonly PublishedEntry[] | null {
+  if (colours === undefined || colours === '') return null;
+  const entries = colours.split(COLOURS_SEPARATOR).map((slug) => entryBySlug(slug));
+  return entries.every((e): e is PublishedEntry => e !== null) ? entries : null;
+}
+
+/**
+ * What the export route exports (F-247, E-215; F-248, E-222): the combination `07` asked for, when
+ * every colour it names is one this corpus holds; otherwise the colour the colour page asked for,
+ * likewise; otherwise the palette saved most recently, as before `06` had an export glyph; otherwise
+ * nothing, and the screen says so. A slug the corpus does not hold names no colour, so it falls back
+ * as a bare open does.
  */
 export function exportSubjectFor(
   slug: string | undefined,
   palettes: readonly StoredPalette[],
+  colours?: string,
 ): ExportSubject | null {
+  const combination = combinationOf(colours);
+  if (combination !== null) return combinationSubject(combination);
   const colour = slug === undefined ? null : entryBySlug(slug);
   if (colour !== null) return colourSubject(colour);
   // The LAST one, because `listPalettes` is in creation order and the most recent is what

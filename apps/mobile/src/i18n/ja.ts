@@ -646,6 +646,25 @@ export const ja: Record<MessageKey, string> = {
   'alt.lighter': '明るめ',
   'alt.higherContrast': 'コントラスト強め',
   'wear.alternatives': '一歩ずらすなら',
+  /*
+   * F-248 — `07`, THE COMBINATION: the words `wear.ts` builds its lines from. See the note in en.
+   */
+  'wear.back': 'に戻る',
+  'wear.occasion.casual': 'カジュアル',
+  'wear.occasion.office': 'オフィス',
+  'wear.occasion.japaneseInspired': '和風',
+  'wear.occasion.formal': 'フォーマル',
+  'wear.slot.1': 'スロット1（トップス・基準）',
+  'wear.slot.2': 'スロット2（ボトムス）',
+  'wear.slot.3': 'スロット3（くつ）',
+  'wear.slot.4': 'スロット4（アウター）',
+  'wear.slotWord.outer': 'アウター',
+  'wear.harmony.supports': '温度感が揃う',
+  'wear.harmony.neutral': '温度感が混在',
+  'wear.harmony.opposes': '暖色と寒色が対立',
+  'wear.fit.yours': '（あなたのプロフィール）',
+  'wear.fit.none': 'プロフィール未作成',
+  'wear.cvdModel': '1型・2型・3型・Machado 2009',
   // F-200 — see en.ts: the bar names the activity, not the noun.
   'target.armed': '比較対象',
   'target.disarm': '比較をやめる',
