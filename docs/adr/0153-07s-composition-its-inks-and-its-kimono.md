@@ -56,6 +56,13 @@ kimono line-art at its top right.
   11.7 dp) — caption; the two actions 16 and 18 px — label. The glyphs: the turn inks 18 px on slot 2
   and 15 on 3 and 4, the padlock 22, the back arrow 20, each sized by (ink − line) × 24 ÷ its path's
   extent as F-247's are. Each reading is in `07.mjs`.
+- **D10. The action bar, read** (increment 8): its box starts at its 2 px rule (1261–1262 px), under
+  the leaked label 07 prints above it, so the card → the bar is 32 px (21.8 dp, `lg`, the leaked
+  label's space kept as F-246's rule keeps it), and the rule → the buttons 16 px (10.9 dp, `sm`). Its
+  two sides, 14.3 and 11.6 dp, are siblings: `md` and `sm` tie, and the smaller is taken — `sm`. The
+  save's words cannot be read apart from 400 (41% of its stems run 3 px, against 37% for the chosen
+  segment's 400 in the same dark-on-light ink), so they take board 00's primary form, 500, as 06's
+  *Wear It* records.
 
 ## Alternatives, and what each costs
 

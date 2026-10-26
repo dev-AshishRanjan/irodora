@@ -1665,15 +1665,15 @@
       "component": "ui:ActionBar",
       "box": {
         "x": 103,
-        "y": 1249,
+        "y": 1261,
         "w": 564,
-        "h": 100
+        "h": 88
       },
       "dp": {
         "x": 0,
-        "y": 757,
+        "y": 765.5,
         "w": 384,
-        "h": 68
+        "h": 60
       },
       "tokens": {
         "border": "border.subtle"
@@ -1709,7 +1709,7 @@
       "type": {
         "face": "sans",
         "size": "label",
-        "weight": 400
+        "weight": 500
       },
       "icon": null,
       "illustration": null,

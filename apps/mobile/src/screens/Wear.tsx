@@ -258,8 +258,8 @@ export function Wear({
           rule: true,
           gap: nativeSpacing.sm,
           // `07.actions`: rule → buttons 10.9 dp and buttons → foot 10.9, `sm`; the sides 14.3 and 11.6,
-          // one value, `md` (the trailing side named in ADR-0153).
-          padding: { top: nativeSpacing.sm, bottom: nativeSpacing.sm, side: nativeSpacing.md },
+          // one value, so siblings drawn alike: `md` and `sm` tie, and the smaller is taken (R9 §2).
+          padding: { top: nativeSpacing.sm, bottom: nativeSpacing.sm, side: nativeSpacing.sm },
           ...(onSaveToLab !== undefined && !personalKnown
             ? { note: t('wear.saveNeedsProfile') }
             : {}),
@@ -512,7 +512,8 @@ export function Wear({
       <ScrollView
         testID="wear.scroll"
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: nativeSpacing.xl, paddingBottom: nativeSpacing.md }}
+        // The card → the bar's rule: 21.8 dp, `lg`, the leaked label's space kept (F-246's rule).
+        contentContainerStyle={{ paddingTop: nativeSpacing.xl, paddingBottom: nativeSpacing.lg }}
       >
         {/* `07.anchor`: the colour in hand, at the page's inset. */}
         <View style={{ paddingHorizontal: nativeSpacing.md }}>

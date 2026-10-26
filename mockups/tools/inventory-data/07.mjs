@@ -340,17 +340,22 @@ export default {
     pill('contrast', B(409, 1139, 238, 33)),
     pill('monochrome', B(134, 1179, 252, 33)),
     // ---- the sticky action bar
-    el('07.actions', 'ui:ActionBar', B(103, 1249, 564, 100), {
+    // F-248: the bar starts at its 2 px rule (1261–1262), under the leaked label 07 prints above it
+    // (notDesign), and runs to the frame's foot.
+    el('07.actions', 'ui:ActionBar', B(103, 1261, 564, 88), {
       tokens: { border: 'border.subtle' },
     }),
     // F-248 (ADR-0152): the save hands the combination to the Outfit Lab, which opens with it.
     // F-248: the two actions' words ink 16 px without a descender and 18 with one (14.9 and 13.2 dp an
     // em): label. The bar's rule is the 2 px line at 1261–1262, under the leaked label, 16 px above
     // the buttons; the bar has no fill of its own.
+    // Its weight cannot be read apart from 400 — 41% of its stems run 3 px, against 37% for the chosen
+    // segment's 400 in the same dark-on-light ink — so it takes board 00's primary form, 500, as 06's
+    // Wear It records (F-247's M1).
     el('07.actions.save', 'ui:Button', B(124, 1279, 257, 54), {
       parent: '07.actions',
       tokens: { bg: 'action.primary', radius: 'pill' },
-      type: text('sans', 'label'),
+      type: text('sans', 'label', 500),
       binding: 'static:wear.saveToLab',
       action: 'navigate:/wardrobe/outfit',
       copy: { shape: 'label', script: 'latin' },
