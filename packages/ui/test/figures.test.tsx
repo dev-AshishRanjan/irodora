@@ -86,6 +86,21 @@ describe('a figure names what it is and where it was computed', () => {
     // An unsigned negative measure still prints the true minus.
     expect(figureText({ ...DELTA_E, value: -3.4 })).toBe(`${MINUS}3.4`);
   });
+
+  it('takes the sign from the digits printed: a figure that prints as zero carries none (F-249)', () => {
+    expect(signed(-0.004, 2)).toBe('0.00');
+    expect(signed(0.004, 2)).toBe('0.00');
+    expect(signed(-0.04, 1)).toBe('0.0');
+    expect(figureText({ ...DELTA_E, value: -0.04, places: 1, signed: true })).toBe('0.0');
+    expect(figureText({ ...DELTA_E, value: -0.04, places: 1 })).toBe('0.0');
+    // DECOY: what printing the value's own sign gave.
+    expect(signed(-0.004, 2)).not.toBe(`${MINUS}0.00`);
+    // DECOY: a figure that prints a digit keeps its sign either way.
+    expect(signed(-1.25, 2)).toBe(`${MINUS}1.25`);
+    expect(signed(1.25, 2)).toBe('+1.25');
+    expect(signed(-0.05, 1)).toBe(`${MINUS}0.1`);
+    expect(figureText({ kind: 'count', value: -2, noun: 'kept' })).toBe(`${MINUS}2`);
+  });
 });
 
 describe('FigureValue is tabular, selectable and named in full', () => {

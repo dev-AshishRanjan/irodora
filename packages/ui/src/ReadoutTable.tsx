@@ -26,6 +26,14 @@
  * insets, the ruled form's label column, the grid's cell inset. Vertical rhythm comes from the type
  * steps — the drawings set this type smaller than the steps it snaps to (ADR-0113) — with each form's
  * padding derived so that a row keeps its drawn pitch between rules.
+ *
+ * ## 08's ruled form, as F-249 measured it (ADR-0157)
+ *
+ * Every text in it is `caption` (8.9–11.6 dp an em in `08`): the label and its notation at 400, the
+ * figure at 500, the reading, formula and note at 400 in the secondary ink. Each rule is its own 1 dp
+ * node above its row — `08` records them as elements, and a border is not one a sweep can find. A
+ * label may carry a lowered run (`ΔEok`'s *ok*), and a stacked row may set its words in the figure's
+ * ink and weight (`08`'s contrast line).
  */
 
 import { View } from 'react-native';
@@ -45,8 +53,10 @@ export const READOUT_ROW = 21;
 export const READOUT_RULE = 1;
 /** 08's label column, in dp: the median, over its five metric rows, of value less label. */
 export const READOUT_RULED_LABEL = 66.5;
-/** 08's padding above and below a row's lines, in dp: its single-line pitch less one label line. */
-export const READOUT_RULED_PAD = 1.5;
+/** 08's padding above and below a row's lines, in dp: its single-line pitch less one caption line. */
+export const READOUT_RULED_PAD = 5;
+/** How far 08 lowers a label's run (ΔEok's *ok*), in dp: its foot 2–3 px under the E's baseline. */
+export const READOUT_SUBSCRIPT_DROP = 1.25;
 /** 26's cell inset from the card's edge and from its divider, in dp. */
 export const READOUT_GRID_INSET = 12.5;
 /** 26's padding above and below a cell's two lines, in dp: its row pitch less the two lines. */
@@ -93,12 +103,19 @@ export interface TableRow extends RowBase {
 
 /** 08's row. */
 export interface RuledRow extends RowBase {
+  /** A run after the label, lowered, as 08 draws ΔEok's *ok*. Part of the row's name. */
+  readonly subscript?: string;
   /** A second line under the label, in its style: `ΔL*`. */
   readonly notation?: string;
   /** A caption under the label: `(CIEDE2000)`. */
   readonly formula?: string;
   /** Words after or under the figure: `B is lighter`. */
   readonly reading?: string;
+  /**
+   * The reading in the figure's own ink and weight, as 08 draws its contrast line, rather than the
+   * secondary ink a reading takes by default.
+   */
+  readonly readingInk?: 'figure';
   /** A caption under the row: 08's APCA line. */
   readonly note?: string;
 }
@@ -267,61 +284,134 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
 
   if (props.form === 'ruled') {
     const stacked = props.layout === 'stacked';
+    const row = (key: string): { testID?: string } =>
+      props.testID === undefined ? {} : { testID: `${props.testID}.${key}` };
     return (
       <View {...id}>
-        {props.rows.map((row) => (
-          <View
-            key={row.key}
-            accessible
-            accessibilityRole="text"
-            accessibilityLabel={`${readoutRowName(row.label, row.value)}${
-              row.reading === undefined ? '' : `, ${row.reading}`
-            }${row.note === undefined ? '' : `, ${row.note}`}`}
-            style={{
-              flexDirection: stacked ? 'column' : 'row',
-              paddingVertical: READOUT_RULED_PAD,
-              borderTopWidth: READOUT_RULE,
-              borderTopColor: colors.border,
-            }}
-          >
-            <View style={stacked ? {} : { width: READOUT_RULED_LABEL }}>
-              <Text size="label" color="foreground" script={script}>
-                {row.notation === undefined ? row.label : `${row.label}\n${row.notation}`}
-              </Text>
-              {row.formula === undefined ? null : (
-                <Text size="caption" color="foreground.2" script={script}>
-                  {row.formula}
-                </Text>
-              )}
-            </View>
-            <View style={stacked ? {} : { flex: 1 }}>
-              {stacked ? (
-                <Text size="label" color="foreground.2" script={script} numeric selectable>
-                  <Text size="label" weight={500} color="foreground" numeric>
-                    {valueText(row.value)}
-                  </Text>
-                  {row.reading === undefined ? '' : ` ${row.reading}`}
-                </Text>
-              ) : (
-                <>
-                  <Text size="label" weight={500} color="foreground" numeric selectable>
-                    {valueText(row.value)}
-                  </Text>
-                  {row.reading === undefined ? null : (
-                    <Text size="caption" color="foreground.2" script={script}>
-                      {row.reading}
+        {props.rows.map((r) => {
+          const label = `${r.label}${r.subscript ?? ''}`;
+          const figureInk = r.readingInk === 'figure';
+          return (
+            <View key={r.key}>
+              {/* The rule above the row: its own node, as 08 records it (ADR-0157). */}
+              <View
+                {...part(r.key, 'rule')}
+                style={{ height: READOUT_RULE, backgroundColor: colors.border }}
+              />
+              <View
+                {...row(r.key)}
+                accessible
+                accessibilityRole="text"
+                accessibilityLabel={`${readoutRowName(label, r.value)}${
+                  r.reading === undefined ? '' : `, ${r.reading}`
+                }${r.note === undefined ? '' : `, ${r.note}`}`}
+                style={{
+                  flexDirection: stacked ? 'column' : 'row',
+                  paddingVertical: READOUT_RULED_PAD,
+                }}
+              >
+                <View style={stacked ? {} : { width: READOUT_RULED_LABEL }}>
+                  {r.subscript === undefined ? (
+                    <Text
+                      size="caption"
+                      color="foreground"
+                      script={script}
+                      {...part(r.key, 'label')}
+                    >
+                      {r.notation === undefined ? r.label : `${r.label}\n${r.notation}`}
+                    </Text>
+                  ) : (
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <Text
+                        size="caption"
+                        color="foreground"
+                        script={script}
+                        {...part(r.key, 'label')}
+                      >
+                        {r.label}
+                      </Text>
+                      {/* Lowered as 08 draws it: a relative offset on the run's own box. */}
+                      <View style={{ top: READOUT_SUBSCRIPT_DROP }}>
+                        <Text
+                          size="caption"
+                          color="foreground"
+                          script={script}
+                          {...part(r.key, 'subscript')}
+                        >
+                          {r.subscript}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  {r.formula === undefined ? null : (
+                    <Text
+                      size="caption"
+                      color="foreground.2"
+                      script={script}
+                      {...part(r.key, 'formula')}
+                    >
+                      {r.formula}
                     </Text>
                   )}
-                </>
-              )}
-              {row.note === undefined ? null : (
-                <Text size="caption" color="foreground.2" script={script} numeric>
-                  {row.note}
-                </Text>
-              )}
+                </View>
+                <View style={stacked ? {} : { flex: 1 }}>
+                  {stacked ? (
+                    <Text
+                      size="caption"
+                      color={figureInk ? 'foreground' : 'foreground.2'}
+                      weight={figureInk ? 500 : 400}
+                      script={script}
+                      numeric
+                      selectable
+                      {...part(r.key, 'value')}
+                    >
+                      <Text size="caption" weight={500} color="foreground" numeric>
+                        {valueText(r.value)}
+                      </Text>
+                      {r.reading === undefined ? '' : ` ${r.reading}`}
+                    </Text>
+                  ) : (
+                    <>
+                      <Text
+                        size="caption"
+                        weight={500}
+                        color="foreground"
+                        numeric
+                        selectable
+                        {...part(r.key, 'value')}
+                      >
+                        {valueText(r.value)}
+                      </Text>
+                      {r.reading === undefined ? null : (
+                        <Text
+                          size="caption"
+                          color={figureInk ? 'foreground' : 'foreground.2'}
+                          weight={figureInk ? 500 : 400}
+                          script={script}
+                          {...part(r.key, 'reading')}
+                        >
+                          {r.reading}
+                        </Text>
+                      )}
+                    </>
+                  )}
+                  {r.note === undefined ? null : (
+                    <Text
+                      size="caption"
+                      color="foreground.2"
+                      script={script}
+                      numeric
+                      selectable
+                      {...part(r.key, 'note')}
+                    >
+                      {r.note}
+                    </Text>
+                  )}
+                </View>
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     );
   }

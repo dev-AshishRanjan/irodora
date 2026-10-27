@@ -1877,6 +1877,27 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         },
       ],
       [
+        // F-249: the parts by id, the rules as nodes, ΔEok's lowered run and the words in the
+        // figure's ink — every addition the screen uses, through every gate.
+        'ReadoutTable (ruled, ids, lowered run, figure ink, 08)',
+        {
+          form: 'ruled',
+          layout: 'stacked',
+          testID: 'readout',
+          rows: [
+            { key: 'delta-eok', label: 'ΔE', subscript: 'ok', value: READOUT_DELTA },
+            {
+              key: 'wcag',
+              label: 'WCAG 2.2 Ratio',
+              value: READOUT_DELTA,
+              reading: '• Under 3:1 / Shared Temperature',
+              readingInk: 'figure',
+              note: '(APCA Lc: 12.4)',
+            },
+          ],
+        },
+      ],
+      [
         'ReadoutTable (grid, 26)',
         {
           form: 'grid',

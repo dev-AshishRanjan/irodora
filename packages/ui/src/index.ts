@@ -181,6 +181,7 @@ export {
   READOUT_RULE,
   READOUT_RULED_LABEL,
   READOUT_RULED_PAD,
+  READOUT_SUBSCRIPT_DROP,
   ReadoutTable,
   readoutRowName,
   valueSpoken,

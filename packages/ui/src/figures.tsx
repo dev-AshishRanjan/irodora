@@ -34,9 +34,20 @@ import type { Script } from './layout.js';
 /** U+2212 MINUS SIGN: a delta's sign at the width of its plus, not a hyphen. */
 export const MINUS = '−';
 
+/**
+ * The sign a printed figure carries, from the DIGITS PRINTED, not the value (F-249): −0.004 at two
+ * places prints 0.00, and a zero carries no sign either way — a "−0.00" says the value went one way
+ * when the figure beside it says it did not move.
+ */
+function printedSign(value: number, printed: string, plus: boolean): string {
+  if (Number(printed) === 0) return '';
+  return value < 0 ? MINUS : plus && value > 0 ? '+' : '';
+}
+
 /** A signed number, its sign shown: a delta without its direction is half a fact. */
 export function signed(n: number, places = 2): string {
-  return `${n > 0 ? '+' : n < 0 ? MINUS : ''}${Math.abs(n).toFixed(places)}`;
+  const printed = Math.abs(n).toFixed(places);
+  return `${printedSign(n, printed, true)}${printed}`;
 }
 
 /** A colour measurement: a value, what it is, and the space it was computed in. */
@@ -83,24 +94,20 @@ function required(field: string, value: string): string {
 /** The digits as printed: a share rounds to a whole percent. */
 function digits(figure: Figure): string {
   switch (figure.kind) {
-    case 'measure':
-      return figure.signed === true
-        ? signed(figure.value, figure.places)
-        : figure.value < 0
-          ? `${MINUS}${Math.abs(figure.value).toFixed(figure.places)}`
-          : figure.value.toFixed(figure.places);
+    case 'measure': {
+      const printed = Math.abs(figure.value).toFixed(figure.places);
+      return `${printedSign(figure.value, printed, figure.signed === true)}${printed}`;
+    }
     case 'share':
       if (!(figure.fraction >= 0 && figure.fraction <= 1))
         throw new RangeError(
           `Figure: a share is a fraction in [0, 1], not ${String(figure.fraction)}`,
         );
       return `${String(Math.round(figure.fraction * 100))}%`;
-    case 'count':
-      return figure.signed === true
-        ? signed(figure.value, 0)
-        : figure.value < 0
-          ? `${MINUS}${String(Math.abs(figure.value))}`
-          : String(figure.value);
+    case 'count': {
+      const printed = String(Math.abs(figure.value));
+      return `${printedSign(figure.value, printed, figure.signed === true)}${printed}`;
+    }
   }
 }
 

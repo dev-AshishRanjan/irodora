@@ -27,6 +27,7 @@ import {
   READOUT_ROW,
   READOUT_RULED_LABEL,
   READOUT_RULED_PAD,
+  READOUT_SUBSCRIPT_DROP,
   ReadoutTable,
   readoutRowName,
   ThemeProvider,
@@ -99,11 +100,31 @@ describe('every number is the drawing’s, recomputed', () => {
     expect(
       median(rows.map((r) => el(eight, `${r.id}.value`).dp.x - el(eight, `${r.id}.label`).dp.x)),
     ).toBe(READOUT_RULED_LABEL);
-    // ΔEok's row is the one with a single line each side: its rules are 26 dp apart.
+    // ΔEok's row is the one with a single line each side: its rules are 26 dp apart. F-249 measured
+    // 08's rows at caption (ADR-0157), so the pad is what a caption line leaves.
     const pitch = el(eight, '08.metrics.rule-3').dp.y - el(eight, '08.metrics.rule-2').dp.y;
     const rule = el(eight, '08.metrics.rule-2').dp.h;
-    expect(half((pitch - rule - nativeType.latin.label.lineHeight) / 2)).toBe(READOUT_RULED_PAD);
+    expect(half((pitch - rule - nativeType.latin.caption.lineHeight) / 2)).toBe(READOUT_RULED_PAD);
     expect(READOUT_RULED_LABEL).not.toBe(READOUT_LABEL);
+    // DECOY: the label line F-235 assumed leaves another pad.
+    expect(half((pitch - rule - nativeType.latin.label.lineHeight) / 2)).not.toBe(
+      READOUT_RULED_PAD,
+    );
+  });
+
+  it('08: ΔEok’s lowered run, and the type every row is drawn at', () => {
+    // The ok's foot inks 2–3 px under the E's baseline (08.mjs): 1–1.5 dp, so 1.25.
+    expect(READOUT_SUBSCRIPT_DROP).toBe(1.25);
+    expect(READOUT_SUBSCRIPT_DROP).toBeGreaterThan(0);
+    const rows = eight.elements.filter((e) =>
+      /^08\.(metrics|access)\.[a-z0-9-]+\.(label|value|reading)$/u.test(e.id),
+    );
+    expect(rows.length).toBeGreaterThanOrEqual(20);
+    for (const e of rows)
+      expect([e.id, (e as { type?: { size?: string } }).type?.size]).toStrictEqual([
+        e.id,
+        'caption',
+      ]);
   });
 
   it('26: the cell inset, the rules, and the padding its row pitch leaves', () => {
@@ -257,6 +278,137 @@ describe('each part of a table, by its own id under the caller’s (F-247)', () 
     });
     expect(nodes(bare).some((n) => n.props['testID'] === 't.hex.note')).toBe(false);
     expect(named(bare)).toStrictEqual(['Hex: hex 5B6B78']);
+  });
+});
+
+describe('the ruled form: its parts by id, its rules as nodes, its lowered run and its ink (F-249)', () => {
+  const ROWS: ReadoutTableProps = {
+    form: 'ruled',
+    layout: 'columns',
+    testID: 'm',
+    rows: [
+      {
+        key: 'delta-e00',
+        label: 'ΔE00',
+        formula: '(CIEDE2000)',
+        value: LAB,
+        reading: 'Perceptible Shift',
+      },
+      { key: 'delta-eok', label: 'ΔE', subscript: 'ok', value: HEX },
+      { key: 'lightness', label: 'Lightness', notation: 'ΔL*', value: LAB, reading: 'Lighter' },
+    ],
+  };
+  const ids = (tree: TestNode): readonly string[] =>
+    nodes(tree)
+      .map((n) => n.props['testID'])
+      .filter((x): x is string => typeof x === 'string');
+  const byId = (tree: TestNode, id: string) => nodes(tree).find((n) => n.props['testID'] === id);
+
+  it('names each row, its label, value, reading, formula, lowered run and rule', () => {
+    const tree = draw(ROWS);
+    expect([...ids(tree)].sort()).toStrictEqual(
+      [
+        'm',
+        'm.delta-e00',
+        'm.delta-e00.rule',
+        'm.delta-e00.label',
+        'm.delta-e00.formula',
+        'm.delta-e00.value',
+        'm.delta-e00.reading',
+        'm.delta-eok',
+        'm.delta-eok.rule',
+        'm.delta-eok.label',
+        'm.delta-eok.subscript',
+        'm.delta-eok.value',
+        'm.lightness',
+        'm.lightness.rule',
+        'm.lightness.label',
+        'm.lightness.value',
+        'm.lightness.reading',
+      ].sort(),
+    );
+    // The row's id is the accessible element; the rule is above it, outside it.
+    const row = byId(tree, 'm.lightness')!;
+    expect(row.props['accessible']).toBe(true);
+    expect(nodes(row).includes(byId(tree, 'm.lightness.rule')!)).toBe(false);
+    expect(nodes(row).includes(byId(tree, 'm.lightness.label')!)).toBe(true);
+  });
+
+  it('DECOY — without a testID no part carries one', () => {
+    const { testID: _omit, ...bare } = ROWS as ReadoutTableProps & { testID?: string };
+    void _omit;
+    expect(ids(draw(bare as ReadoutTableProps))).toStrictEqual([]);
+  });
+
+  it('draws each rule as a 1 dp node in the border ink, at the drawn pitch', () => {
+    const tree = draw(ROWS);
+    const rule = flattenStyle(byId(tree, 'm.delta-eok.rule')?.props['style']);
+    expect(rule['height']).toBe(1);
+    expect(typeof rule['backgroundColor']).toBe('string');
+    // The pad either side of a row's lines, so a single-line row keeps 08's 26 dp between rules.
+    expect(flattenStyle(byId(tree, 'm.delta-eok')?.props['style'])['paddingVertical']).toBe(
+      READOUT_RULED_PAD,
+    );
+    // No row carries a border: a border is not a node a sweep can find.
+    for (const n of nodes(tree))
+      expect(flattenStyle(n.props['style'])['borderTopWidth']).toBeUndefined();
+  });
+
+  it('sets every text at caption: the figure at 500, the words at 400', () => {
+    const tree = draw(ROWS);
+    const size = (id: string) => flattenStyle(byId(tree, id)?.props['style'])['fontSize'];
+    const weight = (id: string) => flattenStyle(byId(tree, id)?.props['style'])['fontWeight'];
+    for (const id of [
+      'm.delta-e00.label',
+      'm.delta-e00.value',
+      'm.delta-e00.reading',
+      'm.delta-e00.formula',
+    ])
+      expect([id, size(id)]).toStrictEqual([id, nativeType.latin.caption.fontSize]);
+    expect(weight('m.delta-e00.value')).toBe('500');
+    expect(weight('m.delta-e00.label')).toBe('400');
+    expect(raggedFigures(tree, nativeNumericFeature)).toStrictEqual([]);
+  });
+
+  it('lowers the run after the label, and says the whole label in the row’s name', () => {
+    const tree = draw(ROWS);
+    expect(byId(tree, 'm.delta-eok.subscript')?.children).toStrictEqual(['ok']);
+    const run = byId(tree, 'm.delta-eok.subscript')!;
+    const box = nodes(tree).find((n) => (n.children ?? []).includes(run));
+    expect(flattenStyle(box?.props['style'])['top']).toBe(READOUT_SUBSCRIPT_DROP);
+    expect(byId(tree, 'm.delta-eok')?.props['accessibilityLabel']).toBe(
+      readoutRowName('ΔEok', HEX),
+    );
+    // DECOY: a label without a run draws none, and is not lowered.
+    expect(byId(tree, 'm.lightness.subscript')).toBeUndefined();
+    expect(flattenStyle(byId(tree, 'm.lightness.label')?.props['style'])['top']).toBeUndefined();
+  });
+
+  it('sets a stacked row’s words in the figure’s ink and weight when asked, and the secondary otherwise', () => {
+    const stacked = (readingInk?: 'figure') =>
+      draw({
+        form: 'ruled',
+        layout: 'stacked',
+        testID: 'a',
+        rows: [
+          {
+            key: 'wcag',
+            label: 'WCAG 2.2 Ratio',
+            value: HEX,
+            reading: '• Under 3:1 / Shared Temperature',
+            note: '(APCA Lc: 12.4)',
+            ...(readingInk === undefined ? {} : { readingInk }),
+          },
+        ],
+      });
+    const line = (tree: TestNode) => flattenStyle(byId(tree, 'a.wcag.value')?.props['style']);
+    const figure = stacked('figure');
+    const plain = stacked();
+    expect(line(figure)['fontWeight']).toBe('500');
+    expect(line(plain)['fontWeight']).toBe('400');
+    expect(line(figure)['color']).not.toBe(line(plain)['color']);
+    // The note is copyable, as every tabular value is (F-019).
+    expect(byId(figure, 'a.wcag.note')?.props['selectable']).toBe(true);
   });
 });
 
