@@ -514,34 +514,43 @@ describe('warmCoolRelation is the harmony component’s own measure (F-249, E-22
     }
   });
 
-  it('agrees with the harmony component for every ordered pair of corpus colours', () => {
-    let pairsSeen = 0;
-    const directions = new Set<string>();
-    for (const a of POOL)
-      for (const b of POOL) {
-        if (a === b) continue;
-        const relation = warmCoolRelation([a.color, b.color], RULES);
-        const h = scoreOutfit(
-          [
-            { slot: 'top', color: a.color },
-            { slot: 'trouser', color: b.color },
-          ],
-          // No reference pool: harmony reads none, and 14,280 outfits scored against 120 references
-          // each is a minute of corpus affinity and versatility this test does not look at.
-          [],
-          profile(),
-          RULES,
-          WEIGHTS,
-        ).components.find((c) => c.component === 'harmony');
-        expect([relation.score, relation.direction]).toStrictEqual([h?.score, h?.direction]);
-        expect(relation.score).toBe(before([a.color, b.color]).score);
-        directions.add(relation.direction);
-        pairsSeen += 1;
-      }
-    expect(pairsSeen).toBe(POOL.length * (POOL.length - 1));
-    // DECOY: the corpus holds all three relations, so a constant could not pass.
-    expect([...directions].sort()).toStrictEqual(['neutral', 'opposes', 'supports']);
-  });
+  /*
+   * 14,280 outfits scored: 0.8 s alone, and about eight times that when every package's suite runs at
+   * once (the CI mirror's gate 4 on 0c28af4 timed it out at vitest's 5 s default). The bound is the
+   * work's, stated, not a guess at the machine.
+   */
+  it(
+    'agrees with the harmony component for every ordered pair of corpus colours',
+    { timeout: 120_000 },
+    () => {
+      let pairsSeen = 0;
+      const directions = new Set<string>();
+      for (const a of POOL)
+        for (const b of POOL) {
+          if (a === b) continue;
+          const relation = warmCoolRelation([a.color, b.color], RULES);
+          const h = scoreOutfit(
+            [
+              { slot: 'top', color: a.color },
+              { slot: 'trouser', color: b.color },
+            ],
+            // No reference pool: harmony reads none, and 14,280 outfits scored against 120 references
+            // each is a minute of corpus affinity and versatility this test does not look at.
+            [],
+            profile(),
+            RULES,
+            WEIGHTS,
+          ).components.find((c) => c.component === 'harmony');
+          expect([relation.score, relation.direction]).toStrictEqual([h?.score, h?.direction]);
+          expect(relation.score).toBe(before([a.color, b.color]).score);
+          directions.add(relation.direction);
+          pairsSeen += 1;
+        }
+      expect(pairsSeen).toBe(POOL.length * (POOL.length - 1));
+      // DECOY: the corpus holds all three relations, so a constant could not pass.
+      expect([...directions].sort()).toStrictEqual(['neutral', 'opposes', 'supports']);
+    },
+  );
 
   it('DECOY — a warm pair and a warm–cool pair differ, and a single colour has no spread', () => {
     const warm = warmCoolRelation([colourOf('aka-tsuchi'), colourOf('furu-kawa')], RULES);
