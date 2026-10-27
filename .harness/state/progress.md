@@ -8,6 +8,119 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-27 — F-249 Compare is mockup 08
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** The Compare page is rebuilt to `08`: two samples drawn apart in one card with a seam between,
+each named by its kanji and romaji over its hex and OKLCh; two cards side by side — the distance table
+(ΔE00 with its band, ΔEok, ΔL\*, ΔC\*, ΔH with their readings) and the contrast and colour-vision table
+(the floored ratio, its threshold and the warm–cool relation, the smaller Lc, three separations with the
+model); *Export Precision Delta PDF* and *Add Pair to Palette Studio*; the plum branch behind. It is the
+fifth whole screen in the inventory sweep. Increments `505793b` through this one.
+
+- **Measured first.** `08.mjs` re-read every box, type size, weight, corner and ink (its header names
+  each method). F-220's inventory did not survive it in four places: the tables, meta lines, card titles
+  and every button label are `caption` (8.9–11.6 dp an em), the title and names `label`; the samples
+  draw no keyline (only the sharpening halo every edge carries); the seam and every rule are
+  `border.subtle`, the seam the card's whole height; the action bar starts at its rule.
+- **Four decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0154:** the samples are drawn apart, as 08 draws them, each sized by its half (157.5 dp at
+    384, 125.5 at 320). ADR-0095's arrangement half is superseded for Compare: CIEDE2000 was fit on
+    hairline-divided pairs, so neither a gapless pair nor a gap is its reference condition, and every
+    corpus pair prints a perceptible ΔE00.
+  - **ADR-0155:** every figure is the engine's at a stated precision (the ratio and the Lc floored);
+    every word is the printed figure's — ADR-0125's band phrases, *towards ‹B's hue term›* from the
+    lexicon in the locale's language where A's hue angle is outside the term's arc, the threshold the
+    floored ratio reaches, the warm–cool relation, *(Machado 2009)*, approximate on tritan. A census over
+    all 14,280 ordered pairs is its evidence.
+  - **ADR-0156:** A ≠ B always; Change A/B open 03's sheet over the Finder's own `find()`; the glyph and
+    the PDF open Export with the pair (PDF chosen), *Add Pair* opens the Studio on an unsaved draft; the
+    severity control, both spaces' axes, the second Lc and the end pickers leave.
+  - **ADR-0157:** the composition, the corners, the seam, the art at `opacity.art`, ΔEok's lowered run.
+- **Built alongside:**
+  - `compare.ts` (the weighted terms, ΔEok, the record's CIELAB LCh, the warm–cool relation; the old
+    axis sets removed); `compare-readout.ts` (every row 08 prints, the pair state, the drawn sizes);
+    `temperature.ts` (07's and 08's one map); `pairSubject` and the `pair`/`format` parameters;
+    `draftOf` and the Studio's `colours`.
+  - `@irodora/recommendation#warmCoolRelation`: the harmony component's own measure, exported;
+    `scoreOutfit` unchanged by an oracle over every pair.
+  - Additive in `@irodora/ui`: the ruled `ReadoutTable`'s part ids, rule nodes, lowered run, reading
+    ink, spoken note and reading; `signed()` from the printed digits; `Button` secondary `weight` and
+    `fill`.
+  - The Japanese subset gains 寄, 満, 房 and 択.
+- **Criterion 1:** the sweep finds 08's 69 elements on `08.screen` in both themes and languages, with
+  four decoys; `compare-fidelity.test` holds order, grouping, proportion (the card's reserved edge read
+  from the tree), type, ink in both themes and the Japanese steps against `08.json`.
+- **Criterion 2:** `compare-readout.test` holds every invariant over all 14,280 ordered pairs, in both
+  languages, with one pair worked by hand and the census's decoys pinned; `compare-states.test` holds
+  that none of 08's sample content reaches the page and that every drawn action works.
+- **Records:** effects E-225 to E-229 new, each with a note; fifteen links updated. Docs: R9 §2, §4
+  E1/E2/E4, §6 C20, §8, §9, §10, §11; PRD OQ-45 (informed, not answered). Verification files:
+  `screen-insets` (Compare re-captured), `inventory-surfaces` (`08.screen`), `conformance-sweep`. The
+  e2e anchor is `compare.metrics`. Filed: F-353, F-354, F-355.
+
+**Review (once): FAIL as delivered**, 7 significant and 16 minor, none blocking. Every one is fixed or
+recorded (`f57a01f`).
+
+- **S1, fixed:** the sample ignored the card's reserved 2 dp state edge and overran its half — the test
+  had restated the formula. It now reads the edge from the drawn card.
+- **S2, fixed:** *towards* is tested against A's hue arc, not B's whole region — a light orange A
+  beside a brown B, and a near-grey A at blue's angle, read *towards* a hue they were at (644 English
+  pairs). Counts pinned.
+- **S3, recorded:** a chroma word can be stronger than its ΔC\*ab (ADR-0125's limit: the word bands
+  ΔC′/S_C) — 244 pairs, pinned and stated in ADR-0155.
+- **S4–S7, fixed:** the Studio's Japanese name; the samples are images, not buttons; ink and the
+  Japanese steps asserted; each half one entry on its side, and the Japanese composition over every pair.
+- **M1–M16:** fixed, or recorded in ADR-0155/0157, E-044, the plan, F-353 and **F-355** (a sheet named
+  by the library's English, which predates F-249).
+- **Found by Tier 2 before the review:** the CI mirror's gate 4 timed out my 14,280-pair harmony test
+  under full load; it states its own timeout (`8d6a0b7`).
+
+**Gates run on the final tree (`3da6d95`):**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`, each
+  exit 0.
+- `pnpm turbo run test --force` passed every package (482 s); the review's fixes' Tier 1 had ui 1,503 and
+  mobile 1,806 passing.
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`, each exit 0.
+- `node scripts/verify-ci.mjs --all`: every step passed but the two recorded reds below, gate 8's and gate
+  9's mutation proofs included.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on gate 15: eleven unaccepted advisories, every one already recorded on F-322.
+  F-249 changed no dependency.
+- `verify-ci --all` exits 1 on gate 15 and on the iOS config half (no ios/ project on win32), both
+  recorded.
+- **On the way there:** Tier 2 on `f57a01f` failed gate 11 — the review's S4 fix left 房 in the Japanese
+  subset with nothing rendering it, which `generate-font-subset --check` caught and the fixes' Tier 1 had
+  not run; regenerated (`3da6d95`). The same run's contrast mutation proof hit a Windows write error
+  (UNKNOWN, errno −4094) on the design manifest before planting its defect, and its journal stopped three
+  later proofs; the manifest was never changed, and `plant.mjs --recover` cleared the journal.
+
+**Not run:**
+
+- e2e and the fidelity capture: no Maestro or JDK here. The attestations are the person's:
+  - a release Android build;
+  - `pnpm fidelity:capture -- --erase-app-data`;
+  - `/atlas/compare` compared with `08` (25's palette for Washi) in both languages — the default pair
+    (the corpus's first and last entries), the band phrases, *(Machado 2009)*, the threshold and the
+    relation, the samples about 6 dp larger and the cards taller than drawn are expected;
+  - the device taps: back, the glyph, the PDF (Export with PDF chosen, the PDF naming both colours and
+    the ΔE00 row), *Add Pair* (the Studio unsaved), Change A/B with TalkBack, a choice; 200 % text,
+    where F-344's clipping is expected; the 120-row chooser inside its sheet.
+
+### Lessons
+
+[[a-size-test-that-restates-its-formula-cannot-find-what-the-formula-left-out]] and
+[[test-a-word-on-the-quantity-its-figure-measures-not-on-the-category-the-word-names]] (new).
+
+### Next
+
+The loop: F-250 (Finder is mockup 09), the lowest-id eligible feature. F-243 to F-245 wait on OQ-8, which asks for mockups no agent may draw.
+
+---
+
 ## 2026-10-26 — F-248 Wear is mockup 07
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device
