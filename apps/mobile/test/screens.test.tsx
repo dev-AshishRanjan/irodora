@@ -1032,6 +1032,72 @@ function wearLocators(): Readonly<Record<string, Locator>> {
   return out;
 }
 
+/**
+ * 08's locators (F-249): each row part by the ruled table's ids, the samples, names, metas, Changes,
+ * seam and cards by theirs, the title by its words in each locale. What 08.json binds to a real
+ * catalogue key (the cards' titles, the two actions), an icon (the glyph), the art and the bars are
+ * found from the record itself.
+ */
+function compareLocators(): Readonly<Record<string, Locator>> {
+  const a = entryBySlug(FIXTURE_A)!;
+  const b = entryBySlug(FIXTURE_B)!;
+  const out: Record<string, Locator> = {
+    '08.back': { by: 'text', key: 'tab.atlas' },
+    '08.title': {
+      by: 'value',
+      text: (locale) =>
+        locale === 'ja'
+          ? message('ja', 'compare.title')
+          : `${message('en', 'compare.title')}${BILINGUAL_SEPARATOR}${japaneseRun('compare.title')}`,
+    },
+    '08.header-rule': { by: 'testID', id: APP_BAR_RULE_TEST_ID },
+    '08.pair': { by: 'testID', id: 'compare.pair' },
+    '08.seam': { by: 'testID', id: 'compare.seam' },
+    '08.metrics': { by: 'testID', id: 'compare.metrics' },
+    '08.metrics.table': { by: 'testID', id: 'compare.metrics.table' },
+    '08.access': { by: 'testID', id: 'compare.access' },
+    '08.access.table': { by: 'testID', id: 'compare.access.table' },
+    '08.access.wcag.apca': { by: 'testID', id: 'compare.access.table.wcag.note' },
+    '08.metrics.delta-e00.formula': { by: 'testID', id: 'compare.metrics.table.delta-e00.formula' },
+  };
+  for (const [side, entry] of [
+    ['a', a],
+    ['b', b],
+  ] as const) {
+    out[`08.pair.${side}.swatch`] = { by: 'testID', id: `compare.${side}.swatch` };
+    out[`08.pair.${side}.name`] = { by: 'testID', id: `compare.${side}.name` };
+    out[`08.pair.${side}.meta`] = { by: 'testID', id: `compare.${side}.meta` };
+    out[`08.pair.${side}.change`] = { by: 'testID', id: `compare.${side}.change` };
+    void entry;
+  }
+  const METRICS = ['delta-e00', 'delta-eok', 'lightness', 'chroma', 'hue'] as const;
+  METRICS.forEach((key, i) => {
+    out[`08.metrics.rule-${String(i + 1)}`] = {
+      by: 'testID',
+      id: `compare.metrics.table.${key}.rule`,
+    };
+    out[`08.metrics.${key}`] = { by: 'testID', id: `compare.metrics.table.${key}` };
+    out[`08.metrics.${key}.label`] = { by: 'testID', id: `compare.metrics.table.${key}.label` };
+    out[`08.metrics.${key}.value`] = { by: 'testID', id: `compare.metrics.table.${key}.value` };
+    if (key !== 'delta-eok')
+      out[`08.metrics.${key}.reading`] = {
+        by: 'testID',
+        id: `compare.metrics.table.${key}.reading`,
+      };
+  });
+  const ACCESS = ['wcag', 'protan', 'deutan', 'tritan'] as const;
+  ACCESS.forEach((key, i) => {
+    out[`08.access.rule-${String(i + 1)}`] = {
+      by: 'testID',
+      id: `compare.access.table.${key}.rule`,
+    };
+    out[`08.access.${key}`] = { by: 'testID', id: `compare.access.table.${key}` };
+    out[`08.access.${key}.label`] = { by: 'testID', id: `compare.access.table.${key}.label` };
+    out[`08.access.${key}.value`] = { by: 'testID', id: `compare.access.table.${key}.value` };
+  });
+  return out;
+}
+
 /** Every slot filled, the top locked: an outfit the Lab can save (F-238). */
 const OUTFIT_COMPLETE: OutfitDraft = [
   { slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true },
@@ -6008,6 +6074,23 @@ const ENROLLED: readonly Enrolled[] = [
     locators: wearLocators(),
   },
   {
+    /*
+     * 08, COLOUR COMPARE (F-249), drawn as it is drawn: the fixture pair, every handler wired, the
+     * chooser closed. 08 draws no tab bar, so nothing is superseded; its readings, its contrast line
+     * and its separations are departures 08.json lists (ADR-0155), found by the table's own ids.
+     */
+    surface: '08.screen',
+    root: 'compare.surface',
+    render: (theme) =>
+      draw(
+        <View testID="compare.surface">
+          <Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />
+        </View>,
+        theme,
+      ),
+    locators: compareLocators(),
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -6206,6 +6289,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '05.screen',
         '06.screen',
         '07.screen',
+        '08.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -6413,6 +6497,23 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
       expectOnly(
         findingsFor('07.screen', withoutText(json, fit), live),
         '07.intelligence.fit.value',
+      );
+    });
+
+    it('08: the seam, the hue’s reading, ΔEok’s rule and Change B are each found as themselves (F-249)', () => {
+      const { json, live } = drawnAs('08.screen');
+      expectOnly(findingsFor('08.screen', without(json, 'compare.seam'), live), '08.seam');
+      expectOnly(
+        findingsFor('08.screen', without(json, 'compare.metrics.table.hue.reading'), live),
+        '08.metrics.hue.reading',
+      );
+      expectOnly(
+        findingsFor('08.screen', without(json, 'compare.metrics.table.delta-eok.rule'), live),
+        '08.metrics.rule-2',
+      );
+      expectOnly(
+        findingsFor('08.screen', without(json, 'compare.b.change'), live),
+        '08.pair.b.change',
       );
     });
 
