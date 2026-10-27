@@ -59,6 +59,13 @@ const PAIRS: readonly (readonly [PublishedEntry, PublishedEntry])[] = ENTRIES.fl
   ENTRIES.filter((b) => b !== a).map((b) => [a, b] as const),
 );
 const tEn = (key: MessageKey): string => en[key];
+const tJa = (key: MessageKey): string => ja[key];
+/** Whether A’s hue angle lies in a term’s hue arc: where the pair’s hue did not move towards it (S2). */
+const inArc = (
+  term: { readonly constrains: Parameters<typeof matchesRegion>[0] },
+  e: PublishedEntry,
+) =>
+  term.constrains.hue !== undefined && matchesRegion({ hue: term.constrains.hue }, e.derived.oklch);
 const row = (rows: readonly RuledRow[], key: string): RuledRow => {
   const found = rows.find((r) => r.key === key);
   if (found === undefined) throw new Error(key);
@@ -229,6 +236,7 @@ describe('3. every word agrees with the figure beside it', () => {
       let withTowards = 0;
       let withoutTowards = 0;
       let componentAboveTotal = 0;
+      const chroma = { strongUnder18: 0, strongUnder10: 0, slightUnder08: 0 };
       const rank = { veryClose: 0, slight: 1, perceptible: 2 } as const;
       for (const [a, b] of PAIRS) {
         const r = pairReadout(a, b, tEn, 'en', 'latin');
@@ -244,6 +252,9 @@ describe('3. every word agrees with the figure beside it', () => {
         } else expect(lightness).toBe(en[LIGHTNESS_KEYS[dL > 0 ? 'more' : 'less'][rl.band]]);
         const dC = at(m.lch.c.delta, 1);
         const rc = axisReading(dC, m.terms.termC);
+        if (dC !== 0 && rc.band === 'perceptible' && Math.abs(dC) < 1.8) chroma.strongUnder18 += 1;
+        if (dC !== 0 && rc.band === 'perceptible' && Math.abs(dC) < 1.0) chroma.strongUnder10 += 1;
+        if (dC !== 0 && rc.band === 'slight' && Math.abs(dC) < 0.8) chroma.slightUnder08 += 1;
         expect(row(r.metrics, 'chroma').reading).toBe(
           dC === 0 ? en[CHROMA_KEYS.level] : en[CHROMA_KEYS[dC > 0 ? 'more' : 'less'][rc.band]],
         );
@@ -251,10 +262,7 @@ describe('3. every word agrees with the figure beside it', () => {
         const hue = row(r.metrics, 'hue').reading ?? '';
         expect(hue.startsWith(en[HUE_KEYS[rh.band]])).toBe(true);
         const term = hueTerm(b, 'en');
-        const owed =
-          rh.band !== 'veryClose' &&
-          term !== null &&
-          !matchesRegion(term.constrains, a.derived.oklch);
+        const owed = rh.band !== 'veryClose' && term !== null && !inArc(term, a);
         expect(hue.includes(` ${en['compare.towards']} `)).toBe(owed);
         if (owed) {
           withTowards += 1;
@@ -280,9 +288,58 @@ describe('3. every word agrees with the figure beside it', () => {
       // perceptible, and every corpus pair prints a perceptible ΔE00 (F-249's census). Asserted absent
       // here so a corpus that adds one is noticed, not "corrected".
       expect(componentAboveTotal).toBe(0);
+      /*
+       * PINNED, so a lexicon or corpus change is seen here (review, M7; E-044's third reader): the pairs
+       * whose hue reading names B's hue. Removing a term, or moving an arc, moves this number.
+       */
+      expect(withTowards).toBe(7_146);
+      /*
+       * ADR-0125'S LIMIT, ACCEPTED AND PINNED (review, S3; ADR-0155 D2): a chroma word is the band of
+       * the weighted term ΔC′/S_C, where a′ is scaled by up to 1.5 near neutral, and the figure beside
+       * it is ΔC*ab. So a word can be stronger than the figure — "+0.9 Noticeably Richer". The counts
+       * are the corpus's; a change to either quantity moves them.
+       */
+      expect(chroma).toStrictEqual({ strongUnder18: 244, strongUnder10: 126, slightUnder08: 114 });
     },
     CORPUS_WIDE,
   );
+
+  it(
+    'in Japanese, the hue reading puts B’s term before 寄り, and only where the rule allows, over every pair',
+    () => {
+      let named = 0;
+      for (const [a, b] of PAIRS) {
+        const r = pairReadout(a, b, tJa, 'ja', 'japanese');
+        const m = compare(a, b);
+        const rh = axisReading(at(m.lch.h.delta, 1), m.terms.termH);
+        const phrase = ja[HUE_KEYS[rh.band]];
+        const term = towards(a, b, rh.band, 'ja');
+        const want = term === null ? phrase : `${phrase}・${term}${ja['compare.towards']}`;
+        expect(row(r.metrics, 'hue').reading).toBe(want);
+        if (term !== null) {
+          named += 1;
+          expect(hueTerm(b, 'ja')?.term).toBe(term);
+          expect(inArc(hueTerm(b, 'ja')!, a)).toBe(false);
+        }
+      }
+      // Pinned, as the English count is: the Japanese lexicon names five hues to the English nine.
+      expect(named).toBe(5_133);
+    },
+    CORPUS_WIDE,
+  );
+
+  it('DECOY — B in brown with A light but already at brown’s angle, or A a grey at blue’s angle: no towards (S2)', () => {
+    const pair = (x: string, y: string) => [entryBySlug(x)!, entryBySlug(y)!] as const;
+    const [a, b] = pair('aka-tsuchi', 'do-ma');
+    expect(hueTerm(b, 'en')?.term).toBe('brown');
+    // A lies outside brown only by lightness: the region says "not brown", the arc says "already there".
+    expect(matchesRegion(hueTerm(b, 'en')!.constrains, a.derived.oklch)).toBe(false);
+    expect(towards(a, b, 'perceptible', 'en')).toBeNull();
+    const [grey, blue] = pair('ame-ishi', 'asa-kawa');
+    expect(hueTerm(blue, 'en')?.term).toBe('blue');
+    expect(hueTerm(grey, 'en')).toBeNull();
+    expect(towards(grey, blue, 'slight', 'en')).toBeNull();
+  });
 
   it(
     'names B’s hue in the locale’s own language, and only where A is not already in it',
@@ -384,8 +441,27 @@ describe('5. nothing the readout prints claims what the engine does not compute'
     'compare.hue',
     'compare.wcag',
     'cvd.separation',
+    'compare.hueAngle',
+    'compare.ratio',
+    'compare.apcaLc',
+    'compare.apcaSmaller',
+    'space.cielab',
+    // The page's own words (review, M15).
+    'compare.title',
+    'compare.metrics',
+    'compare.access',
+    'compare.changeA',
+    'compare.changeB',
+    'compare.export',
+    'compare.exportPdf',
+    'compare.addToStudio',
+    'compare.pickA',
+    'compare.pickB',
+    'compare.choose',
+    'compare.noMatch',
   ];
-  const BANNED = /\b(Safe|Harmonious|Match|Optimal|Passed|Verified|Identical)\b|B is|一致|安全/u;
+  const BANNED =
+    /\b(safe|harmonious|match|optimal|passed|verified|identical)\b|\bB is\b|一致|安全/iu;
 
   it('holds for every catalogue value it reads, in both languages', () => {
     for (const key of READ)
@@ -400,13 +476,16 @@ describe('5. nothing the readout prints claims what the engine does not compute'
     // claims-ok: a planted verdict, the construction this decoy proves the scan finds
     expect(BANNED.test('92% Separation (Safe)')).toBe(true); // claims-ok: the decoy's planted verdict
     expect(BANNED.test('B is lighter')).toBe(true);
+    // Case does not hide one (M15).
+    expect(BANNED.test('OPTIMAL')).toBe(true);
   });
 });
 
 describe('the samples’ size (ADR-0154 D2)', () => {
   it('is the half less its insets, and never under the judgeable floor on a supported width', () => {
-    expect(pairSampleSize(384)).toBe(159.5);
-    expect(pairSampleSize(320)).toBe(127.5);
+    // The card reserves its 2 dp state edge inside its box (SELECTION_EDGE; review, S1).
+    expect(pairSampleSize(384)).toBe(157.5);
+    expect(pairSampleSize(320)).toBe(125.5);
     for (const width of [320, 360, 384, 430])
       expect(pairSampleSize(width)).toBeGreaterThanOrEqual(77);
   });

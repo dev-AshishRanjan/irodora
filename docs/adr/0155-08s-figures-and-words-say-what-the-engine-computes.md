@@ -31,8 +31,8 @@ suffix are claims the engine does not make (E2).
 - Hue terms: 75 of the 120 entries lie in an English hue term, 45 below the lexicon's chroma floor in
   none. **The Japanese lexicon names five hues to the English nine**, so 20 entries (orange, brown and
   teal) have an English term and no Japanese one.
-- *towards*: 7,790 pairs append it in English and 5,623 in Japanese; 920 and 752 pairs are left
-  without it because A already lies in B's term.
+- *towards*: 7,146 pairs append it in English and 5,133 in Japanese, after F-249's review (S2) — first
+  7,790 and 5,623, until A was tested against B's term's hue arc rather than its whole region (D2).
 - No pair prints a hue difference of 20° or more beside *Very Close in Hue*.
 - 16 pairs print ΔL\* as zero where the unrounded difference is not zero.
 - Every English name passes the PDF's Latin-1 writer.
@@ -58,7 +58,19 @@ suffix are claims the engine does not make (E2).
     Close in Lightness*); ΔH's hue band phrase.
   - ΔH's phrase is followed by *towards ‹B's hue term›*, from the published phrase lexicon in the
     locale's own language, only when all three hold: the hue band is *slight* or *perceptible*; B
-    lies in a hue term of that language; A does not lie in it.
+    lies in a hue term of that language; A's hue angle lies outside that term's hue arc.
+  - *Amended by F-249's review (S2).* The first rule asked only that A lie outside B's term, so a light
+    orange A at 48° read *towards brown* beside a brown B (63 pairs: brown constrains lightness, and A
+    was outside it only by lightness), and a near-grey A at 245° read *towards blue* (581 English and
+    490 Japanese pairs). The words sit beside a hue-angle figure, so they speak of the angle: A at the
+    term's angle already has not moved towards it, whatever its lightness or chroma. A grey's hue angle
+    is still an angle the figure beside it measures from.
+  - **An accepted limit, recorded (review, S3).** A chroma word is the band of the weighted term
+    ΔC′/S_C (ADR-0125), where a′ is scaled by up to 1.5 near neutral, and the figure beside it is ΔC\*ab.
+    So the word can be stronger than the figure: 244 pairs read *Noticeably Richer/Softer* beside
+    |ΔC\*| under 1.8 (126 under 1.0, e.g. *+0.9 Noticeably Richer*), and 114 read *Richer/Softer* beside
+    under 0.8. Both are true of their own numbers; banding the printed ΔC\*ab instead would be a second
+    table over another unit, which ADR-0125 refused. `compare-readout.test` pins the counts.
   - B's term is chosen deterministically: the most axes constrained (so a dark orange is *brown*),
     then the narrowest hue arc, then the file's order.
 - **D3. The contrast cell** reads `‹ratio›:1 • ‹threshold› / ‹relation›`, in the figure's ink and
@@ -85,6 +97,14 @@ suffix are claims the engine does not make (E2).
   - *Export Precision Delta PDF* keeps its words. It names a document of the pair's published values
     and their ΔE00 to the engine's precision: no measurement is involved, so it is not an accuracy
     claim. It is added to `near-misses.md`.
+
+- **D6. Notation and the two hues (review, M12, M13).** The notation the readout prints — ΔE00,
+  CIEDE2000, ΔEok, ΔL\*, ΔC\*, ΔH, WCAG 2.2, OKLab, Machado 2009 in the figures' names — is notation,
+  identical in both languages, printed as `08` draws it rather than read from the catalogue (the rule
+  `NOTATION_KEYS` states for the catalogue's own notation). And the page prints two hue angles in two
+  spaces without naming either on screen, as `08` draws them: each meta line's OKLCh h, and ΔH, the
+  CIELAB angle (aka-tsuchi → ao-ta: 48.0° → 130.0° in OKLCh, +73.5° in CIELAB). Each row's accessible
+  name says its space.
 
 ## Alternatives, and what each costs
 

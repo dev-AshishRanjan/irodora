@@ -1039,8 +1039,6 @@ function wearLocators(): Readonly<Record<string, Locator>> {
  * found from the record itself.
  */
 function compareLocators(): Readonly<Record<string, Locator>> {
-  const a = entryBySlug(FIXTURE_A)!;
-  const b = entryBySlug(FIXTURE_B)!;
   const out: Record<string, Locator> = {
     '08.back': { by: 'text', key: 'tab.atlas' },
     '08.title': {
@@ -1060,15 +1058,11 @@ function compareLocators(): Readonly<Record<string, Locator>> {
     '08.access.wcag.apca': { by: 'testID', id: 'compare.access.table.wcag.note' },
     '08.metrics.delta-e00.formula': { by: 'testID', id: 'compare.metrics.table.delta-e00.formula' },
   };
-  for (const [side, entry] of [
-    ['a', a],
-    ['b', b],
-  ] as const) {
+  for (const side of ['a', 'b'] as const) {
     out[`08.pair.${side}.swatch`] = { by: 'testID', id: `compare.${side}.swatch` };
     out[`08.pair.${side}.name`] = { by: 'testID', id: `compare.${side}.name` };
     out[`08.pair.${side}.meta`] = { by: 'testID', id: `compare.${side}.meta` };
     out[`08.pair.${side}.change`] = { by: 'testID', id: `compare.${side}.change` };
-    void entry;
   }
   const METRICS = ['delta-e00', 'delta-eok', 'lightness', 'chroma', 'hue'] as const;
   METRICS.forEach((key, i) => {

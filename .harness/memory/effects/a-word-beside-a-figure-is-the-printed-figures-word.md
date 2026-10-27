@@ -31,7 +31,17 @@ and B keeps every magnitude and relation and turns every direction; no catalogue
 claims a verdict. Decoys the data allows are asserted present: the pairs where rounding crosses 3:1,
 the printed zeros over non-zero differences, pairs with and without *towards*.
 
+## What F-249's review changed
+
+*towards* is tested against A's HUE ARC, not B's whole region: a light orange A beside a brown B, and a
+near-grey A at blue's angle, read *towards* a hue they were already at (S2). The counts are pinned, in
+both languages, over every pair.
+
 ## What it does not guard
+
+- **A chroma word stronger than its figure.** The word is the band of ΔC′/S_C and the figure ΔC\*ab: 244
+  pairs read *Noticeably* beside under 1.8. Accepted as ADR-0125's limit (ADR-0155 D2), and pinned, so a
+  change to either quantity is seen rather than hidden.
 
 - **A component band above the total's.** ADR-0125 accepts it, and it needs a total under
   *perceptible*; every corpus pair prints a perceptible ΔE00, so the test asserts there are none and a

@@ -37,8 +37,8 @@ describe('a colour compared with itself', () => {
   });
 
   it('has every axis delta at zero, including the hue arc', () => {
-    for (const d of [same.lab.l, same.lab.a, same.lab.b, same.oklch.l, same.oklch.c, same.oklch.h])
-      expect(d.delta).toBe(0);
+    for (const d of [same.lch.l, same.lch.c, same.lch.h]) expect(d.delta).toBe(0);
+    expect(same.deltaEok).toBe(0);
   });
 
   it('separates from itself by nothing, under every deficiency', () => {
@@ -83,9 +83,9 @@ describe('what is symmetric, and what deliberately is not', () => {
   });
 
   it('every axis delta reverses sign when the pair reverses', () => {
-    expect(ab.lab.l.delta).toBeCloseTo(-ba.lab.l.delta, 12);
-    expect(ab.oklch.l.delta).toBeCloseTo(-ba.oklch.l.delta, 12);
-    expect(ab.oklch.h.delta).toBeCloseTo(-ba.oklch.h.delta, 12);
+    expect(ab.lch.l.delta).toBeCloseTo(-ba.lch.l.delta, 12);
+    expect(ab.lch.c.delta).toBeCloseTo(-ba.lch.c.delta, 12);
+    expect(ab.lch.h.delta).toBeCloseTo(-ba.lch.h.delta, 12);
   });
 });
 
@@ -93,15 +93,13 @@ describe('the deltas are about the values the bundle published', () => {
   const m = compare(A, B);
 
   it('carries each entry’s own stored coordinate on both sides of the delta', () => {
-    expect([m.lab.l.a, m.lab.a.a, m.lab.b.a]).toEqual(A.derived.lab);
-    expect([m.lab.l.b, m.lab.a.b, m.lab.b.b]).toEqual(B.derived.lab);
-    expect([m.oklch.l.a, m.oklch.c.a, m.oklch.h.a]).toEqual(A.derived.oklch);
-    expect([m.oklch.l.b, m.oklch.c.b, m.oklch.h.b]).toEqual(B.derived.oklch);
+    // 08 prints the record’s CIELAB LCh (ADR-0155 D1); compare() keeps no other axis set (review, M4).
+    expect([m.lch.l.a, m.lch.c.a, m.lch.h.a]).toEqual(A.derived.lch);
+    expect([m.lch.l.b, m.lch.c.b, m.lch.h.b]).toEqual(B.derived.lch);
   });
 
   it('is a difference, not a coincidence — b minus a on every linear axis', () => {
-    for (const d of [m.lab.l, m.lab.a, m.lab.b, m.oklch.l, m.oklch.c])
-      expect(d.delta).toBeCloseTo(d.b - d.a, 12);
+    for (const d of [m.lch.l, m.lch.c]) expect(d.delta).toBeCloseTo(d.b - d.a, 12);
   });
 });
 
@@ -111,11 +109,17 @@ describe('the deltas are about the values the bundle published', () => {
  * Hue is an angle. A pair straddling 0° is where naive subtraction gives an answer that is off
  * by 360 and looks plausible, so the property is asserted on a pair chosen for that.
  */
+/** The shortest signed arc from one angle to another, in (−180, 180]. */
+const hueDeltaOf = (from: number, to: number): number => {
+  const d = ((((to - from) % 360) + 540) % 360) - 180;
+  return d === -180 ? 180 : d;
+};
+
 describe('the hue delta is the shortest signed arc', () => {
   it('never exceeds half a turn, for any pair in the corpus', () => {
     for (const x of entries.slice(0, 20))
       for (const y of entries.slice(0, 20)) {
-        const { delta } = compare(x, y).oklch.h;
+        const { delta } = compare(x, y).lch.h;
         expect(Math.abs(delta)).toBeLessThanOrEqual(180);
       }
   });
@@ -124,9 +128,9 @@ describe('the hue delta is the shortest signed arc', () => {
     // A red near 28° and a pink near 10° differ by 18°, not by 342°.
     const red = entryBySlug('mi-aka')!;
     const pink = entryBySlug('hana-gasumi')!;
-    const { delta } = compare(red, pink).oklch.h;
+    const { delta } = compare(red, pink).lch.h;
     expect(Math.abs(delta)).toBeLessThan(90);
-    expect(Math.abs(red.derived.oklch[2] - pink.derived.oklch[2])).toBeLessThan(90);
+    expect(delta).toBeCloseTo(hueDeltaOf(red.derived.lch[2], pink.derived.lch[2]), 12);
   });
 });
 

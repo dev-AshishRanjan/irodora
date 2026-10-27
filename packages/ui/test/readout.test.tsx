@@ -411,6 +411,38 @@ describe('the ruled form: its parts by id, its rules as nodes, its lowered run a
     expect(byId(figure, 'a.wcag.note')?.props['selectable']).toBe(true);
   });
 
+  it('says the reading by its spoken name, or not at all when it is empty (M9)', () => {
+    const row = {
+      key: 'wcag',
+      label: 'WCAG 2.2 Ratio',
+      value: HEX,
+      reading: '• Under 3:1 / Shared Temperature',
+    } as const;
+    const spoken = draw({
+      form: 'ruled',
+      layout: 'stacked',
+      testID: 'a',
+      rows: [{ ...row, readingName: 'Under 3:1, Shared Temperature' }],
+    });
+    expect(byId(spoken, 'a.wcag')?.props['accessibilityLabel']).toBe(
+      `${readoutRowName('WCAG 2.2 Ratio', HEX)}, Under 3:1, Shared Temperature`,
+    );
+    const silent = draw({
+      form: 'ruled',
+      layout: 'stacked',
+      testID: 'a',
+      rows: [{ ...row, readingName: '' }],
+    });
+    expect(byId(silent, 'a.wcag')?.props['accessibilityLabel']).toBe(
+      readoutRowName('WCAG 2.2 Ratio', HEX),
+    );
+    // DECOY: without one, the drawn reading is said as drawn.
+    const drawn = draw({ form: 'ruled', layout: 'stacked', testID: 'a', rows: [row] });
+    expect(byId(drawn, 'a.wcag')?.props['accessibilityLabel']).toBe(
+      `${readoutRowName('WCAG 2.2 Ratio', HEX)}, • Under 3:1 / Shared Temperature`,
+    );
+  });
+
   it('says the note by its spoken name where the printed one leaves out what it is', () => {
     const row = {
       key: 'wcag',

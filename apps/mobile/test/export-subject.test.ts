@@ -273,18 +273,18 @@ describe('the export route exports the pair 08 shows', () => {
     );
   });
 
-  it('DECOY: a pair of one colour twice, of three, or naming no corpus colour, falls back', () => {
+  it('DECOY: a pair of one colour twice, of three, or naming no corpus colour, exports nothing (M2)', () => {
     const slug = third!.entry.slug;
+    // Never another subject in its place — not the slug, not the latest palette: a guess the person
+    // did not ask for is worse than Export saying there is nothing to write.
     for (const bad of [
       `${first!.entry.slug}${COLOURS_SEPARATOR}${first!.entry.slug}`,
       `${pair}${COLOURS_SEPARATOR}${slug}`,
       `${first!.entry.slug}${COLOURS_SEPARATOR}no-such-colour`,
-      '',
     ])
-      expect([bad, exportSubjectFor(slug, [], undefined, bad)]).toStrictEqual([
-        bad,
-        colourSubject(third!),
-      ]);
+      expect([bad, exportSubjectFor(slug, [PALETTE], undefined, bad)]).toStrictEqual([bad, null]);
+    // An empty parameter is no parameter: the slug is the subject.
+    expect(exportSubjectFor(slug, [PALETTE], undefined, '')).toStrictEqual(colourSubject(third!));
   });
 
   it('writes in every format, the PDF included, for every corpus colour beside a fixed partner', () => {

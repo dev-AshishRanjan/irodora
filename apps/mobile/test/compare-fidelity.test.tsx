@@ -124,11 +124,11 @@ const B = 'ao-ta';
 const ignore = (): void => undefined;
 type Instance = ReturnType<ReturnType<typeof render>['UNSAFE_getByType']>;
 
-const setup = (tag = DEFAULT_LANGUAGE_TAG) => {
+const setup = (tag = DEFAULT_LANGUAGE_TAG, theme: 'dark' | 'light' = 'dark') => {
   mockLanguageTag = tag;
   try {
     const tree = render(
-      <ThemeProvider theme="dark">
+      <ThemeProvider theme={theme}>
         <Compare
           initialA={A}
           initialB={B}
@@ -389,7 +389,7 @@ describe('proportion: every size and interval from 08.json (ADR-0157 D1)', () =>
   });
 
   it('the pair card: inset, its halves padded, the seam between them, the samples sized by their half', () => {
-    const { byId } = setup();
+    const { byId, root } = setup();
     const pair = el('08.pair');
     const inset = styled(byId('compare.pair'), 'paddingHorizontal')!;
     expect(flat(inset.props['style'])['paddingHorizontal']).toBe(
@@ -418,7 +418,22 @@ describe('proportion: every size and interval from 08.json (ADR-0157 D1)', () =>
     expect(byId('compare.a.swatch').props['size']).toBe(
       pairSampleSize(Dimensions.get('window').width),
     );
-    expect(pairSampleSize(SCREEN)).toBe((SCREEN - 2 * px('md') - SEAM) / 2 - 2 * px(pad));
+    /*
+     * THE CARD'S OWN EDGE, READ FROM THE TREE (review, S1): the pair card reserves its state edge inside
+     * its box, so each half is what is left of that, less the seam, halved — and the sample is the half
+     * less its insets. Restating the formula here is what let the 2 dp go unseen.
+     */
+    const shell = root.find(
+      (n) => (n.type as unknown) === 'View' && n.props['testID'] === 'compare.pair',
+    );
+    const edge = Number(flat(shell.props['style'])['borderWidth'] ?? 0);
+    expect(edge).toBeGreaterThan(0);
+    expect(pairSampleSize(SCREEN)).toBe(
+      (SCREEN - 2 * px('md') - 2 * edge - SEAM) / 2 - 2 * px(pad),
+    );
+    // The Change button under the sample is as wide as its half's content, as the sample is: it sets no
+    // width of its own and stretches, so the two are one width (08 draws both at 303 px).
+    expect(flat(byId('compare.a.change').props['style'])['width']).toBeUndefined();
     expect(pairSampleSize(SCREEN)).toBeGreaterThan(a.dp.w);
     // The corner, and no keyline: 08 draws none (ADR-0157 D3).
     const swatch = byId('compare.a.swatch').props;
@@ -596,5 +611,88 @@ describe('type: every text at 08’s step and weight', () => {
       access('tritan', 'value'),
     ])
       expect(byId(id).props['numberOfLines']).toBeUndefined();
+  });
+});
+
+/* ----------------------------------------------------------------------------- the review's additions */
+
+describe('each sample is an image named with its provenance, never a button (review, S5)', () => {
+  it('its own named node says image, and nothing in it says button', () => {
+    const { root } = setup();
+    for (const side of ['a', 'b'] as const) {
+      const hosts = root.findAll(
+        (n) => typeof n.type === 'string' && n.props['testID'] === `compare.${side}.swatch`,
+      );
+      expect({ [side]: hosts.length }).toStrictEqual({ [side]: 1 });
+      expect(hosts[0]!.props['accessibilityRole']).toBe('image');
+      const sample = root.findAll((n) => n.props['testID'] === `compare.${side}.swatch`)[0]!;
+      expect(sample.findAll((n) => n.props['accessibilityRole'] === 'button')).toHaveLength(0);
+    }
+  });
+});
+
+describe('ink: every text in the ink 08 records, in both themes (review, S6)', () => {
+  const TOKEN: Readonly<Record<string, string>> = {
+    'text.primary': 'foreground',
+    'text.secondary': 'foreground.2',
+  };
+  const CASES = [
+    ['compare.a.name', '08.pair.a.name'],
+    ['compare.a.meta', '08.pair.a.meta'],
+    [metric('delta-e00', 'label'), '08.metrics.delta-e00.label'],
+    [metric('delta-e00', 'value'), '08.metrics.delta-e00.value'],
+    [metric('delta-e00', 'reading'), '08.metrics.delta-e00.reading'],
+    [metric('delta-e00', 'formula'), '08.metrics.delta-e00.formula'],
+    [metric('hue', 'reading'), '08.metrics.hue.reading'],
+    [access('wcag', 'label'), '08.access.wcag.label'],
+    // The WCAG line's words are drawn in the figure's ink (08.json: text.primary).
+    [access('wcag', 'value'), '08.access.wcag.value'],
+    [access('wcag', 'note'), '08.access.wcag.apca'],
+    // A separation line's words are the secondary ink; its figure run the primary.
+    [access('protan', 'value'), '08.access.protan.value'],
+  ] as const;
+
+  it.each(['dark', 'light'] as const)('in %s', (theme) => {
+    const { byId } = setup(DEFAULT_LANGUAGE_TAG, theme);
+    for (const [id, element] of CASES) {
+      const fg = el(element).tokens['fg'];
+      expect({ [id]: byId(id).props['color'] as unknown }).toStrictEqual({ [id]: TOKEN[fg ?? ''] });
+    }
+    // The separation line's figure run, inside its secondary paragraph, is the primary ink at 500.
+    const figure = byId(access('protan', 'value')).findAll(
+      (n) =>
+        n.type === Text && n.props['numeric'] === true && n !== byId(access('protan', 'value')),
+    )[0];
+    expect([figure?.props['color'], figure?.props['weight']]).toStrictEqual(['foreground', 500]);
+    // The card titles are the primary ink.
+    for (const card of ['compare.metrics', 'compare.access'])
+      expect(byId(card).findAllByType(Text)[0]?.props['color']).toBe('foreground');
+  });
+});
+
+describe('the Japanese steps: each text at its step, set in the Japanese face’s own line (review, S6)', () => {
+  it('in ja-JP, the words take the Japanese line and the figures the Latin', () => {
+    const { byId } = setup('ja-JP');
+    const JA = nativeType.japanese;
+    const LATIN = nativeType.latin;
+    for (const [id, step] of [
+      ['compare.a.name', 'label'],
+      [metric('lightness', 'label'), 'caption'],
+      [metric('lightness', 'reading'), 'caption'],
+      [access('wcag', 'label'), 'caption'],
+    ] as const) {
+      const style = rendered(byId(id));
+      expect({ [id]: [style['fontSize'], style['lineHeight']] }).toStrictEqual({
+        [id]: [JA[step].fontSize, JA[step].lineHeight],
+      });
+    }
+    // A figure stays a Latin figure in a Japanese page: its own line.
+    const value = rendered(byId(metric('lightness', 'value')));
+    expect([value['fontSize'], value['lineHeight']]).toStrictEqual([
+      LATIN.caption.fontSize,
+      LATIN.caption.lineHeight,
+    ]);
+    // DECOY: the Japanese line is not the Latin one, so the first assertion could fail.
+    expect(JA.caption.lineHeight).not.toBe(LATIN.caption.lineHeight);
   });
 });

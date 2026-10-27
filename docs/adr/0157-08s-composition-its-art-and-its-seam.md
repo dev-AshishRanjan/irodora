@@ -51,7 +51,8 @@ records did not survive the measurement:
   | *Change*; the two actions | 27; 30.5 | `CHANGE` 27; `ACTION` 30.5 |
 
   The table rows keep `08`'s pitch through the ruled form's padding, recomputed for caption lines.
-- **D2. Heights.** The samples build 8 dp larger than drawn (159.5 at 384: the 12 dp ties at `sm`),
+- **D2. Heights.** The samples build 6 dp larger than drawn (157.5 at 384: the 12 dp ties at `sm`, less
+  the card's reserved 2 dp edge — F-249's review, S1, corrected 8 and 159.5),
   so the pair card is about as tall as drawn (the ties take back what the samples add). The cards
   build taller than drawn — a caption line is 15.45 dp where `08` pitches its lines at 12–14, and
   the honest words are longer than the drawn ones (*(Machado 2009)* for *(Safe)*; *towards ‹term›*):
@@ -63,8 +64,13 @@ records did not survive the measurement:
   - The samples bind no keyline: each carries the line a sample that binds none carries, only where it
     would otherwise lose its edge (ADR-0116, OQ-46's interim, unchanged). C20 does not apply to `08`.
   - The seam is 1 dp of `border.subtle` (`#373B43` read, the cards' edges `#383D44`), the card's whole
-    height, inside the card only. The pair sits in the card's media slot, so the seam meets both
-    edges as drawn. Its 18 px below the card is the leader to the leaked caption (§2).
+    height, inside the card only. The pair sits in the card's media slot, so the seam runs the card's
+    whole content height. *Amended by F-249's review (M1):* the card reserves its 2 dp state edge inside
+    its box and draws its resting line in the outer one, so the seam stops 1 dp inside that line at top
+    and bottom — accepted: a 1 dp gap at a 2 px drawing's edge. Its 18 px below the card is the leader
+    to the leaked caption (§2).
+  - The samples are images, named with their provenance, never buttons: each is a `Swatch` apart from
+    its children (`group={false}`), as 07's are (F-249's review, S5).
 - **D4. Type steps and weights**, read by stem runs and by one glyph's ink coverage against the same
   glyph elsewhere:
   - the title and the back word: `label` 500; the names: `label` 400;

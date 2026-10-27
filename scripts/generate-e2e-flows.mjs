@@ -277,8 +277,8 @@ function selector(step, sources) {
     /*
      * THE SAME AMBIGUITY RULE AS COLOURS, BUT ONLY FOR A TAP — and the asymmetry is the point.
      *
-     * The catalogue holds 21 exactly duplicated values: `compare.title` and `home.openCompare`
-     * are both "Compare two colours", and both are on screens this journey could reach. A TAP
+     * The catalogue holds exactly duplicated values: `tab.atlas` and `atlas.heading` are both
+     * "Atlas", and both are on screens this journey could reach (F-249 re-worded this example). A TAP
      * on a string that matches twice performs one of two DIFFERENT actions, chosen by whichever
      * element the framework reached first — a flake nobody can reproduce from reading the flow.
      *

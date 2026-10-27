@@ -70,7 +70,7 @@ export const ja: Record<MessageKey, string> = {
   // 08's page (F-249, ADR-0156): its controls, its cards' titles and its chooser.
   'compare.export': 'この2色を書き出す',
   'compare.exportPdf': '色差PDFを書き出す',
-  'compare.addToStudio': '2色をパレット工房に追加',
+  'compare.addToStudio': '2色を配色スタジオに追加',
   'compare.changeA': 'Aを変更',
   'compare.changeB': 'Bを変更',
   'compare.metrics': '知覚色差と差分の一覧',

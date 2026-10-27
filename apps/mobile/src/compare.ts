@@ -100,18 +100,6 @@ export interface CompareMetrics {
   };
   /** The pair's warm–cool relation: the outfit harmony component's own measure (E-226). */
   readonly temperature: WarmCoolRelation;
-  /** CIELAB (D65), per axis. */
-  readonly lab: {
-    readonly l: AxisDelta;
-    readonly a: AxisDelta;
-    readonly b: AxisDelta;
-  };
-  /** OKLCh. `h` uses the shortest signed arc, so 350° → 10° is +20 rather than −340. */
-  readonly oklch: {
-    readonly l: AxisDelta;
-    readonly c: AxisDelta;
-    readonly h: AxisDelta;
-  };
   /** One per deficiency, at the severity `compare()` was given, each carrying its own decomposition. */
   readonly separation: readonly SeparationDetail[];
   readonly contrast: {
@@ -144,10 +132,6 @@ export function compare(
    */
   severity: number = COMPARED_SEVERITY,
 ): CompareMetrics {
-  const [la, aa, ba] = a.derived.lab;
-  const [lb, ab, bb] = b.derived.lab;
-  const [ola, oca, oha] = a.derived.oklch;
-  const [olb, ocb, ohb] = b.derived.oklch;
   const [ca, cca, cha] = a.derived.lch;
   const [cb, ccb, chb] = b.derived.lch;
 
@@ -162,14 +146,6 @@ export function compare(
       h: { a: cha, b: chb, delta: hueDelta(cha, chb) },
     },
     temperature: warmCoolRelation([colorFor(a.entry), colorFor(b.entry)], ruleSet()),
-    lab: { l: axis(la, lb), a: axis(aa, ab), b: axis(ba, bb) },
-    oklch: {
-      l: axis(ola, olb),
-      c: axis(oca, ocb),
-      // `delta` is overwritten with the shortest signed ARC. Subtracting two hue angles is the
-      // one place in this file where the obvious arithmetic is wrong.
-      h: { a: oha, b: ohb, delta: hueDelta(oha, ohb) },
-    },
     separation: COMPARED_DEFICIENCIES.map((d) =>
       separationDetail(a.derived.rgb, b.derived.rgb, d, severity),
     ),

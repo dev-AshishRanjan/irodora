@@ -110,7 +110,6 @@ export function combinationSubject(entries: readonly PublishedEntry[]): ExportSu
   };
 }
 
-/** The separator between the slugs of the export route's `colours` parameter. */
 /**
  * 08's pair (F-249, ADR-0156 D3): its two colours and their ΔE00 row (FR-65), titled as a
  * combination is. The ΔE00 is the engine's, computed now from the two records' CIELAB.
@@ -128,6 +127,7 @@ export function pairSubject(a: PublishedEntry, b: PublishedEntry): ExportSubject
   };
 }
 
+/** The separator between the slugs of the export route's `colours` and `pair` parameters. */
 export const COLOURS_SEPARATOR = ',';
 
 /**
@@ -154,12 +154,14 @@ export function exportSubjectFor(
   colours?: string,
   pair?: string,
 ): ExportSubject | null {
-  // 08's pair first (F-249): exactly two different colours, or nothing — never a guess.
-  const two = combinationOf(pair);
-  if (two !== null && two.length === 2) {
-    const [a, b] = two;
-    if (a !== undefined && b !== undefined && a.entry.slug !== b.entry.slug)
-      return pairSubject(a, b);
+  // 08's pair first (F-249): exactly two different corpus colours, or nothing — never a guess. A pair
+  // the route was given and cannot read exports nothing rather than another subject (review, M2).
+  if (pair !== undefined && pair !== '') {
+    const two = combinationOf(pair);
+    const [a, b] = two ?? [];
+    return two?.length === 2 && a !== undefined && b !== undefined && a.entry.slug !== b.entry.slug
+      ? pairSubject(a, b)
+      : null;
   }
   const combination = combinationOf(colours);
   if (combination !== null) return combinationSubject(combination);

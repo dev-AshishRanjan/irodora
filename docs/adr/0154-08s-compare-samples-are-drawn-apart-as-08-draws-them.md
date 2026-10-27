@@ -47,8 +47,10 @@ those, or a design judgement `08` now answers.
   the line a sample that binds none carries: one only where it would otherwise lose its edge
   (ADR-0116; OQ-46's interim, unchanged).
 - **D2.** Each is square and sized by its half: `pairSampleSize(width)` is the half's width less its
-  two `sm` insets — 159.5 dp at 384, 127.5 at 320 — never under `size.judgeable` (77) on a supported
-  width.
+  two `sm` insets — 157.5 dp at 384, 125.5 at 320 — never under `size.judgeable` (77) on a supported
+  width. *Amended by F-249's review (S1):* the half is what the card leaves inside the state edge it
+  reserves in its box (2 dp a side, transparent at rest); the first figures, 159.5 and 127.5, left the
+  edge out and overran the half by 2 dp.
 - **D3.** The figures stay beneath the pair (F-151's second criterion, its second half).
 - **D4.** `Pair` stays in `@irodora/ui`: `Contemporary` keeps it. ADR-0095's status line names this
   amendment, and R9 §10 lists it.

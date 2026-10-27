@@ -18,10 +18,12 @@ jest.mock('expo-localization', () => ({
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ActionBar, Card, ThemeProvider, valueText } from '@irodora/ui';
+import { ActionBar, Card, swatchAccessibleName, ThemeProvider, valueText } from '@irodora/ui';
 import type { TestNode } from '@irodora/ui/testing';
-import { entryBySlug, type PublishedEntry } from '../src/corpus';
-import { pairReadout } from '../src/compare-readout';
+import { colorFor, entryBySlug, type PublishedEntry } from '../src/corpus';
+import { nameLine, pairMeta, pairReadout } from '../src/compare-readout';
+import { en } from '../src/i18n/en';
+import { ja } from '../src/i18n/ja';
 import { find } from '../src/finder';
 import { t as message, type MessageKey } from '../src/i18n';
 import { Compare, type CompareProps } from '../src/screens/Compare';
@@ -236,6 +238,71 @@ describe('every action 08 draws works, by the control a person touches (ADR-0156
     expect(screen.queryByText(say('compare.exportPdf'))).toBeNull();
     expect(screen.queryByText(say('compare.addToStudio'))).toBeNull();
     expect(screen.UNSAFE_queryAllByType(ActionBar)).toHaveLength(0);
+  });
+});
+
+describe('two colours, and the two named — each half is one entry, on its own side (review, S7a)', () => {
+  /** What one half shows: its sample's name and hex, its name line, its meta line. */
+  const half = (side: 'a' | 'b') => {
+    const sample = screen.getAllByTestId(`compare.${side}.swatch`, {
+      includeHiddenElements: true,
+    })[0]!;
+    return {
+      // The sample's own node is named with its colour, hex and provenance (S5's image).
+      sample: String(sample.props['accessibilityLabel'] ?? ''),
+      name: String(screen.getByTestId(`compare.${side}.name`).props['children']),
+      meta: String(screen.getByTestId(`compare.${side}.meta`).props['children']),
+    };
+  };
+  const expected = (e: PublishedEntry) => ({
+    sample: swatchAccessibleName(e.entry.name.en, e.derived.hex, colorFor(e.entry)),
+    name: nameLine(e),
+    meta: pairMeta(e),
+  });
+
+  it('A’s sample, name and meta are A’s; B’s are B’s — and after a choice, the new colour’s, still on its side', () => {
+    drawPage(handlers());
+    expect(half('a')).toStrictEqual(expected(entry(A)));
+    expect(half('b')).toStrictEqual(expected(entry(B)));
+    fireEvent.press(screen.getByText(say('compare.changeB')));
+    const next = listed().find((x) => x !== B && x !== A)!;
+    fireEvent.press(screen.getByTestId(`compare.pick.${next}`));
+    expect(half('a')).toStrictEqual(expected(entry(A)));
+    expect(half('b')).toStrictEqual(expected(entry(next)));
+  });
+
+  it('DECOY: the two halves are different entries, so a swap of sides would be seen', () => {
+    drawPage(handlers());
+    expect(half('a')).not.toStrictEqual(half('b'));
+  });
+});
+
+describe('the chooser closes on a choice, and names each row as the card does (review, M14, M9, M16)', () => {
+  it('choosing closes the sheet: its rows leave the page', () => {
+    drawPage({ ...handlers(), initialPicking: 'a' });
+    expect(listed().length).toBeGreaterThan(0);
+    fireEvent.press(screen.getByTestId(`compare.pick.${listed().find((x) => x !== A)!}`));
+    expect(listed()).toStrictEqual([]);
+  });
+
+  it('each row shows the card’s kanji and romaji, and says its English name once, with its provenance', () => {
+    drawPage({ ...handlers(), initialPicking: 'a', initialQuery: 'aka' });
+    const slug = listed()[0]!;
+    const e = entry(slug);
+    const row = screen.getByTestId(`compare.pick.${slug}`);
+    expect(row.props['accessibilityLabel']).toBe(
+      `${nameLine(e)}, ${swatchAccessibleName(e.entry.name.en, e.derived.hex, colorFor(e.entry))}`,
+    );
+    expect(screen.getAllByText(nameLine(e)).length).toBeGreaterThan(0);
+  });
+});
+
+describe('the Studio is named by its own name, in both languages (review, S4)', () => {
+  it('Add Pair to Palette Studio’s words hold the Studio’s title', () => {
+    expect(en['compare.addToStudio']).toContain(en['studio.title']);
+    expect(ja['compare.addToStudio']).toContain(ja['studio.title']);
+    // DECOY: the name the first draft used is no screen’s.
+    expect(ja['compare.addToStudio']).not.toContain('パレット工房');
   });
 });
 

@@ -263,6 +263,23 @@ disagreed with it:
 - **Owed and filed:** F-353 (the Japanese lexicon names the hues the English one does: 20 entries
   lack one) and F-354 (07's separation row says *approximate* when its worst is tritan's).
 
+The review (once) changed these, each recorded in its ADR:
+
+- **S1.** The sample is the half less its insets *inside the card's reserved 2 dp state edge*: 157.5 dp
+  at 384, 125.5 at 320. The fidelity test reads the edge from the drawn card, not the constant.
+- **S2.** *towards* is tested against A's hue arc (ADR-0155 D2 amended): 7,146 English and 5,133
+  Japanese pairs, pinned.
+- **S3.** A chroma word can be stronger than ΔC\*ab — ADR-0125's limit, recorded and pinned.
+- **S5.** The samples are images (`group={false}`), not buttons.
+- **M2.** An unreadable `pair` exports nothing. **M4.** `compare()` keeps only the axes 08 prints
+  (`lch`); `lab` and `oklch` are gone and `compare.test` reads `lch`. **M9.** A ruled row may give its
+  reading a spoken form (`readingName`); 08's contrast line is spoken without its bullet and slash, and
+  a separation's model is said once.
+- **Recorded, not changed:** M1 (the seam stops 1 dp inside the card's drawn line, inside its reserved
+  edge); M6 (the planned art decoy cannot be expressed: the sweep's illustration locator counts the
+  live render, which a JSON-tree decoy does not change); the *ΔEok: ΔEok …* form every ruled row's name
+  takes (its label, then its figure's quantity); M10 → F-355.
+
 ---
 
 ## Approach

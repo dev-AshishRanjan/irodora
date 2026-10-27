@@ -29,7 +29,9 @@ severity control, both colour spaces' axes, both APCA directions, the separation
   - a query that finds nothing shows `00`'s caption;
   - choosing changes that slot only, and closes the sheet.
 - **D3. The download glyph** opens `/profile/export?pair=A,B`: the pair as an export subject (both
-  colours, with their ΔE00 row, FR-65), in every format — as 06's glyph opens a colour's.
+  colours, with their ΔE00 row, FR-65), in every format — as 06's glyph opens a colour's. A `pair` that
+  is not two different corpus colours exports nothing, never another subject in its place (F-249's
+  review, M2).
 - **D4. *Export Precision Delta PDF*** opens the same, with `format=pdf` chosen. F-263 composes the
   document; this feature hands it the pair.
 - **D5. *Add Pair to Palette Studio*** opens `/atlas/palettes?colours=A,B`: a draft with A as the

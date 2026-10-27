@@ -116,6 +116,12 @@ export interface RuledRow extends RowBase {
    * secondary ink a reading takes by default.
    */
   readonly readingInk?: 'figure';
+  /**
+   * What a screen reader says for the reading, where its drawn form carries marks a voice should not
+   * read (08's bullet and slash) or repeats the value's own name; `''` says nothing more. The drawn
+   * reading by default.
+   */
+  readonly readingName?: string;
   /** A caption under the row: 08's APCA line. */
   readonly note?: string;
   /**
@@ -308,7 +314,9 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                 accessible
                 accessibilityRole="text"
                 accessibilityLabel={`${readoutRowName(label, r.value)}${
-                  r.reading === undefined ? '' : `, ${r.reading}`
+                  (r.readingName ?? r.reading ?? '') === ''
+                    ? ''
+                    : `, ${r.readingName ?? r.reading ?? ''}`
                 }${r.note === undefined ? '' : `, ${r.noteName ?? r.note}`}`}
                 style={{
                   flexDirection: stacked ? 'column' : 'row',

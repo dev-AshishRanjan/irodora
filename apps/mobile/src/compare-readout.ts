@@ -37,7 +37,13 @@ import { axisReading, printedDeltaE00 } from '@irodora/color-difference';
 import { matchesRegion, type LexiconTerm } from '@irodora/corpus';
 import type { Deficiency } from '@irodora/cvd-engine';
 import { nativeSpacing } from '@irodora/design-tokens';
-import type { Figure, ReadoutValue, RuledRow, Script } from '@irodora/ui';
+import {
+  SELECTION_EDGE,
+  type Figure,
+  type ReadoutValue,
+  type RuledRow,
+  type Script,
+} from '@irodora/ui';
 import { compare, COMPARED_DEFICIENCIES, type CompareMetrics } from './compare';
 import { allEntries, entryBySlug, type PublishedEntry } from './corpus';
 import { axisKey, bandKey } from './delta-readings';
@@ -118,8 +124,8 @@ export function hueTerm(entry: PublishedEntry, locale: Locale): LexiconTerm | nu
 
 /**
  * B's hue term, when the hue phrase may say the pair moves *towards* it: the hue band is at least
- * slight, B lies in a hue term of the locale's own language, and A does not lie in that term. `null`
- * otherwise — *towards blue* when A is already blue would say A was not.
+ * slight, B lies in a hue term of the locale's own language, and A's hue angle is outside that term's
+ * arc. `null` otherwise — *towards blue* when A is already at blue's angle would say A was not.
  */
 export function towards(
   a: PublishedEntry,
@@ -129,7 +135,15 @@ export function towards(
 ): string | null {
   if (band === 'veryClose') return null;
   const term = hueTerm(b, locale);
-  if (term === null || matchesRegion(term.constrains, a.derived.oklch)) return null;
+  if (term === null) return null;
+  /*
+   * A'S HUE ANGLE ALREADY IN THE TERM'S ARC — whatever its lightness or chroma — means the hue did not
+   * move towards it, and the words sit beside a hue-angle figure (F-249's review, S2). B can be *brown*
+   * while A, a light orange at 48°, is outside brown only because brown constrains lightness; and a
+   * near-grey A at 245° is already at blue's angle, though no hue term names a grey.
+   */
+  const arc = term.constrains.hue;
+  if (arc !== undefined && matchesRegion({ hue: arc }, a.derived.oklch)) return null;
   return term.term;
 }
 
@@ -276,13 +290,18 @@ export function pairReadout(
         space: 'WCAG 2.2',
       }),
       reading: `• ${t(thresholdKey(ratio))} / ${t(HARMONY_KEYS[m.temperature.direction])}`,
+      // Spoken without the drawn bullet and slash (F-249's review, M9).
+      readingName: `${t(thresholdKey(ratio))}, ${t(HARMONY_KEYS[m.temperature.direction])}`,
       readingInk: 'figure',
       note: `${open.trim()}${t('compare.apcaLc')}${colon}${lc}${close}`,
       // The printed Lc is one of two directions; its name says which (ADR-0155 D3).
       noteName: `${t('compare.apcaLc')} ${lc}, ${t('compare.apcaSmaller')}`,
     },
     ...COMPARED_DEFICIENCIES.map((d, i): RuledRow => {
-      const score = Math.floor(m.separation[i]?.score ?? 0);
+      const detail = m.separation[i];
+      // One reading per deficiency, by construction; a missing one is a defect, never a printed 0 %.
+      if (detail === undefined) throw new Error(`compare: no separation for ${d}`);
+      const score = Math.floor(detail.score);
       return {
         key: d,
         label: t(DEFICIENCY_LABEL_KEYS[d]),
@@ -295,6 +314,8 @@ export function pairReadout(
           space: t(MODEL_KEYS[d]),
         }),
         reading: `${t('cvd.separation')}${open}${t(MODEL_KEYS[d])}${close}`,
+        // The figure's own name already says what it is and the model (M9): not said twice.
+        readingName: '',
       };
     }),
   ];
@@ -351,11 +372,13 @@ export function pickList(query: string, side: Side, state: PairState): readonly 
 export const SEAM = 1;
 
 /**
- * Each sample's side (ADR-0154 D2): the pair card spans the page less its `md` insets; the seam
- * splits it; each half is padded `sm` all round. 159.5 dp at 384, 127.5 at 320.
+ * Each sample's side (ADR-0154 D2): the pair card spans the page less its `md` insets and reserves
+ * its state edge inside its box (`SELECTION_EDGE`, 2 dp a side, transparent at rest); the seam splits
+ * what is left; each half is padded `sm` all round. 157.5 dp at 384, 125.5 at 320. F-249's review
+ * (S1) found the edge left out: the sample overran its half by 2 dp.
  */
 export function pairSampleSize(width: number): number {
-  return (width - 2 * nativeSpacing.md - SEAM) / 2 - 2 * nativeSpacing.sm;
+  return (width - 2 * nativeSpacing.md - 2 * SELECTION_EDGE - SEAM) / 2 - 2 * nativeSpacing.sm;
 }
 
 /*

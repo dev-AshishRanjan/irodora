@@ -57,6 +57,7 @@ import {
   EXPORT_GLYPH,
   choose,
   initialPair,
+  nameLine,
   pairReadout,
   pairSampleSize,
   pickList,
@@ -219,6 +220,9 @@ export function Compare({
             size={sampleSize}
             corner="sm"
             keyline={false}
+            // Apart from its children (it has none): an IMAGE named with its provenance, never a button —
+            // the sample does nothing (F-249's review, S5; F-248 S4's form).
+            group={false}
             testID={`compare.${side}.swatch`}
           />
           <Stack gap="xs">
@@ -428,7 +432,8 @@ export function Compare({
               <Stack gap="xs">
                 {list.map((item) => {
                   const selected = item.entry.slug === chosen;
-                  const words = `${item.entry.name.kanji} ${item.entry.name.en}`;
+                  // The card's own name form, kanji then romaji (review, M16); the English is in the spoken name.
+                  const words = nameLine(item);
                   return (
                     <Pressable
                       key={item.entry.slug}
