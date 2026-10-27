@@ -17,6 +17,7 @@
  */
 
 import { CORPUS_LABEL, entryBySlug, type PublishedEntry } from '../corpus';
+import { deltaE00 } from '@irodora/color-difference';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
 import { ruleSet } from '../rules';
 import type { ExportColour, ExportSubject } from '@irodora/export';
@@ -110,6 +111,23 @@ export function combinationSubject(entries: readonly PublishedEntry[]): ExportSu
 }
 
 /** The separator between the slugs of the export route's `colours` parameter. */
+/**
+ * 08's pair (F-249, ADR-0156 D3): its two colours and their ΔE00 row (FR-65), titled as a
+ * combination is. The ΔE00 is the engine's, computed now from the two records' CIELAB.
+ */
+export function pairSubject(a: PublishedEntry, b: PublishedEntry): ExportSubject {
+  return {
+    ...combinationSubject([a, b]),
+    deltas: [
+      {
+        fromId: a.entry.slug,
+        toId: b.entry.slug,
+        deltaE00: deltaE00(a.derived.lab, b.derived.lab),
+      },
+    ],
+  };
+}
+
 export const COLOURS_SEPARATOR = ',';
 
 /**
@@ -134,7 +152,15 @@ export function exportSubjectFor(
   slug: string | undefined,
   palettes: readonly StoredPalette[],
   colours?: string,
+  pair?: string,
 ): ExportSubject | null {
+  // 08's pair first (F-249): exactly two different colours, or nothing — never a guess.
+  const two = combinationOf(pair);
+  if (two !== null && two.length === 2) {
+    const [a, b] = two;
+    if (a !== undefined && b !== undefined && a.entry.slug !== b.entry.slug)
+      return pairSubject(a, b);
+  }
   const combination = combinationOf(colours);
   if (combination !== null) return combinationSubject(combination);
   const colour = slug === undefined ? null : entryBySlug(slug);

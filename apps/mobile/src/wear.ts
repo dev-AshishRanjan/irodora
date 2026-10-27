@@ -38,7 +38,6 @@ import {
   type Alternative,
   type Candidate,
   type ComponentScore,
-  type ExplanationDirection,
   type Occasion,
   type OutfitComponent,
   type OutfitPiece,
@@ -54,6 +53,7 @@ import { allEntries, colorFor, entryBySlug, type PublishedEntry } from './corpus
 import type { MessageKey } from './i18n';
 import { capitalised } from './notation';
 import { occasionRuleSet } from './rules';
+import { HARMONY_KEYS, type HarmonyRelation } from './temperature';
 
 /** The slot a colour can be put in. The engine's three, re-exported so a screen has one import. */
 export { OUTFIT_SLOTS, type OutfitSlot };
@@ -393,8 +393,8 @@ export interface WearSlot {
   readonly locked: boolean;
 }
 
-/** The card's warm–cool relation: the harmony component's own direction (ADR-0151 D4). */
-export type HarmonyRelation = ExplanationDirection;
+/** The card's warm–cool relation: the harmony component's own direction (ADR-0151 D4); 08 reads it too. */
+export type { HarmonyRelation };
 
 /** What `07` draws for a colour, under a state (ADR-0151, ADR-0152). */
 export interface WearCombination {
@@ -595,12 +595,8 @@ export function pillLabel(alternative: Alternative, slot: RankedSlot, t: T): str
   return `${t(`alt.${alternative.axis}` as MessageKey)}: + ${name} ${t(SLOT_WORD_KEYS[slot])}`;
 }
 
-/** The harmony row's words, from the component's direction (ADR-0151 D4). */
-export const HARMONY_KEYS = {
-  supports: 'wear.harmony.supports',
-  neutral: 'wear.harmony.neutral',
-  opposes: 'wear.harmony.opposes',
-} as const satisfies Record<HarmonyRelation, MessageKey>;
+/** The harmony row's words, from the component's direction (ADR-0151 D4): 08's contrast line reads the same map. */
+export { HARMONY_KEYS };
 
 /** The fit row: *‹n›% (your profile)*, or *No profile yet* and no figure (ADR-0150). */
 export function fitLine(fit: number | null, t: T, script: Script): string {

@@ -225,3 +225,54 @@ describe('the severity the simulation runs at', () => {
     expect(compare(A, B, 0.35).separation).toHaveLength(COMPARED_DEFICIENCIES.length);
   });
 });
+
+/*
+ * WHAT 08 READS (F-249, ADR-0155): the weighted terms, ΔEok, the record's CIELAB LCh and the pair's
+ * warm–cool relation. Each is the engine's, read once here; `compare-readout.test` holds what is
+ * printed from them over every pair.
+ */
+describe('what 08 reads beside ΔE00', () => {
+  const entries = allEntries();
+
+  it('the weighted terms’ total is the same double as ΔE00, for every ordered pair', () => {
+    for (const a of entries)
+      for (const b of entries) {
+        if (a === b) continue;
+        const m = compare(a, b);
+        expect(Object.is(m.terms.deltaE00, m.deltaE00)).toBe(true);
+      }
+  }, 120_000);
+
+  it('ΔEok is symmetric and positive between two different colours', () => {
+    const [a, b, c] = entries;
+    for (const [x, y] of [
+      [a!, b!],
+      [b!, c!],
+      [a!, c!],
+    ] as const) {
+      expect(compare(x, y).deltaEok).toBeGreaterThan(0);
+      expect(compare(x, y).deltaEok).toBe(compare(y, x).deltaEok);
+    }
+    // DECOY: a colour against itself is no distance at all.
+    expect(compare(a!, a!).deltaEok).toBe(0);
+  });
+
+  it('the LCh axes are B less A on the record’s own CIELCh, the hue the shortest arc', () => {
+    const [a, b] = entries;
+    const m = compare(a!, b!);
+    expect(m.lch.l).toStrictEqual({
+      a: a!.derived.lch[0],
+      b: b!.derived.lch[0],
+      delta: b!.derived.lch[0] - a!.derived.lch[0],
+    });
+    expect(m.lch.c.delta).toBe(b!.derived.lch[1] - a!.derived.lch[1]);
+    for (const x of entries)
+      for (const y of entries) expect(Math.abs(compare(x, y).lch.h.delta)).toBeLessThanOrEqual(180);
+  }, 120_000);
+
+  it('the warm–cool relation is the pair’s, whichever way round it is read', () => {
+    const [a, b] = entries;
+    expect(compare(a!, b!).temperature).toStrictEqual(compare(b!, a!).temperature);
+    expect(compare(a!, b!).temperature.pairs).toBe(1);
+  });
+});

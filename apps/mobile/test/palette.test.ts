@@ -19,6 +19,7 @@ import {
   deriveWeights,
   draftProblem,
   draftFrom,
+  draftOf,
   EMPTY_DRAFT,
   moveMember,
   removeMember,
@@ -254,5 +255,32 @@ describe('the store write takes its colours from the verified bundle', () => {
       members: [{ slug: 'no-such-colour', role: 'anchor' }],
     };
     expect(() => toStoreWrite(bogus, CONTEXT, ids)).toThrow(/not in corpus version/u);
+  });
+});
+
+/*
+ * 08'S ADD PAIR TO PALETTE STUDIO (F-249, ADR-0156 D5; E-227): the route reads `colours` into a draft.
+ * The first colour is the anchor and the second a neutral, as the Studio's own `addMember` makes them;
+ * a slug the corpus does not hold gives no draft, so a parameter never names a colour.
+ */
+describe('a draft of the colours a route was opened with', () => {
+  it('holds them in order, the first the anchor, the rest neutrals, and nothing saved', () => {
+    const draft = draftOf([A!, B!]);
+    expect(draft).toStrictEqual({
+      name: '',
+      members: [
+        { slug: A, role: 'anchor' },
+        { slug: B, role: 'neutral' },
+      ],
+    });
+    // Unnamed, so the Studio's save asks for a name before anything is stored (FR-49).
+    expect(draftProblem(draft!, CONTEXT)).toBe('noName');
+  });
+
+  it('DECOY: a slug the corpus does not hold, or none at all, gives no draft', () => {
+    expect(draftOf([A!, 'no-such-colour'])).toBeNull();
+    expect(draftOf([])).toBeNull();
+    // And a colour twice is one member, as a person tapping it twice gets.
+    expect(draftOf([A!, A!])?.members).toHaveLength(1);
   });
 });

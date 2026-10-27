@@ -17,13 +17,16 @@ export function capitalised(romaji: string): string {
 /**
  * An OKLCh line: the space's name, then L, C and h from the entry's derivation, at the precision the
  * corpus is authored at and the Lens prints (3, 3 and 1 decimals), separated by `•`. `after` is what
- * follows the space's name: a space on `01`, a colon and a space on `05`.
+ * follows the space's name: a space on `01`, a colon and a space on `05`. `08`'s meta line draws two
+ * figures, L and h, and no chroma (`{ chroma: false }`, ADR-0155 D1).
  */
 export function oklchLine(
   oklch: readonly [number, number, number],
   unit: string,
   after = ' ',
+  { chroma = true }: { readonly chroma?: boolean } = {},
 ): string {
   const [l, c, h] = oklch;
-  return `${unit}${after}${l.toFixed(3)} • ${c.toFixed(3)} • ${h.toFixed(1)}°`;
+  const figures = chroma ? [l.toFixed(3), c.toFixed(3)] : [l.toFixed(3)];
+  return `${unit}${after}${[...figures, `${h.toFixed(1)}°`].join(' • ')}`;
 }

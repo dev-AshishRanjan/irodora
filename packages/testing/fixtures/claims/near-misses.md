@@ -23,6 +23,14 @@ condition, and a person entering values from their own instrument.
 - 色覚シミュレーションはすべてのモードに対応
 - CVDの3種類すべてに対応しています
 - CVD separation 92, lowest under tritanopia
+- 1.48:1 • Under 3:1 / Shared Temperature
+- 1.48:1 • 3:1未満 / 温度感が揃う
+- 92% Separation (Machado 2009)
+- 92% Separation (Machado 2009, approximate)
+- 見分けやすさ（Machadoら 2009・近似）
+- Export Precision Delta PDF
+- 色差PDFを書き出す
+- Contrast & CVD Accessibility Matrix
 - a colour-blind simulation of this palette
 - 区別しやすさのスコア 92
 - High-grade wool, a studio visit, a museum of dyes

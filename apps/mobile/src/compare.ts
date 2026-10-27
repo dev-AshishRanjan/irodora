@@ -37,10 +37,19 @@
  * lightness difference the score was built from, and those travel with it.
  */
 
-import { deltaE00, apcaLc, wcagContrast } from '@irodora/color-difference';
-import { hueDelta } from '@irodora/color-spaces';
+import {
+  apcaLc,
+  deltaE00,
+  deltaE00Terms,
+  deltaEok,
+  wcagContrast,
+  type Ciede2000Terms,
+} from '@irodora/color-difference';
+import { hueDelta, oklchToOklab } from '@irodora/color-spaces';
+import { warmCoolRelation, type WarmCoolRelation } from '@irodora/recommendation';
 import { separationDetail, type Deficiency, type SeparationDetail } from '@irodora/cvd-engine';
-import type { PublishedEntry } from './corpus';
+import { colorFor, type PublishedEntry } from './corpus';
+import { ruleSet } from './rules';
 
 /** The deficiencies shown, in the order they are shown. */
 export const COMPARED_DEFICIENCIES: readonly Deficiency[] = ['protan', 'deutan', 'tritan'];
@@ -80,6 +89,24 @@ export interface AxisDelta {
 export interface CompareMetrics {
   /** CIELAB (D65). The ranking authority. */
   readonly deltaE00: number;
+  /**
+   * The CIEDE2000 weighted terms (F-249): the lightness, chroma and hue components ADR-0125 bands
+   * each axis reading by. Its `deltaE00` is the same double as the field above.
+   */
+  readonly terms: Ciede2000Terms;
+  /** OKLab, the Euclidean distance of the two records' OKLab triples (08's ΔEok). */
+  readonly deltaEok: number;
+  /**
+   * CIELAB LCh (D65), from the record's own `derived.lch` (F-249): 08's ΔL*, ΔC* and ΔH. `h`'s delta
+   * is the shortest signed arc, `hueDelta`, in degrees — the hue ANGLE difference.
+   */
+  readonly lch: {
+    readonly l: AxisDelta;
+    readonly c: AxisDelta;
+    readonly h: AxisDelta;
+  };
+  /** The pair's warm–cool relation: the outfit harmony component's own measure (E-226). */
+  readonly temperature: WarmCoolRelation;
   /** CIELAB (D65), per axis. */
   readonly lab: {
     readonly l: AxisDelta;
@@ -128,9 +155,20 @@ export function compare(
   const [lb, ab, bb] = b.derived.lab;
   const [ola, oca, oha] = a.derived.oklch;
   const [olb, ocb, ohb] = b.derived.oklch;
+  const [ca, cca, cha] = a.derived.lch;
+  const [cb, ccb, chb] = b.derived.lch;
 
   return {
     deltaE00: deltaE00(a.derived.lab, b.derived.lab),
+    terms: deltaE00Terms(a.derived.lab, b.derived.lab),
+    deltaEok: deltaEok(oklchToOklab(a.derived.oklch), oklchToOklab(b.derived.oklch)),
+    lch: {
+      l: axis(ca, cb),
+      c: axis(cca, ccb),
+      // The shortest signed ARC, as OKLCh's below: the obvious subtraction is wrong across 0°.
+      h: { a: cha, b: chb, delta: hueDelta(cha, chb) },
+    },
+    temperature: warmCoolRelation([colorFor(a.entry), colorFor(b.entry)], ruleSet()),
     lab: { l: axis(la, lb), a: axis(aa, ab), b: axis(ba, bb) },
     oklch: {
       l: axis(ola, olb),

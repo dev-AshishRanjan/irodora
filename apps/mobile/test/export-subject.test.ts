@@ -17,8 +17,10 @@ import {
   COLOURS_SEPARATOR,
   combinationSubject,
   exportSubjectFor,
+  pairSubject,
   paletteSubject,
 } from '../src/export/subject';
+import { deltaE00 } from '@irodora/color-difference';
 import { allEntries, CORPUS_LABEL } from '../src/corpus';
 import { ruleSet } from '../src/rules';
 import { RESTING_WEAR, shownColours, wearCombination } from '../src/wear';
@@ -239,5 +241,74 @@ describe('the combination 07 shows exports in every format', () => {
     const [a, b] = allEntries();
     const twice = combinationSubject([a!, b!, b!]);
     expect(() => WRITERS[0].write(twice)).toThrow(/duplicate/i);
+  });
+});
+
+/*
+ * 08'S PAIR (F-249, ADR-0156 D3/D4; E-227): the glyph and the PDF open the export with `pair`. Its two
+ * colours and their ΔE00 row, in every format the PDF included, for every corpus colour beside a fixed
+ * partner; and the parameter's place among the others.
+ */
+describe('the export route exports the pair 08 shows', () => {
+  const [first, second, third] = allEntries();
+  const pair = `${first!.entry.slug}${COLOURS_SEPARATOR}${second!.entry.slug}`;
+
+  it('is the two colours, titled as a combination, with their ΔE00 row', () => {
+    const subject = pairSubject(first!, second!);
+    expect(subject.colours).toStrictEqual(combinationSubject([first!, second!]).colours);
+    expect(subject.title).toBe(`${first!.entry.name.en} + ${second!.entry.name.en}`);
+    expect(subject.deltas).toStrictEqual([
+      {
+        fromId: first!.entry.slug,
+        toId: second!.entry.slug,
+        deltaE00: deltaE00(first!.derived.lab, second!.derived.lab),
+      },
+    ]);
+  });
+
+  it('a pair wins over colours, a slug and the palettes', () => {
+    const colours = `${third!.entry.slug}${COLOURS_SEPARATOR}${first!.entry.slug}`;
+    expect(exportSubjectFor(third!.entry.slug, [PALETTE], colours, pair)).toStrictEqual(
+      pairSubject(first!, second!),
+    );
+  });
+
+  it('DECOY: a pair of one colour twice, of three, or naming no corpus colour, falls back', () => {
+    const slug = third!.entry.slug;
+    for (const bad of [
+      `${first!.entry.slug}${COLOURS_SEPARATOR}${first!.entry.slug}`,
+      `${pair}${COLOURS_SEPARATOR}${slug}`,
+      `${first!.entry.slug}${COLOURS_SEPARATOR}no-such-colour`,
+      '',
+    ])
+      expect([bad, exportSubjectFor(slug, [], undefined, bad)]).toStrictEqual([
+        bad,
+        colourSubject(third!),
+      ]);
+  });
+
+  it('writes in every format, the PDF included, for every corpus colour beside a fixed partner', () => {
+    const failures: string[] = [];
+    for (const e of allEntries()) {
+      const partner = e === first ? second! : first!;
+      const subject = exportSubjectFor(
+        undefined,
+        [],
+        undefined,
+        `${e.entry.slug}${COLOURS_SEPARATOR}${partner.entry.slug}`,
+      );
+      if (subject?.colours.length !== 2 || subject.deltas?.length !== 1) {
+        failures.push(`${e.entry.slug}: not a pair`);
+        continue;
+      }
+      for (const writer of WRITERS)
+        try {
+          writer.write(subject);
+        } catch (error) {
+          failures.push(`${e.entry.slug} ${writer.format}: ${String(error)}`);
+        }
+    }
+    expect(failures).toStrictEqual([]);
+    expect(WRITERS.map((w) => w.format)).toContain('pdf');
   });
 });

@@ -89,6 +89,16 @@ export function addMember(draft: PaletteDraft, slug: string): PaletteDraft {
   };
 }
 
+/**
+ * A draft of these colours, in order — the first the anchor, the rest neutrals, as `addMember` makes
+ * them (F-249: 08's *Add Pair to Palette Studio*, ADR-0156 D5). `null` if any slug is not a corpus
+ * colour: a route parameter is never trusted to name one.
+ */
+export function draftOf(slugs: readonly string[]): PaletteDraft | null {
+  if (slugs.length === 0 || slugs.some((s) => entryBySlug(s) === null)) return null;
+  return slugs.reduce(addMember, EMPTY_DRAFT);
+}
+
 export function removeMember(draft: PaletteDraft, slug: string): PaletteDraft {
   return { ...draft, members: draft.members.filter((m) => m.slug !== slug) };
 }
