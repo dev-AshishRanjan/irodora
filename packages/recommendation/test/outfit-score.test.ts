@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fromXyz, type Color } from '@irodora/color-core';
+import { xyzToOklch } from '@irodora/color-spaces';
 import {
   OUTFIT_COMPONENTS,
   OUTFIT_MESSAGE_KEYS,
@@ -19,6 +20,8 @@ import {
   parseWeightContent,
   ruleSetFor,
   scoreOutfit,
+  temperatureOf,
+  warmCoolRelation,
   type Candidate,
   type OutfitPiece,
   type PersonalProfile,
@@ -74,6 +77,12 @@ const colourOf = (slug: string): Color => {
   const found = POOL.find((c) => c.id === slug);
   if (found === undefined) throw new Error(`${slug} is not in the published corpus`);
   return found.color;
+};
+
+/** OKLCh of a colour, as the component reads it. */
+const xyzToOklchOf = (c: Color): readonly [number, number, number] => {
+  const [l, ch, h] = xyzToOklch(c.xyz);
+  return [l, ch, h];
 };
 
 const profile = (over: Partial<PersonalProfile> = {}): PersonalProfile => ({
@@ -474,5 +483,75 @@ describe('preference feedback (FR-37, F-046)', () => {
       new Map([[pairingKey('rust', 'rust'), { accepted: 8, rejected: 0 }]]),
     );
     expect(JSON.stringify(RULES)).toBe(before);
+  });
+});
+
+describe('warmCoolRelation is the harmony component’s own measure (F-249, E-226)', () => {
+  /** The harmony formula as it stood before F-249 exported it: the no-change oracle. */
+  const before = (colors: readonly Color[]) => {
+    const spreads: number[] = [];
+    for (const [i, a] of colors.entries())
+      for (const b of colors.slice(i + 1)) {
+        const [, ac, ah] = xyzToOklchOf(a);
+        const [, bc, bh] = xyzToOklchOf(b);
+        spreads.push(
+          Math.abs(temperatureOf(ac, ah, RULES.poles) - temperatureOf(bc, bh, RULES.poles)),
+        );
+      }
+    if (spreads.length === 0) return { score: 50, spread: null };
+    const worst = Math.max(...spreads);
+    return { score: Math.round(Math.max(0, Math.min(100, 100 * (1 - worst / 2)))), spread: worst };
+  };
+  const harmonyOf = (pieces: OutfitPiece[]) =>
+    score(pieces).components.find((c) => c.component === 'harmony');
+
+  it('scoreOutfit’s harmony is unchanged, over every fixture outfit', () => {
+    for (const pieces of [COHERENT, SCATTERED, outfit('ao-ta', 'aka-tsuchi', 'ina-ho')]) {
+      const h = harmonyOf(pieces);
+      const was = before(pieces.map((p) => p.color));
+      expect(h?.score).toBe(was.score);
+      expect(h?.evidence['widestTemperatureSpread']).toBe(Number(was.spread?.toFixed(4)));
+    }
+  });
+
+  it('agrees with the harmony component for every ordered pair of corpus colours', () => {
+    let pairsSeen = 0;
+    const directions = new Set<string>();
+    for (const a of POOL)
+      for (const b of POOL) {
+        if (a === b) continue;
+        const relation = warmCoolRelation([a.color, b.color], RULES);
+        const h = scoreOutfit(
+          [
+            { slot: 'top', color: a.color },
+            { slot: 'trouser', color: b.color },
+          ],
+          // No reference pool: harmony reads none, and 14,280 outfits scored against 120 references
+          // each is a minute of corpus affinity and versatility this test does not look at.
+          [],
+          profile(),
+          RULES,
+          WEIGHTS,
+        ).components.find((c) => c.component === 'harmony');
+        expect([relation.score, relation.direction]).toStrictEqual([h?.score, h?.direction]);
+        expect(relation.score).toBe(before([a.color, b.color]).score);
+        directions.add(relation.direction);
+        pairsSeen += 1;
+      }
+    expect(pairsSeen).toBe(POOL.length * (POOL.length - 1));
+    // DECOY: the corpus holds all three relations, so a constant could not pass.
+    expect([...directions].sort()).toStrictEqual(['neutral', 'opposes', 'supports']);
+  });
+
+  it('DECOY — a warm pair and a warm–cool pair differ, and a single colour has no spread', () => {
+    const warm = warmCoolRelation([colourOf('aka-tsuchi'), colourOf('furu-kawa')], RULES);
+    const across = warmCoolRelation([colourOf('mi-aka'), colourOf('fuka-mizu')], RULES);
+    expect(warm.direction).not.toBe(across.direction);
+    expect(warmCoolRelation([colourOf('mi-aka')], RULES)).toStrictEqual({
+      score: 50,
+      direction: 'neutral',
+      widestSpread: null,
+      pairs: 0,
+    });
   });
 });

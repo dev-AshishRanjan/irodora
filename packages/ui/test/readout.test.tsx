@@ -410,6 +410,31 @@ describe('the ruled form: its parts by id, its rules as nodes, its lowered run a
     // The note is copyable, as every tabular value is (F-019).
     expect(byId(figure, 'a.wcag.note')?.props['selectable']).toBe(true);
   });
+
+  it('says the note by its spoken name where the printed one leaves out what it is', () => {
+    const row = {
+      key: 'wcag',
+      label: 'WCAG 2.2 Ratio',
+      value: HEX,
+      note: '(APCA Lc: 12.4)',
+    } as const;
+    const spoken = draw({
+      form: 'ruled',
+      layout: 'stacked',
+      testID: 'a',
+      rows: [{ ...row, noteName: 'APCA Lc 12.4, the smaller of its two directions' }],
+    });
+    expect(byId(spoken, 'a.wcag')?.props['accessibilityLabel']).toBe(
+      `${readoutRowName('WCAG 2.2 Ratio', HEX)}, APCA Lc 12.4, the smaller of its two directions`,
+    );
+    // The printed note is still what is drawn.
+    expect(byId(spoken, 'a.wcag.note')?.children).toStrictEqual(['(APCA Lc: 12.4)']);
+    // DECOY: without a spoken name, the row says the printed note.
+    const printed = draw({ form: 'ruled', layout: 'stacked', testID: 'a', rows: [row] });
+    expect(byId(printed, 'a.wcag')?.props['accessibilityLabel']).toBe(
+      `${readoutRowName('WCAG 2.2 Ratio', HEX)}, (APCA Lc: 12.4)`,
+    );
+  });
 });
 
 describe('each row is one accessible element, and every figure is tabular', () => {

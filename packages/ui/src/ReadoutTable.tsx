@@ -118,6 +118,11 @@ export interface RuledRow extends RowBase {
   readonly readingInk?: 'figure';
   /** A caption under the row: 08's APCA line. */
   readonly note?: string;
+  /**
+   * What a screen reader says for the note, where its printed form leaves out what it is (08's Lc is
+   * the smaller of two directions, F-249). The printed note by default.
+   */
+  readonly noteName?: string;
 }
 
 /** 26's cell. */
@@ -304,7 +309,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                 accessibilityRole="text"
                 accessibilityLabel={`${readoutRowName(label, r.value)}${
                   r.reading === undefined ? '' : `, ${r.reading}`
-                }${r.note === undefined ? '' : `, ${r.note}`}`}
+                }${r.note === undefined ? '' : `, ${r.noteName ?? r.note}`}`}
                 style={{
                   flexDirection: stacked ? 'column' : 'row',
                   paddingVertical: READOUT_RULED_PAD,

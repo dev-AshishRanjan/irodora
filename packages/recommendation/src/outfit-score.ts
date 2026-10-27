@@ -170,29 +170,58 @@ function pairs<T>(items: readonly T[]): readonly (readonly [T, T])[] {
   return items.flatMap((a, i) => items.slice(i + 1).map((b): readonly [T, T] => [a, b]));
 }
 
+/** How a set of colours sits on the warm–cool axis: the harmony component's own measure. */
+export interface WarmCoolRelation {
+  /** What remains of 100 after the widest spread, halved: the harmony component's score. */
+  readonly score: number;
+  /** `supports` when the colours sit close on the axis, `opposes` when they span it. */
+  readonly direction: ExplanationDirection;
+  /** The widest pairwise temperature spread, on [0, 2]; `null` for fewer than two colours. */
+  readonly widestSpread: number | null;
+  /** How many pairs were compared. */
+  readonly pairs: number;
+}
+
 /**
- * **Harmony** — how the outfit's hues relate.
+ * **The warm–cool relation** of a set of colours (F-249): how far apart they sit on the
+ * temperature axis, at the widest pair.
  *
  * A convention, and a deliberately modest one: colours whose warm–cool biases are close read as
  * a considered set, and a set spread across the whole axis reads as an accident. It does **not**
  * implement complementary or triadic theory — those are claims about which relationships are
  * pleasing, and this repository has no basis for them.
+ *
+ * EXPORTED so a surface that shows a pair's relation (08's contrast line) reads the outfit
+ * harmony's own measure rather than a second definition of it: `harmony` below delegates here, so
+ * the two can never disagree about one pair (E-226).
  */
-function harmony(pieces: readonly OutfitPiece[], rules: RuleSet): ComponentScore {
-  const combos = pairs(pieces);
-  if (combos.length === 0) return componentScore('harmony', 50, { pairs: 0 });
+export function warmCoolRelation(colors: readonly Color[], rules: RuleSet): WarmCoolRelation {
+  const combos = pairs(colors);
+  if (combos.length === 0)
+    return { score: 50, direction: directionOf(50), widestSpread: null, pairs: 0 };
   const spreads = combos.map(([a, b]) => {
-    const [, ac, ah] = oklchOf(a.color);
-    const [, bc, bh] = oklchOf(b.color);
+    const [, ac, ah] = oklchOf(a);
+    const [, bc, bh] = oklchOf(b);
     // `temperatureOf`, not `hueBias`: three greys are not a scattered outfit just because their
     // hue angles differ, and at C = 0.01 a hue angle is a rounding artefact of two tiny numbers.
     return Math.abs(temperatureOf(ac, ah, rules.poles) - temperatureOf(bc, bh, rules.poles));
   });
   const worst = Math.max(...spreads);
   // Spread is in [0,2]; halving puts it on [0,1] and the score is what remains of 100.
-  return componentScore('harmony', 100 * (1 - worst / 2), {
-    pairs: combos.length,
-    widestTemperatureSpread: Number(worst.toFixed(4)),
+  const score = Math.round(clamp100(100 * (1 - worst / 2)));
+  return { score, direction: directionOf(score), widestSpread: worst, pairs: combos.length };
+}
+
+/** **Harmony** — how the outfit's hues relate: `warmCoolRelation` over its pieces. */
+function harmony(pieces: readonly OutfitPiece[], rules: RuleSet): ComponentScore {
+  const relation = warmCoolRelation(
+    pieces.map((p) => p.color),
+    rules,
+  );
+  if (relation.widestSpread === null) return componentScore('harmony', 50, { pairs: 0 });
+  return componentScore('harmony', 100 * (1 - relation.widestSpread / 2), {
+    pairs: relation.pairs,
+    widestTemperatureSpread: Number(relation.widestSpread.toFixed(4)),
   });
 }
 

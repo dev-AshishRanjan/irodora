@@ -408,6 +408,40 @@ describe('the chrome’s forms (F-234)', () => {
     });
   });
 
+  it('draws 08’s outlined buttons: their words at 500, the Studio’s filled at the cards’ level (F-249)', () => {
+    const { UNSAFE_getAllByType } = render(
+      <ThemeProvider theme="dark">
+        <Button label="Change A" variant="secondary" edge="border" weight={500} testID="c" />
+        <Button
+          label="Add Pair to Palette Studio"
+          variant="secondary"
+          edge="border"
+          weight={500}
+          fill="surface.1"
+          testID="f"
+        />
+      </ThemeProvider>,
+    );
+    expect(hostOf('c').style).toMatchObject({ backgroundColor: 'transparent', borderWidth: 1 });
+    expect(hostOf('f').style).toMatchObject({
+      backgroundColor: dark['surface.1'],
+      borderWidth: 1,
+      borderColor: dark.border,
+    });
+    const weights = UNSAFE_getAllByType(RNText).map(
+      (t) => flattenStyle((t.props as { style?: unknown }).style)['fontWeight'],
+    );
+    expect(weights).toStrictEqual(['500', '500']);
+    // A fill belongs to the outline: every other form refuses one, by type.
+    const wrong = [
+      // @ts-expect-error — the primary is filled in its accent
+      <Button key="p" label="x" fill="surface.1" />,
+      // @ts-expect-error — a tonal button's fill is its level
+      <Button key="t" label="x" variant="tonal" level={2} fill="surface.1" />,
+    ];
+    expect(wrong).toHaveLength(2);
+  });
+
   it('refuses a form’s props on another form', () => {
     const wrong = [
       // @ts-expect-error — an edge belongs to the secondary form

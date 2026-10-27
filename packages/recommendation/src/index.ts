@@ -92,10 +92,12 @@ export {
   OUTFIT_MESSAGE_KEYS,
   scoreOutfit,
   VERSATILE_PAIRING,
+  warmCoolRelation,
   type ComponentScore,
   type OutfitComponent,
   type OutfitPiece,
   type OutfitScore,
+  type WarmCoolRelation,
 } from './outfit-score.js';
 
 export {

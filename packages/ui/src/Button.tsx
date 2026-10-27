@@ -209,6 +209,7 @@ type LabelledBase = Shared & {
 
 type PrimaryProps = LabelledBase & {
   readonly variant?: 'primary';
+  readonly fill?: never;
   readonly edge?: never;
   readonly level?: never;
   readonly ink?: never;
@@ -226,12 +227,22 @@ type SecondaryProps = LabelledBase & {
    * palette would swallow. `edge` is then not drawn.
    */
   readonly on?: Sample;
+  /**
+   * The words' weight: board 00's 400 by default; 500 where the screen draws its outlined words
+   * heavier (08's *Change A* and *Add Pair to Palette Studio*, F-249).
+   */
+  readonly weight?: 400 | 500;
+  /**
+   * A fill inside the outline, where the screen draws one: 08's *Add Pair to Palette Studio* is
+   * filled at the cards' level over the bar's ground (`surface.1`, F-249). Board 00's outline has none.
+   */
+  readonly fill?: 'surface.1';
   readonly level?: never;
   readonly ink?: never;
-  readonly weight?: never;
 };
 type PlainProps = LabelledBase & {
   readonly variant: 'plain';
+  readonly fill?: never;
   /** The label's ink: `foreground`, or `foreground.2` where the chrome draws it secondary. */
   readonly ink?: 'foreground' | 'foreground.2';
   /**
@@ -245,6 +256,7 @@ type PlainProps = LabelledBase & {
 };
 type TonalProps = LabelledBase & {
   readonly variant: 'tonal';
+  readonly fill?: never;
   /** The surface level it is filled with: `level2` (20, 03's *hold*) or `level3` (19). */
   readonly level: 2 | 3;
   readonly edge?: never;
@@ -294,13 +306,14 @@ interface LabelledPaint {
   readonly padded: boolean;
 }
 
-/** The four props that choose a labelled form's paint. */
+/** The props that choose a labelled form's paint. */
 interface PaintProps {
   readonly variant: ButtonVariant;
   readonly edge: 'border' | 'border.strong' | undefined;
   readonly level: 2 | 3 | undefined;
   readonly ink: 'foreground' | 'foreground.2' | undefined;
   readonly weight: 400 | 500 | undefined;
+  readonly fill: 'surface.1' | undefined;
 }
 
 function labelledPaint(
@@ -311,10 +324,10 @@ function labelledPaint(
     case 'secondary':
       // Board 00's outline is `border.strong`; the screens' chrome draws `border.subtle` (`border`).
       return {
-        background: 'transparent',
+        background: props.fill === undefined ? 'transparent' : colors[props.fill],
         edge: colors[props.edge ?? 'border.strong'],
         ink: 'foreground',
-        weight: 400,
+        weight: props.weight ?? 400,
         padded: true,
       };
     case 'plain':
@@ -369,6 +382,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     selected,
     on,
     weight,
+    fill,
     ...rest
   } = props;
   const { colors, source, paint: painted } = useTheme();
@@ -377,7 +391,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
       `Button: the name "${name}" does not contain the visible label "${label}" (WCAG 2.5.3)`,
     );
   const inert = disabled || loading;
-  const paint = labelledPaint({ variant, edge, level, ink, weight }, colors);
+  const paint = labelledPaint({ variant, edge, level, ink, weight, fill }, colors);
   /*
    * ON A SAMPLE (F-248, C8): the words, the glyph and the outline take the sample's text ink, solved on
    * the declared palette and painted as `Text on` paints it, so the three are one ink that clears
