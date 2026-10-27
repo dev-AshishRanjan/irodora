@@ -193,7 +193,7 @@ All four rest on R9 §11's delegation of 2026-10-05: *"For all OQ, when needed d
 - *Card* in the access title is a §2 component word. *Table* stays, as 06's *Readout Table* did (ADR-0146).
 - The brackets on *Change A/B* are notation (ADR-0142 D3's reasoning, applied to 08).
 - The title is `Colour Compare • 比較` (ADR-0142 D5's OQ-48 interim, applied, not decided).
-- *Export Precision Delta PDF* keeps its words. It names a document holding the pair's published values and its ΔE00 to the engine's precision. No measurement is involved, so it is not an instrument-accuracy claim. It is added to `near-misses.md`.
+- *Export Precision Delta PDF* keeps its words. It names a document holding the pair's published values and its ΔE00 to the engine's precision. No measurement is involved, so it says nothing about how accurately anything was measured. It is added to `near-misses.md`.
 
 ### D-3 (ADR-0156): what 08's controls do, and what leaves Compare
 
@@ -234,7 +234,34 @@ All four rest on R9 §11's delegation of 2026-10-05: *"For all OQ, when needed d
 
 ## Implementing session's decisions on this design
 
-*(To be written by the implementing session: each change from this plan, with its reason, in F-247's and F-248's form.)*
+Increment 1 measured `08` (readings in `08.mjs`'s header) and changed this plan where the pixels
+disagreed with it:
+
+- **The type is a step smaller than planned.** Every text but the title, the back word and the names
+  inks 8.9–11.6 dp an em — `caption` (ADR-0113), where the plan assumed `label` for the tables and
+  `body` for the names. The title is `label` 500 (13.7 dp), not `body`; the names `label` 400. The
+  card titles read 600, not 500. So the ruled `ReadoutTable` sets its rows at `caption` and
+  `READOUT_RULED_PAD` is recomputed for a caption line (increment 2), and the cards build much less
+  taller than the plan's estimates (ADR-0157 D2).
+- **The samples draw no keyline.** Their edge reads only the sharpening halo every edge in `08`
+  carries. They bind none (`Swatch keyline={false}`), and C20 does not apply. Risk 1's keyline width
+  is moot.
+- **The seam is `border.subtle`, the card's whole height.** The pair sits in the card's `media` slot
+  (rendered without the card's padding), each half padded `sm`; so `pairSampleSize` is the half less
+  two `sm`, and the seam meets both edges as drawn.
+- **Every corner is `sm`** — the cards and the samples included, where the inventory said `md`.
+- **The action bar** starts at its rule (y 1244, not 1235); both buttons are one height, 30.5 dp
+  (`ACTION`, not `PDF` and `STUDIO`); its top, bottom and sides are `md`; the scroll's foot is `md`.
+- **Intervals** are ADR-0157 D1's table. Title → first rule is `xs` (siblings); the cards' content
+  inset is `sm` (rule ends two each side of the midpoint).
+- **The census** found no pair whose component band exceeds the total's, and no near-neutral pair
+  with |Δh| ≥ 20° beside *Very Close in Hue* — every corpus pair prints a perceptible ΔE00. The test
+  plan's decoy for "a component band above the total's" cannot exist on this corpus; it is asserted
+  absent instead, with ADR-0125's case constructed from published Lab values in the unit test.
+- **The fixture pair** is `aka-tsuchi → ao-ta` (ΔE00 32.28, ratio 1.05, Lc 0.0, separations
+  36/20/100, B's term *green*/緑, the relation *shared*).
+- **Owed and filed:** F-353 (the Japanese lexicon names the hues the English one does: 20 entries
+  lack one) and F-354 (07's separation row says *approximate* when its worst is tritan's).
 
 ---
 
@@ -625,7 +652,7 @@ Each commit passes Tier 1 (ADR-0132): `pnpm format:check && pnpm typecheck && pn
 - **E2:**
   - *B is lighter*, *B is more chromatic* and *Shift towards teal* → the band phrases, with *towards* where ADR-0155 D2 allows it;
   - *(Safe)* ×3 → the model;
-  - *Non-Text / Harmonious Pairing* → the threshold the ratio reaches, and the warm–cool relation;
+  - *Non-Text / Harmonious Pairing* → the threshold the ratio reaches, and the warm–cool relation (claims-ok: quotes the drawn construction this list resolves);
   - the Lc → the smaller direction, floored.
   - (claims-ok: quotes the drawn constructions this list resolves)
 - **E3:**

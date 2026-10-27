@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted** — F-151.
+**Accepted** — F-151. **Superseded in part by [ADR-0154](0154-08s-compare-samples-are-drawn-apart-as-08-draws-them.md)** (F-249): *"And the samples touch"* no longer governs Compare, which draws its samples apart as `08` does; `Pair` keeps it for Contemporary. The size half stands.
 
 ## Date
 

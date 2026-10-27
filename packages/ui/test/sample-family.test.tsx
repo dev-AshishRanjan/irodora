@@ -64,15 +64,16 @@ describe('the defaults are the inventories’, recomputed', () => {
 
   it('SWATCH_KEYLINE is what most samples draw', () => {
     const drawn = scaled.filter((e) => e.tokens?.['keyline'] !== undefined).length;
-    expect([drawn, scaled.length - drawn]).toStrictEqual([35, 29]);
+    // F-249 measured 08's two samples: no keyline, only the halo every edge carries (35 → 33).
+    expect([drawn, scaled.length - drawn]).toStrictEqual([33, 31]);
     expect(SWATCH_KEYLINE).toBe(drawn > scaled.length - drawn);
   });
 
   it('the corner defaults to sm, the step most samples are bound to', () => {
     const sm = samples.filter((e) => e.tokens?.['radius'] === 'sm').length;
     const md = samples.filter((e) => e.tokens?.['radius'] === 'md').length;
-    // F-247 measured 06's hero: sm, 44 → 45.
-    expect([sm, md]).toStrictEqual([45, 29]);
+    // F-247 measured 06's hero: sm, 44 → 45. F-249 measured 08's two samples: sm, 45 → 47.
+    expect([sm, md]).toStrictEqual([47, 27]);
     const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} />);
     expect(sampleNode(tree)['borderRadius']).toBe(swatchCorner(SWATCH_SIZE, 'sm').sample);
   });

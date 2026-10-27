@@ -110,7 +110,7 @@ Two rules that matter more than the format:
 | [0092](0092-pixels-come-out-of-a-file-in-javascript.md) | Pixels come out of a file in JavaScript, and the PNG walk is ours | Accepted |
 | [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Superseded by 0122 |
 | [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Amended by ADR-0103 |
-| [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted |
+| [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted; its arrangement half superseded for Compare by ADR-0154 |
 | [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Superseded by ADR-0111 |
 | [0097](0097-the-device-carries-the-policy-and-runs-the-gates-own-checks.md) | The device carries the policy and runs the gate’s own checks | Accepted |
 | [0098](0098-the-status-triple-moves-together-because-cvd-separation-not-contrast-is-what-binds-it.md) | The status triple moves together, because CVD separation and not contrast is what binds it | Accepted |
@@ -169,6 +169,10 @@ Two rules that matter more than the format:
 | [0151](0151-07s-occasions-slots-and-figures-say-what-the-engine-computes.md) | 07's occasions, slots and figures say what the engine computes | Accepted |
 | [0152](0152-what-07s-controls-do-and-what-it-keeps-that-it-does-not-draw.md) | What 07's controls do, and what it keeps that it does not draw | Accepted |
 | [0153](0153-07s-composition-its-inks-and-its-kimono.md) | 07's composition, its inks, and its kimono | Accepted |
+| [0154](0154-08s-compare-samples-are-drawn-apart-as-08-draws-them.md) | 08's compare samples are drawn apart, as 08 draws them, each above the judgeable floor | Accepted |
+| [0155](0155-08s-figures-and-words-say-what-the-engine-computes.md) | 08's figures and words say what the engine computes | Accepted |
+| [0156](0156-what-08s-controls-do-and-what-leaves-compare.md) | What 08's controls do, and what leaves Compare | Accepted |
+| [0157](0157-08s-composition-its-art-and-its-seam.md) | 08's composition, its art and its seam | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
