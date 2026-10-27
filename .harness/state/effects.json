@@ -123,6 +123,10 @@
         {
           "kind": "test",
           "ref": "packages/color-difference/test/golden/ciede2000-terms.test.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare-readout.ts#pairReadout"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -132,7 +136,7 @@
         "packages/recommendation"
       ],
       "severity": "critical",
-      "guard": "gate:color-golden F-222: deltaE00 and the new deltaE00Terms run ONE internal core (deltaE00 passes no sink), guarded by the ciede2000-terms golden set (Table I's SL, SC, SH, RT and the three weighted terms for all 34 pairs, with a transcription check rebuilding every printed ΔE00) and an Object.is property over the identity fixture's 10,000 inputs — the cross-platform fixture untouched and green, DIFFERENCE_VERSION unchanged.",
+      "guard": "gate:color-golden F-222: deltaE00 and the new deltaE00Terms run ONE internal core (deltaE00 passes no sink), guarded by the ciede2000-terms golden set (Table I's SL, SC, SH, RT and the three weighted terms for all 34 pairs, with a transcription check rebuilding every printed ΔE00) and an Object.is property over the identity fixture's 10,000 inputs — the cross-platform fixture untouched and green, DIFFERENCE_VERSION unchanged. F-249: 08 prints ΔE00 to two places beside its band and reads the weighted terms (deltaE00Terms) for each axis reading; compare.test holds the terms’ total the same double as ΔE00 for every ordered pair, and compare-readout.test the printed figure for every pair, the pinned 89.73 kept.",
       "memory": "memory/effects/deltae00-is-the-ranking-authority.md",
       "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only. AS OF F-013 THE FIRST CONSUMER EXISTS: @irodora/color-naming ranks with deltaE00 and nothing else — its two-stage search narrows WHICH candidates are examined, never HOW they are ordered, and packages/color-naming/test/equivalence.test.ts asserts the two are identical over thousands of adversarial records with a culori cross-check (which is what would catch the whole suite agreeing with a defect in our own deltaE00, since both paths call it). TWO THINGS F-013 ADDED. Ranking on distance ALONE is not a total order: two records can share a Lab and Array.prototype.sort is stable, so a comparator on distance only inherits input order and two paths enumerating differently disagree on ties — intermittently, looking like flakiness rather than a metric error. compareScored breaks ties on id. And the ADR-0048 similarity percentage must NEVER become a second ranking authority: it is monotone but NOT injective in float64, so sorting by it ties where deltaE00 does not. AS OF F-019 IT ALSO REACHES A SURFACE. Compare shows ΔE00 as a number a professional reads and acts on, so a defect here stops being a subtle reordering in a candidate list and becomes a wrong figure on screen with its units and its space printed beside it — which is more convincing, not less. The destination end is guarded by a PINNED value: `apps/mobile/test/compare.test.ts` asserts usu-gami to soko-zumi is 89.73 ΔE00, so a change to the metric fails here as well as in the golden set. That number was MEASURED after a first draft carried a plausible-looking 76.86 that nobody had computed — which is the argument for pinning one rather than describing the pair in words. ---- F-222: the weighted terms are now read as well as the total — ADR-0125 bands each component on its term, and DeltaBars' unit is the terms (ADR-0119) — so a term can now be wrong in a way the total cannot see (a swap of ΔL′ and ΔC′ keeps the sum of squares). That is why the terms have their own published check, and why the total is never recomposed from them: the same sum in another order differs in the last bit.",
       "confidence": 0.97,
@@ -165,6 +169,10 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/outfit/cvd.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare-readout.ts#pairReadout"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -175,7 +183,7 @@
         "docs/design"
       ],
       "severity": "critical",
-      "guard": "gate:cvd",
+      "guard": "gate:cvd F-249: 08 prints floor(separationDetail(…, 1).score) per deficiency with the model it was computed under; compare-readout.test holds the figure for every ordered pair, and no second separation definition exists.",
       "memory": "memory/effects/one-separation-definition-for-ui-and-engine.md",
       "rationale": "The UI's CVD preview, the recommendation engine's separation factor and the design system's cvdPairs check all read the same score. If a second definition ever appears, the two will disagree and nobody will notice which surface is wrong — the failure is a recommendation that claims an accessibility property the interface does not actually deliver. F-031 MADE THE PREDICTED CONSUMER REAL. This link was written naming \"the recommendation engine’s separation factor\" before any such thing existed — a `to` that described an intention. `outfit-score.ts#cvdAccessibility` now imports `separationScore` and defines no separation of its own, so the link describes the repository rather than a plan. IT IS THE ONLY ONE OF THE SIX OUTFIT COMPONENTS RESTING ON A PUBLISHED MODEL — the other five are conventions this repository invented and each says so — which is exactly why a second definition here would have been the worst place for one: an accessibility claim is the component a person would be most entitled to rely on. It takes the WORST pair across all three deficiencies rather than the mean, because an outfit where one pair vanishes for a deutan is not rescued by two that survive. F-032 ADDED THE THIRD CONSUMER THIS LINK NAMED, and it is the one where a second definition would have done the most damage. `apps/mobile/src/outfit/cvd.ts` flags a pair as hard to tell apart and proposes a swap WITH A MEASURED IMPROVEMENT — a number a person is invited to act on. If the Studio flagged by one definition and the recommendation engine ranked by another, the product would tell somebody a swap gained 99 points and then rank the result as though it had not. All three now read `separationScore`, and a test asserts the module calls neither `simulateAnomalous` nor `simulateDichromacy` — not because simulation is wrong (it is what `separationScore` does internally) but because a colour simulated FOR DISPLAY is the filter [[cvd-is-scoring-not-rendering]] exists to reject.",
       "confidence": 0.94,
@@ -593,7 +601,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue. F-246: the Atlas’s catalogue changed — 05’s ten keys in (atlas.titleJa, compare, finder, searchPlaceholder, family, heading, moreFilters and the facets sheet’s three names), the old screen’s six out (unused keys fail i18n.test), atlas.palettes re-valued to Palettes and the ja atlas.title to 色図鑑; the /atlas capture anchor moved from atlas.title (now one line holding both scripts, which a Maestro text selector cannot match by its English alone) to atlas.family, and the journey opens a colour by its kanji (a card prints no English). generate-e2e-flows --check resolves both. F-247 added the colour page’s keys (06’s headings, actions and app bar names, the pill’s words, the review line, the empty card) and removed the 33 only the old page read (detail.*, coord.xyz and the gamut lines, prov.*, rel.*, cvd.normal, target.arm), each with no reader left (the unused-key scan).",
+      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see) F-242: Home’s catalogue changed — the reading block’s eleven keys went (unused keys fail i18n.test), 01’s headings and count keys came in both catalogues, and the e2e anchors moved from home.what1 (now one line of a three-line heading, which a Maestro text selector cannot match) to home.onDevice; generate-e2e-flows --check resolves both against the catalogue. F-246: the Atlas’s catalogue changed — 05’s ten keys in (atlas.titleJa, compare, finder, searchPlaceholder, family, heading, moreFilters and the facets sheet’s three names), the old screen’s six out (unused keys fail i18n.test), atlas.palettes re-valued to Palettes and the ja atlas.title to 色図鑑; the /atlas capture anchor moved from atlas.title (now one line holding both scripts, which a Maestro text selector cannot match by its English alone) to atlas.family, and the journey opens a colour by its kanji (a card prints no English). generate-e2e-flows --check resolves both. F-247 added the colour page’s keys (06’s headings, actions and app bar names, the pill’s words, the review line, the empty card) and removed the 33 only the old page read (detail.*, coord.xyz and the gamut lines, prov.*, rel.*, cvd.normal, target.arm), each with no reader left (the unused-key scan). F-249: 08’s keys added in both catalogues; the keys only the old Compare read removed, four Measure and Shopping still read kept (i18n.test’s unused-key scan).",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
       "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves. F-091 ADDED A READER THAT IS NOT THE APP AND THAT `tsc` CANNOT SEE. The Atlas journey selects on the strings the app renders, so its spec names MESSAGE KEYS and scripts/generate-e2e-flows.mjs resolves them through this file — imported, not parsed, under Node 24 type stripping, so it is the object the app renders from rather than a regex’s opinion of it. The completeness mechanism that makes this link safe cannot reach a JSON spec: a renamed key breaks `ja` and every call site at compile time, and the journey silently not at all. So the guard here is a SECOND one — `generate-e2e-flows.mjs --check`, in `lint` — and it matters more than usual because the journey CANNOT BE RUN on this workstation (no JDK, no emulator; F-091 criteria 2 to 4 are attested). A hand-written flow would have gone wrong at the first rename with every gate green, which is why ADR-0086 generates it instead. F-139 ADDED TWO KEYS THAT ARE CONTROLS RATHER THAN PROSE — `browse.add` and `export.buildPalette`. A missing one is still a `tsc` failure, which is this link working; what is new is that the string is now an ACCESSIBLE NAME as well as a label, so a wrong or absent translation is an unusable control rather than an untranslated sentence. `browse.add` is deliberately reused by three screens (wardrobe, outfit builder, shopping check) because they point at ONE destination: three labels for one action would drift, and somebody who learned the word on one screen would meet a different one on the next.",
       "confidence": 0.95,
@@ -1728,6 +1736,10 @@
         {
           "kind": "test",
           "ref": "packages/optimization/test/shopping-figures.test.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare-readout.ts#hueTerm"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1737,7 +1749,7 @@
         "content"
       ],
       "severity": "high",
-      "guard": "gate:content (the lexicon parses, is digest-verified, carries a rationale per term) plus gate:test (removing a term removes the gap names that used it, watched failing). NEITHER reaches an editor removing a term nobody is currently missing — see the rationale. F-222: gapsAddressedBy counts REGIONS (Gap.region), because the published lexicon names one region under several term pairs — the dark near-neutral region is named four ways (dark, 暗い × grey, neutral), measured in shopping-figures.test — so a term an editor adds as a synonym cannot inflate 22's figure.",
+      "guard": "gate:content (the lexicon parses, is digest-verified, carries a rationale per term) plus gate:test (removing a term removes the gap names that used it, watched failing). NEITHER reaches an editor removing a term nobody is currently missing — see the rationale. F-222: gapsAddressedBy counts REGIONS (Gap.region), because the published lexicon names one region under several term pairs — the dark near-neutral region is named four ways (dark, 暗い × grey, neutral), measured in shopping-figures.test — so a term an editor adds as a synonym cannot inflate 22's figure. F-249: a third reader — 08’s hue reading appends B’s hue term in the locale’s own language (ADR-0155 D2). A removed term makes the reading quieter and indistinguishable from “no term applies”; compare-readout.test holds that the term named is B’s and A is not in it, over every pair, with a pair inside one term as the decoy.",
       "memory": "memory/effects/the-phrase-lexicon-has-two-readers-now-and-they-fail-differently.md",
       "rationale": "THE PHRASE LEXICON HAS TWO READERS NOW, AND THEY FAIL DIFFERENTLY. Until F-048 `content/rules/phrase-lexicon.*.json` had one consumer — the Finder (F-021), which matches what a person types. F-048's `gaps` added a second, naming a missing region from the same 18 published terms. WHEN AN EDITOR REMOVES A TERM the two break in ways that are not comparable: the Finder stops matching a phrase somebody types, which is visible and self-reporting because they search and get nothing; `gaps` loses the ability to NAME a region, so no gap is reported there — and SILENCE IS EXACTLY WHAT \"you have no gaps\" LOOKS LIKE. A removed term does not make gap analysis wrong, it makes it QUIETER, and a wardrobe with a real hole reports nothing while nobody types a query that comes back empty. WHY THE VOCABULARY LIVES IN CONTENT ANYWAY: inventing a second one inside coverage.ts would be E-013's shape, one content rule in two places drifting the first time an editor publishes. The lexicon has a rationale per term, a version and a digest; a hard-coded list in the engine has none of those and nobody would notice it diverging. So the trade is deliberate — THE GAPS THIS FEATURE CAN NAME ARE EXACTLY THE ONES THE LEXICON CAN EXPRESS — and it is written into the function's own header rather than left to be deduced from an empty result. THE GUARD AND ITS LIMIT: gate:content verifies the lexicon parses, is digest-verified and carries a rationale per term; gate:test asserts that REMOVING A TERM REMOVES THE GAP NAMES THAT USED IT, which is the decoy proving the words come from content rather than from the file, watched failing by hard-coding two term names and seeing exactly that one test of 139 go red. WHAT NEITHER REACHES is an editor removing a term nobody is currently missing — there is no check saying \"this lexicon can still express every region a wardrobe might lack\", because that would require knowing every wardrobe. The honest mitigation is that the term count is small and each carries a rationale an editor had to write, so removal is a deliberate act rather than a drift. THE NEAR-NEUTRAL BOUNDARY IS THE SAME NUMBER IN TWO PLACES AND THAT IS CORRECT: `gaps` only names regions below NEUTRAL_CHROMA (0.039) because above it a lightness-and-chroma region has a hue nobody published, and the lexicon's own `neutral` term ends at exactly 0.039. One is a CONTENT boundary an editor chose for a word and the other is an ENGINE boundary F-101 measured for when a hue angle stops meaning anything. They agree today and are free to disagree: if an editor widened `neutral`, `gaps` should still refuse to invent a hue above where the engine says hue is real. MOVED IN F-110: `coverage.ts` and its test now live in `@irodora/optimization`, the package F-048's own row named. Nothing above changes in substance — the reader is the same code at a new address. The \"one test of 139\" watched failing above was counted when the file was in `recommendation`; those 18 coverage tests are now 18 of 28 in `optimization`, and the decoy is the same decoy.",
       "confidence": 0.9,
@@ -3516,7 +3528,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "BOTH COMPONENTS ARE REGISTERED SUBJECTS, and `Strip` in its own right rather than through `Pair` — three members at unequal weights, which is the only arrangement in which a middle segment exists. `pair.test.tsx` asserts the shared edge in BOTH directions: no line and no corner where two samples meet, and a line on the three outer edges of each half, so a component that drew nothing at all would fail. The size floor is asserted from the manifest inputs rather than from 77, refuses to go under and does grow above, and the narrowest-phone case is computed from the well’s padding and the ring instead of a measured width. On the screens, `screens.test.tsx` asserts the pair precedes every figure in tree order, the strip’s widths equal `deriveWeights` and change when the palette does, and the Finder’s answer line holds one position across all four kinds of answer. Gate 8’s scope check is what forced the direct registration; gate 9 and the F-171 pairing rule cover the colours.",
+      "guard": "BOTH COMPONENTS ARE REGISTERED SUBJECTS, and `Strip` in its own right rather than through `Pair` — three members at unequal weights, which is the only arrangement in which a middle segment exists. `pair.test.tsx` asserts the shared edge in BOTH directions: no line and no corner where two samples meet, and a line on the three outer edges of each half, so a component that drew nothing at all would fail. The size floor is asserted from the manifest inputs rather than from 77, refuses to go under and does grow above, and the narrowest-phone case is computed from the well’s padding and the ring instead of a measured width. On the screens, `screens.test.tsx` asserts the pair precedes every figure in tree order, the strip’s widths equal `deriveWeights` and change when the palette does, and the Finder’s answer line holds one position across all four kinds of answer. Gate 8’s scope check is what forced the direct registration; gate 9 and the F-171 pairing rule cover the colours. F-249: Compare leaves Pair — 08 draws its samples apart (ADR-0154); Contemporary keeps Pair. screens.test’s F-151 describe now holds the samples apart with the seam between, both before every figure, and each at or above the floor at 320 dp.",
       "memory": "memory/effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md",
       "rationale": "A COMPONENT REACHED ONLY THROUGH ANOTHER IS EXERCISED ONLY IN THE SHAPE ITS PARENT USES, and from outside that is indistinguishable from coverage. `Pair` became `Strip` with two members so the edge rule — no line and no corner where two samples meet — would have ONE home; `a11y-scope.mjs` then refused the build saying `Strip` was unreachable, which looked wrong because `Pair` is registered and renders it on every run. THE GATE WAS RIGHT FOR A BETTER REASON THAN IT GAVE: `Pair` renders two EQUAL members, which is the shape that cannot go wrong. Everything the component exists for lives in the others — unequal weights, a middle segment with a rounded corner on neither side, a member list that is not two — and none of it had a subject. \"It is rendered\" and \"its behaviour is rendered\" are different claims and only the first is one a registry can answer. THIS IS THE MIRROR OF EVERY BLIND SPOT RECORDED BEFORE IT: those were checkers that could not see their subject; here the checker is fine and the SUBJECT arrived in one shape out of many. THREE SMALLER THINGS CAME WITH IT. F-171’s pairing rule fired on the new component within minutes, on two good tokens in a combination gate 9 has never measured — a rule one feature old catching something that did not exist when it was written, and the fix (labels out of the well) is better design anyway. The FR-48 tabular check had only one direction, asserting that what is marked is selectable and never that a figure is marked, so a bare `4.23` with no prop rendered in proportional digits and passed everything. And the new check was VACUOUS on two screens of three, caught by its own non-vacuity assertion an hour after E-090 was written about that exact failure — one of the two legitimately so, because a palette draft with no CVD finding carries no numbers at all.",
       "confidence": 0.9,
@@ -4935,7 +4947,7 @@
         "root"
       ],
       "severity": "medium",
-      "guard": "THE INSET WAS CAPTURED FROM THE TREE BEFORE THE CONVERSION, and the ordering is the whole assertion — Surface defaults its padding to md and Card to lg, so a conversion that drops the prop moves a screen by 4pt in silence, and a fixture written afterwards would agree with whatever the edit did. It covers all 72 conformance subjects, not only the twelve files touched. THE FIRST VERSION OF THAT PIN WAS WRONG AND FIRED IMMEDIATELY: it compared the MULTISET, and a Card draws a header box AND a body box where a Surface drew one, so the count necessarily grows. It now asserts the distinct set is identical and no value occurs less often, with a decoy asserting at least one subject GAINED boxes — so it cannot pass on a branch where nothing was converted. CRITERION 2 IS A MARKER AT THE SITE, not a registry: a line-keyed record rots when anything above it moves and an ordinal-keyed one mis-assigns silently when two sites swap. verify-surface-not-card.mjs refuses an unmarked Surface, a marker that is a shrug, and a marker whose element has gone; its proof watches all three refuse plus two decoys, in a temp directory, writing nothing to the working tree. WHAT IS NOT GUARDED: rhythm. Twenty-four cards went from one padded box with a Stack gap to a header box, a hairline and a body box — the insets are equal and the screens are not the same, and no gate here renders a layout. F-246’s review (B1): Card gains an additive mediaGap, the body’s top padding under its media; atlas-forms.test holds it, with the decoys that without it, or without media, the body is padded alike on every side. The insets walker reads `padding` only, so the pin does not move.",
+      "guard": "THE INSET WAS CAPTURED FROM THE TREE BEFORE THE CONVERSION, and the ordering is the whole assertion — Surface defaults its padding to md and Card to lg, so a conversion that drops the prop moves a screen by 4pt in silence, and a fixture written afterwards would agree with whatever the edit did. It covers all 72 conformance subjects, not only the twelve files touched. THE FIRST VERSION OF THAT PIN WAS WRONG AND FIRED IMMEDIATELY: it compared the MULTISET, and a Card draws a header box AND a body box where a Surface drew one, so the count necessarily grows. It now asserts the distinct set is identical and no value occurs less often, with a decoy asserting at least one subject GAINED boxes — so it cannot pass on a branch where nothing was converted. CRITERION 2 IS A MARKER AT THE SITE, not a registry: a line-keyed record rots when anything above it moves and an ordinal-keyed one mis-assigns silently when two sites swap. verify-surface-not-card.mjs refuses an unmarked Surface, a marker that is a shrug, and a marker whose element has gone; its proof watches all three refuse plus two decoys, in a temp directory, writing nothing to the working tree. WHAT IS NOT GUARDED: rhythm. Twenty-four cards went from one padded box with a Stack gap to a header box, a hairline and a body box — the insets are equal and the screens are not the same, and no gate here renders a layout. F-246’s review (B1): Card gains an additive mediaGap, the body’s top padding under its media; atlas-forms.test holds it, with the decoys that without it, or without media, the body is padded alike on every side. The insets walker reads `padding` only, so the pin does not move. F-249: 08’s pair sits in a level-1 Card’s media slot so its seam meets both edges, and its two tables in Cards padded sm; screen-insets re-captured for Compare only.",
       "memory": "memory/effects/a-judgement-nobody-wrote-down-cannot-be-reviewed.md",
       "rationale": "THE SITE COUNT IN THE FEATURE NOTES WAS WRONG BY A FACTOR OF TWO AND A HALF. It said \"nine surfaces ... the sites are known\" and named four; classifying by reading the tree found 47 sites, 24 of them cards. That is the argument for the classifier rather than against the note. THE 23 THAT STAY ARE THE INTERESTING HALF: a camera preview whose rectangle converts a tap into a point in the frame, a pressable photo target, empty states, a bar. Each is genuinely not a card and each judgement is invisible ten minutes after it is made — \"deliberately a Surface\" and \"nobody got to this one\" look identical six months later, and the second is what flattened the card vocabulary in the first place. THE MARKER HAD TO GO INSIDE THE OPENING TAG, and the reason was luck turning out right: a JSX comment child is what anybody would write, and eight of these sites sit directly inside a parenthesised ternary branch where a comment and an element are two expressions and do not parse. The position that works everywhere is also the position the grammar binds to the element rather than proximity binding it.",
       "confidence": 0.9,
@@ -5698,6 +5710,10 @@
         {
           "kind": "test",
           "ref": "packages/ui/test/text-face.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -5706,7 +5722,7 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "THE DEFAULT IS WHAT `15` DRAWS, which is what makes a change reaching every screen invisible until somebody moves a switch: `useDisplaySettings()` returns DRAWN_DISPLAY_SETTINGS outside its provider — all three on — and conformance.test.tsx asserts a `numeric` Text carries the manifest feature with no provider at all, keeps it with the setting on, and DROPS it with the setting off, beside the existing decoy that a Text without `numeric` carries no variant ever. apps/mobile/test/display-settings.test.tsx holds the device half: an absent row reads as the drawn default; nine values that are not exactly \"false\" read as ON (including \"\", \"no\", \"0\", \"FALSE\" and a JSON blob), and only \"false\" reads off; each setting round-trips; and the DECOY FOR A TYPO IN THE KEY TABLE — turning one setting off leaves the other two on and writes exactly one row, which the round trip alone would pass with all three keys spelled the same. The provider is asserted to hand the ui provider the values it holds, to persist a change in the same frame, and to THROW outside itself where `useDisplaySettings()` deliberately does not. The screen is asserted to draw all three rows named as `15` names them, each announcing its checked state, each reporting which switch moved and to what. controls.test.tsx holds `15`'s gutter dot: drawn at 5 dp in a resolved `foreground.3` when the switch is on and the caller asked, none when off, a DECOY that an on switch without the prop draws none, and that it adds no second announcement. NOT GUARDED: the provenance badge itself, which does not exist — F-233 owns it and is blocked behind F-225 (OQ-36). What IS guarded is the boundary: swatchAccessibleName takes a name, a hex and a colour, and no setting, so the badge is hideable and the provenance is not (ADR-0005). FOUR DONE FEATURES ARE DOWNSTREAM AND EACH CARRIES A NOTE (F-239's review found them unrecorded): F-019 (“Tabular numerals, aligned columns, copyable values”), F-147, F-151 and the blocked F-226 all stated tabular figures unconditionally, and each is now true while the drawn default holds. What guards them is that the default IS the drawn state and the conformance suite renders every screen without a provider — so the shipped behaviour they were verified against is the behaviour the suite still measures. F-226: `Text` gained `face`, and `numeric` is refused with the serif and the mincho at the TYPE (no mockup draws a serif figure; Gelasio's default digits are oldstyle and proportional). The ragged-figure sweep now renders every registered screen and state in both themes and reads hexes and figures with a unit; it found 264 proportional figures (a Swatch named by its hex; ColourDetail's coordinate rows), fixed in the same feature.",
+      "guard": "THE DEFAULT IS WHAT `15` DRAWS, which is what makes a change reaching every screen invisible until somebody moves a switch: `useDisplaySettings()` returns DRAWN_DISPLAY_SETTINGS outside its provider — all three on — and conformance.test.tsx asserts a `numeric` Text carries the manifest feature with no provider at all, keeps it with the setting on, and DROPS it with the setting off, beside the existing decoy that a Text without `numeric` carries no variant ever. apps/mobile/test/display-settings.test.tsx holds the device half: an absent row reads as the drawn default; nine values that are not exactly \"false\" read as ON (including \"\", \"no\", \"0\", \"FALSE\" and a JSON blob), and only \"false\" reads off; each setting round-trips; and the DECOY FOR A TYPO IN THE KEY TABLE — turning one setting off leaves the other two on and writes exactly one row, which the round trip alone would pass with all three keys spelled the same. The provider is asserted to hand the ui provider the values it holds, to persist a change in the same frame, and to THROW outside itself where `useDisplaySettings()` deliberately does not. The screen is asserted to draw all three rows named as `15` names them, each announcing its checked state, each reporting which switch moved and to what. controls.test.tsx holds `15`'s gutter dot: drawn at 5 dp in a resolved `foreground.3` when the switch is on and the caller asked, none when off, a DECOY that an on switch without the prop draws none, and that it adds no second announcement. NOT GUARDED: the provenance badge itself, which does not exist — F-233 owns it and is blocked behind F-225 (OQ-36). What IS guarded is the boundary: swatchAccessibleName takes a name, a hex and a colour, and no setting, so the badge is hideable and the provenance is not (ADR-0005). FOUR DONE FEATURES ARE DOWNSTREAM AND EACH CARRIES A NOTE (F-239's review found them unrecorded): F-019 (“Tabular numerals, aligned columns, copyable values”), F-147, F-151 and the blocked F-226 all stated tabular figures unconditionally, and each is now true while the drawn default holds. What guards them is that the default IS the drawn state and the conformance suite renders every screen without a provider — so the shipped behaviour they were verified against is the behaviour the suite still measures. F-226: `Text` gained `face`, and `numeric` is refused with the serif and the mincho at the TYPE (no mockup draws a serif figure; Gelasio's default digits are oldstyle and proportional). The ragged-figure sweep now renders every registered screen and state in both themes and reads hexes and figures with a unit; it found 264 proportional figures (a Swatch named by its hex; ColourDetail's coordinate rows), fixed in the same feature. F-249: 08’s figures — two meta lines, five metrics, the ratio, the Lc, three separations — are each tabular and selectable, the stacked line’s figure run included (screens.test’s tabular describe lists them).",
       "memory": "memory/effects/a-setting-that-changes-what-text-means.md",
       "rationale": "`15` draws three switches, and one of them lands on a prop that already existed: `Text`'s `numeric` stops meaning \"use tabular figures\" and starts meaning \"this text carries figures\", with the setting deciding. Nothing at any call site changed and every call site changed meaning, which is why this is high severity — it reaches every screen that shows a number, and the failure mode is silent. The prop could not be removed in favour of the setting because no heuristic can tell \"0.42\" from \"F-019\": the caller knows, the component cannot. The values live in @irodora/ui because `Text` cannot read an app context; everything touching the device lives in apps/mobile, and the app's provider mounts the ui one so the two cannot drift. The third switch writes to a reader that does not exist yet and says so, rather than being built here (F-233's scope) or left undone.",
       "confidence": 0.9,
@@ -6012,7 +6028,7 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing. F-248: the Japanese catalogue’s 感, 揃 and 替 regenerated into the subset; verify-font-coverage in gate:content.",
+      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing. F-248: the Japanese catalogue’s 感, 揃 and 替 regenerated into the subset; verify-font-coverage in gate:content. F-249: the Japanese catalogue’s 寄, 満, 房 and 択 regenerated into the subset; verify-font-coverage and generate-font-subset --check.",
       "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
       "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step. F-247: the colour page no longer prints the Japanese names of the palettes holding a colour (ADR-0147), so it left this link; its own new Japanese words are catalogue words, held by the same coverage check.",
       "confidence": 0.9,
@@ -6320,7 +6336,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy. F-246: 05’s title re-measured at body 600 and its heading at label 600, both inside the type census; the caption readings below 12 dp are comments, not raw.emDp. F-247 binds two measured steps, kanjiHero (06.kanji, 50.5) and kanjiHeroJa (26.hero.kanji, 39.2), each at its element’s outline-measured em; their two census rows are discharged.",
+      "guard": "`type-scale.test.ts` holds the manifest's step names to the inventory schema's `type.size` enum, the four board-00 sizes to 72/22/16/14, and the `caption` size to the median of every `raw.emDp` below 12 dp (outside 18's drawn document), with a decoy for a remeasured inventory. The schema is in turbo's globalDependencies, as the inventories are. F-230 (ADR-0121): the measured steps `wordmark` 31.6 and `wordmarkSplash` 59.7 are recomputed from their bound elements; the census holds every governing element drawn more than 4 dp from every step to a measured step or to an owed row in type-census.json, both ways, with a planted decoy; and verify-token-reach names any reader of a measured step but brand.tsx (a planted `size=\"wordmark\"` in Home the proof), and fails once an owed row's owner is done. F-230's review: a measured step leads at the nearest board step's ratio or its face's own line where that is taller (ADR-0121, amended) — the manifest records each bundled face's `ownLine`, fonts.test reads it back from the TTF, and type-scale.test holds the measured steps to it with display1's 0.98 as the decoy. F-246: 05’s title re-measured at body 600 and its heading at label 600, both inside the type census; the caption readings below 12 dp are comments, not raw.emDp. F-247 binds two measured steps, kanjiHero (06.kanji, 50.5) and kanjiHeroJa (26.hero.kanji, 39.2), each at its element’s outline-measured em; their two census rows are discharged. F-249: 08.json re-measured — its tables, metas, card titles and buttons are caption (below 12 dp, kept out of raw.emDp), its title and names label; the caption median unchanged (type-scale.test).",
       "memory": "memory/effects/the-caption-is-the-median-of-what-the-mockups-draw.md",
       "rationale": "ADR-0113 made `caption` a MEASUREMENT: 10.3 dp, the median of the 92 ems the mockups draw below 12 dp. So an inventory whose readings change changes the scale. F-273 will measure the 25 captions not yet read, and the test will then fail with the new number — which is intended: the scale is edited to it, with the ADR, rather than the test being relaxed. The schema's size vocabulary and the manifest's steps are one list read two ways; a step added to one and not the other is a record naming a size the app cannot set. F-230: an inventory re-reading can now also MOVE A MEASURED STEP — the median of its bound elements — or move an element across the 4 dp line, which the census reports as unbound or no longer owed.",
       "confidence": 0.85,
@@ -6923,6 +6939,10 @@
         {
           "kind": "file",
           "ref": "apps/mobile/app/(tabs)/atlas/wear/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/compare.tsx"
         }
       ],
       "scope": [
@@ -6930,7 +6950,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways.",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways. F-249: atlas/compare leaves PLATFORM_HEADER — 08 draws its own bar; the decoy moved to atlas/find, still on the platform header.",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -7175,7 +7195,7 @@
           "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
-      "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes. F-247: 06’s readout is ReadoutTable form=\"table\", its parts carrying ids under the caller’s (label, value, divider, bar, the second value’s two runs, and a note in the row’s own script for E2; readout.test), and every value is a Figure that names its space (detail.test).",
+      "guard": "test:packages/ui/test/figures.test.tsx refuses an empty quantity, space or noun at render, prints U+2212 against the hyphen-minus toFixed prints (decoy), and plants a proportional figure the ragged-figure rule must report; packages/ui/src/testing/conformance.ts runs ragged-figure over every registry subject in both themes. F-247: 06’s readout is ReadoutTable form=\"table\", its parts carrying ids under the caller’s (label, value, divider, bar, the second value’s two runs, and a note in the row’s own script for E2; readout.test), and every value is a Figure that names its space (detail.test). F-249: signed() and figureText take a figure’s sign from the digits printed, so a figure that prints as zero carries none (figures.test, with decoys); 08’s ΔL*, ΔC* and ΔH read it.",
       "memory": "memory/effects/a-figure-says-what-it-is-and-where-it-was-computed.md",
       "rationale": "FR-61 asks for each value's space named beside it, and most drawings print a bare figure. The printed text and the spoken name are both built from one Figure, so a change to figureText or figureName reaches every display at once, and a number printed without a Figure has no name."
     },
@@ -7451,9 +7471,13 @@
         {
           "kind": "gate",
           "ref": "color-golden"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare-readout.ts#pairReadout"
         }
       ],
-      "guard": "gate:color-golden — deltae00-bands.golden.json holds the edges as their sources state them (0.8 and 1.8 from the 2019 review; no edge above them, with the near-neutral pair that a CIELAB-range edge would misdescribe as the decoy), with ΔE*ab's 2.3 as the decoy. gate:test — delta-readings.ts maps every band to a key, total by type; delta-readings.test holds the 27 words in both languages free of a match or an identity, the predicate tested against the drawn claims; bands.test holds the printed-value rule (0.7999 reads close) and the component rule.",
+      "guard": "gate:color-golden — deltae00-bands.golden.json holds the edges as their sources state them (0.8 and 1.8 from the 2019 review; no edge above them, with the near-neutral pair that a CIELAB-range edge would misdescribe as the decoy), with ΔE*ab's 2.3 as the decoy. gate:test — delta-readings.ts maps every band to a key, total by type; delta-readings.test holds the 27 words in both languages free of a match or an identity, the predicate tested against the drawn claims; bands.test holds the printed-value rule (0.7999 reads close) and the component rule. F-249: 08 reads the bands through pairReadout — the band is the printed figure’s, the direction the printed sign’s, over every ordered pair (compare-readout.test).",
       "memory": "memory/effects/a-delta-is-described-by-one-table-and-the-printed-number.md",
       "rationale": "ADR-0125: every word beside a ΔE00 or one of its components comes from one table, banded on the PRINTED value, so the figure and its word cannot disagree. Moving an edge moves 04's headline, 08's readings and every later instrument at once — which is the point, and why the edges are golden data and the ADR is where a change is argued."
     },
@@ -8148,7 +8172,7 @@
           "ref": "test"
         }
       ],
-      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129. F-246: the Atlas keeps STATES { absent: empty }; two witness subjects added (a season chosen, more filters open). F-247: the colour page’s STATES is unchanged; its subjects are now 06’s — whole, bookmarked, an empty wardrobe and nothing to rank (27’s card, shown empty), outside sRGB, and not in this corpus.",
+      "guard": "The declarations test in screens.test, both directions: every module in src/screens exports STATES; every subject of a declaring screen says what it shows; every state root rendered is declared, and every state claimed is rendered and declared by its screen; every declared condition has a witness. One decoy each, and all four states witnessed. `showing` types each subject's `shows` from its screen's declaration. blank-and-zero.test proves `blank-panel` and `bare-zero` fire on planted cases and stay quiet on their decoys. F-236 review (S3, M3): a mark is a box under the tap target or in absolute position; a box inside a named element is part of it; an empty SVG is not content; a labelled zero is read as a value — each with its case and decoy in blank-and-zero.test, and the limits listed in ADR-0129. F-246: the Atlas keeps STATES { absent: empty }; two witness subjects added (a season chosen, more filters open). F-247: the colour page’s STATES is unchanged; its subjects are now 06’s — whole, bookmarked, an empty wardrobe and nothing to rank (27’s card, shown empty), outside sRGB, and not in this corpus. F-249: Compare’s STATES unchanged; its witnesses are (not in this corpus) and (choosing B, nothing matches), each 00’s caption.",
       "memory": "memory/effects/a-screen-declares-what-it-shows-and-the-registry-holds-it.md",
       "rationale": "ADR-0129: a screen that forgets its empty branch, or draws a blank card or a bare zero in its place, fails nothing else in the suite. Every screen feature from F-242 to F-263 rebuilds a screen, and each must keep its STATES, its subjects’ `shows` and a witness per condition in step. A new screen is named until it declares."
     },
@@ -8727,7 +8751,7 @@
           "ref": "apps/mobile/test/inventory.ts#supersededFindings"
         }
       ],
-      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211. F-247 enrolled 06.screen (inventory-surfaces.json), swept in both locales with three decoys: the stacked layer, the readout’s bar and a garment’s caption each named when gone. F-248: 07.screen enrolled — inventory-surfaces.json, and screens.test’s ENROLLED with its locators and four decoys.",
+      "guard": "scripts/verify-mockups.mjs in lint, and its --prove: a surface whose builders (features naming its mockup and waiting on F-221) are all done while it is not enrolled is refused, as are a surface no feature builds, a table row naming no surface, and a not-whole row without a reason (four planted cases); screens.test asserts its renders equal the table's enrolled list, both directions. F-242: the proof’s two surface cases take their example from the state — the first screen still owed by exactly one feature — after enrolling 01.screen left the named example planting nothing. F-246: 05.screen enrolled (inventory-surfaces.json and ENROLLED, both directions), with C1’s two superseded tab glyphs declared — E-211. F-247 enrolled 06.screen (inventory-surfaces.json), swept in both locales with three decoys: the stacked layer, the readout’s bar and a garment’s caption each named when gone. F-248: 07.screen enrolled — inventory-surfaces.json, and screens.test’s ENROLLED with its locators and four decoys. F-249: 08.screen enrolled — inventory-surfaces.json, and screens.test’s ENROLLED with its locators and four decoys.",
       "memory": "memory/effects/a-surface-feature-cannot-close-with-its-surface-unswept.md",
       "rationale": "F-221 enrolls only what is built; every other surface waits on the feature that builds it. A feature's status and its mockups field decide when that wait ends, so marking a surface feature done without enrolling its surface would leave the release's only structural evidence silently short. The rule reads the feature list in a lint script, never a cached test, which would re-run on every state edit."
     },
@@ -9486,7 +9510,7 @@
           "ref": "apps/mobile/src/wear.ts#placeSlots"
         }
       ],
-      "guard": "apps/mobile/test/wear.test.ts: every corpus colour’s three ranked slots are filled, never with the colour in hand, with FR-31’s counts; the trouser and shoe rankings equal the engine’s under the occasion’s weighting; the outer layer equals recommendForSlot for a second top (recommendOutfit would refuse it); harmony, fit and separation are scoreOutfit’s over the four pieces; contrast is compare()’s top against the trousers, the smaller |Lc|, with the decoy that the two directions differ; fit is null without a profile. F-248’s review (S1): the three rankings share their first, so the slots are placed in one pass (placeSlots) — wear.test holds four different colours for every corpus colour, every occasion, with a profile and without, with the decoy that the rankings’ firsts repeat; Swap steps to the next free colour and Lock pins the placed one. The contrast row is floored (S2), its boundaries asserted.",
+      "guard": "apps/mobile/test/wear.test.ts: every corpus colour’s three ranked slots are filled, never with the colour in hand, with FR-31’s counts; the trouser and shoe rankings equal the engine’s under the occasion’s weighting; the outer layer equals recommendForSlot for a second top (recommendOutfit would refuse it); harmony, fit and separation are scoreOutfit’s over the four pieces; contrast is compare()’s top against the trousers, the smaller |Lc|, with the decoy that the two directions differ; fit is null without a profile. F-248’s review (S1): the three rankings share their first, so the slots are placed in one pass (placeSlots) — wear.test holds four different colours for every corpus colour, every occasion, with a profile and without, with the decoy that the rankings’ firsts repeat; Swap steps to the next free colour and Lock pins the placed one. The contrast row is floored (S2), its boundaries asserted. F-249: compare() gains terms, deltaEok, lch and temperature; contrast is unchanged, and wear.test is green unchanged.",
       "memory": "memory/effects/the-combination-is-the-engines-four-pieces-scored-once.md",
       "rationale": "Everything 07 prints about the outfit is computed here. A fit figure drawn without a profile, an outer layer ranked through the call that refuses a second top, or a contrast pair that quietly changes, each reaches the card with every render green."
     },
@@ -9616,9 +9640,13 @@
         {
           "kind": "symbol",
           "ref": "packages/export/src/subject.ts#assertSubject"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/export/subject.ts#pairSubject"
         }
       ],
-      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint. F-248’s review (S1): the writers refuse a colour twice (assertSubject), so export-subject.test writes the combination every corpus colour shows, as the page builds it (shownColours), in all six formats, with the decoy that a colour twice is refused.",
+      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint. F-248’s review (S1): the writers refuse a colour twice (assertSubject), so export-subject.test writes the combination every corpus colour shows, as the page builds it (shownColours), in all six formats, with the decoy that a colour twice is refused. F-249: the export route also reads `pair` (two different corpus colours and their ΔE00 row, ahead of colours, a slug and the palettes) and `format` (a writer’s own name); export-subject.test writes the pair for every colour in all six formats.",
       "memory": "memory/effects/07s-drawn-actions-open-routes-other-features-rebuild.md",
       "rationale": "07’s actions open screens that 13, 18, 22 and 12 rebuild. A rebuild that renames a route, or an export that stops reading colours, breaks 07’s actions without a failure on 07."
     },
@@ -9727,6 +9755,205 @@
       "guard": "packages/ui/test/forms-07.test.tsx: apart, the sample is an image node beside its children and the only button is the child’s own; grouped by default, the sample is one button holding them (decoy); a filled height grows to its container and never collapses (decoy: a numeric height). wear-fidelity.test: every tile’s sample is apart, and no control is inside an image node. The conformance suite draws 07’s tile in every palette. F-248’s review (S4): apart with onPress, the sample’s named node is its press target under its children — forms-07.test (two stops, the sample then its control, the press reaching it); wear-states.test (each tile’s colour named once among a reader’s stops, its words hidden); wear-fidelity.test (each tile’s named node holds none of the tile’s controls). Gate 8’s mutation proof (scripts/verify-a11y-proof.mjs) removes the FIRST accessibilityRole=\"button\" in Swatch.tsx, so whichever form comes first in the file must be one a conformance subject renders: the pressable tile subject draws the apart press form through every state, and the proof was watched failing without it (Tier 2 on e9bae6e) and passing with it.",
       "memory": "memory/effects/a-control-inside-an-accessible-sample-is-one-no-screen-reader-reaches.md",
       "rationale": "Swatch is an accessible pressable that groups what it holds. 07’s tiles carry Swap, Lock and the press target on the sample, so a change that makes the sample group its children again hides every one of them from a screen reader while every render test stays green."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-249",
+      "id": "E-225",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/compare-readout.ts#pairReadout"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/compare.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/delta-readings.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/finder.ts#lexicon"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/compare-readout.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/compare-readout.test.ts holds every invariant over all 14,280 ordered corpus pairs — two colours; every figure the engine’s at its stated precision, the ratio and the Lc floored; every word the printed figure’s (band, direction, threshold, towards); symmetry; no verdict word in either catalogue — with one pair worked by hand and the decoys the census found (pairs rounding would lift over 3:1, printed zeros over non-zero differences, pairs with and without towards). compare-fidelity.test, compare-states.test and the 08.screen sweep read it on the page.",
+      "memory": "memory/effects/a-word-beside-a-figure-is-the-printed-figures-word.md",
+      "rationale": "08 prints a figure and words beside it on every row, the words chosen from the printed figure. A change to a precision, a floor, a band edge or the lexicon can leave a row saying something its own figure does not — a ratio rounded to 3.00:1 beside Non-Text, a printed 0.0 beside Slightly Lighter, towards blue when A is already blue."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-249",
+      "id": "E-226",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/outfit-score.ts#warmCoolRelation"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit-score.ts#scoreOutfit"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/compare.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/wear.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/recommendation/test/outfit-score.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/recommendation/test/outfit-score.test.ts: the harmony component is what it was before the export, against the old formula kept as an oracle; warmCoolRelation agrees with scoreOutfit’s harmony for all 14,280 ordered corpus pairs, every relation present; a warm pair and a warm–cool pair differ (decoy).",
+      "memory": "memory/effects/one-pairs-temperature-is-one-measure-on-two-pages.md",
+      "rationale": "The warm–cool relation was private to the harmony component. 08 prints a pair’s relation in 07’s words, so the measure was exported and harmony delegates to it: one definition for both pages, and a change to it moves 07, 08 and every outfit score together."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-249",
+      "id": "E-227",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/atlas/compare.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/profile/export.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/palettes.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/export/subject.ts#exportSubjectFor"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/palette.ts#draftOf"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/compare-states.test.tsx reads each handler’s own body in the route (decoys: a back that only pops, swapped targets, format=pdf on the glyph) and that the export reads pair and a writer’s own format and the Studio colours as a draft; export-subject.test writes the pair for every corpus colour in all six formats, a pair of one colour twice falling back; palette.test holds draftOf (A the anchor, B a neutral; an unknown slug no draft); verify-route-targets.",
+      "memory": "memory/effects/a-drawn-action-is-a-route-and-a-parameter-another-screen-reads.md",
+      "rationale": "Each of 08’s actions hands the pair to another screen in a query parameter. 18 (F-263) and 10/16 (F-251) are rebuilt later; a rebuild that renames a route or stops reading a parameter breaks 08’s actions with nothing on 08 failing."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-249",
+      "id": "E-228",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/ReadoutTable.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/readout.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/readout.test.tsx: every ruled part by its id with a testID and none without (decoy); each rule a 1 dp node and no row a border; caption type at 400/500; the lowered run and the row’s whole name; the words in the figure’s ink when asked; the note’s spoken name; the pad recomputed from 08.json for a caption line (the label line its decoy). The conformance subject draws every addition; the 08.screen sweep finds the rows and rules by these ids, with ΔEok’s rule as a decoy.",
+      "memory": "memory/effects/a-sweep-finds-a-rule-only-if-the-rule-is-a-node.md",
+      "rationale": "08.json records its table’s rules and each row’s parts as elements, found by their ids. A refactor that folds a rule back into a border or drops an id stops the sweep finding 08’s elements, and fails only where 08 is enrolled."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-249",
+      "id": "E-229",
+      "severity": "low",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/finder.ts#find"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/compare-readout.ts#pickList"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/compare-states.test.tsx: a name, a phrase and a hex each list exactly find()’s entries less the other slot’s colour; nothing found shows 00’s caption alone. compare-readout.test: pickList never offers the other slot’s colour, and lists every entry but it while the field is empty.",
+      "memory": "memory/effects/a-chooser-that-reuses-a-query-moves-when-the-query-does.md",
+      "rationale": "08’s Change A/B read through the Finder’s own find(), so the two surfaces answer one query one way. F-250 rebuilds the Finder; a change to find()’s order, limit or timing changes what 08’s chooser lists, silently."
     }
   ]
 }
