@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/compare'
-- assertVisible: 'Compare two colours'
+- assertVisible: 'Perceptual Distance & Delta Metrics Table'
 - waitForAnimationToEnd
 - takeScreenshot: capture

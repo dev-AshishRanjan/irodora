@@ -54,6 +54,7 @@ import {
   ThemeProvider,
   VisionPreviewProvider,
   swatchAccessibleName,
+  valueText,
   type StateKind,
   type ThemeColors,
   type VisionMode,
@@ -200,7 +201,9 @@ import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
 import { isMessageKey, t, type Locale, type MessageKey } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
+import { printedDeltaE00 } from '@irodora/color-difference';
 import { compare } from '../src/compare';
+import { pairReadout, pairSampleSize } from '../src/compare-readout';
 import {
   nativeFamilies,
   nativeJudgeableSample,
@@ -310,6 +313,14 @@ const CVD_HEXES: readonly string[] = allEntries().flatMap((e) =>
 
 const SAMPLE_HEXES: readonly string[] = [...CORPUS_HEXES, ...CVD_HEXES];
 
+/** Every handler `08` takes (F-249): an absent handler is an absent control, so all are supplied. */
+const COMPARE_HANDLERS = {
+  onBack: () => undefined,
+  onExport: () => undefined,
+  onExportPdf: () => undefined,
+  onAddToStudio: () => undefined,
+} as const;
+
 /** Every handler `07` takes (F-248): an absent handler is an absent control, so all are supplied. */
 const WEAR_HANDLERS = {
   onBack: () => undefined,
@@ -320,12 +331,6 @@ const WEAR_HANDLERS = {
   onAddToWardrobe: () => undefined,
 } as const;
 
-/**
- * The pair Compare opens on in these assertions.
- *
- * A near-white and the darkest entry in the corpus: far apart on every axis, so a row that
- * failed to render would not be hidden behind a delta that rounds to zero.
- */
 /**
  * Two subjects for the contemporary screen, picked by what they ARE rather than by name.
  *
@@ -429,8 +434,13 @@ const GARMENT_HEXES: readonly string[] = [
   ),
 ];
 
-const PAIR_A = 'usu-gami';
-const PAIR_B = 'soko-zumi';
+/**
+ * 08's fixture pair (F-249), picked by what it is: the first pair in slug order with a perceptible
+ * ΔE00, lightness and chroma not level, a hue at least slight with *towards* in English, a separation
+ * under 100 and a ratio under 3:1, none of whose figures is one 08 draws (the census, ADR-0155).
+ */
+const FIXTURE_A = 'aka-tsuchi';
+const FIXTURE_B = 'ao-ta';
 
 /**
  * The four cards 05 draws, as the Atlas draws them with *Autumn* chosen (F-246): a reachable state in
@@ -1736,13 +1746,51 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) => draw(<VisionStrip mode="tritanopia" />, theme),
   },
   {
+    // 08 AS DRAWN (F-249): the fixture pair, every handler wired.
     name: 'screens/Compare',
     shows: showing(COMPARE_STATES),
-    // `static` for the same reason the Atlas is: its interactive parts are SearchField and
-    // Swatch, both registered in packages/ui where the suite makes them render their states.
+    // `static` for the same reason the Atlas is: its interactive parts are registered in packages/ui,
+    // where the suite makes them render their states.
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme),
+    render: (_state, theme) =>
+      draw(<Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />, theme),
+  },
+  {
+    // The chooser for A, open (ADR-0156 D2, E4): A marked chosen, B not offered.
+    name: 'screens/Compare (choosing A)',
+    shows: showing(COMPARE_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Compare
+          initialA={FIXTURE_A}
+          initialB={FIXTURE_B}
+          initialPicking="a"
+          initialQuery="aka"
+          {...COMPARE_HANDLERS}
+        />,
+        theme,
+      ),
+  },
+  {
+    // The chooser for B finding nothing: 00's caption, the field its fix (ADR-0128 D3).
+    name: 'screens/Compare (choosing B, nothing matches)',
+    shows: showing(COMPARE_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Compare
+          initialA={FIXTURE_A}
+          initialB={FIXTURE_B}
+          initialPicking="b"
+          initialQuery="zzzz"
+          {...COMPARE_HANDLERS}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/ColourCard',
@@ -2870,7 +2918,8 @@ const SCREENS: readonly ConformanceSubject[] = [
     shows: showing(COMPARE_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Compare initialA="no-such-colour" initialB={PAIR_B} />, theme),
+    render: (_state, theme) =>
+      draw(<Compare initialA="no-such-colour" {...COMPARE_HANDLERS} />, theme),
   },
   {
     /*
@@ -3482,13 +3531,14 @@ describe('the Atlas and the detail screen have headings (A11)', () => {
 });
 
 /**
- * FR-48 criterion 1 — **every metric, with its unit and the space it was computed in**.
+ * FR-48 criterion 1 — **every metric, with its unit and the space it was computed in**, as 08 prints
+ * it (F-249, ADR-0155, ADR-0156 D7).
  *
- * Asserted by content over the rendered tree. What matters is that a reader can see the space a
- * number was computed in, not that it sits in a particular node: "ΔE00 4.2" without "CIELAB
- * (D65)" beside it is a different claim from the one the engine made.
+ * 08 names the notation on the row (CIEDE2000, ΔEok, ΔL*, ΔC*, ΔH, WCAG 2.2, APCA Lc, Machado 2009)
+ * and each row's accessible name carries the space, as ADR-0119 §3 did for 04. Asserted by content
+ * over the rendered tree; the figures themselves are compare-readout.test's, over every pair.
  */
-describe('compare shows every metric with its unit and its space (FR-48)', () => {
+describe('compare shows every metric with its notation, and names its space (FR-48)', () => {
   function textOf(node: TestNode, out: string[] = []): string[] {
     for (const child of node.children ?? []) {
       if (typeof child === 'string') out.push(child);
@@ -3500,60 +3550,62 @@ describe('compare shows every metric with its unit and its space (FR-48)', () =>
   }
 
   const nodes = (): string[] =>
-    textOf(draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light'));
+    textOf(
+      draw(<Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />, 'light'),
+    );
   const blob = (): string => nodes().join('\u0000');
 
-  const A = allEntries().find((e) => e.entry.slug === PAIR_A)!;
-  const B = allEntries().find((e) => e.entry.slug === PAIR_B)!;
-  const m = compare(A, B);
+  const A = entryBySlug(FIXTURE_A)!;
+  const B = entryBySlug(FIXTURE_B)!;
+  const readout = pairReadout(A, B, (k) => message('en', k), 'en', 'latin');
 
-  it('shows ΔE00, and the value the engine actually computed', () => {
-    expect(nodes()).toContain(m.deltaE00.toFixed(2));
-    expect(blob()).toContain('ΔE00');
+  it('prints ΔE00 to two places, the value the engine computed, with its formula', () => {
+    expect(nodes()).toContain(printedDeltaE00(compare(A, B).deltaE00).toFixed(2));
+    for (const notation of ['ΔE00', '(CIEDE2000)', 'ΔE', 'ok', 'ΔL*', 'ΔC*', 'ΔH'])
+      expect(blob()).toContain(notation);
   });
 
-  it('names the space every metric was computed in', () => {
-    const text = blob();
-    for (const space of ['CIELAB (D65)', 'OKLCh', 'encoded sRGB']) expect(text).toContain(space);
+  it('names the space each row was computed in, in the row a screen reader hears', () => {
+    const named = nodes().filter((n) => n.includes(':'));
+    for (const [row, space] of [
+      ['ΔE00', 'CIEDE2000'],
+      ['ΔEok', 'OKLab'],
+      ['Lightness', 'CIELAB (D65)'],
+      ['Chroma', 'CIELAB (D65)'],
+      ['Hue', 'CIELAB (D65)'],
+      ['WCAG 2.2 Ratio', 'WCAG 2.2'],
+      ['Protanopia', 'Machado 2009'],
+      ['Tritanopia', 'Machado 2009, approximate'],
+    ] as const)
+      expect([row, named.some((n) => n.startsWith(`${row}:`) && n.includes(space))]).toStrictEqual([
+        row,
+        true,
+      ]);
   });
 
-  it('shows the per-axis differences in both spaces', () => {
-    const text = blob();
-    for (const label of ['Lightness L*', 'Green–red a*', 'Blue–yellow b*'])
-      expect(text).toContain(label);
-    for (const label of ['Lightness L', 'Chroma C', 'Hue h']) expect(text).toContain(label);
-    // The values, not only the labels.
-    expect(nodes()).toContain(m.lab.l.a.toFixed(2));
-    expect(nodes()).toContain(`${m.oklch.h.a.toFixed(1)}°`);
+  it('prints every row the readout holds, and no row it does not', () => {
+    for (const row of [...readout.metrics, ...readout.access])
+      expect([row.key, nodes().some((n) => n.startsWith(valueText(row.value)))]).toStrictEqual([
+        row.key,
+        true,
+      ]);
+    // ADR-0156 D7: what left the page is not on it — both spaces' axes, the second APCA direction,
+    // the severity, the decomposition and the same-entry line.
+    for (const gone of [
+      'Green–red a*',
+      'Blue–yellow b*',
+      'APCA — second on first',
+      'APCA is directional',
+      'Simulated severity',
+      'Difference when simulated',
+      'same entry',
+    ])
+      expect([gone, blob().includes(gone)]).toStrictEqual([gone, false]);
   });
 
-  it('shows CVD separation WITH its decomposition, for all three deficiencies', () => {
-    const text = blob();
-    for (const label of ['Red-weak (protan)', 'Green-weak (deutan)', 'Blue-weak (tritan)'])
-      expect(text).toContain(label);
-    for (const s of m.separation) {
-      expect(nodes()).toContain(`${s.score.toFixed(0)}/100`);
-      expect(nodes()).toContain(s.deltaE00.toFixed(2));
-      expect(nodes()).toContain(s.lightnessDifference.toFixed(2));
-    }
-  });
-
-  it('shows the severity it simulated at rather than leaving it to be assumed', () => {
-    expect(blob()).toContain('strongest tabulated severity');
-  });
-
-  it('shows contrast, in both APCA directions and as a WCAG ratio', () => {
-    expect(nodes()).toContain(`${m.contrast.wcagRatio.toFixed(2)}:1`);
-    expect(blob()).toContain('APCA — second on first');
-    expect(blob()).toContain('APCA — first on second');
-  });
-
-  /*
-   * The asymmetry stated rather than implied. Showing one APCA reading beside a WCAG ratio
-   * invites the reading that all three behave the same way, and two of them do not.
-   */
-  it('says which of the contrast readings is directional', () => {
-    expect(blob()).toContain('APCA is directional');
+  it('DECOY — the old page’s words were on the old page', () => {
+    // Each would have been found had it been drawn: the scan reads accessible names and text alike.
+    expect(blob()).toContain(message('en', 'compare.wcag'));
   });
 });
 
@@ -3567,12 +3619,30 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
   // The scan lives in @irodora/ui/testing since F-235, where the conformance suite reads it too.
   const numericNodes = (node: TestNode): TestNode[] => tabularNodes(node, nativeNumericFeature);
 
-  const tree = (): TestNode => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light');
+  const tree = (): TestNode =>
+    draw(<Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />, 'light');
 
-  it('renders a substantial number of tabular figures, not one', () => {
-    // A table of metrics. If this were 1 or 2, the prop would be on a heading somewhere and
-    // the columns would still be ragged.
-    expect(numericNodes(tree()).length).toBeGreaterThan(20);
+  it('sets every figure 08 prints tabular: two metas, five metrics, the ratio, the Lc, three separations', () => {
+    // 08's figures (ADR-0155 D1), each a node of its own or the run that leads its line. If this were
+    // 1 or 2, the prop would be on a heading somewhere and the columns would still be ragged.
+    const texts = numericNodes(tree()).map((n) =>
+      renderedTexts(n)
+        .filter((r) => r.kind === 'paragraph')
+        .map((r) => r.text)
+        .join(''),
+    );
+    const a = entryBySlug(FIXTURE_A)!;
+    const b = entryBySlug(FIXTURE_B)!;
+    const readout = pairReadout(a, b, (k) => message('en', k), 'en', 'latin');
+    for (const want of [
+      readout.meta.a,
+      readout.meta.b,
+      ...readout.metrics.map((r) => valueText(r.value)),
+      ...readout.access.map((r) => valueText(r.value)),
+      readout.access[0]!.note!,
+    ])
+      expect([want, texts.some((t) => t.startsWith(want))]).toStrictEqual([want, true]);
+    expect(numericNodes(tree()).length).toBeGreaterThanOrEqual(11);
   });
 
   it('makes every tabular value selectable, which is how a value is copied', () => {
@@ -3656,7 +3726,9 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
      * would be demanding the fixture render something the product does not — so the Studio is
      * checked for RAGGED figures below and not for having any.
      */
-    expect(figureNodes(tree()).length).toBeGreaterThan(20);
+    // 08's page (F-249): two meta lines, five metrics, the ratio, the Lc and three separations —
+    // eleven figures, each its own node or the run that leads its line.
+    expect(figureNodes(tree()).length).toBeGreaterThanOrEqual(11);
     expect(figureNodes(finder).length).toBeGreaterThan(0);
 
     expect(ragged(tree())).toHaveLength(0);
@@ -3754,9 +3826,11 @@ describe('compare has headings (A11)', () => {
 
   for (const theme of ['light', 'dark'] as const)
     it(`announces its sections as headings in ${theme}`, () => {
-      expect(roles(draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme))).toContain(
-        'header',
-      );
+      expect(
+        roles(
+          draw(<Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />, theme),
+        ),
+      ).toContain('header');
     });
 });
 
@@ -5217,8 +5291,8 @@ describe('the outfit builder renders sentences, not identifiers', () => {
  * changed is arrangement — and arrangement is the one thing gate 9, gate 10 and the conformance
  * suite all read straight past.
  */
-describe('the pair leads Compare, and nothing sits between the two colours (F-151)', () => {
-  const HEXES = [entryBySlug(PAIR_A)!.derived.hex, entryBySlug(PAIR_B)!.derived.hex];
+describe('the pair leads Compare, drawn apart as 08 draws it (F-151, ADR-0154)', () => {
+  const HEXES = [entryBySlug(FIXTURE_A)!.derived.hex, entryBySlug(FIXTURE_B)!.derived.hex];
 
   function styleOf(node: TestNode): Record<string, unknown> {
     const raw: unknown = node.props['style'];
@@ -5240,57 +5314,59 @@ describe('the pair leads Compare, and nothing sits between the two colours (F-15
     return out;
   }
 
-  const tree = (): TestNode => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light');
+  const tree = (): TestNode =>
+    draw(<Compare initialA={FIXTURE_A} initialB={FIXTURE_B} {...COMPARE_HANDLERS} />, 'light');
 
-  const sampleNodes = (): TestNode[] =>
-    inOrder(tree()).filter((n) => HEXES.includes(String(styleOf(n)['backgroundColor'])));
+  const sampleNodes = (t: TestNode = tree()): TestNode[] =>
+    inOrder(t).filter((n) => HEXES.includes(String(styleOf(n)['backgroundColor'])));
 
-  it('draws the two samples touching — no line and no corner where they meet', () => {
-    /*
-     * THE ASSERTION THE FEATURE TURNS ON. "How different are these two" is answered at the
-     * boundary, and anything drawn there is an induced edge sitting exactly where the judgement
-     * happens. `Pair` owns the rule and `packages/ui` proves it in isolation; this proves the
-     * SCREEN is using it rather than two swatches in a row.
-     */
-    const samples = sampleNodes();
+  it('draws the two samples apart, with the seam between them (ADR-0154 D1)', () => {
+    const t = tree();
+    const nodes = inOrder(t);
+    const samples = sampleNodes(t);
     expect(samples).toHaveLength(2);
-    expect(styleOf(samples[0]!)['borderRightWidth']).toBe(0);
-    expect(styleOf(samples[1]!)['borderLeftWidth']).toBe(0);
+    const seam = nodes.findIndex((n) => n.props['testID'] === 'compare.seam');
+    expect(seam).toBeGreaterThan(nodes.indexOf(samples[0]!));
+    expect(seam).toBeLessThan(nodes.indexOf(samples[1]!));
+    expect(styleOf(nodes[seam]!)['width']).toBe(1);
   });
 
   it('puts both samples before every figure, so the numbers are beneath and not beside', () => {
-    // The criterion as tree order. Each colour used to sit in its own card with its own
-    // metadata, which is the arrangement in which the two are never adjacent to each other.
     const nodes = inOrder(tree());
     const lastSample = nodes.findLastIndex((n) =>
       HEXES.includes(String(styleOf(n)['backgroundColor'])),
     );
-    // A rendered `Text` carries its content as a string CHILD, not as a `children` prop —
-    // which is why every other reader in this file walks `node.children`.
+    // A rendered `Text` carries its content as a string CHILD, not as a `children` prop — which is
+    // why every other reader in this file walks `node.children`.
     const firstFigure = nodes.findIndex((n) =>
       (n.children ?? []).some((c) => typeof c === 'string' && /^[+−-]?\d+\.\d\d$/u.test(c)),
     );
-
     expect(lastSample).toBeGreaterThan(-1);
     expect(firstFigure).toBeGreaterThan(lastSample);
   });
 
-  it('draws each sample at the judgeable size (ADR-0095)', () => {
-    // Not a style preference. ΔE00 is parameterised for the CIE 2° standard observer — the
-    // observer this product's colorimetry uses everywhere — and a sample smaller than that is
-    // being judged under conditions its own number was not fit for.
-    for (const n of sampleNodes()) expect(styleOf(n)['height']).toBe(nativeJudgeableSample);
+  it('draws each sample at or above the judgeable size on the narrowest supported width (ADR-0095)', () => {
+    // Not a style preference: ΔE00 is parameterised for the CIE 2° standard observer, and a sample
+    // smaller than that is judged under conditions its own number was not fit for. Each sample is
+    // sized by its half (ADR-0154 D2), so the floor is checked where the half is smallest.
+    expect(pairSampleSize(320)).toBeGreaterThanOrEqual(nativeJudgeableSample);
+    // The sample's box: its own, or — where it carries the line it would otherwise lose its edge
+    // without (OQ-46's interim, ADR-0116) — the line's box around it.
+    const t = tree();
+    const boxes = inOrder(t).filter((n) => typeof styleOf(n)['height'] === 'number');
+    const samples = sampleNodes(t);
+    expect(samples).toHaveLength(2);
+    for (const n of samples) {
+      const box = boxes.find((b) => b === n || (b.children ?? []).includes(n));
+      expect(Number(styleOf(box ?? n)['height'])).toBeGreaterThanOrEqual(nativeJudgeableSample);
+    }
   });
 
   it('DECOY — a Finder result is still a thumbnail, because ranking is not judging', () => {
     /*
      * Without this the feature could have raised every sample on every surface, which turns a
-     * scannable list into four results a screen and is worse at the job a list has.
-     *
-     * THE DECOY IS ON THE FINDER RATHER THAN ON COMPARE, and the first draft of it was on
-     * Compare and passed vacuously: the pickers render no rows until something is typed, so
-     * there were no small samples to find and "some sample is small" was false for the wrong
-     * reason. The Finder ranks by ΔE00 in a list you scan, which is the case the line is about.
+     * scannable list into four results a screen and is worse at the job a list has. The Finder ranks
+     * by ΔE00 in a list you scan, which is the case the line is about.
      */
     const heights = inOrder(draw(<Finder initialQuery="ai" />, 'light'))
       .map((n) => styleOf(n)['height'])

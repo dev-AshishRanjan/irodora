@@ -370,7 +370,7 @@ export function ReadoutTable(props: ReadoutTableProps): React.JSX.Element {
                       selectable
                       {...part(r.key, 'value')}
                     >
-                      <Text size="caption" weight={500} color="foreground" numeric>
+                      <Text size="caption" weight={500} color="foreground" numeric selectable>
                         {valueText(r.value)}
                       </Text>
                       {r.reading === undefined ? '' : ` ${r.reading}`}

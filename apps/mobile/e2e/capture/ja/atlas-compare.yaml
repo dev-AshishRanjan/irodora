@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/compare'
-- assertVisible: '2色をくらべる'
+- assertVisible: '知覚色差と差分の一覧'
 - waitForAnimationToEnd
 - takeScreenshot: capture

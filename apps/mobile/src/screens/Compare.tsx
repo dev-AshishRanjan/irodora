@@ -1,485 +1,477 @@
 /**
- * Two colours, and every number that separates them (FR-48).
+ * Mockup `08`: two colours and every number that separates them (FR-48, F-249).
  *
- * ## Every row carries three things
+ * ## What it draws, top to bottom
  *
- * > *All metrics shown with their units and the space they were computed in.*
- *
- * The number, its unit, and where it was computed. "ΔE00 4.2" without "CIELAB (D65)" beside it
- * is the failure that criterion names: the same quantity computed in a different space is a
- * different claim, and this repository has already been bitten by exactly that — culori read
- * 10% low because our D65 Lab was handed to its D50 mode
- * [[an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour]].
- *
- * ## Numbers are tabular, and that is C9 rather than a preference
- *
- * Every figure on this screen goes through `<Text numeric>`. A professional scans a column of
- * deltas; proportional digits make the column ragged enough that the comparison the table
- * exists for has to be done one row at a time.
- *
- * ## The pair leads, and nothing sits between the two colours (F-151)
- *
- * Two colours that exist to be assessed against each other were in separate cards, each with its
- * own well, its own keyline and its own metadata — so the reader was comparing each sample
- * against that furniture rather than against the other sample. The question *how different are
- * these* is answered at the boundary, and every millimetre between them makes it harder, fastest
- * for the small differences that are the ones anybody squints at.
- *
- * So `Pair` is the first thing on the screen, the headline number is directly beneath it, and
- * the two pickers moved to the END. Choosing which colours to compare is ranking; judging the
- * result is not, and the screen is now ordered by which of the two it is doing.
+ * - The app bar: back to the Atlas, *Colour Compare • 比較* centred, the download glyph, a rule.
+ * - The pair card: two samples **drawn apart**, as `08` draws them, a 1 dp seam the card's whole
+ *   height between them ([ADR-0154](../../../../docs/adr/0154-08s-compare-samples-are-drawn-apart-as-08-draws-them.md)).
+ *   Under each sample its kanji and romaji, its hex and OKLCh, and *Change A* / *Change B*.
+ * - Two cards side by side: the distance table and the contrast and colour-vision table, each the
+ *   ruled `ReadoutTable` (`compare-readout.ts` decides every figure and word, ADR-0155).
+ * - The pinned bar: *Export Precision Delta PDF* and *Add Pair to Palette Studio*.
+ * - `08`'s plum branch, behind everything, under the opaque cards (ADR-0157 D5).
  *
  * ## Nothing here is computed
  *
- * `compare()` assembles the metric set, so a number this screen shows is reachable by a test
- * that never renders anything. The screen formats and labels; it does not calculate.
+ * `compare()` assembles the numbers and `pairReadout` prints them; the screen lays them out. A number
+ * this screen shows is reachable by a test that never renders anything.
+ *
+ * ## Two colours, always two
+ *
+ * The pair opens on `?a` (or the corpus's first entry) against the last (ADR-0156 D1). *Change A* and
+ * *Change B* open `03`'s floating sheet over the Finder's own query, the other slot's colour left out,
+ * so the page can never compare a colour with itself.
+ *
+ * ## An absent handler is an absent control
+ *
+ * A route passes what it can do; a conformance subject or a test passes what it needs to fire.
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
+  Button,
   Card,
   EmptyState,
-  Pair,
+  Illustration,
+  ReadoutTable,
   Row,
   Screen,
   SearchField,
-  signed,
-  Slider,
+  Sheet,
   Stack,
   Swatch,
+  swatchAccessibleName,
   Text,
   useTheme,
+  type Action,
 } from '@irodora/ui';
 import {
-  compare,
-  COMPARED_SEVERITY,
-  SEVERITY_STEP,
-  type AxisDelta,
-  type CompareMetrics,
-} from '../compare';
-import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
+  ACTION,
+  BACK_GLYPH,
+  CHANGE,
+  COMPARE_APP_BAR,
+  COMPARE_ART,
+  EXPORT_GLYPH,
+  choose,
+  initialPair,
+  pairReadout,
+  pairSampleSize,
+  pickList,
+  SEAM,
+  type PairState,
+  type Side,
+} from '../compare-readout';
+import { colorFor, entryBySlug, type PublishedEntry } from '../corpus';
+import { japaneseRun } from '../i18n';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
 
 /**
- * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the corpus
- * does not hold one of the two colours.
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the route's
+ * `?a` names a colour this corpus does not hold, or the chooser's query matches no colour — each
+ * `00`'s caption, its fix on the screen (the back, the field).
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
-/** Deficiency → catalogue key. Total, so a fourth deficiency is a compile error. */
-const CVD_KEYS = {
-  protan: 'cvd.protan',
-  deutan: 'cvd.deutan',
-  tritan: 'cvd.tritan',
-} as const satisfies Record<string, MessageKey>;
-
-/** How many matches a slot offers. Enough to choose from, few enough to scan. */
-const MATCH_LIMIT = 8;
-
-function matches(query: string): readonly PublishedEntry[] {
-  const q = query.trim().toLowerCase();
-  if (q === '') return [];
-  return allEntries()
-    .filter((e) =>
-      [
-        e.entry.name.kanji,
-        e.entry.name.kana,
-        e.entry.name.romaji,
-        e.entry.name.en,
-        e.entry.slug,
-      ].some((v) => v.toLowerCase().includes(q)),
-    )
-    .slice(0, MATCH_LIMIT);
-}
-
 export interface CompareProps {
-  /** Optional starting pair, so a route or a test can open on a known comparison. */
+  /** `?a`: the colour the page opens on. Unknown to the corpus, the page is the absent state. */
   readonly initialA?: string;
+  /** B, for a test or a subject that opens on a known pair; never A. */
   readonly initialB?: string;
-  /**
-   * Where the severity control starts, 0–1.
-   *
-   * Injected for the same reason the pair is: a conformance subject must be able to render a
-   * severity that is not the default, and a value living only inside the component is a value
-   * no suite can drive.
-   */
-  readonly initialSeverity?: number;
+  /** A slot whose sheet starts open: a test reaches the chooser with it. */
+  readonly initialPicking?: Side;
+  /** What the open sheet's field starts with. */
+  readonly initialQuery?: string;
+  /** `08.back`: to the Atlas. */
+  readonly onBack?: () => void;
+  /** `08.export`: the pair to Export, every format (ADR-0156 D3). */
+  readonly onExport?: (a: string, b: string) => void;
+  /** `08.actions.pdf`: the pair to Export, PDF chosen (D4). */
+  readonly onExportPdf?: (a: string, b: string) => void;
+  /** `08.actions.studio`: the pair to the Studio as a draft (D5). */
+  readonly onAddToStudio?: (a: string, b: string) => void;
 }
 
 export function Compare({
   initialA,
   initialB,
-  initialSeverity,
+  initialPicking,
+  initialQuery = '',
+  onBack,
+  onExport,
+  onExportPdf,
+  onAddToStudio,
 }: CompareProps = {}): React.JSX.Element {
   const { colors } = useTheme();
-  const { t, script } = useMessages();
-  const entries = useMemo(() => allEntries(), []);
+  const { t, locale, script } = useMessages();
+  const { width } = useWindowDimensions();
+  const [pair, setPair] = useState<PairState | null>(() => {
+    const opened = initialPair(initialA);
+    return opened === null || initialB === undefined ? opened : choose(opened, 'b', initialB);
+  });
+  const [picking, setPicking] = useState<Side | null>(initialPicking ?? null);
+  const [query, setQuery] = useState(initialQuery);
 
-  /*
-   * Defaults are the first and last entries rather than the first two: the first two are
-   * adjacent in slug order and therefore usually adjacent in colour, so the screen would open
-   * on a comparison that shows almost nothing.
-   */
-  const [aSlug, setA] = useState(initialA ?? entries[0]?.entry.slug ?? '');
-  const [bSlug, setB] = useState(initialB ?? entries[entries.length - 1]?.entry.slug ?? '');
-  const [aQuery, setAQuery] = useState('');
-  const [bQuery, setBQuery] = useState('');
-  const [severity, setSeverity] = useState(initialSeverity ?? COMPARED_SEVERITY);
+  const a = pair === null ? null : entryBySlug(pair.a);
+  const b = pair === null ? null : entryBySlug(pair.b);
+  const readout = useMemo(
+    () => (a === null || b === null ? null : pairReadout(a, b, t, locale, script)),
+    [a, b, t, locale, script],
+  );
 
-  const a = entryBySlug(aSlug);
-  const b = entryBySlug(bSlug);
+  const back =
+    onBack === undefined
+      ? {}
+      : {
+          back: {
+            glyph: 'back' as const,
+            label: t('tab.atlas'),
+            name: t('detail.backToAtlas'),
+            size: BACK_GLYPH,
+            weight: 500 as const,
+            onPress: onBack,
+          },
+        };
+  const bar = {
+    height: COMPARE_APP_BAR,
+    inset: nativeSpacing.md,
+    gap: nativeSpacing.sm,
+    rule: true,
+    script,
+  };
 
-  if (a === null || b === null)
+  if (pair === null || a === null || b === null || readout === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
-        {/*
-          00's empty (F-236): the way out of a colour this corpus does not hold is the header's
-          back, already on this screen — a second control would be a second way to do one thing.
-        */}
-        <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
-      </View>
-    );
-
-  const metrics: CompareMetrics = compare(a, b, severity);
-  const same = a.entry.slug === b.entry.slug;
-
-  /** A metric row: label, value, unit, and the space it was computed in. */
-  function Metric({
-    label,
-    value,
-    unit,
-    space,
-  }: {
-    readonly label: string;
-    readonly value: string;
-    readonly unit?: string;
-    readonly space: string;
-  }): React.JSX.Element {
-    return (
-      <Row gap="sm" align="baseline" padY="sm">
-        <View style={{ flex: 1 }}>
-          <Text size="label" color="foreground" script={script}>
-            {label}
-          </Text>
-          {/*
-            The computation space, on every row. FR-48 asks for it explicitly, and it is the
-            difference between a number and a claim.
-          */}
-          <Text size="caption" color="foreground.2" script={script}>
-            {space}
-          </Text>
+      /*
+        A COLOUR THIS CORPUS DOES NOT HOLD (F-236, E4, ADR-0128 §6): 00's caption under the app bar,
+        whose back is the way out — a second control would be a second way to do one thing.
+      */
+      <Screen scroll={false} bleed script={script} appBar={{ ...bar, ...back }}>
+        <View style={{ padding: nativeSpacing.md }}>
+          <EmptyState message={t('detail.notFound')} resolvedHere script={script} />
         </View>
-        {/*
-          `selectable` is how a value is copyable without a button that would need its own
-          label, its own state and its own place in the tap-target budget.
-        */}
-        <Text size="label" color="foreground" numeric selectable>
-          {value}
-        </Text>
-        {/*
-          The unit is NOT `numeric`. "Lc" and "ΔE00" are symbols, not figures — tabular-nums
-          has nothing to align in them, and marking them numeric made "every tabular figure is
-          selectable" fail on a node that is a label rather than a value.
-        */}
-        {unit === undefined ? null : (
-          <Text size="caption" color="foreground.2" script={script}>
-            {unit}
-          </Text>
-        )}
-      </Row>
+      </Screen>
     );
-  }
 
-  function AxisRow({
-    label,
-    axis,
-    places,
-    suffix,
-  }: {
-    readonly label: string;
-    readonly axis: AxisDelta;
-    readonly places: number;
-    readonly suffix?: string;
-  }): React.JSX.Element {
-    return (
-      <Row gap="sm" align="baseline" padY="xs">
-        <Text size="label" color="foreground.2" script={script}>
-          {label}
-        </Text>
-        <View style={{ flex: 1 }} />
-        {/* Both values and the delta, in one row, so the column reads down. */}
-        <Text size="caption" color="foreground.2" numeric selectable>
-          {`${axis.a.toFixed(places)}${suffix ?? ''}`}
-        </Text>
-        <Text size="caption" color="foreground.2" numeric selectable>
-          {`${axis.b.toFixed(places)}${suffix ?? ''}`}
-        </Text>
-        <Text size="label" color="foreground" numeric selectable>
-          {`${signed(axis.delta, places)}${suffix ?? ''}`}
-        </Text>
-      </Row>
-    );
-  }
+  const sampleSize = pairSampleSize(width);
+  const actions: Action[] = [
+    ...(onExportPdf === undefined
+      ? []
+      : [
+          {
+            label: t('compare.exportPdf'),
+            height: ACTION,
+            radius: 'sm' as const,
+            step: 'caption' as const,
+            script,
+            onPress: () => {
+              onExportPdf(pair.a, pair.b);
+            },
+          },
+        ]),
+    ...(onAddToStudio === undefined
+      ? []
+      : [
+          {
+            variant: 'secondary' as const,
+            edge: 'border' as const,
+            fill: 'surface.1' as const,
+            weight: 500 as const,
+            label: t('compare.addToStudio'),
+            height: ACTION,
+            radius: 'sm' as const,
+            step: 'caption' as const,
+            script,
+            onPress: () => {
+              onAddToStudio(pair.a, pair.b);
+            },
+          },
+        ]),
+  ];
+  const [first, second] = actions;
 
-  function Slot({
-    label,
-    entry,
-    query,
-    onQuery,
-    onPick,
-  }: {
-    readonly label: string;
-    readonly entry: PublishedEntry;
-    readonly query: string;
-    readonly onQuery: (q: string) => void;
-    readonly onPick: (slug: string) => void;
-  }): React.JSX.Element {
-    const found = matches(query);
+  /** One half of the pair card: the sample, its name and meta, and its Change. */
+  function half(side: Side, entry: PublishedEntry): React.JSX.Element {
+    const name = readout?.names[side] ?? '';
+    const changeLabel = t(side === 'a' ? 'compare.changeA' : 'compare.changeB');
     return (
-      <Card
-        level="1"
-        padding="sm"
-        header={
-          <Text size="caption" color="foreground.2" script={script} heading>
-            {label}
-          </Text>
-        }
+      <View
+        style={{
+          flex: 1,
+          paddingVertical: nativeSpacing.sm,
+          ...(side === 'a'
+            ? { paddingLeft: nativeSpacing.sm }
+            : { paddingRight: nativeSpacing.sm }),
+        }}
       >
         <Stack gap="sm">
           {/*
-            THE CURRENT CHOICE IN WORDS, NOT AS A SECOND SAMPLE.
-
-            This used to draw a 56px swatch of the same colour the pair above now shows at the
-            judgeable size. Two samples of one colour on one screen is not redundancy — it is a
-            THIRD thing in the field of view competing with the pair, and simultaneous contrast
-            does not care which of them the designer considered primary.
+            THE SAMPLE, ALONE IN ITS NODE (E-224's lesson): no control sits inside an accessible
+            sample. `08` draws no keyline, so it carries the line only where it would lose its edge.
           */}
-          <Text size="body" color="foreground" script={script}>
-            {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
-          </Text>
-
-          <SearchField label={t('compare.choose')} value={query} onChangeText={onQuery} />
-
-          {found.map((m) => (
-            <Pressable
-              key={m.entry.slug}
-              accessibilityRole="button"
-              accessibilityLabel={`${label} ${m.entry.name.en}`}
-              onPress={() => {
-                onPick(m.entry.slug);
-                onQuery('');
-              }}
-              style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+          <Swatch
+            name={entry.entry.name.en}
+            hex={entry.derived.hex}
+            color={colorFor(entry.entry)}
+            size={sampleSize}
+            corner="sm"
+            keyline={false}
+            testID={`compare.${side}.swatch`}
+          />
+          <Stack gap="xs">
+            <Text size="label" color="foreground" script={script} testID={`compare.${side}.name`}>
+              {name}
+            </Text>
+            <Text
+              size="caption"
+              color="foreground.2"
+              numeric
+              selectable
+              testID={`compare.${side}.meta`}
             >
-              <Row gap="sm">
-                <Swatch
-                  caption="name"
-                  name={m.entry.name.en}
-                  hex={m.derived.hex}
-                  color={colorFor(m.entry)}
-                  size={32}
-                />
-                <Text size="label" color="foreground.2" script={script}>
-                  {`${m.entry.name.kanji} ${m.entry.name.en}`}
-                </Text>
-              </Row>
-            </Pressable>
-          ))}
+              {readout?.meta[side] ?? ''}
+            </Text>
+          </Stack>
+          <Button
+            variant="secondary"
+            edge="border"
+            weight={500}
+            label={changeLabel}
+            name={`${changeLabel}: ${name}`}
+            height={CHANGE}
+            radius="sm"
+            step="caption"
+            script={script}
+            testID={`compare.${side}.change`}
+            onPress={() => {
+              setQuery('');
+              setPicking(side);
+            }}
+          />
         </Stack>
-      </Card>
+      </View>
     );
   }
 
+  const list = picking === null ? [] : pickList(query, picking, pair);
+  const chosen = picking === null ? null : pair[picking];
+
   return (
-    <Screen title={t('compare.title')} script={script}>
-      {/*
-        THE TWO COLOURS, TOUCHING, AT THE TOP (F-151).
-
-        Not in a Surface: a Pair carries its own well, and wrapping it would put a second ground
-        around the one that was chosen for the samples.
-      */}
-      <Pair
-        a={{ name: a.entry.name.en, hex: a.derived.hex, color: colorFor(a.entry) }}
-        b={{ name: b.entry.name.en, hex: b.derived.hex, color: colorFor(b.entry) }}
-        script={script}
-      />
-
-      {same ? (
-        <Text size="label" color="foreground.2" script={script}>
-          {t('compare.sameColour')}
-        </Text>
-      ) : null}
-
-      {/* The headline number, DIRECTLY beneath the boundary it describes. */}
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('compare.difference')}
-          </Text>
-        }
+    <Screen
+      scroll={false}
+      bleed
+      script={script}
+      appBar={{
+        ...bar,
+        ...back,
+        title: {
+          text: t('compare.title'),
+          align: 'centre',
+          placement: 'bar',
+          layout: 'inline',
+          // The run repeats 比較 in Japanese, so it is drawn in English only (ADR-0142 D5's interim).
+          ...(script === 'japanese' ? {} : { ja: japaneseRun('compare.title') }),
+          size: 'label',
+          weight: 500,
+        },
+        ...(onExport === undefined
+          ? {}
+          : {
+              trailing: {
+                targetRoom: true as const,
+                icons: [
+                  {
+                    glyph: 'download' as const,
+                    label: t('compare.export'),
+                    size: EXPORT_GLYPH,
+                    onPress: () => {
+                      onExport(pair.a, pair.b);
+                    },
+                    testID: 'compare.export',
+                  },
+                ] as const,
+              },
+            }),
+      }}
+      {...(first === undefined
+        ? {}
+        : {
+            actionBar: {
+              actions: second === undefined ? ([first] as const) : ([first, second] as const),
+              rule: true,
+              gap: nativeSpacing.sm,
+              // `08.actions`: rule → buttons 17, buttons → foot 17.5, sides 16.5 dp: `md` (ADR-0157).
+              padding: { top: nativeSpacing.md, bottom: nativeSpacing.md, side: nativeSpacing.md },
+              script,
+            },
+          })}
+    >
+      <ScrollView
+        testID="compare.scroll"
+        style={{ flex: 1 }}
+        // The rule → the pair card: 42 dp, `xxl`, the leaked heading's space kept (F-246's rule); the
+        // cards → the bar's rule 12.5, `md`.
+        contentContainerStyle={{ paddingTop: nativeSpacing.xxl, paddingBottom: nativeSpacing.md }}
       >
-        <Stack gap="xs">
-          <Metric
-            label={t('compare.difference')}
-            value={metrics.deltaE00.toFixed(2)}
-            unit={t('unit.deltaE00')}
-            space={t('space.cielab')}
-          />
-        </Stack>
-      </Card>
-
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('compare.perAxis')}
-          </Text>
-        }
-      >
-        <Stack gap="xs">
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('space.cielab')}
-          </Text>
-          <AxisRow label={t('axis.labL')} axis={metrics.lab.l} places={2} />
-          <AxisRow label={t('axis.labA')} axis={metrics.lab.a} places={2} />
-          <AxisRow label={t('axis.labB')} axis={metrics.lab.b} places={2} />
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('space.oklch')}
-          </Text>
-          <AxisRow label={t('axis.oklchL')} axis={metrics.oklch.l} places={3} />
-          <AxisRow label={t('axis.oklchC')} axis={metrics.oklch.c} places={3} />
-          {/*
-            Degrees, and the delta is the shortest signed ARC rather than a subtraction — the
-            one axis where the obvious arithmetic gives a plausible wrong answer.
-          */}
-          <AxisRow label={t('axis.oklchH')} axis={metrics.oklch.h} places={1} suffix="°" />
-        </Stack>
-      </Card>
-
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('compare.separation')}
-          </Text>
-        }
-      >
-        <Stack gap="xs">
-          {/*
-            THE SEVERITY IS NOW A CONTROL, and it closes something the engine wrote down twice.
-
-            `packages/cvd-engine`'s own docblock: *"anomalous trichromacy at any severity. The
-            common case, and the one a severity slider is for."* `machado.ts` says it again.
-            The engine interpolates continuously between the eleven tabulated matrices, and
-            this screen reached one point of that range and apologised for it in a sentence —
-            *"simulated at the strongest tabulated severity"*.
-
-            IT STEPS IN TENTHS, which is the resolution Machado publishes. A finer step would
-            offer a precision the source does not have.
-
-            THE THREE READOUTS MOVE WITH IT, because they are computed from the same argument
-            — nothing here caches a score against a severity it was not computed at.
-          */}
-          <Slider
-            label={t('separation.severityLabel')}
-            script={script}
-            value={severity}
-            valueLabel={severity.toFixed(1)}
-            step={SEVERITY_STEP}
-            onValueChange={setSeverity}
-          />
-          {metrics.separation.map((s) => (
-            <View
-              key={s.deficiency}
-              style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}
-            >
-              <Text size="label" color="foreground" script={script}>
-                {t(CVD_KEYS[s.deficiency])}
-              </Text>
-              {/*
-                The DECOMPOSITION, not only the score. A number labelled "62" with nothing
-                beside it is a grade nobody can check.
-              */}
-              <Metric
-                label={t('separation.score')}
-                value={`${s.score.toFixed(0)}/100`}
-                space={t('space.srgb')}
-              />
-              <Metric
-                label={t('separation.deltaE00')}
-                value={s.deltaE00.toFixed(2)}
-                unit={t('unit.deltaE00')}
-                space={t('space.cielab')}
-              />
-              <Metric
-                label={t('separation.lightness')}
-                value={s.lightnessDifference.toFixed(2)}
-                space={t('space.cielab')}
+        {/*
+          THE ART LAYER, first and behind everything (F-247's lesson): `08`'s plum branch, clipped at
+          the frame, every stroke under an opaque card or in the page's inset — no word sits on one.
+        */}
+        <View
+          pointerEvents="none"
+          testID="compare.art"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}
+        >
+          {(['top', 'right', 'left'] as const).map((k) => (
+            <View key={k} style={{ position: 'absolute', ...COMPARE_ART[k] }}>
+              <Illustration
+                name="plum-branch"
+                tone="backdrop"
+                color="foreground"
+                width={COMPARE_ART[k].width}
+                testID={`compare.art.${k}`}
               />
             </View>
           ))}
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('separation.severity')}
-          </Text>
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('cvd.note')}
-          </Text>
-        </Stack>
-      </Card>
+        </View>
 
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('compare.contrast')}
-          </Text>
-        }
-      >
-        <Stack gap="xs">
-          <Metric
-            label={t('contrast.wcag')}
-            value={`${metrics.contrast.wcagRatio.toFixed(2)}:1`}
-            space={t('space.srgb')}
+        {/* `08.pair`: the two halves in the card's media slot, so the seam meets both its edges. */}
+        <View style={{ paddingHorizontal: nativeSpacing.md }}>
+          <Card
+            level="1"
+            radius="sm"
+            testID="compare.pair"
+            media={
+              <Row gap="sm" align="stretch">
+                {half('a', a)}
+                <View
+                  testID="compare.seam"
+                  importantForAccessibility="no"
+                  accessibilityElementsHidden
+                  style={{ width: SEAM, backgroundColor: colors.border }}
+                />
+                {half('b', b)}
+              </Row>
+            }
           />
-          <Metric
-            label={t('contrast.apcaBOnA')}
-            value={signed(metrics.contrast.apcaBOnA, 1)}
-            unit={t('unit.lc')}
-            space={t('space.srgb')}
-          />
-          <Metric
-            label={t('contrast.apcaAOnB')}
-            value={signed(metrics.contrast.apcaAOnB, 1)}
-            unit={t('unit.lc')}
-            space={t('space.srgb')}
-          />
-          {/*
-            Said rather than left to be inferred: one of these is symmetric and two are not,
-            and a reader who assumed otherwise would draw the wrong conclusion from the pair.
-          */}
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('contrast.apcaNote')}
-          </Text>
-        </Stack>
-      </Card>
+        </View>
+
+        {/* The pair card → the two cards: 32 dp, `xl`, the leaked caption's space kept. */}
+        <View style={{ height: nativeSpacing.xl }} />
+        <View style={{ paddingHorizontal: nativeSpacing.md }}>
+          <Row gap="sm" align="stretch">
+            <View style={{ flex: 1 }}>
+              <Card level="1" padding="sm" radius="sm" fill testID="compare.metrics">
+                <Stack gap="xs">
+                  <Text size="caption" weight={600} color="foreground" script={script} heading>
+                    {t('compare.metrics')}
+                  </Text>
+                  <ReadoutTable
+                    form="ruled"
+                    layout="columns"
+                    rows={readout.metrics}
+                    script={script}
+                    testID="compare.metrics.table"
+                  />
+                </Stack>
+              </Card>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Card level="1" padding="sm" radius="sm" fill testID="compare.access">
+                <Stack gap="xs">
+                  <Text size="caption" weight={600} color="foreground" script={script} heading>
+                    {t('compare.access')}
+                  </Text>
+                  <ReadoutTable
+                    form="ruled"
+                    layout="stacked"
+                    rows={readout.access}
+                    script={script}
+                    testID="compare.access.table"
+                  />
+                </Stack>
+              </Card>
+            </View>
+          </Row>
+        </View>
+      </ScrollView>
 
       {/*
-        THE PICKERS, LAST. Choosing which two colours to compare is ranking a list; judging the
-        result is not, and the screen is ordered by which of the two the reader is doing. They
-        are also the only thing here that is not about the pair, so anything between them and
-        the pair would be reading matter interrupted by a control.
+        THE CHOOSER (ADR-0156 D2, E4): `03`'s floating sheet over the Finder's own query. The other
+        slot's colour is never listed; the slot's own is marked and announced as chosen.
       */}
-      <Slot label={t('compare.slotA')} entry={a} query={aQuery} onQuery={setAQuery} onPick={setA} />
-      <Slot label={t('compare.slotB')} entry={b} query={bQuery} onQuery={setBQuery} onPick={setB} />
+      <Sheet
+        form="floating"
+        open={picking !== null}
+        onOpenChange={(open) => {
+          if (!open) setPicking(null);
+        }}
+        title={t(picking === 'b' ? 'compare.pickB' : 'compare.pickA')}
+        closeLabel={t('compare.pickClose')}
+        handleLabel={t('compare.pickHandle')}
+        handleHint={t('compare.pickHandleHint')}
+        testID="compare.pick"
+      >
+        {picking === null ? null : (
+          <Stack gap="sm">
+            <SearchField label={t('compare.choose')} value={query} onChangeText={setQuery} />
+            {list.length === 0 ? (
+              <EmptyState message={t('compare.noMatch')} resolvedHere script={script} />
+            ) : (
+              /*
+              A PLAIN LIST, NOT A FLATLIST: the sheet already scrolls its body, and a virtualised list
+              inside a scroller is one React Native refuses to window.
+            */
+              <Stack gap="xs">
+                {list.map((item) => {
+                  const selected = item.entry.slug === chosen;
+                  const words = `${item.entry.name.kanji} ${item.entry.name.en}`;
+                  return (
+                    <Pressable
+                      key={item.entry.slug}
+                      testID={`compare.pick.${item.entry.slug}`}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      accessibilityLabel={`${words}, ${swatchAccessibleName(
+                        item.entry.name.en,
+                        item.derived.hex,
+                        colorFor(item.entry),
+                      )}`}
+                      onPress={() => {
+                        setPair((p) => (p === null ? p : choose(p, picking, item.entry.slug)));
+                        setPicking(null);
+                      }}
+                      style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+                    >
+                      <Row gap="sm">
+                        <View
+                          importantForAccessibility="no-hide-descendants"
+                          accessibilityElementsHidden
+                        >
+                          <Swatch
+                            name={item.entry.name.en}
+                            hex={item.derived.hex}
+                            color={colorFor(item.entry)}
+                            size={32}
+                            corner="sm"
+                            selected={selected}
+                          />
+                        </View>
+                        <Text size="label" color="foreground" script={script}>
+                          {words}
+                        </Text>
+                      </Row>
+                    </Pressable>
+                  );
+                })}
+              </Stack>
+            )}
+          </Stack>
+        )}
+      </Sheet>
     </Screen>
   );
 }

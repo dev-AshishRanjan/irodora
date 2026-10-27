@@ -65,18 +65,11 @@ export const COMPARED_DEFICIENCIES: readonly Deficiency[] = ['protan', 'deutan',
  * the tabulated steps for any severity in 0–1, and the engine's own docblock says so twice —
  * *"anomalous trichromacy at any severity. The common case, and the one a severity slider is
  * for"*. There was no slider, so the whole range existed and one point of it was reachable.
+ *
+ * **08 draws no severity control (F-249, ADR-0156 D7)**: its -anopia rows are this default, the
+ * dichromat's case. The parameter stays for a caller that needs another severity.
  */
 export const COMPARED_SEVERITY = 1;
-
-/**
- * The step the severity control moves in.
- *
- * **0.1, which is the tabulated resolution.** Machado publishes eleven matrices per deficiency
- * at 0.0 to 1.0 in tenths; anything between them is our interpolation. A finer step would offer
- * a precision the source does not have, and this screen is the one place in the product where
- * somebody is reading numbers to decide something.
- */
-export const SEVERITY_STEP = 0.1;
 
 /** One axis, both values and their signed difference. */
 export interface AxisDelta {

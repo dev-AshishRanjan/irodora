@@ -165,7 +165,7 @@
     {
       "route": "/atlas/compare",
       "file": "(tabs)/atlas/compare.tsx",
-      "anchor": "compare.title"
+      "anchor": "compare.metrics"
     },
     {
       "route": "/atlas/find",
