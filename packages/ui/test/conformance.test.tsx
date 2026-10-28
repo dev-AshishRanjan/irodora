@@ -1386,6 +1386,105 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * 09'S CHIPS (F-250, ADR-0160 D1): one radio group, *Read the search as*; every pill filled level 3
+     * at rest with no edge to see, at md corners; the chosen one edged in foreground with its dot.
+     */
+    name: 'ChoiceGroup (pills, 09)',
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'pill',
+    forbiddenNames: ['option', 'choice', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <ChoiceGroup
+          label="Read the search as"
+          value={state === 'active' ? 'name' : null}
+          options={[
+            { value: 'phrase', label: 'Natural Phrase' },
+            { value: 'name', label: 'Colour Name' },
+            { value: 'hex', label: '# Hex Code', disabled: state === 'disabled' },
+          ]}
+          onChange={() => undefined}
+          pills={{
+            height: 23.5,
+            gap: 'sm',
+            restFill: 'surface.3',
+            selectedFill: 'surface.3',
+            radius: 'md',
+          }}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          focused={state === 'focus' ? 'phrase' : undefined}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * 09'S BARE FIELD AND ITS CLEAR (F-250, ADR-0160 D2): no fill, no outline, the words on the card;
+     * the clear an action drawn only while there are words — here in `active`, where the field holds
+     * them.
+     */
+    name: 'SearchField (09, bare, with its clear)',
+    kind: 'interactive',
+    forbiddenNames: ['search', 'field', 'input', 'clear'],
+    render: (state, theme) =>
+      draw(
+        <SearchField
+          bare
+          label="Describe a colour, name one, or type a hex"
+          value={state === 'active' ? 'muted green' : ''}
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+          clear={{
+            label: 'Clear the search text',
+            size: 21,
+            onPress: () => {
+              /* the suite renders; it does not drive */
+            },
+          }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * 09'S ONE-ROW SLIDER (F-250, ADR-0161 D5): the label, the track and the value side by side, the
+     * value in the secondary ink and spoken without its slash.
+     */
+    name: 'Slider (09, a row)',
+    kind: 'interactive',
+    forbiddenNames: ['slider', 'range', 'value'],
+    render: (state, theme) =>
+      draw(
+        <Slider
+          layout="row"
+          label="Chroma (C)"
+          value={state === 'active' ? 0.05 : 0.012}
+          max={0.4}
+          step={0.001}
+          valueLabel={state === 'active' ? '0.050 (Muted / Soft)' : '0.012 (Grey / Neutral)'}
+          valueName={state === 'active' ? '0.050, Muted, Soft' : '0.012, Grey, Neutral'}
+          valueColor="foreground.2"
+          onValueChange={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * 05'S DRAWN FIELD (F-246): outlined, 26.5 dp, a search glyph, its words at caption, the bookmark
      * toggle at its trailing end — and its touch the platform's target.
      */

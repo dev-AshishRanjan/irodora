@@ -158,6 +158,13 @@ export interface Pills {
   readonly size?: 'label' | 'caption';
   /** Between the pills, as the screen draws it. Defaults to `xs`. */
   readonly gap?: 'xs' | 'sm';
+  /**
+   * `09` fills its unchosen pills (F-250): level 3, with no edge of their own, where `15` outlines
+   * them. The chosen one keeps its edge and its dot, so a choice is a highlight and a mark.
+   */
+  readonly restFill?: 'surface.2' | 'surface.3';
+  /** The corner: a pill by default; `09` draws its chips' at `md`. */
+  readonly radius?: 'md' | 'pill';
 }
 
 /** One layout or the other, never both: the type makes the choice a decision. */
@@ -391,13 +398,19 @@ function Pill({
 }): React.JSX.Element {
   const { colors } = useTheme();
   const press = usePress();
-  const tone = pillTone(
-    chosen,
-    form.selectedFill ?? 'surface.2',
-    form.selectedEdge ?? true,
-    colors,
-  );
+  const rest = form.restFill;
+  const tone =
+    chosen || rest === undefined
+      ? pillTone(chosen, form.selectedFill ?? 'surface.2', form.selectedEdge ?? true, colors)
+      : // One edge width in every state; at rest it is the fill's own colour, so none shows.
+        {
+          background: colors[rest],
+          borderColor: colors[rest],
+          ink: 'foreground' as const,
+          dot: false,
+        };
   const size = form.size ?? 'label';
+  const corner = form.radius === 'md' ? nativeRadius.md : nativeRadius.pill;
   return (
     <HeroRadioGroup.Item
       onPressIn={press.onPressIn}
@@ -416,7 +429,7 @@ function Pill({
         justifyContent: 'center',
         gap: nativeSpacing.xs,
         paddingHorizontal: nativeSpacing.sm,
-        borderRadius: nativeRadius.pill,
+        borderRadius: corner,
         backgroundColor: tone.background,
         borderWidth: 1,
         borderColor: tone.borderColor,
@@ -432,7 +445,7 @@ function Pill({
           {kanji}
         </Text>
       )}
-      <FocusRing visible={focused} radius={nativeRadius.pill} />
+      <FocusRing visible={focused} radius={corner} />
     </HeroRadioGroup.Item>
   );
 }

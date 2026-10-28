@@ -13,8 +13,15 @@ import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { Text as RNText, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { nativeColors, nativeType, type Theme } from '@irodora/design-tokens';
-import { FOCUS_RING, Slider, SLIDER_THUMB, SLIDER_TRACK, ThemeProvider } from '../src/index.js';
+import { nativeColors, nativeTapTarget, nativeType, type Theme } from '@irodora/design-tokens';
+import {
+  FOCUS_RING,
+  Slider,
+  SLIDER_THUMB,
+  SLIDER_TRACK,
+  SLIDER_TRACK_MIN,
+  ThemeProvider,
+} from '../src/index.js';
 import {
   checkSubject,
   flattenStyle,
@@ -252,6 +259,96 @@ describe('the header is set as each screen draws it (F-232’s review)', () => {
       nativeType.latin.label.fontSize,
       dark.foreground,
     ]);
+  });
+});
+
+describe('09’s one-row form (F-250, ADR-0161 D5)', () => {
+  const row = (props: { readonly testID?: string; readonly valueName?: string } = {}): void => {
+    render(
+      <ThemeProvider theme="dark">
+        <Slider
+          layout="row"
+          label="Chroma (C)"
+          value={0.05}
+          max={0.4}
+          step={0.001}
+          valueLabel="0.050 (Muted / Soft)"
+          valueColor="foreground.2"
+          onValueChange={() => undefined}
+          {...props}
+        />
+      </ThemeProvider>,
+    );
+  };
+
+  it('draws the label, the track and the value in that order, in one row', () => {
+    row({ testID: 'r' });
+    const [label] = hostsOf('r.label');
+    const [track] = hostsOf('r.track');
+    const [value] = hostsOf('r.value');
+    // The three parts' nearest common host is one row.
+    const chain = (n: typeof label): unknown[] => {
+      const out: unknown[] = [];
+      for (let p = n?.parent; p; p = p.parent) out.push(p);
+      return out;
+    };
+    const shared = chain(track).find((p) => chain(label).includes(p) && chain(value).includes(p));
+    const style = flattenStyle(
+      (shared as { props?: { style?: unknown } } | undefined)?.props?.style,
+    );
+    expect(style['flexDirection']).toBe('row');
+    // In document order: the label, then the track, then the value.
+    const order = screen
+      .getAllByTestId(/^r\.(label|track|value)$/u, { includeHiddenElements: true })
+      .filter((n) => typeof n.type === 'string')
+      .map((n) => (n.props as { testID: string }).testID);
+    expect(order).toStrictEqual(['r.label', 'r.track', 'r.value']);
+    expect(String((value?.props as { children?: unknown }).children)).toBe('0.050 (Muted / Soft)');
+  });
+
+  it('lets the track take what the label and the value leave, never under its least', () => {
+    row({ testID: 'r' });
+    const [track] = hostsOf('r.track');
+    const style = flattenStyle((track?.props as { style?: unknown }).style);
+    expect(style['flexGrow']).toBe(1);
+    expect(style['minWidth']).toBe(SLIDER_TRACK_MIN);
+    expect(SLIDER_TRACK_MIN).toBe(2 * nativeTapTarget);
+  });
+
+  it('speaks the value without its slash and parentheses where it is told to', () => {
+    row({ testID: 'r', valueName: '0.050, Muted, Soft' });
+    const [thumb] = hostsOf('r');
+    expect(
+      (thumb?.props as { accessibilityValue?: { text?: string } }).accessibilityValue?.text,
+    ).toBe('0.050, Muted, Soft');
+  });
+
+  it('DECOY — without a valueName it speaks what it draws', () => {
+    row({ testID: 'r' });
+    const [thumb] = hostsOf('r');
+    expect(
+      (thumb?.props as { accessibilityValue?: { text?: string } }).accessibilityValue?.text,
+    ).toBe('0.050 (Muted / Soft)');
+  });
+
+  it('DECOY — names no part without a testID, and the stacked form names none at all', () => {
+    row();
+    expect(
+      screen.queryAllByTestId(/\.(label|track|value)$/u, { includeHiddenElements: true }),
+    ).toHaveLength(0);
+    screen.unmount();
+    render(
+      <ThemeProvider theme="dark">
+        <Slider
+          label="Lightness"
+          value={0.4}
+          valueLabel="0.40"
+          onValueChange={() => undefined}
+          testID="s"
+        />
+      </ThemeProvider>,
+    );
+    expect(screen.queryAllByTestId(/^s\./u, { includeHiddenElements: true })).toHaveLength(0);
   });
 });
 

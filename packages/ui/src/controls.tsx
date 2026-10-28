@@ -617,6 +617,21 @@ interface InteractiveSliderProps extends SliderShared {
   readonly onValueChange: (value: number) => void;
   readonly step?: number;
   readonly focused?: boolean;
+  /**
+   * `09`'s one-row form (F-250): the label, the track and the value side by side, the track taking
+   * the width the two leave and the value wrapping in its own column. Without it the header is drawn
+   * above the track. With a `testID`, the parts carry `${testID}.label`, `.track` and `.value`; the
+   * thumb keeps `testID` itself.
+   */
+  readonly layout?: 'row';
+  /** In the row form, the track's least width in dp. Defaults to {@link SLIDER_TRACK_MIN}. */
+  readonly trackMinWidth?: number;
+  /**
+   * What a screen reader says for the value where it differs from what is drawn: `09`'s
+   * *0.045 (Muted / Soft)* is spoken without its slash and parentheses (F-249's M9). Defaults to
+   * `valueLabel`.
+   */
+  readonly valueName?: string;
   readonly gradient?: never;
   readonly halo?: never;
   readonly ends?: never;
@@ -654,6 +669,12 @@ export const SLIDER_TRACK = 3.5;
  * size, and the target is in its hit area (ADR-0114). Recomputed by `slider.test`.
  */
 export const SLIDER_THUMB = 14;
+
+/**
+ * The row form's least track width, in dp: two of the platform's targets, so however long the label
+ * and the value grow, the thumb still travels a target's width past each end before the value wraps.
+ */
+export const SLIDER_TRACK_MIN = 2 * nativeTapTarget;
 
 /** The halo `17` draws round its marker, in dp: a ring of the card between marker and fill. */
 const SLIDER_HALO = 2;
@@ -738,9 +759,100 @@ function InteractiveSlider({
   labelSize = 'label',
   valueSize = 'label',
   valueColor = 'foreground',
+  layout,
+  trackMinWidth = SLIDER_TRACK_MIN,
+  valueName,
 }: InteractiveSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
+  const part = (name: string): { testID?: string } =>
+    testID === undefined ? {} : { testID: `${testID}.${name}` };
+
+  const track = (
+    <HeroSlider
+      value={value}
+      minValue={min}
+      maxValue={max}
+      step={step}
+      isDisabled={inert}
+      onChange={(next) => {
+        // Single-thumb only; an array is the range mode this wrapper does not offer.
+        if (typeof next === 'number') onValueChange(next);
+      }}
+    >
+      <HeroSlider.Track
+        // `null` removes the theme-decided layer, for the reason in the header.
+        background={null}
+        style={{
+          height: trackHeight,
+          borderRadius: nativeRadius.pill,
+          backgroundColor: colors['surface.3'],
+        }}
+      >
+        <HeroSlider.Fill
+          style={{ backgroundColor: colors.inverse, borderRadius: nativeRadius.pill }}
+        />
+        <HeroSlider.Thumb
+          testID={testID}
+          index={0}
+          /*
+              ONE ELEMENT, not a group. A thumb is a single thing a person grabs, and without
+              this the platform walks into it and announces what is inside.
+            */
+          accessible
+          accessibilityLabel={label}
+          /*
+              `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
+              bridge cannot carry a fraction; the caller's formatted string is the quantity a
+              person actually set.
+            */
+          accessibilityValue={{
+            min: 0,
+            max: 100,
+            now: percentOf(value, min, max),
+            text: valueName ?? valueLabel,
+          }}
+          accessibilityState={{ disabled: inert, busy: loading }}
+          // Drawn at its size; the target is in the hit area (ADR-0114), not a transparent 44.
+          hitSlop={hitArea(thumbSize, thumbSize)}
+          style={{
+            width: thumbSize,
+            height: thumbSize,
+            borderRadius: nativeRadius.pill,
+            backgroundColor: colors.inverse,
+          }}
+        >
+          <FocusRing visible={focused} radius={nativeRadius.pill} />
+        </HeroSlider.Thumb>
+      </HeroSlider.Track>
+    </HeroSlider>
+  );
+
+  if (layout === 'row')
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: nativeSpacing.sm,
+          opacity: inert ? 0.5 : 1,
+        }}
+      >
+        <Text size={labelSize} color="foreground" script={script} {...part('label')}>
+          {label}
+        </Text>
+        {/* The track takes what the label and the value leave, and never less than its least. */}
+        <View style={{ flexGrow: 1, flexBasis: 0, minWidth: trackMinWidth }} {...part('track')}>
+          {track}
+        </View>
+        {/* The value's own column: it wraps there rather than squeezing the track (ADR-0161 D5). */}
+        <View style={{ flexShrink: 1, alignItems: 'flex-end' }}>
+          <Text size={valueSize} color={valueColor} numeric selectable {...part('value')}>
+            {valueLabel}
+          </Text>
+        </View>
+      </View>
+    );
 
   return (
     <View style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}>
@@ -752,63 +864,7 @@ function InteractiveSlider({
         valueSize={valueSize}
         valueColor={valueColor}
       />
-      <HeroSlider
-        value={value}
-        minValue={min}
-        maxValue={max}
-        step={step}
-        isDisabled={inert}
-        onChange={(next) => {
-          // Single-thumb only; an array is the range mode this wrapper does not offer.
-          if (typeof next === 'number') onValueChange(next);
-        }}
-      >
-        <HeroSlider.Track
-          // `null` removes the theme-decided layer, for the reason in the header.
-          background={null}
-          style={{
-            height: trackHeight,
-            borderRadius: nativeRadius.pill,
-            backgroundColor: colors['surface.3'],
-          }}
-        >
-          <HeroSlider.Fill
-            style={{ backgroundColor: colors.inverse, borderRadius: nativeRadius.pill }}
-          />
-          <HeroSlider.Thumb
-            testID={testID}
-            index={0}
-            /*
-              ONE ELEMENT, not a group. A thumb is a single thing a person grabs, and without
-              this the platform walks into it and announces what is inside.
-            */
-            accessible
-            accessibilityLabel={label}
-            /*
-              `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
-              bridge cannot carry a fraction; the caller's formatted string is the quantity a
-              person actually set.
-            */
-            accessibilityValue={{
-              min: 0,
-              max: 100,
-              now: percentOf(value, min, max),
-              text: valueLabel,
-            }}
-            accessibilityState={{ disabled: inert, busy: loading }}
-            // Drawn at its size; the target is in the hit area (ADR-0114), not a transparent 44.
-            hitSlop={hitArea(thumbSize, thumbSize)}
-            style={{
-              width: thumbSize,
-              height: thumbSize,
-              borderRadius: nativeRadius.pill,
-              backgroundColor: colors.inverse,
-            }}
-          >
-            <FocusRing visible={focused} radius={nativeRadius.pill} />
-          </HeroSlider.Thumb>
-        </HeroSlider.Track>
-      </HeroSlider>
+      {track}
     </View>
   );
 }

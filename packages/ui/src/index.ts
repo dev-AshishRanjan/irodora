@@ -338,7 +338,12 @@ export {
   type ConfirmKind,
   type SkeletonProps,
 } from './feedback.js';
-export { SearchField, type SearchFieldProps, type SearchFieldToggle } from './SearchField.js';
+export {
+  SearchField,
+  type SearchFieldClear,
+  type SearchFieldProps,
+  type SearchFieldToggle,
+} from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
 export {
   Pair,
@@ -451,6 +456,7 @@ export {
   Slider,
   SLIDER_THUMB,
   SLIDER_TRACK,
+  SLIDER_TRACK_MIN,
   Switch,
   SWITCH_THUMB,
   SWITCH_TRACK,

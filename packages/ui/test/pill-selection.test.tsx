@@ -12,7 +12,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { Pressable, View } from 'react-native';
-import { nativeColors, nativeSpacing, type Theme } from '@irodora/design-tokens';
+import { nativeColors, nativeRadius, nativeSpacing, type Theme } from '@irodora/design-tokens';
 import {
   ChoiceGroup,
   Chip,
@@ -324,5 +324,67 @@ describe('ChoiceGroup’s pill form is 15’s CVD row, recomputed (F-240)', () =
     expect(pills[0]?.['backgroundColor']).toBe(dark['surface.2']);
     expect(pills[0]?.['borderColor']).toBe(dark.foreground);
     expect(pills[1]?.['borderColor']).toBe(dark.border);
+  });
+
+  it('draws 09’s chips: filled level 3 at rest with no edge to see, md corners (F-250)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <ChoiceGroup
+          label="Read the search as"
+          value="name"
+          options={[
+            { value: 'phrase', label: 'Natural Phrase' },
+            { value: 'name', label: 'Colour Name' },
+            { value: 'hex', label: '# Hex Code' },
+          ]}
+          onChange={() => undefined}
+          pills={{
+            height: 23.5,
+            gap: 'sm',
+            restFill: 'surface.3',
+            selectedFill: 'surface.3',
+            radius: 'md',
+          }}
+        />
+      </ThemeProvider>,
+    );
+    const radios = screen.getAllByRole('radio');
+    const pills = radios.map((p) => flattenStyle((p.props as { style?: unknown }).style));
+    for (const style of pills) {
+      expect(style['backgroundColor']).toBe(dark['surface.3']);
+      expect(style['borderRadius']).toBe(nativeRadius.md);
+      expect(style['borderWidth']).toBe(1);
+    }
+    // At rest the edge is the fill's own colour; the chosen one is edged and carries its dot.
+    expect(pills[0]?.['borderColor']).toBe(dark['surface.3']);
+    expect(pills[2]?.['borderColor']).toBe(dark['surface.3']);
+    expect(pills[1]?.['borderColor']).toBe(dark.foreground);
+    expect(radios.map((r) => drawsDot(r as unknown as TestNode))).toStrictEqual([
+      false,
+      true,
+      false,
+    ]);
+  });
+
+  it('DECOY — without a rest fill an unchosen pill is outlined, as 15 draws it', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <ChoiceGroup
+          label="Read the search as"
+          value="name"
+          options={[
+            { value: 'phrase', label: 'Natural Phrase' },
+            { value: 'name', label: 'Colour Name' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 23.5 }}
+        />
+      </ThemeProvider>,
+    );
+    const rest = flattenStyle(
+      (screen.getAllByRole('radio')[0]?.props as { style?: unknown }).style,
+    );
+    expect(rest['borderColor']).toBe(dark.border);
+    expect(rest['borderRadius']).toBe(nativeRadius.pill);
   });
 });

@@ -23,6 +23,7 @@ import {
   platformTapTarget,
   SearchField,
   ThemeProvider,
+  type SearchFieldClear,
   type SearchFieldToggle,
 } from '../src/index.js';
 import { tapTargetReach } from '../src/testing/index.js';
@@ -146,5 +147,87 @@ describe('its hit area lies inside the field, on both platforms', () => {
     } finally {
       replaced.restore();
     }
+  });
+});
+
+describe('09’s bare form and its clear (F-250, ADR-0160 D2)', () => {
+  const clearOf = (onPress = noop): SearchFieldClear => ({
+    label: 'Clear the search text',
+    onPress,
+    size: 21,
+    testID: 'clear',
+  });
+  const bare = (value: string, clear?: SearchFieldClear) => (
+    <ThemeProvider theme="dark">
+      <SearchField
+        bare
+        label="Describe a colour, name one, or type a hex"
+        value={value}
+        onChangeText={noop}
+        {...(clear === undefined ? {} : { clear })}
+      />
+    </ThemeProvider>
+  );
+
+  it('draws no fill and no outline: its words sit on the card it is in', () => {
+    render(bare('muted green'));
+    const input = screen.UNSAFE_getByType(TextInput);
+    const style = flat(input.props['style']);
+    expect(style['backgroundColor']).toBeUndefined();
+    expect(style['borderWidth'] ?? 0).toBe(0);
+    expect(style['paddingLeft']).toBe(0);
+    // Its touch is the platform's target, however short its line.
+    expect(style['height']).toBeGreaterThanOrEqual(platformTapTarget());
+  });
+
+  it('draws its clear while it holds words: a named action, not a toggle', () => {
+    render(bare('muted green', clearOf()));
+    const button = screen.getByRole('button', { name: 'Clear the search text' });
+    expect((button.props['accessibilityState'] as { selected?: boolean }).selected).toBeUndefined();
+    // The words stop where the clear's target starts.
+    const input = screen.UNSAFE_getByType(TextInput);
+    expect(flat(input.props['style'])['paddingRight']).toBe(platformTapTarget());
+  });
+
+  it('DECOY — draws no clear on an empty field', () => {
+    render(bare('', clearOf()));
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('empties the words when pressed', () => {
+    const pressed = jest.fn();
+    render(bare('muted green', clearOf(pressed)));
+    fireEvent.press(screen.getByTestId('clear'));
+    expect(pressed).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([['ios'], ['android']] as const)(
+    'keeps the clear’s whole target inside the field on %s',
+    (os) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        const target = platformTapTarget(os);
+        render(bare('muted green', clearOf()));
+        const button = screen.getByTestId('clear');
+        const reach = tapTargetReach(flat(button.props['style']), button.props['hitSlop'] as never);
+        expect(reach).toStrictEqual({ width: target, height: target });
+        // The field's box reaches past its drawn end by what the target overhangs the glyph.
+        const outer = screen
+          .UNSAFE_getAllByType(View)
+          .map((v) => flat(v.props['style']))
+          .find((s) => s['marginRight'] !== undefined);
+        expect(outer?.['marginRight']).toBe(-(target - 21) / 2);
+        expect(outer?.['height']).toBeGreaterThanOrEqual(target);
+      } finally {
+        replaced.restore();
+      }
+    },
+  );
+
+  it('DECOY — the filled field without a clear is the tree it always was', () => {
+    render(field({}));
+    const input = screen.UNSAFE_getByType(TextInput);
+    expect(flat(input.props['style'])['backgroundColor']).toBeDefined();
+    expect(flat(input.props['style'])['paddingRight']).toBeUndefined();
   });
 });

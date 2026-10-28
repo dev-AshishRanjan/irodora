@@ -39,6 +39,18 @@
  * so a hit slop past the drawn field would do nothing; this makes the field itself the target. The
  * outline and the glyph are drawn under the input and take no touch. Without `height` the field is
  * the filled one it always was.
+ *
+ * ## The bare form, and its clear (F-250)
+ *
+ * `09` draws the field neither filled nor outlined: its words sit on the card that holds it, and a
+ * disc with a cross cut through it (`close-circle`) ends the line while the field holds text. `bare`
+ * draws that. The field takes its words' line in layout and the platform's target in touch, by the
+ * drawn form's negative margins. `clear` is an action, not a toggle — it has no `selected` — and it
+ * is drawn only while there is something to clear (Apple's search-field convention: the cancel button
+ * is hidden while the field is empty). It is drawn at its size at the field's trailing edge; its
+ * target is centred on it, and the field's box reaches past that edge by the difference, so the target
+ * is inside the field (Android delivers no touch outside a view's parent). The type refuses `clear`
+ * with `trailing`: one control ends the line.
  */
 
 import { TextInput, View, type TextInputProps } from 'react-native';
@@ -59,6 +71,21 @@ export interface SearchFieldToggle {
   readonly testID?: string;
 }
 
+/** The field's clear (F-250): empties the words; drawn only while there are words to empty. */
+export interface SearchFieldClear {
+  /** What it does — "Clear the search text" — for a screen reader. */
+  readonly label: string;
+  readonly onPress: () => void;
+  /** The glyph's size in dp, where the drawing's own is measured. Defaults to the words' size. */
+  readonly size?: number;
+  readonly testID?: string;
+}
+
+/** One control at the trailing end: the toggle, or the clear. */
+type SearchFieldEnd =
+  | { readonly trailing?: SearchFieldToggle; readonly clear?: never }
+  | { readonly clear?: SearchFieldClear; readonly trailing?: never };
+
 export type SearchFieldProps = Omit<
   TextInputProps,
   'style' | 'placeholderTextColor' | 'accessibilityLabel' | 'editable'
@@ -72,17 +99,17 @@ export type SearchFieldProps = Omit<
   readonly loading?: boolean;
   /** Focused by an external keyboard or Switch Control. */
   readonly focused?: boolean;
-  /** A toggle inside the field, at its trailing end. Inert whenever the field is. */
-  readonly trailing?: SearchFieldToggle;
+  /** `09`'s form: no fill and no outline, the words on the card the field sits in. */
+  readonly bare?: true;
   /** The drawn height in dp (`05`: 26.5). Given, the field takes its drawn, outlined form. */
   readonly height?: number;
   /** A glyph leading the words, in the drawn form (`05`: `search`). */
   readonly icon?: GlyphName;
   /** The glyph's size in dp, where the drawing's own is measured. Defaults to the words' size. */
   readonly iconSize?: number;
-  /** The words' step in the drawn form. Defaults to `body`. */
+  /** The words' step in the drawn and the bare form. Defaults to `body`. */
   readonly size?: 'body' | 'label' | 'caption';
-};
+} & SearchFieldEnd;
 
 export function SearchField({
   label,
@@ -92,6 +119,8 @@ export function SearchField({
   loading = false,
   focused = false,
   trailing,
+  clear,
+  bare,
   height,
   icon,
   iconSize,
@@ -104,6 +133,88 @@ export function SearchField({
   // hit area is the box and never reaches past the field: Android does not deliver a touch
   // outside a view's parent.
   const target = platformTapTarget();
+
+  if (bare === true) {
+    const words = nativeType.latin[size];
+    const line = height ?? words.lineHeight;
+    const touch = Math.max(target, line);
+    const overhang = (touch - line) / 2;
+    const glyph = clear?.size ?? words.fontSize;
+    // The field's box reaches past its drawn end by what the clear's target overhangs its glyph.
+    const reach = clear === undefined ? 0 : Math.max(0, (target - glyph) / 2);
+    return (
+      <View
+        style={{
+          height: touch,
+          marginVertical: -overhang,
+          marginRight: -reach,
+          justifyContent: 'center',
+        }}
+      >
+        {/* Focus is a ring, drawn round the words' line and taking no touch. */}
+        {focused ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: reach,
+              top: overhang,
+              height: line,
+              borderRadius: nativeRadius.md,
+              borderWidth: 2,
+              borderColor: colors.ring,
+            }}
+          />
+        ) : null}
+        <TextInput
+          accessibilityRole="search"
+          accessibilityLabel={label}
+          accessibilityState={{ disabled: inert, busy: loading }}
+          editable={!inert}
+          placeholder={label}
+          placeholderTextColor={colors['foreground.2']}
+          value={value}
+          onChangeText={onChangeText}
+          {...rest}
+          style={{
+            height: touch,
+            minWidth: nativeTapTarget,
+            paddingLeft: 0,
+            // The words stop where the clear's target starts, so a long query never runs under it.
+            paddingRight: clear === undefined ? 0 : target,
+            color: colors.foreground,
+            fontSize: words.fontSize,
+            opacity: inert ? 0.5 : 1,
+          }}
+        />
+        {clear === undefined || value === '' ? null : (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              right: 0,
+              width: target,
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'box-none',
+            }}
+          >
+            <IconButton
+              name="close-circle"
+              label={clear.label}
+              color="foreground.2"
+              size={glyph}
+              onPress={clear.onPress}
+              disabled={inert}
+              {...(clear.testID === undefined ? {} : { testID: clear.testID })}
+            />
+          </View>
+        )}
+      </View>
+    );
+  }
 
   if (height !== undefined) {
     const touch = Math.max(target, height);

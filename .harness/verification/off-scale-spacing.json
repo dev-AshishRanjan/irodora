@@ -1,7 +1,7 @@
 {
   "$comment": "Padding, margin and gap values that are deliberately NOT a step of docs/design/design-system.manifest.json `spacing.scale`. `scripts/verify-spacing-scale.mjs` fails on any off-scale value that is not listed here, AND on any entry here that no longer matches anything in the source — both directions, because a dead exemption is how a live one gets waved through later. Same shape as unreached-tokens.json. Every entry carries a `why`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. See F-095 and ADR-0074.",
   "version": 1,
-  "updated": "2026-08-26",
+  "updated": "2026-10-28",
   "$sizeComment": "This list is meant to stay very short. Four values were moved onto the scale and two were added to it rather than exempted, precisely so that this file would not become the place the scale goes to die. An entry that reads like 'this one is special too' is the signal that the SCALE is wrong, not that the list needs another row.",
   "exempt": [
     {
@@ -10,6 +10,13 @@
       "value": 1,
       "cites": "F-068, F-233, ADR-0074, ADR-0116",
       "why": "NOT SPACING. This is the line around a colour sample: one opaque line drawn as a one-dp inset, because that is how a View makes a line of an exact width that the sample sits inside. Until F-233 it was the inner half of F-068's two-tone ring; since F-233 it is the README keyline, composited over the well and moved per sample where it would not clear 3:1 (ADR-0116). The 1 is the line's width, and a spacing step would draw a band, not a line."
+    },
+    {
+      "file": "packages/ui/src/SearchField.tsx",
+      "property": "paddingLeft",
+      "value": 0,
+      "cites": "F-250, ADR-0161 D3",
+      "why": "NOT SPACING. 09 draws its search field bare: the words start at the card’s own inset, which is the spacing (md, on the card). Zero removes the inset Android’s EditText draws by default, which no mockup draws; any step here would set the words a step in from the chips beneath them."
     }
   ]
 }
