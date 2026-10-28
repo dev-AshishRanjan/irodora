@@ -44,7 +44,8 @@ describe('the defaults are the inventories’, recomputed', () => {
       cards.filter((e) => e.tokens?.['radius'] === step).length;
     // F-247 measured 06's three cards (readout, provenance, combinations): md, 66 → 69.
     // F-249 measured 08's three (the pair, the metrics, the access card): sm, 69 → 66.
-    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([66, 24, 4]);
+    // F-250 measured 09's two (the query, the sliders): sm, 66 → 64.
+    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([64, 26, 4]);
     expect(CARD_RADIUS).toBe('md');
     expect(CARD_RADIUS).not.toBe('lg');
   });

@@ -29,13 +29,13 @@
         "x": 0,
         "y": 0,
         "w": 768,
-        "h": 115
+        "h": 116
       },
       "dp": {
         "x": 0,
         "y": 0,
         "w": 384,
-        "h": 57.5
+        "h": 58
       },
       "tokens": {},
       "type": null,
@@ -52,21 +52,25 @@
       "component": "ui:Button",
       "box": {
         "x": 31,
-        "y": 45,
-        "w": 117,
-        "h": 27
+        "y": 46,
+        "w": 116,
+        "h": 25
       },
       "dp": {
         "x": 15.5,
-        "y": 22.5,
-        "w": 58.5,
-        "h": 13.5
+        "y": 23,
+        "w": 58,
+        "h": 12.5
       },
       "tokens": {},
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": "back",
       "illustration": null,
-      "binding": "static:atlas.back",
+      "binding": "static:tab.atlas",
       "action": "navigate:/atlas",
       "copy": {
         "shape": "label",
@@ -79,23 +83,23 @@
       "parent": "09.header",
       "component": "ui:Text",
       "box": {
-        "x": 235,
-        "y": 41,
-        "w": 298,
-        "h": 33
+        "x": 236,
+        "y": 42,
+        "w": 296,
+        "h": 31
       },
       "dp": {
-        "x": 117.5,
-        "y": 20.5,
-        "w": 149,
-        "h": 16.5
+        "x": 118,
+        "y": 21,
+        "w": 148,
+        "h": 15.5
       },
       "tokens": {
         "fg": "text.primary"
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 600
       },
       "icon": null,
@@ -114,18 +118,22 @@
       "component": "ui:Button",
       "box": {
         "x": 622,
-        "y": 44,
-        "w": 119,
-        "h": 28
+        "y": 45,
+        "w": 118,
+        "h": 26
       },
       "dp": {
         "x": 311,
-        "y": 22,
-        "w": 59.5,
-        "h": 14
+        "y": 22.5,
+        "w": 59,
+        "h": 13
       },
       "tokens": {},
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": "close",
       "illustration": null,
       "binding": "static:finder.clear",
@@ -141,16 +149,16 @@
       "parent": null,
       "component": "ui:Illustration",
       "box": {
-        "x": 560,
+        "x": 549,
         "y": 97,
-        "w": 208,
-        "h": 323
+        "w": 219,
+        "h": 422
       },
       "dp": {
-        "x": 280,
+        "x": 274.5,
         "y": 48.5,
-        "w": 104,
-        "h": 161.5
+        "w": 109.5,
+        "h": 211
       },
       "tokens": {},
       "type": null,
@@ -180,7 +188,7 @@
       "tokens": {
         "bg": "level1",
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -188,7 +196,10 @@
       "binding": null,
       "action": null,
       "measured": {
-        "bg": "#1D2228"
+        "bg": "#1D2128"
+      },
+      "raw": {
+        "cornerPx": 15.4
       },
       "copy": null
     },
@@ -196,7 +207,7 @@
       "id": "09.search.query",
       "order": 7,
       "parent": "09.search",
-      "component": "ui:TextField",
+      "component": "ui:SearchField",
       "box": {
         "x": 64,
         "y": 198,
@@ -243,12 +254,17 @@
         "w": 17.5,
         "h": 17.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary"
+      },
       "type": null,
       "icon": "close-circle",
       "illustration": null,
       "binding": null,
       "action": "submit:finder.query.clear",
+      "measured": {
+        "fg": "#969CA2"
+      },
       "copy": null
     },
     {
@@ -258,25 +274,33 @@
       "component": "ui:Chip",
       "box": {
         "x": 64,
-        "y": 261,
+        "y": 262,
         "w": 213,
-        "h": 49
+        "h": 47
       },
       "dp": {
         "x": 32,
-        "y": 130.5,
+        "y": 131,
         "w": 106.5,
-        "h": 24.5
+        "h": 23.5
       },
       "tokens": {
-        "bg": "level2",
-        "radius": "pill"
+        "bg": "level3",
+        "fg": "text.primary",
+        "radius": "md"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:finder.mode.phrase",
       "action": "select:finder.mode.phrase",
+      "measured": {
+        "bg": "#323840"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -289,25 +313,33 @@
       "component": "ui:Chip",
       "box": {
         "x": 290,
-        "y": 261,
+        "y": 262,
         "w": 217,
-        "h": 48
+        "h": 47
       },
       "dp": {
         "x": 145,
-        "y": 130.5,
+        "y": 131,
         "w": 108.5,
-        "h": 24
+        "h": 23.5
       },
       "tokens": {
-        "bg": "level2",
-        "radius": "pill"
+        "bg": "level3",
+        "fg": "text.primary",
+        "radius": "md"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
-      "binding": "static:finder.mode.kanji",
-      "action": "select:finder.mode.kanji",
+      "binding": "static:finder.mode.name",
+      "action": "select:finder.mode.name",
+      "measured": {
+        "bg": "#323840"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -320,25 +352,33 @@
       "component": "ui:Chip",
       "box": {
         "x": 520,
-        "y": 261,
+        "y": 262,
         "w": 170,
-        "h": 49
+        "h": 47
       },
       "dp": {
         "x": 260,
-        "y": 130.5,
+        "y": 131,
         "w": 85,
-        "h": 24.5
+        "h": 23.5
       },
       "tokens": {
-        "bg": "level2",
-        "radius": "pill"
+        "bg": "level3",
+        "fg": "text.primary",
+        "radius": "md"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:finder.mode.hex",
       "action": "select:finder.mode.hex",
+      "measured": {
+        "bg": "#323840"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -398,7 +438,7 @@
       "tokens": {
         "bg": "level1",
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -407,6 +447,9 @@
       "action": null,
       "measured": {
         "bg": "#1D2227"
+      },
+      "raw": {
+        "cornerPx": 15.75
       },
       "copy": null
     },
@@ -470,8 +513,8 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:finder.lightness",
-      "action": "adjust:finder.lightness",
+      "binding": "store:finder.point.lightness",
+      "action": "adjust:finder.point.lightness",
       "measured": {
         "track": "#343B44",
         "fill": "#ECF0F4",
@@ -511,7 +554,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-250",
+      "binding": "engine:finder.sliderReadings",
       "action": null,
       "copy": {
         "shape": "value",
@@ -578,8 +621,8 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:finder.chroma",
-      "action": "adjust:finder.chroma",
+      "binding": "store:finder.point.chroma",
+      "action": "adjust:finder.point.chroma",
       "measured": {
         "track": "#353C45",
         "thumb": "#EEF2F5"
@@ -618,7 +661,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-250",
+      "binding": "engine:finder.sliderReadings",
       "action": null,
       "copy": {
         "shape": "value",
@@ -685,8 +728,8 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:finder.hue",
-      "action": "adjust:finder.hue",
+      "binding": "store:finder.point.hue",
+      "action": "adjust:finder.point.hue",
       "measured": {
         "track": "#353B44",
         "fill": "#ECF0F4",
@@ -726,7 +769,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "derived:F-250",
+      "binding": "engine:finder.sliderReadings",
       "action": null,
       "copy": {
         "shape": "value",
@@ -790,13 +833,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.0.hex",
+      "binding": "corpus:finder.results.0.hex",
       "action": "navigate:/atlas/[slug]",
       "measured": {
         "bg": "#66791D"
       },
       "raw": {
-        "cornerPx": 19.75
+        "cornerPx": 17.25
       },
       "copy": null
     },
@@ -823,7 +866,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.1.hex",
+      "binding": "corpus:finder.results.1.hex",
       "action": "navigate:/atlas/[slug]",
       "measured": {
         "bg": "#6D591F"
@@ -838,14 +881,14 @@
       "box": {
         "x": 58,
         "y": 826,
-        "w": 202,
-        "h": 35
+        "w": 201,
+        "h": 34
       },
       "dp": {
         "x": 29,
         "y": 413,
-        "w": 101,
-        "h": 17.5
+        "w": 100.5,
+        "h": 17
       },
       "tokens": {},
       "type": {
@@ -855,7 +898,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.0.name",
+      "binding": "corpus:finder.results.0.name",
       "action": null,
       "copy": {
         "shape": "heading",
@@ -870,14 +913,14 @@
       "box": {
         "x": 423,
         "y": 826,
-        "w": 247,
-        "h": 39
+        "w": 246,
+        "h": 37
       },
       "dp": {
         "x": 211.5,
         "y": 413,
-        "w": 123.5,
-        "h": 19.5
+        "w": 123,
+        "h": 18.5
       },
       "tokens": {},
       "type": {
@@ -887,7 +930,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.1.name",
+      "binding": "corpus:finder.results.1.name",
       "action": null,
       "copy": {
         "shape": "heading",
@@ -901,26 +944,25 @@
       "component": "ui:Text",
       "box": {
         "x": 59,
-        "y": 873,
+        "y": 874,
         "w": 170,
-        "h": 28
+        "h": 27
       },
       "dp": {
         "x": 29.5,
-        "y": 436.5,
+        "y": 437,
         "w": 85,
-        "h": 14
+        "h": 13.5
       },
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "size": "body",
+        "weight": 400
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.0.english",
+      "binding": "corpus:finder.results.0.english",
       "action": null,
       "copy": {
         "shape": "label",
@@ -933,27 +975,26 @@
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
-        "x": 422,
-        "y": 873,
-        "w": 261,
-        "h": 29
+        "x": 424,
+        "y": 874,
+        "w": 257,
+        "h": 27
       },
       "dp": {
-        "x": 211,
-        "y": 436.5,
-        "w": 130.5,
-        "h": 14.5
+        "x": 212,
+        "y": 437,
+        "w": 128.5,
+        "h": 13.5
       },
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "size": "body",
+        "weight": 400
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.1.english",
+      "binding": "corpus:finder.results.1.english",
       "action": null,
       "copy": {
         "shape": "label",
@@ -966,16 +1007,16 @@
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
-        "x": 56,
-        "y": 924,
-        "w": 270,
-        "h": 23
+        "x": 57,
+        "y": 925,
+        "w": 268,
+        "h": 21
       },
       "dp": {
-        "x": 28,
-        "y": 462,
-        "w": 135,
-        "h": 11.5
+        "x": 28.5,
+        "y": 462.5,
+        "w": 134,
+        "h": 10.5
       },
       "tokens": {},
       "type": {
@@ -986,7 +1027,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:finder.nearest.0.deltaE00",
+      "binding": "engine:finder.results.0.deltaE00",
       "action": null,
       "copy": {
         "shape": "value",
@@ -994,21 +1035,21 @@
       }
     },
     {
-      "id": "09.results.result-2.hex",
+      "id": "09.results.result-2.distance",
       "order": 31,
       "parent": "09.results.result-2",
       "component": "ui:Text",
       "box": {
-        "x": 421,
-        "y": 924,
-        "w": 127,
-        "h": 23
+        "x": 422,
+        "y": 925,
+        "w": 126,
+        "h": 58
       },
       "dp": {
-        "x": 210.5,
-        "y": 462,
-        "w": 63.5,
-        "h": 11.5
+        "x": 211,
+        "y": 462.5,
+        "w": 63,
+        "h": 29
       },
       "tokens": {},
       "type": {
@@ -1019,7 +1060,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.1.hex",
+      "binding": "engine:finder.results.1.deltaE00",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1032,16 +1073,16 @@
       "parent": "09.results.result-1",
       "component": "ui:Text",
       "box": {
-        "x": 57,
+        "x": 58,
         "y": 963,
-        "w": 294,
-        "h": 20
+        "w": 293,
+        "h": 19
       },
       "dp": {
-        "x": 28.5,
+        "x": 29,
         "y": 481.5,
-        "w": 147,
-        "h": 10
+        "w": 146.5,
+        "h": 9.5
       },
       "tokens": {},
       "type": {
@@ -1052,40 +1093,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:finder.nearest.0.oklch",
-      "action": null,
-      "copy": {
-        "shape": "value",
-        "script": "figures"
-      }
-    },
-    {
-      "id": "09.results.result-2.distance",
-      "order": 33,
-      "parent": "09.results.result-2",
-      "component": "ui:Text",
-      "box": {
-        "x": 422,
-        "y": 961,
-        "w": 124,
-        "h": 23
-      },
-      "dp": {
-        "x": 211,
-        "y": 480.5,
-        "w": 62,
-        "h": 11.5
-      },
-      "tokens": {},
-      "type": {
-        "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": true
-      },
-      "icon": null,
-      "illustration": null,
-      "binding": "engine:finder.nearest.1.deltaE00",
+      "binding": "corpus:finder.results.0.oklch",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1094,7 +1102,7 @@
     },
     {
       "id": "09.results.result-3",
-      "order": 34,
+      "order": 33,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -1115,7 +1123,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.2.hex",
+      "binding": "corpus:finder.results.2.hex",
       "action": "navigate:/atlas/[slug]",
       "measured": {
         "bg": "#575E2B"
@@ -1124,7 +1132,7 @@
     },
     {
       "id": "09.results.result-4",
-      "order": 35,
+      "order": 34,
       "parent": null,
       "component": "ui:Swatch",
       "box": {
@@ -1145,7 +1153,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.3.hex",
+      "binding": "corpus:finder.results.3.hex",
       "action": "navigate:/atlas/[slug]",
       "measured": {
         "bg": "#575840"
@@ -1153,138 +1161,72 @@
       "copy": null
     },
     {
-      "id": "09.results.result-3.kanji",
-      "order": 36,
+      "id": "09.results.result-3.name",
+      "order": 35,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
-        "x": 57,
-        "y": 1065,
-        "w": 105,
-        "h": 36
+        "x": 58,
+        "y": 1066,
+        "w": 115,
+        "h": 74
       },
       "dp": {
-        "x": 28.5,
-        "y": 532.5,
-        "w": 52.5,
-        "h": 18
+        "x": 29,
+        "y": 533,
+        "w": 57.5,
+        "h": 37
       },
       "tokens": {},
       "type": {
-        "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.2.name.ja",
+      "binding": "corpus:finder.results.2.name",
       "action": null,
       "copy": {
         "shape": "heading",
-        "script": "japanese"
+        "script": "mixed"
       }
     },
     {
-      "id": "09.results.result-4.kanji",
-      "order": 37,
+      "id": "09.results.result-4.name",
+      "order": 36,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
         "x": 422,
         "y": 1066,
-        "w": 107,
-        "h": 35
+        "w": 247,
+        "h": 81
       },
       "dp": {
         "x": 211,
         "y": 533,
-        "w": 53.5,
-        "h": 17.5
+        "w": 123.5,
+        "h": 40.5
       },
       "tokens": {},
       "type": {
-        "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.3.name.ja",
+      "binding": "corpus:finder.results.3.name",
       "action": null,
       "copy": {
         "shape": "heading",
-        "script": "japanese"
-      }
-    },
-    {
-      "id": "09.results.result-3.name",
-      "order": 38,
-      "parent": "09.results.result-3",
-      "component": "ui:Text",
-      "box": {
-        "x": 58,
-        "y": 1114,
-        "w": 116,
-        "h": 27
-      },
-      "dp": {
-        "x": 29,
-        "y": 557,
-        "w": 58,
-        "h": 13.5
-      },
-      "tokens": {},
-      "type": {
-        "face": "gothic",
-        "size": "body",
-        "weight": 500
-      },
-      "icon": null,
-      "illustration": null,
-      "binding": "corpus:finder.nearest.2.name.romaji",
-      "action": null,
-      "copy": {
-        "shape": "label",
-        "script": "latin"
-      }
-    },
-    {
-      "id": "09.results.result-4.name",
-      "order": 39,
-      "parent": "09.results.result-4",
-      "component": "ui:Text",
-      "box": {
-        "x": 421,
-        "y": 1113,
-        "w": 249,
-        "h": 35
-      },
-      "dp": {
-        "x": 210.5,
-        "y": 556.5,
-        "w": 124.5,
-        "h": 17.5
-      },
-      "tokens": {},
-      "type": {
-        "face": "gothic",
-        "size": "body",
-        "weight": 500
-      },
-      "icon": null,
-      "illustration": null,
-      "binding": "corpus:finder.nearest.3.name.romaji",
-      "action": null,
-      "copy": {
-        "shape": "label",
-        "script": "latin"
+        "script": "mixed"
       }
     },
     {
       "id": "09.results.result-3.english",
-      "order": 40,
+      "order": 37,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
@@ -1302,13 +1244,12 @@
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "size": "body",
+        "weight": 400
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.2.english",
+      "binding": "corpus:finder.results.2.english",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1317,31 +1258,30 @@
     },
     {
       "id": "09.results.result-4.english",
-      "order": 41,
+      "order": 38,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
-        "x": 423,
-        "y": 1153,
-        "w": 212,
+        "x": 424,
+        "y": 1154,
+        "w": 210,
         "h": 28
       },
       "dp": {
-        "x": 211.5,
-        "y": 576.5,
-        "w": 106,
+        "x": 212,
+        "y": 577,
+        "w": 105,
         "h": 14
       },
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
-        "weight": 400,
-        "tabular": false
+        "size": "body",
+        "weight": 400
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:finder.nearest.3.english",
+      "binding": "corpus:finder.results.3.english",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1350,20 +1290,20 @@
     },
     {
       "id": "09.results.result-3.distance",
-      "order": 42,
+      "order": 39,
       "parent": "09.results.result-3",
       "component": "ui:Text",
       "box": {
-        "x": 56,
-        "y": 1204,
-        "w": 267,
-        "h": 24
+        "x": 57,
+        "y": 1205,
+        "w": 265,
+        "h": 22
       },
       "dp": {
-        "x": 28,
-        "y": 602,
-        "w": 133.5,
-        "h": 12
+        "x": 28.5,
+        "y": 602.5,
+        "w": 132.5,
+        "h": 11
       },
       "tokens": {},
       "type": {
@@ -1374,7 +1314,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:finder.nearest.2.deltaE00",
+      "binding": "engine:finder.results.2.deltaE00",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1383,20 +1323,20 @@
     },
     {
       "id": "09.results.result-4.distance",
-      "order": 43,
+      "order": 40,
       "parent": "09.results.result-4",
       "component": "ui:Text",
       "box": {
         "x": 422,
-        "y": 1204,
-        "w": 276,
-        "h": 24
+        "y": 1205,
+        "w": 275,
+        "h": 22
       },
       "dp": {
         "x": 211,
-        "y": 602,
-        "w": 138,
-        "h": 12
+        "y": 602.5,
+        "w": 137.5,
+        "h": 11
       },
       "tokens": {},
       "type": {
@@ -1407,7 +1347,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:finder.nearest.3.deltaE00",
+      "binding": "engine:finder.results.3.deltaE00",
       "action": null,
       "copy": {
         "shape": "value",
@@ -1416,7 +1356,7 @@
     },
     {
       "id": "09.tabs",
-      "order": 44,
+      "order": 41,
       "parent": null,
       "component": "ui:TabBar",
       "box": {
@@ -1447,7 +1387,7 @@
     },
     {
       "id": "09.tabs.indicator",
-      "order": 45,
+      "order": 42,
       "parent": "09.tabs",
       "component": null,
       "box": {
@@ -1474,7 +1414,7 @@
     },
     {
       "id": "09.tabs.atlas.icon",
-      "order": 46,
+      "order": 43,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1499,7 +1439,7 @@
     },
     {
       "id": "09.tabs.map.icon",
-      "order": 47,
+      "order": 44,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1524,7 +1464,7 @@
     },
     {
       "id": "09.tabs.profile.icon",
-      "order": 48,
+      "order": 45,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1549,7 +1489,7 @@
     },
     {
       "id": "09.tabs.settings.icon",
-      "order": 49,
+      "order": 46,
       "parent": "09.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1574,7 +1514,7 @@
     },
     {
       "id": "09.tabs.atlas.label",
-      "order": 50,
+      "order": 47,
       "parent": "09.tabs",
       "component": "ui:Text",
       "box": {
@@ -1599,7 +1539,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "static:tabs.atlas",
+      "binding": "static:tab.atlas",
       "action": null,
       "copy": {
         "shape": "label",
@@ -1627,13 +1567,73 @@
         "w": 247,
         "h": 42
       }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around the chip label \"Natural Phrase\": notation, not copy",
+      "box": {
+        "x": 81,
+        "y": 275,
+        "w": 179,
+        "h": 24
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around the chip label \"Japanese Kanji\": notation, not copy",
+      "box": {
+        "x": 307,
+        "y": 275,
+        "w": 183,
+        "h": 25
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the text caret after the query: the platform draws it in a focused field (F-250)",
+      "box": {
+        "x": 618,
+        "y": 199,
+        "w": 2,
+        "h": 39
+      }
     }
   ],
   "departures": [
     {
       "rule": "E1",
+      "element": "09.search.query",
+      "why": "the field holds what the person types; 09’s phrase is sample content, and the start is the empty field (ADR-0158 D2)"
+    },
+    {
+      "rule": "E1",
+      "element": "09.sliders.lightness.value",
+      "why": "the sliders print the search point and the lexicon terms whose region holds it (ADR-0159 D1–D2); 09’s 48 %, 0.045 and 142° and “Medium Deep” and “Moss Green” are sample content — the lexicon has no such terms — and so is each thumb’s position"
+    },
+    {
+      "rule": "E1",
+      "element": "09.results.result-1.name",
+      "why": "the results are corpus entries ranked by ΔE00 from the search point (ADR-0158 D3); 09’s Koke-iro, Uguisu-cha, Miru-iro and Yanagi-susutake, their English names, hexes and ΔE00s are sample content — none is in the corpus"
+    },
+    {
+      "rule": "E1",
       "element": "09.results.result-1.oklch",
-      "why": "#69821B is printed as OKLCh 0.52 / 0.062 / 140°; it is 0.567 / 0.128 / 122.8° (§4 E1) — the line shows the engine’s conversion"
+      "why": "#69821B is printed as OKLCh 0.52 / 0.062 / 140°; it is 0.567 / 0.128 / 122.8° (§4 E1) — the line shows the record’s OKLCh at 3 / 3 / 1, as 05 and 06 print it (ADR-0159 D3)"
+    },
+    {
+      "rule": "E2",
+      "element": "09.search.mode-kanji",
+      "why": "the chip reads Colour Name: the name search reads kanji, kana, romaji, English and slug, so “Japanese Kanji” would say a romaji or English query was read as kanji (ADR-0159 D4)"
+    },
+    {
+      "rule": "E3",
+      "element": "09.search.mode-phrase",
+      "why": "the chosen chip carries its leading dot (ADR-0141), so a choice is never colour alone; 09 draws none chosen"
+    },
+    {
+      "rule": "E4",
+      "element": "09.results.result-1",
+      "why": "nothing matched shows 00’s caption with the kind’s hint, and a reading forced on text it cannot read says so (ADR-0160 D8); no mockup draws either"
     }
   ],
   "conflicts": [
@@ -1656,8 +1656,8 @@
       "elements": [
         "09.results.result-1.name",
         "09.results.result-2.name",
-        "09.results.result-3.kanji",
-        "09.results.result-4.kanji"
+        "09.results.result-3.name",
+        "09.results.result-4.name"
       ],
       "resolution": "text sits on the sample as 09 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)",
       "flippedByUser": false

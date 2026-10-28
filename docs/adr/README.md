@@ -173,6 +173,10 @@ Two rules that matter more than the format:
 | [0155](0155-08s-figures-and-words-say-what-the-engine-computes.md) | 08's figures and words say what the engine computes | Accepted |
 | [0156](0156-what-08s-controls-do-and-what-leaves-compare.md) | What 08's controls do, and what leaves Compare | Accepted |
 | [0157](0157-08s-composition-its-art-and-its-seam.md) | 08's composition, its art and its seam | Accepted |
+| [0158](0158-the-finder-answers-a-query-as-a-set-ranked-from-a-point-and-the-sliders-are-the-point.md) | The Finder answers a query as a set ranked by ΔE00 from a point, and the sliders are the point | Accepted |
+| [0159](0159-09s-figures-and-words-say-what-the-corpus-and-the-lexicon-hold.md) | 09's figures and words say what the corpus and the lexicon hold | Accepted |
+| [0160](0160-what-09s-controls-do-and-what-leaves-the-finder.md) | What 09's controls do, and what leaves the Finder | Accepted |
+| [0161](0161-09s-composition-its-art-and-its-result-cards.md) | 09's composition, its art and its result cards | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

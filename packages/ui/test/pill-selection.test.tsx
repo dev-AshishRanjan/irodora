@@ -78,8 +78,9 @@ describe('the defaults are the inventories’, recomputed', () => {
       )
       .map((e) => e.dp?.h ?? NaN);
     // F-248 measured 07’s three substitution pills as rounded rectangles (corners 7–9 px on a 33 px
-    // height, sm), not pills: 31 became 28.
-    expect(heights).toHaveLength(28);
+    // height, sm), not pills: 31 became 28. F-250 measured 09's three mode chips the same way
+    // (r ≈ 20 px on a 47 px height, a straight run between the arcs, md): 28 became 25.
+    expect(heights).toHaveLength(25);
     expect(half(median(heights))).toBe(CHIP_HEIGHT);
   });
 });

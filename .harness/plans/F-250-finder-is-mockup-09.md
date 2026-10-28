@@ -319,7 +319,28 @@ So in the start state the three are drawn alike, as 09 draws them. More on the c
 
 ## Implementing session's decisions on this design
 
-*(To be written by the implementing session after increment 1 and after the review, as F-249's plan does.)*
+**After increment 1 (2026-10-27), where the measurement moved the plan:**
+
+- **Both cards are `sm`, not `md`:** eight corner fits, median 16.0 px (8.0 dp, the midpoint, the
+  smaller), mean 15.6. `cards.test`'s census moves 66 → 64 md, 24 → 26 sm.
+- **The chips are level 3, `md`, unedged** (fill #323840; the edge fits r ≈ 20 px with a straight run),
+  none chosen. `ChoiceGroup`'s pills gain `restFill` ('surface.2' | 'surface.3') and `radius`
+  ('md' | 'pill'); the chosen one keeps the fill, its foreground edge and the dot.
+  `pill-selection.test`'s census moves 28 → 25.
+- **Type:** the title is `body` 600 (25 px of capital); back, Clear and each card's English line are
+  `body`. The weights other than the title's could not be parted between 400 and 500 and stay F-220's.
+- **The bar is 58 dp** (116 px, symmetric), no rule. **Glyphs:** back 21, Clear's × 22.5, the field's
+  disc 21. **Chips** 23.5 dp.
+- **Intervals moved by the new boxes:** field words → chips 6.3 → `sm` (the plan's `xs`); chips → card
+  foot 21 → `lg`; name → English −3.4 (named); distance → OKLCh 0.8 (named). ADR-0161 D1 has the table.
+- **The art** runs to 518 px on the ground only (flat ±1 inside the cards): one `leaves` drawing at the
+  strokes' height, 52.75 × 211 dp, flush right, from 48.5 dp — its tips above the bar's foot clipped.
+- **The caret** is the platform's (notDesign, `presentation`).
+- **`09.back`'s left edge** stays F-220's 31 px: `APP_BAR_INSET` was exactly this bar's 15.5, the
+  median of seventeen read one way; a method change for one bar would move every bar (F-282 noted).
+- **Census:** the corpus medoid *hai-suna* (61 % · 0.012 · 72°), reading no Japanese term on any axis;
+  the fixture phrase *muted green* (12 entries; *dark muted green* holds 3); Japanese no-term counts
+  33 / 49 / 132 — **F-356 filed**. Every corpus hex lies ΔE00 0.08–0.58 from its own record.
 
 ---
 

@@ -52,15 +52,16 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
 - labels that leaked from the generation prompt: *"HeroUI Card level="2""*, *"HeroUI Action
   Grid"*, *"100px"*, *"72px"*, *"Tab Bar"*, *"Top Navigation"*, *"Sticky action bar"*, *"Search &
   Faceted Filter Section"*, *"Category segmented choice"*, *"Material choice chips"*, *"Formality &
-  season pills"*, *"Interactive 4-slott canvas"*, route strings printed under titles; *Card* at the end of
+  season pills"*, *"Interactive 4-slott canvas"*, *"HeroUI smooth sliders"* (`09`), route strings printed under titles; *Card* at the end of
   `07`'s and `08`'s card titles (`F-248`, `F-249`);
 - misspellings and garbled text (*"Toggle Switche"*, *"Sutions"*, *"Formall"*, *"palalettes"*,
   *"coliurs"*, *"Teaser for iur typography"*, the unreadable lines in `18`'s report preview);
 - line-art drawn **outside** a device frame. Line-art **inside** the screen is design;
 - a page cut off by the tab bar where it scrolls on — `01`'s colour card, `05`'s second row of cards:
   the render is one scroll position, the page scrolls, and nothing is cut (`F-242`, `F-246`);
-- square brackets inside an outlined pill — `05`'s *[Compare] [Finder] [Palettes]* and `08`'s *[Change A]
-  [Change B]* (`F-249`, ADR-0155 D5): the outline already
+- square brackets inside an outlined or filled pill — `05`'s *[Compare] [Finder] [Palettes]*, `08`'s *[Change A]
+  [Change B]* (`F-249`, ADR-0155 D5) and `09`'s filled chips *[Natural Phrase] [Japanese Kanji]* (`F-250`,
+  ADR-0159 D4): the outline or the fill already
   says "button", and a bracket inside it is the wireframe's placeholder notation, as `06`'s bracketed
   names are (`F-246`, ADR-0142 D3). OQ-23 still asks the same of `13 16 17 18`'s headings and roles;
 - *"Color"* on a screen that spells *"Colour"* twice (`05`'s family label), and in `06`'s *Scientific
@@ -134,6 +135,11 @@ rule 3 make this non-negotiable, and the mockups show why:
   default the corpus's first and last entries, never one colour twice — each named by its kanji and
   romaji, its meta line the record's OKLCh L and h; every figure in both tables is the engine's for that
   pair, at the precision ADR-0155 D1 names.
+- **`09`'s query, sliders and results** (`F-250`, [ADR-0158](../adr/0158-the-finder-answers-a-query-as-a-set-ranked-from-a-point-and-the-sliders-are-the-point.md), [ADR-0159](../adr/0159-09s-figures-and-words-say-what-the-corpus-and-the-lexicon-hold.md)): the field starts empty; the
+  sliders print the search point — the corpus medoid at the start, a hex's own OKLCh, a phrase's or a
+  name's set medoid — and the lexicon terms whose region holds it (*Medium Deep* and *Moss Green* are no
+  term); the results are corpus entries ranked by ΔE00 from the point (none of `09`'s eight names is in
+  the corpus), and the nearest card's OKLCh line is the record's at 3 / 3 / 1.
 - **Texture drawn inside a sample**: `12`'s fabric sample carries a woven texture. The sample is the
   colour (or the stored photograph where the binding is a photo), so `FabricSwatch` draws the colour
   and its pinked edge, not the weave (`F-233`).
@@ -161,6 +167,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `23` | *"Garment Calibration History"* | *Garment Concordance*: in this product *calibrated* is a provenance level (FR-16, ADR-0031 §1), nothing about garments calibrates a profile, and the figure is the wardrobe now — the product keeps no history (ADR-0124) |
 | `08` | *"B is lighter"*, *"B is more chromatic"*, *"Shift towards teal"* | the band phrases of ADR-0125: criterion 2 (F-222) makes `04` and `08` one table, and `04`'s form (*Slightly Darker*, *Slightly Richer*) carries the degree the table needs; F-249 appends *towards ‹B's hue term›* from the published lexicon in the locale's language, only where the hue band is at least *slight*, B lies in a hue term and A's hue angle is outside its arc ([ADR-0155](../adr/0155-08s-figures-and-words-say-what-the-engine-computes.md) D2) |
 | `08` `13` | *"1.48:1 • Non-Text / Harmonious Pairing"*, *"90% (APCA Lc 48 • Optimal)"* | the figures stay — the ratio, the Lc and the threshold they pass; the one-word verdict after them does not (FR-32, FR-3), and a pair shows its harmony relationship (FR-6) where it has one. On `08`: the floored ratio, the highest WCAG 2.2 threshold it reaches (*Text AAA*, *Text AA*, *Non-Text* or *Under 3:1*), and the pair's warm–cool relation in 07's words until F-349 names a geometric one; the Lc is the smaller direction, floored (`F-249`, ADR-0155 D3) (claims-ok: quotes the drawn construction this row resolves) |
+| `09` | *"[Japanese Kanji]"* as a way to read the search | *Colour Name*: the name search reads kanji, kana, romaji, English name and slug, so the drawn word would say a romaji or English query was read as kanji (`F-250`, ADR-0159 D4) |
 | `04` | *"(Identical Hue)"* | the ΔH figure and its descriptor band (ADR-0125's hue phrase); FR-74 never asserts identity. Outside `F-219`’s five classes, so this row and `F-245` hold it, not the lint |
 | `02` `27` | *"色の測定"*, *"Measurement Refused"* | a camera estimate is never called a measurement (golden rule 11, E-089): the Lens is an estimate in both languages, and the refused state names a reading. Outside `F-219`’s five classes; held by this row, `F-243` and `F-236` |
 | `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
@@ -281,7 +288,8 @@ chip stays the size the mockup draws.
 **A chosen pill carries its mark** (`F-246`, ADR-0141, OQ-43). `05` draws its chosen season pill as a
 fill swap with no mark. WCAG 2.2's own note would let an inversion pass, but ACCESSIBILITY §4 asks a
 highlight **and** a mark, and the blocking `selection-treatment` rule reports a fill alone, so the
-chosen pill takes the leading dot `12`, `15` and `17` draw — about 10.5 dp wider than drawn.
+chosen pill takes the leading dot `12`, `15` and `17` draw — about 10.5 dp wider than drawn. `09`'s
+chosen mode chip takes the same dot; `09` draws none chosen (`F-250`, ADR-0160 D1).
 
 **A line that does not fit wraps; it is never clipped** (`F-242`). NFR-8 (WCAG 2.2 SC 1.4.4) allows no
 loss of content, and a mockup draws one language at one width at 1× text. Where a row it draws on one
@@ -302,6 +310,7 @@ overlap is `F-305`'s (`F-247`).
 
 Preserved, built from the mockup's own components, and listed here so it is visible:
 
+- **FR-47 on `09`** — the empty field (the corpus medoid's point and its nearest eight, the field's clear hidden), `00`'s caption with the kind's hint when a set is empty, and a reading forced on text it cannot read (*That is not a hex*, *Not every word is in the vocabulary*): `09` draws a filled field and four results (`F-250`, [ADR-0160](../adr/0160-what-09s-controls-do-and-what-leaves-the-finder.md)).
 - **FR-47 and ADR-0128 on `08`** — *Change A* and *Change B* open `03`'s floating sheet: `05`'s search field read through the Finder's own query (a name, a phrase or a hex), every entry while it is empty, the other slot's colour left out and the slot's own marked and announced as chosen, `00`'s caption when nothing matches; choosing changes one slot. A colour this corpus does not hold shows the app bar's back above `00`'s caption (`F-249`, [ADR-0156](../adr/0156-what-08s-controls-do-and-what-leaves-compare.md)).
 - **FR-31, FR-11, F-195, F-199 on `07`** — each slot's candidate, its rank and its reasons, with *Open this colour · Shop for this · Add to wardrobe*: `07` draws a slot's colour and nothing behind it. They live in a slot's floating sheet (`03`'s form), opened from the slot; a locked slot out of hand shows `13`'s *Locked* badge; and without a stored profile *Save to Outfit Lab* is disabled, with its reason on a line in the bar, because the Lab draws nothing without one. Reaching the shopping check from a slot takes two interactions here — the tile, then *Shop for this* — where F-199 asked for one, because `07` draws no control for it. A slot whose ranking had nothing left to give would show its title and `wear.none` on the page's own ground; the published corpus gives every slot a colour under every occasion, which `wear.test` asserts (`F-248`, [ADR-0152](../adr/0152-what-07s-controls-do-and-what-it-keeps-that-it-does-not-draw.md)).
 
@@ -747,7 +756,7 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season; the three garments | the record's derivation (hex, OKLCh at 3, 3, 1 decimals, CIELAB at 1); sRGB the hex's bytes; Display-P3 the engine's conversion of the record's XYZ at render, 3 decimals (the bundle holds none); the family group, *Era: None* for all 120, the season or *Not assigned* (ADR-0146); the person's garments ranked by `scoreOutfit` with this colour as a top, order only (ADR-0148) | `F-247` |
 | `07` | harmony; personal fit %; CVD separation %; contrast; the occasions; the four slots | the outfit's warm–cool harmony relation (FR-6, FR-32); `scoreOutfit`'s `personalFit` (FR-29, FR-32; none without a profile, ADR-0150); `cvdAccessibility` (FR-5, Machado 2009); `compare()` between the top and the trousers, ratio and smaller Lc apart (FR-3); FR-34's weightings; FR-31's rankings, the outer layer ranked as a top (ADR-0151) | exists |
 | `08` | the pair; each meta line; ΔE00 · ΔEok · ΔL\* · ΔC\* · ΔH · WCAG · APCA · three separations | the corpus (D1 of [ADR-0156](../adr/0156-what-08s-controls-do-and-what-leaves-compare.md)); the record's OKLCh L and h; `printedDeltaE00` with ADR-0125's band; `deltaEok` (3 dp); the record's CIELAB LCh, B less A, ΔH the hue angle `hueDelta` (1 dp, each with its band, the hue's with *towards* from the lexicon); the floored WCAG ratio with its threshold and `warmCoolRelation`; the smaller \|Lc\|, floored; `floor(separationDetail(…, 1).score)` with *(Machado 2009)* (FR-48, FR-3, FR-5, FR-6; ADR-0155) | exists; readings `F-222`, composed by `F-249` |
-| `09` | three slider readings | the lexicon terms holding the value | `F-250` |
+| `09` | three slider readings; each result's hex, ΔE00, and the nearest's OKLCh | the lexicon terms holding the printed point, each read on its naming axis, in the locale's language (ADR-0159 D2); the record's hex; ΔE00 from the point the sliders show, `printedDeltaE00` (ADR-0158); the record's OKLCh at 3, 3, 1 | `F-250` |
 | `10` `16` | contrast ratio; CVD separation | FR-3; FR-5 per palette | exists |
 | `11` | coverage %, outfits, outfits per garment, the gap; wears, cost per wear | `coverage()`, `gaps()`; wardrobe cost | exists |
 | `12` | duplicate check with ΔE00 | `findDuplicates` | exists |
@@ -796,6 +805,7 @@ Each needs its ADR, written by the feature named, before that feature is done
 - the spacing, radius and type values in the manifest (`F-226`, `F-227`)
 - [ADR-0095](../adr/0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md)'s arrangement half for Compare, and `F-151`'s *edge to edge* — `08` draws its samples apart (`F-249`, [ADR-0154](../adr/0154-08s-compare-samples-are-drawn-apart-as-08-draws-them.md)); the size half stands
 - `F-019`'s on-screen form (each figure's space moves into its notation and accessible name), and `F-156`'s severity control on Compare (`F-249`, [ADR-0156](../adr/0156-what-08s-controls-do-and-what-leaves-compare.md)); and [ADR-0157](../adr/0157-08s-composition-its-art-and-its-seam.md) records `08`'s composition
+- `F-021`'s region card and vocabulary line on the Finder's screen, `F-151`'s *answered* line and its thumbnail decoy (`F-250`, [ADR-0160](../adr/0160-what-09s-controls-do-and-what-leaves-the-finder.md)); [ADR-0158](../adr/0158-the-finder-answers-a-query-as-a-set-ranked-from-a-point-and-the-sliders-are-the-point.md) records the Finder's search model, [ADR-0159](../adr/0159-09s-figures-and-words-say-what-the-corpus-and-the-lexicon-hold.md) `09`'s figures and words, and [ADR-0161](../adr/0161-09s-composition-its-art-and-its-result-cards.md) `09`'s composition
 
 **No golden rule is superseded.** E1 – E3 exist because they cannot be.
 
