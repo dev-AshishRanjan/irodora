@@ -32,6 +32,11 @@
 // - THE BAR draws no rule (rows 88–126 flat at luma 25). Its controls centre at 57.5–58.5 px (the
 //   arrow 46–70, Clear's × 46–69, the title's capitals 45–70): the bar is 116 px, symmetric about
 //   them. The back arrow inks 30 × 25 px and Clear's × 24 × 24 px.
+// - THE REVIEW'S CORRECTIONS (F-250, S1 and M4): the query card's edge is its last bright row, 342
+//   (luma 71–72 at x 50, 300, 650); rows 344–352 are a drop shadow (16–24 against the ground's 24) —
+//   so the card is 177 px tall, not F-220's 185, as the sliders card and the result cards stop at their
+//   edges. The field's disc inks 32 px across at half luma (x 670–701, y 202–233); the 35 px box held
+//   the dark sharpening ring at 669 and 702.
 // - THE CARET after the query (618, 199, 2 × 39 px) is the platform's, drawn in a focused field.
 // - THE ART inks p50 0.081–0.093 and p90 0.101–0.106 of the foreground over the ground (gamma luma),
 //   the backdrop's `opacity.art`; inside both cards the fill is flat to ±1 luma, so the art is on the
@@ -131,6 +136,8 @@ export default {
     el('09.back', 'ui:Button', B(31, 46, 116, 25), {
       parent: '09.header',
       icon: 'back',
+      // The arrow's own ink, which the glyph's size is read from (06's rule).
+      raw: { glyphWPx: 30, glyphHPx: 25 },
       type: text('sans', 'body'),
       binding: 'static:tab.atlas',
       action: 'navigate:/atlas',
@@ -148,6 +155,7 @@ export default {
     el('09.clear', 'ui:Button', B(622, 45, 118, 26), {
       parent: '09.header',
       icon: 'close',
+      raw: { glyphWPx: 24, glyphHPx: 24 },
       type: text('sans', 'body'),
       binding: 'static:finder.clear',
       action: 'submit:finder.clear',
@@ -156,7 +164,8 @@ export default {
     // ---- leaves, inside the screen (§2: design), on the ground behind the cards (F-250)
     el('09.art', 'ui:Illustration', B(549, 97, 219, 422), { illustration: 'leaves' }),
     // ---- the query
-    el('09.search', 'ui:Card', B(29, 166, 710, 185), {
+    // F-250's review (S1): to its edge at row 342, not its shadow's foot.
+    el('09.search', 'ui:Card', B(29, 166, 710, 177), {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'sm' },
       measured: { bg: '#1D2128' },
       raw: { cornerPx: 15.4 },
@@ -170,8 +179,8 @@ export default {
       action: 'adjust:finder.query',
       copy: { shape: 'placeholder', script: 'latin' },
     }),
-    // F-250: a disc #969CA2 with the cross cut through it, 35 px across.
-    el('09.search.clear', 'ui:Button', B(669, 201, 35, 35), {
+    // F-250: a disc #969CA2 with the cross cut through it, 32 px across at half luma (review, M4).
+    el('09.search.clear', 'ui:Button', B(670, 202, 32, 32), {
       parent: '09.search',
       icon: 'close-circle',
       tokens: { fg: 'text.secondary' },
@@ -331,7 +340,12 @@ export default {
     {
       rule: 'E1',
       element: '09.search.query',
-      why: 'the field holds what the person types; 09’s phrase is sample content, and the start is the empty field (ADR-0158 D2)',
+      why: 'the field holds what the person types; 09’s phrase is sample content (ADR-0158 D2)',
+    },
+    {
+      rule: 'E4',
+      element: '09.search.query',
+      why: 'the start is the empty field: the corpus medoid’s point and its nearest eight, the field’s clear hidden and no chip chosen (ADR-0160 D8); 09 draws an answered field only',
     },
     {
       rule: 'E1',
@@ -357,6 +371,11 @@ export default {
       rule: 'E3',
       element: '09.search.mode-phrase',
       why: 'the chosen chip carries its leading dot (ADR-0141), so a choice is never colour alone; 09 draws none chosen',
+    },
+    {
+      rule: 'E3',
+      element: '09.results.result-1',
+      why: 'every line wraps and none is clipped, at the scale’s line heights: the nearest card builds about 124 dp in English and 136 in Japanese against 108 drawn, and a card whose real name wraps one line taller (ADR-0161 D2)',
     },
     {
       rule: 'E4',

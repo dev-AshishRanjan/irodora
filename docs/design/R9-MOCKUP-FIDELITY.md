@@ -620,7 +620,9 @@ light the same pixels read about 0.036.
   what the tool reads there is that element: `09.art`, `10.art` and `11.art` (text and cards),
   `14.splash.wave` (the progress bar beneath it), `18.report.fold` (the word *Report*),
   `25.art-blossom` and `25.art-waves` (a heading and a rule). The drawings are legible in the crops;
-  only the numbers are unusable, and they are excluded rather than averaged in.
+  only the numbers are unusable, and they are excluded rather than averaged in. `09.art` has since
+  been measured on the ground alone, away from its cards (`F-250`, `09.mjs`): p50 0.081–0.093 and p90
+  0.101–0.106, the backdrop's `opacity.art`; its strokes run x 549–767 and y 97–518.
 - **No declared colour token matches the backdrop ink**: the nearest are `chart.5` and `chart.4` at
   ΔE00 ≈ 4.6–7, which are a chart ramp and mean something else. So the art is the `foreground` token
   at a declared opacity rather than a colour of its own — `F-229` declares the measured 0.15.

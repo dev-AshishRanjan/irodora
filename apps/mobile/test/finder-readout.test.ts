@@ -206,6 +206,49 @@ describe('3. every word agrees with the printed figure beside it (ADR-0159 D2)',
   const readingsAt = (p: Triple, locale: 'en' | 'ja' = 'en') =>
     sliderReadings(p, locale, locale === 'en' ? tEn : tJa);
 
+  /*
+   * EACH TERM'S AXIS, STATED BY HAND from the lexicon's own words (review, M2): what the term names, not
+   * what the code derives from its constraints. A new term the table does not hold fails, and so does a
+   * term the rule would read on another axis.
+   */
+  const AXIS_OF: Readonly<Record<string, (typeof AXES)[number]>> = {
+    dark: 'lightness',
+    medium: 'lightness',
+    light: 'lightness',
+    pale: 'lightness',
+    grey: 'chroma',
+    neutral: 'chroma',
+    muted: 'chroma',
+    soft: 'chroma',
+    vivid: 'chroma',
+    red: 'hue',
+    orange: 'hue',
+    brown: 'hue',
+    yellow: 'hue',
+    green: 'hue',
+    teal: 'hue',
+    blue: 'hue',
+    violet: 'hue',
+    pink: 'hue',
+    暗い: 'lightness',
+    明るい: 'lightness',
+    淡い: 'lightness',
+    くすんだ: 'chroma',
+    鮮やかな: 'chroma',
+    赤: 'hue',
+    黄: 'hue',
+    緑: 'hue',
+    青: 'hue',
+    紫: 'hue',
+  };
+
+  it('reads each term on the axis its word names, by a table written by hand', () => {
+    const terms = lexicon().terms.map((t) => t.term);
+    expect([...terms].sort()).toStrictEqual(Object.keys(AXIS_OF).sort());
+    for (const term of lexicon().terms)
+      expect({ [term.term]: namingAxis(term) }).toStrictEqual({ [term.term]: AXIS_OF[term.term] });
+  });
+
   it('reads every term on exactly one axis, and finds each at a point its region holds', () => {
     for (const term of lexicon().terms) {
       const axis = namingAxis(term);
@@ -362,6 +405,16 @@ describe('5. the controls (ADR-0160)', () => {
     const s = choose(typed(start(), 'muted green'), 'phrase');
     const c = clearedText(s);
     expect(c).toStrictEqual({ ...s, text: '' });
+  });
+
+  it('keeps a moved point when the answer has not changed: a trailing space, the chip already in effect (review, M8)', () => {
+    const s = moved(typed(start(), 'muted green'), 'hue', 250);
+    expect(typed(s, 'muted green ').point).toStrictEqual(s.point);
+    expect(choose(s, 'phrase').point).toStrictEqual(s.point);
+    expect(choose(s, 'phrase').chosen).toBe('phrase');
+    // DECOY — a new answer does move it.
+    expect(typed(s, 'muted').point).not.toStrictEqual(s.point);
+    expect(choose(s, 'name').point).toStrictEqual(s.point); // a name that matches nothing sets none
   });
 
   it('starts over with Clear', () => {

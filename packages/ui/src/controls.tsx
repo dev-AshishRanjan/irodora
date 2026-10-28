@@ -57,7 +57,7 @@ import {
   Slider as HeroSlider,
   Switch as HeroSwitch,
 } from 'heroui-native';
-import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { hitArea } from './hitArea.js';
 import { overlayKeyframes } from './motion.js';
@@ -628,8 +628,10 @@ interface InteractiveSliderProps extends SliderShared {
   readonly trackMinWidth?: number;
   /**
    * The thumb's accessible name where the drawn label is not the whole of what it sets: `09`'s
-   * *Lightness (L)* is announced as the OKLCh lightness of the search point (ADR-0159 D1). It must
-   * contain no less than the label says; without it the label is the name.
+   * *Lightness (L)* is announced with the OKLCh lightness of the search point (ADR-0159 D1). It must
+   * CONTAIN the drawn label — WCAG 2.5.3, so a person who speaks the word they see still reaches it —
+   * and a name that does not is refused at render, as `Button` refuses one. Without it the label is
+   * the name.
    */
   readonly name?: string;
   /**
@@ -675,6 +677,12 @@ export const SLIDER_TRACK = 3.5;
  * size, and the target is in its hit area (ADR-0114). Recomputed by `slider.test`.
  */
 export const SLIDER_THUMB = 14;
+
+/** Words a control already announces, kept from a screen reader so they are not read twice. */
+const HIDDEN = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: 'no-hide-descendants' as const,
+};
 
 /**
  * The row form's least track width, in dp: two of the platform's targets, so however long the label
@@ -772,8 +780,12 @@ function InteractiveSlider({
 }: InteractiveSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
-  const part = (name: string): { testID?: string } =>
-    testID === undefined ? {} : { testID: `${testID}.${name}` };
+  if (name !== undefined && !name.includes(label))
+    throw new Error(
+      `Slider: the name "${name}" must contain the drawn label "${label}" (WCAG 2.5.3)`,
+    );
+  const part = (piece: string): { testID?: string } =>
+    testID === undefined ? {} : { testID: `${testID}.${piece}` };
 
   const track = (
     <HeroSlider
@@ -803,16 +815,16 @@ function InteractiveSlider({
           testID={testID}
           index={0}
           /*
-              ONE ELEMENT, not a group. A thumb is a single thing a person grabs, and without
-              this the platform walks into it and announces what is inside.
-            */
+            ONE ELEMENT, not a group. A thumb is a single thing a person grabs, and without
+            this the platform walks into it and announces what is inside.
+          */
           accessible
           accessibilityLabel={name ?? label}
           /*
-              `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
-              bridge cannot carry a fraction; the caller's formatted string is the quantity a
-              person actually set.
-            */
+            `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
+            bridge cannot carry a fraction; the caller's formatted string is the quantity a
+            person actually set.
+          */
           accessibilityValue={{
             min: 0,
             max: 100,
@@ -835,28 +847,47 @@ function InteractiveSlider({
     </HeroSlider>
   );
 
-  if (layout === 'row')
+  if (layout === 'row') {
+    /*
+     * THE FIRST LINE HOLDS (F-250's review, S4): the row is top-aligned and the track sits in a box one
+     * label line tall, so a value that wraps grows the row DOWNWARD — the thumb never moves under the
+     * finger as a reading crosses a wrap. What still moves is everything below the row (ADR-0161 D5).
+     */
+    const firstLine = nativeType[script][labelSize].lineHeight;
     return (
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           gap: nativeSpacing.sm,
           opacity: inert ? 0.5 : 1,
         }}
       >
-        <Text size={labelSize} color="foreground" script={script} {...part('label')}>
+        {/*
+          ONE STOP (review, M7): the thumb's name holds the label and its value the reading, so the
+          drawn words are hidden from a screen reader rather than read twice beside it.
+        */}
+        <Text size={labelSize} color="foreground" script={script} {...HIDDEN} {...part('label')}>
           {label}
         </Text>
         {/* The track takes what the label and the value leave, and never less than its least. */}
-        <View style={{ flexGrow: 1, flexBasis: 0, minWidth: trackMinWidth }} {...part('track')}>
+        <View
+          style={{
+            flexGrow: 1,
+            flexBasis: 0,
+            minWidth: trackMinWidth,
+            height: firstLine,
+            justifyContent: 'center',
+          }}
+          {...part('track')}
+        >
           {track}
         </View>
         {/*
           The value's own column: it wraps there rather than squeezing the track (ADR-0161 D5). Its
           words are the locale's (09's readings), so it is set in the locale's face, as the label is.
         */}
-        <View style={{ flexShrink: 1, alignItems: 'flex-end' }}>
+        <View style={{ flexShrink: 1, alignItems: 'flex-end' }} {...HIDDEN}>
           <Text
             size={valueSize}
             color={valueColor}
@@ -870,6 +901,7 @@ function InteractiveSlider({
         </View>
       </View>
     );
+  }
 
   return (
     <View style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}>

@@ -8,9 +8,10 @@
 ## Why ids
 
 `09` draws each slider on one row — label, track, value — where every earlier slider drew its header
-above the track. The sweep finds `09.sliders.*.label`, `.track` and `.value` as elements, and the
-value's words are the engine's, so they are found by the row's own ids rather than by a text that
-changes with the point.
+above the track. The sweep finds `09.sliders.*.label` by its catalogue words, and `.track` and
+`.value` by the row's own ids: the value's words are the engine's and change with the point, so no
+text could find them. The row is top-aligned with its track in a box one label line tall, so a value
+that wraps never moves the thumb (F-250's review, S4); `slider.test` holds that too.
 
 ## What it does not guard
 

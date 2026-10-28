@@ -24,7 +24,7 @@
  * ranks through the corpus's one index. This file composes `09` and formats nothing of its own.
  */
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import {
@@ -41,6 +41,7 @@ import {
   Swatch,
   Text,
   type Sample,
+  type Script,
 } from '@irodora/ui';
 import { colorFor } from '../corpus';
 import type { NearestEntry, Reading } from '../finder';
@@ -61,7 +62,6 @@ import {
   moved,
   QUERY_CLEAR_GLYPH,
   READINGS,
-  readingInEffect,
   RESULT_HEIGHT,
   resultLines,
   SLIDER_RANGE,
@@ -70,7 +70,7 @@ import {
   typed,
   type FinderState,
 } from '../finder-readout';
-import { japaneseRun } from '../i18n';
+import { japaneseRun, type MessageKey } from '../i18n';
 import { useMessages } from '../i18n/useMessages';
 import type { ScreenStates } from '../states';
 
@@ -85,6 +85,93 @@ const HIDDEN = {
   accessibilityElementsHidden: true,
   importantForAccessibility: 'no-hide-descendants' as const,
 };
+
+/** Between two rows of cards: `sm`, as 09 draws them (ADR-0161 D1). */
+function Separator(): React.JSX.Element {
+  return <View style={{ height: nativeSpacing.sm }} />;
+}
+
+interface ResultCardProps {
+  readonly item: NearestEntry;
+  readonly index: number;
+  readonly t: (key: MessageKey) => string;
+  readonly script: Script;
+  readonly onOpenColour: ((slug: string) => void) | undefined;
+}
+
+/**
+ * One result: the card IS the sample (R9 §5; ADR-0161 D2) — the colour, its words on it in the one ink
+ * that clears 4.5:1 against it (C8, ADR-0116). One stop for a screen reader: the sample's own name and
+ * provenance, its words hidden beneath it (ADR-0160 D5). At module scope and memoised (review, S3): a
+ * component type made in a render remounts every card on every keystroke and slider tick.
+ */
+const ResultCard = memo(function ResultCard({
+  item,
+  index,
+  t,
+  script,
+  onOpenColour,
+}: ResultCardProps): React.JSX.Element {
+  const { entry } = item;
+  const lines = resultLines(item, index, t);
+  const sample: Sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
+  const id = `finder.result.${String(index)}`;
+  return (
+    <View style={{ flex: 1, minHeight: RESULT_HEIGHT }} testID={id}>
+      <Swatch
+        name={lines.spoken}
+        hex={entry.derived.hex}
+        color={sample.color}
+        width="fill"
+        height="fill"
+        corner="md"
+        keyline={false}
+        group={false}
+        testID={`${id}.open`}
+        {...(onOpenColour === undefined
+          ? {}
+          : {
+              onPress: () => {
+                onOpenColour(entry.entry.slug);
+              },
+            })}
+      >
+        <View
+          pointerEvents="none"
+          style={{
+            flexGrow: 1,
+            paddingVertical: nativeSpacing.sm,
+            paddingHorizontal: nativeSpacing.md,
+            gap: nativeSpacing.xs,
+          }}
+          {...HIDDEN}
+        >
+          <Text
+            size="body"
+            weight={500}
+            face="gothic"
+            on={sample}
+            script={script}
+            testID={`${id}.name`}
+          >
+            {lines.name}
+          </Text>
+          <Text size="body" on={sample} testID={`${id}.english`}>
+            {lines.english}
+          </Text>
+          <Text size="label" on={sample} numeric selectable testID={`${id}.distance`}>
+            {lines.distance}
+          </Text>
+          {lines.oklch === undefined ? null : (
+            <Text size="label" on={sample} numeric selectable testID={`${id}.oklch`}>
+              {lines.oklch}
+            </Text>
+          )}
+        </View>
+      </Swatch>
+    </View>
+  );
+});
 
 export interface FinderProps {
   /** A query to open on, so a test or a deep link can start on a known answer. */
@@ -112,7 +199,6 @@ export function Finder({
   // Recomputed on every change — a keystroke, a chip, a slider tick — in the render that makes it.
   const answer = useMemo(() => answerOf(state), [state]);
   const readings = useMemo(() => sliderReadings(state.point, locale, t), [state.point, locale, t]);
-  const reading = readingInEffect(state);
 
   const header = (
     <View>
@@ -144,14 +230,28 @@ export function Finder({
       </View>
 
       <View style={{ paddingHorizontal: nativeSpacing.md }}>
-        {/* `09.search`: the field and its clear, then the chips; md at the sides, lg under the chips. */}
+        {/*
+          `09.search`: the field and its clear, then the chips; md at the sides and under the chips.
+          THE BODY HOLDS THE TARGETS (review, S2): Android delivers no touch outside a view's parent, so
+          the body reaches into the card's own inset above and at the trailing side — negative margins
+          given back as padding, nothing drawn moves — and the field takes only that room above its
+          words, the rest of its target below them; the clear's target stops inside the body's end.
+        */}
         <Card level="1" radius="sm" padding="sm" testID="finder.search">
           <View
             testID="finder.search.body"
-            style={{ paddingHorizontal: nativeSpacing.sm, paddingBottom: nativeSpacing.md }}
+            style={{
+              marginTop: -nativeSpacing.sm,
+              marginRight: -nativeSpacing.sm,
+              paddingTop: nativeSpacing.sm,
+              paddingLeft: nativeSpacing.sm,
+              paddingRight: nativeSpacing.md,
+              paddingBottom: nativeSpacing.sm,
+            }}
           >
             <SearchField
               bare
+              touchAbove={nativeSpacing.sm}
               label={t('finder.search')}
               value={state.text}
               onChangeText={(text) => {
@@ -173,7 +273,7 @@ export function Finder({
             <View style={{ marginTop: nativeSpacing.sm }}>
               <ChoiceGroup
                 label={t('finder.readAs')}
-                value={reading}
+                value={answer.reading}
                 options={READINGS.map((r) => ({ value: r, label: t(MODE_KEYS[r]) }))}
                 onChange={(r) => {
                   if (r !== null) setState((s) => choose(s, r));
@@ -192,7 +292,7 @@ export function Finder({
           </View>
         </Card>
 
-        <View style={{ marginTop: nativeSpacing.md }}>
+        <View style={{ marginTop: nativeSpacing.lg }}>
           <Text
             size="body"
             weight={500}
@@ -218,7 +318,8 @@ export function Finder({
                     key={axis}
                     layout="row"
                     label={t(AXIS_LABEL_KEYS[axis])}
-                    name={t(AXIS_NAME_KEYS[axis])}
+                    // The drawn label, then what it sets (WCAG 2.5.3: the name holds the label).
+                    name={`${t(AXIS_LABEL_KEYS[axis])}${script === 'japanese' ? '、' : ', '}${t(AXIS_NAME_KEYS[axis])}`}
                     value={state.point[i] ?? 0}
                     min={SLIDER_RANGE[axis].min}
                     max={SLIDER_RANGE[axis].max}
@@ -253,73 +354,6 @@ export function Finder({
       </View>
     </View>
   );
-
-  function ResultCard({ item, index }: { item: NearestEntry; index: number }): React.JSX.Element {
-    const { entry } = item;
-    const lines = resultLines(item, index, t);
-    const sample: Sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
-    const id = `finder.result.${String(index)}`;
-    return (
-      <View style={{ flex: 1, minHeight: RESULT_HEIGHT }} testID={id}>
-        {/*
-          THE CARD IS THE SAMPLE (R9 §5; ADR-0161 D2): the colour, with its words on it in the one ink
-          that clears 4.5:1 against it (C8, ADR-0116). One stop for a screen reader — the sample's own
-          name and provenance — with the words hidden beneath it (ADR-0160 D5).
-        */}
-        <Swatch
-          name={lines.spoken}
-          hex={entry.derived.hex}
-          color={sample.color}
-          width="fill"
-          height="fill"
-          corner="md"
-          keyline={false}
-          group={false}
-          testID={`${id}.open`}
-          {...(onOpenColour === undefined
-            ? {}
-            : {
-                onPress: () => {
-                  onOpenColour(entry.entry.slug);
-                },
-              })}
-        >
-          <View
-            pointerEvents="none"
-            style={{
-              flexGrow: 1,
-              paddingVertical: nativeSpacing.sm,
-              paddingHorizontal: nativeSpacing.md,
-              gap: nativeSpacing.xs,
-            }}
-            {...HIDDEN}
-          >
-            <Text
-              size="body"
-              weight={500}
-              face="gothic"
-              on={sample}
-              script={script}
-              testID={`${id}.name`}
-            >
-              {lines.name}
-            </Text>
-            <Text size="body" on={sample} testID={`${id}.english`}>
-              {lines.english}
-            </Text>
-            <Text size="label" on={sample} numeric selectable testID={`${id}.distance`}>
-              {lines.distance}
-            </Text>
-            {lines.oklch === undefined ? null : (
-              <Text size="label" on={sample} numeric selectable testID={`${id}.oklch`}>
-                {lines.oklch}
-              </Text>
-            )}
-          </View>
-        </Swatch>
-      </View>
-    );
-  }
 
   return (
     <Screen
@@ -392,7 +426,7 @@ export function Finder({
             </View>
           }
           columnWrapperStyle={{ paddingHorizontal: nativeSpacing.md }}
-          ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+          ItemSeparatorComponent={Separator}
           renderItem={({ item, index }) => (
             // TWO TO A ROW, `sm` APART: each cell padded `xs` on its inner side; a row is one height.
             <View
@@ -405,7 +439,13 @@ export function Finder({
               }}
             >
               <Appear index={index} fill>
-                <ResultCard item={item} index={index} />
+                <ResultCard
+                  item={item}
+                  index={index}
+                  t={t}
+                  script={script}
+                  onOpenColour={onOpenColour}
+                />
               </Appear>
             </View>
           )}
@@ -413,6 +453,10 @@ export function Finder({
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingTop: nativeSpacing.lg, paddingBottom: nativeSpacing.md }}
           showsVerticalScrollIndicator={false}
+          // The Atlas's windowing (review, S3): a one-letter name lists about 106 cards.
+          initialNumToRender={6}
+          windowSize={10}
+          removeClippedSubviews
         />
       </Arrival>
     </Screen>

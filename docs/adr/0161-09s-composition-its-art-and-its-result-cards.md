@@ -41,8 +41,8 @@ survive the measurement in six places:
   | card → field and chips, leading · ⊗ → card, trailing | 17.5 | — | — | `md` |
   | the field's words → chips | 11.5 | 5.2 | 6.3 | `sm` |
   | chip ↔ chip | 6.5 | — | — | `sm` |
-  | chips → card foot | 21 | — | — | `lg` |
-  | query card → sliders title | 22.5 | 5.2 | 17.3 | `md` |
+  | chips → card foot (the card to its edge, review S1) | 17 | — | — | `md` |
+  | query card → sliders title (review S1) | 26.5 | 5.2 | 21.3 | `lg` |
   | **sliders title → sliders card** | 5 | 5.2 | **−0.2** | **named: `xs`, 4.2 dp over the drawing** |
   | sliders card → first row | 31.5 | 3.85 | 27.65 | `lg` |
   | row → row | 20 / 21 | 7.7 | 12.3 / 13.3 | `md` |
@@ -79,17 +79,31 @@ survive the measurement in six places:
   distance and the OKLCh `label`, every line in the card's one ink (C8, ADR-0116).
 - **D4. The glyphs,** by `06`'s rule (size = (ink − `size.iconStroke`) × 24 ÷ the path's extent):
   the back arrow inks 15 × 12.5 dp over a 15.5 × 12 unit path — 20.7 and 21.7, so 21; Clear's ×
-  inks 12 dp over 11 units — 22.5; the field's disc, a solid of 20 units, inks 17.5 dp — 21. The chips
-  are 23.5 dp tall (`MODE_CHIP`).
+  inks 12 dp over 11 units — 22.5; the field's disc, a solid of 20 units, inks 16 dp at half luma — 19
+  (review M4: the 35 px box held the sharpening ring). The chips are 23.5 dp tall (`MODE_CHIP`). Each
+  line glyph's ink is recorded in `09.json` (`raw.glyphWPx`, `glyphHPx`), and the test reads it.
 - **D5. The slider row:** label · track (flexes, with a minimum width) · value (wraps in its column).
+  The row is top-aligned and its track sits in a box one label line tall (review S4), so a value that
+  wraps grows the row downward and the thumb under a finger never moves. **The cost:** a reading that
+  wraps — *Grey / Neutral / Muted / Soft* at chroma 0.020–0.039 in English, more at larger text —
+  lengthens the sliders card by a line, and the results heading and the cards move down with it as the
+  point crosses into or out of that reading (ADR-0160 records F-151 criterion 3 superseded in part).
+  Reserving the worst case would draw every row a line taller than `09` does in every state.
+- **D5a. The query card's targets (review S2):** Android delivers no touch outside a view's parent. The
+  card's body reaches into the card's own inset above and at its trailing side (negative margins given
+  back as padding; nothing drawn moves), the field takes only that room — `sm` — above its words and
+  the rest of its target below them, and the clear's target ends inside the body. A 48 dp target on a
+  26.4 dp line set `sm` from its card's edge cannot be centred on the line and stay inside the card;
+  the part below overlaps the chips' row by under 6 dp, where the chips, drawn after, take the touch.
 - **D6. The art:** one `leaves` fragment at `opacity.art` (the strokes ink p90 0.101–0.106 of the
   foreground over the ground), in the list's art layer, first and behind everything, under the
   opaque cards and clipped there (`08`'s form, ADR-0157). The drawing is scaled to the strokes'
   height (211 dp, 52.75 wide) and set flush with the screen's right edge, where `09`'s strokes run
   off it. **The cost:** the strokes above the bar's foot (48.5–58 dp, the leaves' tips) are clipped,
-  and the product's drawing is a single stem where `09`'s spray fans wider (F-229's vocabulary). No
-  word sits on a stroke: the two headings are the only text on the ground, and they pass 4.5:1 over
-  the leaves' ink in every palette.
+  and the product's drawing is a single stem 52.75 dp wide where `09`'s spray fans about 110 dp
+  (F-229's vocabulary) — both in the person's comparison list (criterion 4). No word sits on a stroke:
+  the two headings are the only text on the ground (`finder-fidelity.test` holds every other text in
+  an opaque box), and they pass 4.5:1 over a stroke in every palette (the same test).
 - **D7. Chrome:** no rule under the bar; `01`'s tab bar (C1); no action bar.
 - **D8. One box kept as F-220 read it:** `09.back`'s left edge stays at 31 px. Read at threshold 150
   its first pixel is 32, past a sharpening ring, but `APP_BAR_INSET` is the median of every bar's left

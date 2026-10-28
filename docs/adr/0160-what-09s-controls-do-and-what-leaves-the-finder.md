@@ -5,7 +5,7 @@
 | **Status** | Accepted |
 | **Date** | 2026-10-27 |
 | **Feature** | F-250 |
-| **Supersedes in part** | F-021's screen-level region card and vocabulary line; F-151's *answered* line (its criterion 3 holds); the screens.test decoy *a Finder result is still a thumbnail* |
+| **Supersedes in part** | F-021's screen-level region card and vocabulary line; F-151's *answered* line; F-151's criterion 3 (*without a layout jump*) where a slider reading wraps — the cards move down a line, the thumb does not (ADR-0161 D5; review S4); the screens.test decoy *a Finder result is still a thumbnail* |
 | **Applies** | R9 §4 E3/E4; [ADR-0128](0128-empty-working-refused-and-denied-are-27s-four-cards-read-at-the-boards-own-scale.md); [ADR-0141](0141-the-chosen-season-pill-on-05-carries-its-leading-dot.md); [ADR-0114](0114-a-control-is-drawn-at-its-mockups-size-and-reaches-the-tap-target-through-its-hit-area.md); FR-47 |
 | **Decided on** | The delegation of 2026-10-05 (R9 §11): *"For all OQ, when needed decide for yourself. Think, reason and research before deciding. Be professional and enterprise grade."* |
 
@@ -30,6 +30,8 @@ rows.
 - **D2. The field's ⊗** empties the text; the point and the choice stay. It is shown only while the
   field holds text — Apple's search-field convention (the cancel button is hidden when the field is
   empty).
+- **D2a. The same answer keeps the point (review M8).** Words that read the same once trimmed, or the
+  chip already in effect, are no new answer (ADR-0158 D4): a point a slider moved survives them.
 - **D3. ✕ Clear** resets the text, the choice and the point to the start. It is always enabled, as
   drawn; at the start it changes nothing, because it is idempotent.
 - **D4. The sliders** each move one axis of the point (ADR-0158 D4).

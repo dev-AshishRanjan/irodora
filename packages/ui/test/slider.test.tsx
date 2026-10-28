@@ -329,7 +329,7 @@ describe('09’s one-row form (F-250, ADR-0161 D5)', () => {
         <Slider
           layout="row"
           label="Hue (H)"
-          name="OKLCh hue angle of the search point"
+          name="Hue (H), OKLCh hue angle of the search point"
           value={72}
           max={359}
           step={1}
@@ -341,11 +341,72 @@ describe('09’s one-row form (F-250, ADR-0161 D5)', () => {
     );
     const [thumb] = hostsOf('h');
     expect((thumb?.props as { accessibilityLabel?: string }).accessibilityLabel).toBe(
-      'OKLCh hue angle of the search point',
+      'Hue (H), OKLCh hue angle of the search point',
     );
     // The drawn label stays what the screen draws.
     const [label] = hostsOf('h.label');
     expect(String((label?.props as { children?: unknown }).children)).toBe('Hue (H)');
+  });
+
+  it('refuses a name that leaves out the drawn label (WCAG 2.5.3, review M7)', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() =>
+      render(
+        <ThemeProvider theme="dark">
+          <Slider
+            layout="row"
+            label="Hue (H)"
+            name="OKLCh hue angle of the search point"
+            value={72}
+            max={359}
+            step={1}
+            valueLabel="72°"
+            onValueChange={() => undefined}
+          />
+        </ThemeProvider>,
+      ),
+    ).toThrow(/must contain the drawn label/u);
+  });
+
+  it('holds its first line: top-aligned, the track one label line tall, so a wrap grows it downward (review S4)', () => {
+    row({ testID: 'r' });
+    const [label] = hostsOf('r.label');
+    const [track] = hostsOf('r.track');
+    const chain = (n: typeof label): unknown[] => {
+      const out: unknown[] = [];
+      for (let p = n?.parent; p; p = p.parent) out.push(p);
+      return out;
+    };
+    const shared = chain(track).find((p) => chain(label).includes(p));
+    const rowStyle = flattenStyle(
+      (shared as { props?: { style?: unknown } } | undefined)?.props?.style,
+    );
+    expect([rowStyle['flexDirection'], rowStyle['alignItems']]).toStrictEqual([
+      'row',
+      'flex-start',
+    ]);
+    const box = flattenStyle((track?.props as { style?: unknown }).style);
+    expect([box['height'], box['justifyContent']]).toStrictEqual([
+      nativeType.latin.label.lineHeight,
+      'center',
+    ]);
+  });
+
+  it('is one stop: the thumb speaks the label and the reading, and the drawn words are hidden (review M7)', () => {
+    row({ testID: 'r' });
+    const [label] = hostsOf('r.label');
+    expect(
+      (label?.props as { accessibilityElementsHidden?: boolean }).accessibilityElementsHidden,
+    ).toBe(true);
+    const [value] = hostsOf('r.value');
+    let hidden = false;
+    for (let p = value?.parent; p; p = p.parent)
+      if (
+        (p.props as { importantForAccessibility?: string }).importantForAccessibility ===
+        'no-hide-descendants'
+      )
+        hidden = true;
+    expect(hidden).toBe(true);
   });
 
   it('DECOY — without a valueName it speaks what it draws', () => {

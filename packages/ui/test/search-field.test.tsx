@@ -224,6 +224,54 @@ describe('09’s bare form and its clear (F-250, ADR-0160 D2)', () => {
     },
   );
 
+  it.each([['ios'], ['android']] as const)(
+    'keeps its touch box to the room above the line its parent gives, the rest below, on %s (review S2)',
+    (os) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        const target = platformTapTarget(os);
+        render(
+          <ThemeProvider theme="dark">
+            <SearchField
+              bare
+              touchAbove={8}
+              label="Describe a colour, name one, or type a hex"
+              value="muted green"
+              onChangeText={noop}
+              clear={clearOf()}
+            />
+          </ThemeProvider>,
+        );
+        const outer = screen
+          .UNSAFE_getAllByType(View)
+          .map((v) => flat(v.props['style']))
+          .find((s) => s['marginRight'] !== undefined)!;
+        const line = 26.4;
+        const spare = target - line;
+        const above = Math.min(spare / 2, 8);
+        expect([outer['height'], outer['marginTop'], outer['marginBottom']]).toStrictEqual([
+          target,
+          -above,
+          -(spare - above),
+        ]);
+        // The words sit on their line: the input pads the spare above and below them.
+        const input = flat(screen.UNSAFE_getByType(TextInput).props['style']);
+        expect([input['paddingTop'], input['paddingBottom']]).toStrictEqual([above, spare - above]);
+      } finally {
+        replaced.restore();
+      }
+    },
+  );
+
+  it('DECOY — without touchAbove the target is centred on the line', () => {
+    render(bare('muted green', clearOf()));
+    const outer = screen
+      .UNSAFE_getAllByType(View)
+      .map((v) => flat(v.props['style']))
+      .find((s) => s['marginRight'] !== undefined)!;
+    expect(outer['marginTop']).toBe(outer['marginBottom']);
+  });
+
   it('DECOY — the filled field without a clear is the tree it always was', () => {
     render(field({}));
     const input = screen.UNSAFE_getByType(TextInput);

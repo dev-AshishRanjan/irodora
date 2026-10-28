@@ -133,9 +133,13 @@ const printed = (s: FinderState): readonly string[] => {
     }),
   ];
 };
-/** The value a slider draws, by its axis. */
+/** The value a slider draws, by its axis: hidden from a screen reader, which hears it from the thumb (M7). */
 const valueOf = (axis: 'lightness' | 'chroma' | 'hue'): string =>
-  String(screen.getByTestId(`finder.sliders.${axis}.value`).props['children']);
+  String(
+    screen.getByTestId(`finder.sliders.${axis}.value`, { includeHiddenElements: true }).props[
+      'children'
+    ],
+  );
 /** The chips announced as chosen. */
 const chosen = (): readonly string[] =>
   screen

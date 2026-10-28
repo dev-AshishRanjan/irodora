@@ -101,6 +101,13 @@ export type SearchFieldProps = Omit<
   readonly focused?: boolean;
   /** `09`'s form: no fill and no outline, the words on the card the field sits in. */
   readonly bare?: true;
+  /**
+   * In the bare form, the room ABOVE the words' line its parent gives the touch box, in dp; the rest of
+   * the platform's target is taken below (F-250's review, S2). Android delivers no touch outside a
+   * view's parent, so a field sitting at its card's inset cannot take half its target above its words.
+   * Without it the target is centred on the line.
+   */
+  readonly touchAbove?: number;
   /** The drawn height in dp (`05`: 26.5). Given, the field takes its drawn, outlined form. */
   readonly height?: number;
   /** A glyph leading the words, in the drawn form (`05`: `search`). */
@@ -121,6 +128,7 @@ export function SearchField({
   trailing,
   clear,
   bare,
+  touchAbove,
   height,
   icon,
   iconSize,
@@ -138,7 +146,10 @@ export function SearchField({
     const words = nativeType.latin[size];
     const line = height ?? words.lineHeight;
     const touch = Math.max(target, line);
-    const overhang = (touch - line) / 2;
+    const spare = touch - line;
+    // Above the line: the room the parent gives, never more than half; the rest below.
+    const above = Math.min(spare / 2, touchAbove ?? spare / 2);
+    const below = spare - above;
     const glyph = clear?.size ?? words.fontSize;
     // The field's box reaches past its drawn end by what the clear's target overhangs its glyph.
     const reach = clear === undefined ? 0 : Math.max(0, (target - glyph) / 2);
@@ -146,7 +157,8 @@ export function SearchField({
       <View
         style={{
           height: touch,
-          marginVertical: -overhang,
+          marginTop: -above,
+          marginBottom: -below,
           marginRight: -reach,
           justifyContent: 'center',
         }}
@@ -159,7 +171,7 @@ export function SearchField({
               position: 'absolute',
               left: 0,
               right: reach,
-              top: overhang,
+              top: above,
               height: line,
               borderRadius: nativeRadius.md,
               borderWidth: 2,
@@ -180,6 +192,9 @@ export function SearchField({
           style={{
             height: touch,
             minWidth: nativeTapTarget,
+            // The words sit on their line, wherever the target's spare lies around it.
+            paddingTop: above,
+            paddingBottom: below,
             paddingLeft: 0,
             // The words stop where the clear's target starts, so a long query never runs under it.
             paddingRight: clear === undefined ? 0 : target,

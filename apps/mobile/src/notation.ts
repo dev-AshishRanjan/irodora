@@ -9,9 +9,9 @@
  * Pure: every input is an argument.
  */
 
-/** A romaji name as the mockups print it: its first letter capitalised — *Kumori-garasu*. */
 import type { PublishedEntry } from './corpus';
 
+/** A romaji name as the mockups print it: its first letter capitalised — *Kumori-garasu*. */
 export function capitalised(romaji: string): string {
   return romaji.charAt(0).toUpperCase() + romaji.slice(1);
 }

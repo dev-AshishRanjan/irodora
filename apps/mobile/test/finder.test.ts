@@ -9,7 +9,21 @@
  */
 
 import { allEntries, entryBySlug } from '../src/corpus';
-import { byName, find, findAs, hexPoint, HEX_LIMIT, lexicon, rankedFrom } from '../src/finder';
+import { matchesRegion, resolvePhrase } from '@irodora/corpus';
+import {
+  byName,
+  find,
+  findAs,
+  hexNearest,
+  hexPoint,
+  HEX_LIMIT,
+  lexicon,
+  rankedFrom,
+  type FinderResult,
+} from '../src/finder';
+
+/** A loop over every corpus entry's forms and the lexicon is heavy under a full run (F-348, F-350). */
+const CORPUS_WIDE = 120_000;
 
 const slugOf = (r: { entries: readonly { entry: { slug: string } }[] }): string[] =>
   r.entries.map((e) => e.entry.slug);
@@ -224,12 +238,50 @@ describe('a chosen reading (F-250, ADR-0158 D1)', () => {
     'zzqx',
   ];
 
-  it('is find() itself when the reading is the one find() makes, for every query tried', () => {
-    for (const q of QUERIES) {
-      const f = find(q);
-      if (f.kind === 'empty') continue;
-      expect({ [q]: findAs(q, f.kind) }).toStrictEqual({ [q]: f });
-    }
+  /*
+   * THE ORACLE IS find() AS IT WAS BEFORE F-250 (review, M1), written out here so it is independent of
+   * the code it checks: find() now delegates to findAs, so comparing the two would compare a function
+   * with itself. A change to either that changes what the Atlas (E-210) or Compare's chooser (E-229)
+   * reads fails here.
+   */
+  const before = (query: string): FinderResult => {
+    const text = query.trim();
+    if (text === '') return { kind: 'empty', entries: [] };
+    const nearest = hexNearest(text, HEX_LIMIT);
+    if (nearest !== null)
+      return {
+        kind: 'hex',
+        entries: nearest.map((n) => n.entry),
+        distances: nearest.map((n) => n.deltaE00),
+      };
+    const phrase = resolvePhrase(lexicon(), text);
+    if (phrase !== null)
+      return {
+        kind: 'phrase',
+        entries: allEntries().filter((e) => matchesRegion(phrase.region, e.derived.oklch)),
+        region: phrase.region,
+        matched: phrase.matched,
+        lexiconVersion: lexicon().versionId,
+      };
+    return { kind: 'name', entries: byName(text) };
+  };
+
+  it(
+    'answers every query tried as find() answered it before F-250, and findAs agrees on its kind',
+    () => {
+      for (const q of QUERIES) {
+        const was = before(q);
+        expect({ [q]: find(q) }).toStrictEqual({ [q]: was });
+        if (was.kind !== 'empty') expect({ [q]: findAs(q, was.kind) }).toStrictEqual({ [q]: was });
+      }
+    },
+    CORPUS_WIDE,
+  );
+
+  it('DECOY — the oracle tells a hex from a word, so agreeing with it is not agreeing with anything', () => {
+    expect(before('#526A6B').kind).toBe('hex');
+    expect(before('beaded').kind).toBe('name');
+    expect(before('dark').kind).toBe('phrase');
   });
 
   it('reads a six-letter word as a hex when the hex is chosen, closing the stated cost', () => {

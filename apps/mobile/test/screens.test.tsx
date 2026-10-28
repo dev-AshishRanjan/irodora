@@ -5573,7 +5573,11 @@ describe('the Finder results do not move (F-151, F-250)', () => {
    *
    * A layout jump is a position changing between two states, and this is the only position a
    * rendered tree can be asked about without a layout engine. 09 puts the query card, the sliders
-   * card and the heading above the cards in every state, so the heading's place cannot move.
+   * card and the heading above the cards in every state, so no node is added or taken away above
+   * the heading as the answer changes. WHAT A NODE COUNT CANNOT SEE (review, S4): a slider reading
+   * that wraps grows its row by a line, and the heading and the cards move down with it — recorded as
+   * a cost (ADR-0161 D5, ADR-0160's supersession of F-151 c3 in part); the row holds its first line,
+   * so the thumb under a finger does not move.
    */
   function headingAt(query?: string): number {
     const nodes: TestNode[] = [];

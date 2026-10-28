@@ -342,6 +342,27 @@ So in the start state the three are drawn alike, as 09 draws them. More on the c
   the fixture phrase *muted green* (12 entries; *dark muted green* holds 3); Japanese no-term counts
   33 / 49 / 132 — **F-356 filed**. Every corpus hex lies ΔE00 0.08–0.58 from its own record.
 
+
+**After the review (2026-10-28, once; FAIL as delivered, 4 significant and 12 minor):**
+
+- **S1, fixed:** `09.search` re-measured to its edge (row 342; rows 344–352 are its shadow): 177 px. The
+  chips → foot is `md` and the card → sliders title `lg`; the fidelity test asserts both.
+- **S2, fixed:** the bare field takes `touchAbove` (`sm`) above its words and the rest of its target
+  below; the Finder's body reaches into the card's inset with negative margins given back as padding,
+  so the field's and the clear's targets lie inside it on iOS and Android (ADR-0161 D5a).
+- **S3, fixed:** `ResultCard` and `Separator` at module scope (memoised), and the Atlas's windowing.
+- **S4, fixed in part, the rest recorded:** the row is top-aligned with its track one label line tall,
+  so the thumb never moves; the cards still move a line when a reading wraps (ADR-0161 D5; ADR-0160
+  supersedes F-151 c3 in part; the screens.test comment says what a node count cannot see).
+- **M1** an independent oracle (find() as it was); **M2** a hand-written term → axis table; **M3** the
+  glyphs read from `09.json`'s `raw` ink, the leaves' aspect from `illustrationBox`, the widths at
+  320 and 360, every text but the headings in an opaque box and the headings 4.5:1 over a stroke in
+  every palette; **M4** the disc re-measured (32 px, 19); **M5** the start E4, the cards' height E3 in
+  `09.json`, the art and heights in the comparison list, R9 §5's `09.art` line; **M6** the doc comment;
+  **M7** the slider's name holds its label (refused otherwise) and the row's words are one stop with
+  the thumb; **M8** an unchanged answer keeps the point; **M9** the shadowed name, the comments'
+  indent, `answer.reading`; **M10** stated timeouts; **M11** the E-232 note; **M12** 05's 検索 is in
+  the person's comparison list.
 ---
 
 ## Approach

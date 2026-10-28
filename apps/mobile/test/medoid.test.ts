@@ -12,6 +12,8 @@ import { allEntries, familyGroups, type PublishedEntry } from '../src/corpus';
 import { medoid } from '../src/medoid';
 
 const ENTRIES = allEntries();
+/** A corpus-wide sum of ΔE00 is heavy under a full run (F-249's `8d6a0b7`; F-348, F-350). */
+const CORPUS_WIDE = 120_000;
 
 /** The rule, stated: every member's summed ΔE00 to the others; the least, the earlier slug on a tie. */
 function expected(members: readonly PublishedEntry[]): string {
@@ -27,25 +29,37 @@ function expected(members: readonly PublishedEntry[]): string {
 }
 
 describe('the medoid', () => {
-  it('is the member whose summed ΔE00 to the others is least, over every family group', () => {
-    for (const group of familyGroups()) {
-      const members = ENTRIES.filter((e) => group.families.includes(e.entry.taxonomy.family));
-      expect({ [group.group]: medoid(members).entry.slug }).toStrictEqual({
-        [group.group]: expected(members),
-      });
-      // 05's dots read it.
-      expect(familyDotEntry(group, ENTRIES)).toBe(medoid(members));
-    }
-  });
+  it(
+    'is the member whose summed ΔE00 to the others is least, over every family group',
+    () => {
+      for (const group of familyGroups()) {
+        const members = ENTRIES.filter((e) => group.families.includes(e.entry.taxonomy.family));
+        expect({ [group.group]: medoid(members).entry.slug }).toStrictEqual({
+          [group.group]: expected(members),
+        });
+        // 05's dots read it.
+        expect(familyDotEntry(group, ENTRIES)).toBe(medoid(members));
+      }
+    },
+    CORPUS_WIDE,
+  );
 
-  it('of the whole corpus is hai-suna, the Finder’s start point (ADR-0158 D2)', () => {
-    expect(medoid(ENTRIES).entry.slug).toBe(expected(ENTRIES));
-    expect(medoid(ENTRIES).entry.slug).toBe('hai-suna');
-  });
+  it(
+    'of the whole corpus is hai-suna, the Finder’s start point (ADR-0158 D2)',
+    () => {
+      expect(medoid(ENTRIES).entry.slug).toBe(expected(ENTRIES));
+      expect(medoid(ENTRIES).entry.slug).toBe('hai-suna');
+    },
+    CORPUS_WIDE,
+  );
 
-  it('does not depend on the order it is given', () => {
-    expect(medoid([...ENTRIES].reverse())).toBe(medoid(ENTRIES));
-  });
+  it(
+    'does not depend on the order it is given',
+    () => {
+      expect(medoid([...ENTRIES].reverse())).toBe(medoid(ENTRIES));
+    },
+    CORPUS_WIDE,
+  );
 
   it('takes the earlier slug on a tie: two members are each other’s whole sum', () => {
     const [a, b] = [ENTRIES[7], ENTRIES[3]] as [PublishedEntry, PublishedEntry];

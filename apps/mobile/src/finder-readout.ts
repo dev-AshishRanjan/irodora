@@ -148,14 +148,24 @@ function pointOf(text: string, reading: Reading | null): Triple | null {
   return set.kind === 'entries' ? medoid(set.entries).derived.oklch : null;
 }
 
-/** The field changes: a new answer moves the point to its own; an empty one leaves it (D4). */
+/**
+ * The field changes: a NEW answer moves the point to its own; an empty one leaves it (D4). The same
+ * answer — a trailing space, the same words — is no new answer, so a slider's move survives it (review,
+ * M8).
+ */
 export function typed(s: FinderState, text: string): FinderState {
-  const point = pointOf(text, s.chosen ?? kindOf(text));
+  const reading = s.chosen ?? kindOf(text);
+  if (text.trim() === s.text.trim() && reading === readingInEffect(s)) return { ...s, text };
+  const point = pointOf(text, reading);
   return { ...s, text, point: point ?? s.point };
 }
 
-/** A chip is chosen: the text is read that way, and the point moves to that answer's (ADR-0160 D1). */
+/**
+ * A chip is chosen: the text is read that way, and the point moves to that answer's (ADR-0160 D1).
+ * Choosing the reading already in effect is no new answer: the point stays (review, M8).
+ */
 export function choose(s: FinderState, reading: Reading): FinderState {
+  if (reading === readingInEffect(s)) return { ...s, chosen: reading };
   const point = pointOf(s.text, reading);
   return { ...s, chosen: reading, point: point ?? s.point };
 }
@@ -321,8 +331,8 @@ export const FINDER_APP_BAR = 58;
 export const BACK_GLYPH_09 = 21;
 /** `09.clear`'s ×: 12 dp of ink over 11 units. */
 export const CLEAR_GLYPH = 22.5;
-/** `09.search.clear`: a solid disc of 20 units, 17.5 dp across. */
-export const QUERY_CLEAR_GLYPH = 21;
+/** `09.search.clear`: a solid disc of 20 units, 16 dp across at half luma (review, M4). */
+export const QUERY_CLEAR_GLYPH = 19;
 /** `09.search.mode-*`: 47 px. */
 export const MODE_CHIP = 23.5;
 /** `09.results.result-*`: 108 and 110.5 dp, two each — the tie takes the smaller; a minimum. */

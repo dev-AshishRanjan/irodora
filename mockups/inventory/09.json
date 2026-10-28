@@ -72,6 +72,10 @@
       "illustration": null,
       "binding": "static:tab.atlas",
       "action": "navigate:/atlas",
+      "raw": {
+        "glyphWPx": 30,
+        "glyphHPx": 25
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -138,6 +142,10 @@
       "illustration": null,
       "binding": "static:finder.clear",
       "action": "submit:finder.clear",
+      "raw": {
+        "glyphWPx": 24,
+        "glyphHPx": 24
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -177,13 +185,13 @@
         "x": 29,
         "y": 166,
         "w": 710,
-        "h": 185
+        "h": 177
       },
       "dp": {
         "x": 14.5,
         "y": 83,
         "w": 355,
-        "h": 92.5
+        "h": 88.5
       },
       "tokens": {
         "bg": "level1",
@@ -243,16 +251,16 @@
       "parent": "09.search",
       "component": "ui:Button",
       "box": {
-        "x": 669,
-        "y": 201,
-        "w": 35,
-        "h": 35
+        "x": 670,
+        "y": 202,
+        "w": 32,
+        "h": 32
       },
       "dp": {
-        "x": 334.5,
-        "y": 100.5,
-        "w": 17.5,
-        "h": 17.5
+        "x": 335,
+        "y": 101,
+        "w": 16,
+        "h": 16
       },
       "tokens": {
         "fg": "text.secondary"
@@ -1603,7 +1611,12 @@
     {
       "rule": "E1",
       "element": "09.search.query",
-      "why": "the field holds what the person types; 09’s phrase is sample content, and the start is the empty field (ADR-0158 D2)"
+      "why": "the field holds what the person types; 09’s phrase is sample content (ADR-0158 D2)"
+    },
+    {
+      "rule": "E4",
+      "element": "09.search.query",
+      "why": "the start is the empty field: the corpus medoid’s point and its nearest eight, the field’s clear hidden and no chip chosen (ADR-0160 D8); 09 draws an answered field only"
     },
     {
       "rule": "E1",
@@ -1629,6 +1642,11 @@
       "rule": "E3",
       "element": "09.search.mode-phrase",
       "why": "the chosen chip carries its leading dot (ADR-0141), so a choice is never colour alone; 09 draws none chosen"
+    },
+    {
+      "rule": "E3",
+      "element": "09.results.result-1",
+      "why": "every line wraps and none is clipped, at the scale’s line heights: the nearest card builds about 124 dp in English and 136 in Japanese against 108 drawn, and a card whose real name wraps one line taller (ADR-0161 D2)"
     },
     {
       "rule": "E4",

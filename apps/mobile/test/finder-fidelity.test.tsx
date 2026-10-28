@@ -28,14 +28,23 @@ jest.mock('expo-localization', () => ({
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
-import { FlatList, StyleSheet, type StyleProp, type TextStyle } from 'react-native';
-import { nativeIconStroke, nativeSpacing, nativeType } from '@irodora/design-tokens';
+import { FlatList, Platform, StyleSheet, type StyleProp, type TextStyle } from 'react-native';
+import { wcagContrast } from '@irodora/color-difference';
+import {
+  nativeArtOpacity,
+  nativeColors,
+  nativeIconStroke,
+  nativeSpacing,
+  nativeType,
+} from '@irodora/design-tokens';
 import {
   AppBar,
   Button,
   Card,
   ChoiceGroup,
   Illustration,
+  illustrationBox,
+  platformTapTarget,
   SearchField,
   Slider,
   Stack,
@@ -352,16 +361,49 @@ describe('proportion: every size and interval recomputed from 09.json', () => {
     ]);
   });
 
-  it('the glyphs by 06’s rule: the field’s disc is a solid of 20 units, inked across its box', () => {
-    // A solid draws no line, so its size is its ink over the drawing's extent.
+  it('the glyphs by 06’s rule, from each glyph’s own ink in 09.json', () => {
+    // A solid draws no line, so its size is its ink over the drawing's extent: the disc, 20 units.
     expect(QUERY_CLEAR_GLYPH).toBe(half((el('09.search.clear').dp.w * 24) / 20));
-    // The back arrow (15 × 12.5 dp of ink over a 15.5 × 12 unit path) and Clear's × (12 dp over 11),
-    // the line's fixed width taken off first.
+    // A line glyph: (ink − the line's fixed width) × 24 ÷ the path's extent — the back arrow's path
+    // spans 15.5 × 12 units (its two readings averaged), Clear's × 11 × 11.
+    const ink = (id: string): readonly [number, number] => {
+      const raw = (NINE.elements.find((e) => e.id === id) as { raw?: Record<string, number> }).raw;
+      return [(raw?.['glyphWPx'] ?? NaN) * DP, (raw?.['glyphHPx'] ?? NaN) * DP];
+    };
+    const [bw, bh] = ink('09.back');
     expect(BACK_GLYPH_09).toBe(
-      half((((15 - nativeIconStroke) * 24) / 15.5 + ((12.5 - nativeIconStroke) * 24) / 12) / 2),
+      half((((bw - nativeIconStroke) * 24) / 15.5 + ((bh - nativeIconStroke) * 24) / 12) / 2),
     );
-    expect(CLEAR_GLYPH).toBe(half(((12 - nativeIconStroke) * 24) / 11));
+    const [cw] = ink('09.clear');
+    expect(CLEAR_GLYPH).toBe(half(((cw - nativeIconStroke) * 24) / 11));
   });
+
+  it.each([['ios'], ['android']] as const)(
+    'the field’s and its clear’s targets lie inside the body that holds them, on %s (review, S2)',
+    (os) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        const target = platformTapTarget(os);
+        const { root, byId } = setup();
+        const body = flat(byId('finder.search.body').props['style']);
+        const field = root.findByType(SearchField).props as Record<string, unknown>;
+        const line = nativeType.latin.body.lineHeight;
+        const spare = target - line;
+        const above = Math.min(spare / 2, Number(field['touchAbove']));
+        // Above the words: no more than the body's own top padding.
+        expect(above).toBeLessThanOrEqual(Number(body['paddingTop']));
+        // The clear's target overhangs its glyph by half the difference: inside the body's end.
+        const reach = (target - QUERY_CLEAR_GLYPH) / 2;
+        expect(reach).toBeLessThanOrEqual(Number(body['paddingRight']));
+        // And the body reaches no further than the card's own inset, inside the card.
+        const pad = px(cardOf(root, 'finder.search').props['padding'] as SpacingStep);
+        expect(-Number(body['marginTop'])).toBeLessThanOrEqual(pad);
+        expect(-Number(body['marginRight'])).toBeLessThanOrEqual(pad);
+      } finally {
+        replaced.restore();
+      }
+    },
+  );
 
   it('the list: the leaked heading’s space kept above the query card; the page inset', () => {
     const { root } = setup();
@@ -389,13 +431,18 @@ describe('proportion: every size and interval recomputed from 09.json', () => {
     const pad = px(c.props['padding'] as SpacingStep);
     const inner = innerOf(byId('finder.search.body'));
     // Top: the card to the words' line; sides: to the words and the clear; foot: under the chips.
-    expect(pad).toBe(px(snap(query.dp.y - search.dp.y - lineInset('body'))));
-    expect(pad + Number(inner['paddingHorizontal'] ?? 0)).toBe(
-      px(snapSiblings([query.dp.x - search.dp.x, right(search) - right(el('09.search.clear'))])),
+    // The body reaches into the card's inset with negative margins it gives back as padding (S2), so
+    // each side is the card's padding, the body's margin and its padding together.
+    const side = (key: 'Top' | 'Left' | 'Right' | 'Bottom'): number =>
+      pad + Number(inner[`padding${key}`] ?? 0) + Number(inner[`margin${key}`] ?? 0);
+    expect(side('Top')).toBe(px(snap(query.dp.y - search.dp.y - lineInset('body'))));
+    const sides = px(
+      snapSiblings([query.dp.x - search.dp.x, right(search) - right(el('09.search.clear'))]),
     );
-    expect(pad + Number(inner['paddingBottom'] ?? 0)).toBe(
-      px(snap(bottom(search) - bottom(phrase))),
-    );
+    expect([side('Left'), side('Right')]).toStrictEqual([sides, sides]);
+    // The card's foot (review, S1): to its edge at row 342 — 17 dp, md.
+    expect(side('Bottom')).toBe(px(snap(bottom(search) - bottom(phrase))));
+    expect(snap(bottom(search) - bottom(phrase))).toBe('md');
     const chips = styled(byId('finder.modes'), 'marginTop')!;
     expect(flat(chips.props['style'])['marginTop']).toBe(
       px(snap(phrase.dp.y - bottom(query) - lineInset('body'))),
@@ -495,9 +542,14 @@ describe('proportion: every size and interval recomputed from 09.json', () => {
       px(snap(three.dp.y - bottom(one))),
     );
     // A card's width, from what the tree lays out: half the row less the insets and the gap — 09's 172.
+    // No layout engine runs here, so the width is read from the styles the row is built of, which hold
+    // no width of their own: the same styles give 140 at 320 dp and 160 at 360.
     const inset = Number(flat(list.props['columnWrapperStyle'])['paddingHorizontal']);
-    expect((SCREEN - 2 * inset - column) / 2).toBe(one.dp.w);
+    const widthAt = (screenWidth: number): number => (screenWidth - 2 * inset - column) / 2;
+    expect(widthAt(SCREEN)).toBe(one.dp.w);
+    expect([widthAt(320), widthAt(360)]).toStrictEqual([140, 160]);
     expect(cellStyle['maxWidth']).toBe('50%');
+    expect(cellStyle['width']).toBeUndefined();
     // Its least height: 09's 108 and 110.5, two each — the tie takes the smaller (ADR-0161 D2).
     const heights = [one, two, three, el('09.results.result-4')].map((e) => e.dp.h);
     expect(RESULT_HEIGHT).toBe(Math.min(...heights));
@@ -539,7 +591,8 @@ describe('proportion: every size and interval recomputed from 09.json', () => {
   it('the art: the leaves cross their inventory box at 384 dp, behind the opaque cards', () => {
     // The art layer's top is the list's content top: the bar's foot.
     const top = half(bottom(el('09.header')));
-    const height = (FINDER_ART.width * 96) / 24;
+    const [gridW, gridH] = illustrationBox('leaves');
+    const height = (FINDER_ART.width * gridH) / gridW;
     const x0 = SCREEN - FINDER_ART.right - FINDER_ART.width;
     const box = el('09.art');
     expect(
@@ -556,6 +609,44 @@ describe('proportion: every size and interval recomputed from 09.json', () => {
       'backdrop',
     ]);
     expect(flat(byId('finder.art').props['style'])['overflow']).toBe('hidden');
+  });
+});
+
+describe('the art against the words (F-247’s lesson; ADR-0161 D6)', () => {
+  it('every text but the two headings sits in an opaque box: a card, the bar, or a result card', () => {
+    const { root, byId } = setup();
+    const bar = root.findByType(AppBar);
+    const boxes = [
+      byId('finder.search'),
+      byId('finder.sliders'),
+      bar,
+      // Every result card: each is the sample itself, opaque.
+      ...root.findAll((n) => /^finder\.result\.\d+$/u.test(String(n.props['testID'] ?? ''))),
+    ];
+    const headings = [byId('finder.dimensions'), byId('finder.nearest')];
+    const loose = root
+      .findAll((n) => n.type === Text)
+      .filter((n) => !boxes.some((b) => b === n || isAncestor(b, n)))
+      .filter((n) => !headings.some((h) => h === n || isAncestor(h, n) || isAncestor(n, h)));
+    expect(loose.map((n) => String(n.props['children']))).toStrictEqual([]);
+  });
+
+  it('the two headings clear 4.5:1 over a stroke of the leaves, in every palette', () => {
+    const rgb = (hex: string): readonly [number, number, number] => {
+      const n = Number.parseInt(hex.replace('#', ''), 16);
+      return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    };
+    for (const [palette, colors] of Object.entries(nativeColors)) {
+      const ground = rgb(colors.background);
+      const ink = rgb(colors.foreground);
+      // A stroke: the foreground over the ground at the backdrop's opacity.
+      const stroke = ground.map((g, i) => g + ((ink[i] ?? 0) - g) * nativeArtOpacity) as [
+        number,
+        number,
+        number,
+      ];
+      expect({ [palette]: wcagContrast(ink, stroke) >= 4.5 }).toStrictEqual({ [palette]: true });
+    }
   });
 });
 
