@@ -852,9 +852,19 @@ function InteractiveSlider({
         <View style={{ flexGrow: 1, flexBasis: 0, minWidth: trackMinWidth }} {...part('track')}>
           {track}
         </View>
-        {/* The value's own column: it wraps there rather than squeezing the track (ADR-0161 D5). */}
+        {/*
+          The value's own column: it wraps there rather than squeezing the track (ADR-0161 D5). Its
+          words are the locale's (09's readings), so it is set in the locale's face, as the label is.
+        */}
         <View style={{ flexShrink: 1, alignItems: 'flex-end' }}>
-          <Text size={valueSize} color={valueColor} numeric selectable {...part('value')}>
+          <Text
+            size={valueSize}
+            color={valueColor}
+            numeric
+            selectable
+            script={script}
+            {...part('value')}
+          >
             {valueLabel}
           </Text>
         </View>

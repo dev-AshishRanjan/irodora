@@ -170,7 +170,7 @@
     {
       "route": "/atlas/find",
       "file": "(tabs)/atlas/find.tsx",
-      "anchor": "finder.title"
+      "anchor": "finder.dimensions"
     },
     {
       "route": "/atlas/palettes",

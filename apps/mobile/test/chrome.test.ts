@@ -115,7 +115,6 @@ describe('one tab bar (F-234, ADR-0117)', () => {
  */
 const PLATFORM_HEADER: Readonly<Record<string, string>> = {
   'atlas/card/[slug]': 'F-253 (20)',
-  'atlas/find': 'F-250 (09)',
   'atlas/nearby/[slug]': 'F-254 (21)',
   'atlas/palettes': 'F-251 (10, 16)',
   'atlas/with/[slug]': 'F-252 (19)',
@@ -179,9 +178,9 @@ describe('the routes still on the platform header (F-234, ADR-0118)', () => {
   it('DECOY: a route that hid the header itself is no longer on it, so its entry is stale', () => {
     const files = new Map([
       ['app/(tabs)/atlas/_layout.tsx', LAYOUT],
-      ['app/(tabs)/atlas/find.tsx', `<Stack.Screen options={{ headerShown: false }} />`],
+      ['app/(tabs)/atlas/palettes.tsx', `<Stack.Screen options={{ headerShown: false }} />`],
     ]);
     expect(onPlatformHeader(files)).toStrictEqual([]);
-    expect(Object.keys(PLATFORM_HEADER)).toContain('atlas/find');
+    expect(Object.keys(PLATFORM_HEADER)).toContain('atlas/palettes');
   });
 });

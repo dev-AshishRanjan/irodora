@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/find'
-- assertVisible: 'Colour Finder'
+- assertVisible: 'Perceptual Dimension Slider Matrix'
 - waitForAnimationToEnd
 - takeScreenshot: capture

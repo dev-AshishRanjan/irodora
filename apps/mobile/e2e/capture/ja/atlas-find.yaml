@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/find'
-- assertVisible: '色さがし'
+- assertVisible: '知覚の三次元スライダー'
 - waitForAnimationToEnd
 - takeScreenshot: capture

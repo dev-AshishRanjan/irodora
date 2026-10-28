@@ -220,15 +220,14 @@ export const en = {
   // F-021 — Colour Finder (FR-47).
   'finder.title': 'Colour Finder',
   'finder.search': 'Name, reading, hex, or a phrase',
-  'finder.hint': 'Try a name, a hex like #526A6B, or “dark muted green”.',
-  'finder.empty': 'Type something to search.',
   'finder.none': 'Nothing matches that.',
-  'finder.answered.hex': 'Nearest colours to that hex',
-  'finder.answered.phrase': 'Colours in the region that phrase describes',
-  'finder.answered.name': 'Colours whose name matches',
-  'finder.region': 'That phrase means',
-  'finder.vocabulary': 'Vocabulary',
-  'finder.noneHexHint': 'Every colour in this version is further away than the list shows.',
+  // F-250 (ADR-0160): 09's controls and headings.
+  'finder.clear': 'Clear',
+  'finder.clearName': 'Clear the search and start over',
+  'finder.queryClear': 'Clear the search text',
+  'finder.readAs': 'Read the search as',
+  'finder.dimensions': 'Perceptual Dimension Slider Matrix',
+  'finder.nearest': 'Instantaneous nearest results ranked by ΔE00',
   'finder.nonePhraseHint': 'No colour in this version falls inside that region.',
   'finder.noneNameHint': 'No name, reading or slug contains that.',
   // F-250 (ADR-0159): 09's sliders, its chips and the words the readout prints.

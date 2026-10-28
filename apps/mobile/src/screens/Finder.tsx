@@ -1,264 +1,414 @@
 /**
- * Colour Finder — one field, and the app saying which question it answered (FR-47).
+ * Colour Finder — mockup `09` (F-250): a query, the three perceptual dimensions of a search point, and
+ * the nearest corpus colours ranked by ΔE00 from it (FR-47).
  *
- * ## Saying which question it answered is the feature, not the polish
+ * ## A query names a set and sets a point (ADR-0158)
  *
- * A single field that routes between three kinds of search will sometimes route differently
- * from what the person meant: `beaded` is a word and also a valid hex. A screen that silently
- * picked one leaves them staring at results that look wrong for no visible reason. So every
- * answer is labelled with the question it answered, and a phrase answer additionally shows the
- * **region** the words resolved to and the **vocabulary version** that resolved them.
+ * What a person types is read as a hex, a phrase or a name (`find()`), or the way they chose with a
+ * chip (`findAs()`). It names a set — the whole corpus for a hex, the region for a phrase, the matches
+ * for a name — and sets the point the three sliders show: the hex's own, the set's medoid, or the
+ * corpus medoid while the field is empty. The sliders move that point; the cards are the set ranked by
+ * ΔE00 from it, recomputed in the render that makes the change — `09`'s *Instantaneous*. The point is
+ * a search target: never drawn as a colour, never called a measurement (rule 11).
  *
- * That last one is FR-10's habit applied to search: an answer that cannot say what produced it
- * cannot be reproduced after the vocabulary moves.
+ * ## Saying which question it answered is still the feature (F-151)
  *
- * ## The results do not move (F-151)
+ * A single field that routes three ways will sometimes route differently from what a person meant:
+ * `beaded` is a word and also a hex. The chips say which reading is in effect — the one `find()` made,
+ * or the one the person chose — so results that look wrong carry their reason on the screen, and a
+ * tap reads the text the other way (ADR-0160 D1).
  *
- * Two things used to shift them. The answer line was a small grey sentence before a query and a
- * heading after it — two heights in the slot everything below depends on — so the list jumped on
- * the first keystroke, under the thumb that had just typed it. And the region panel appears for a
- * phrase answer and nothing else, so one more word could make forty rows slide up the screen.
+ * ## Nothing here searches or ranks
  *
- * The line is now the same line in every state, and the region moved BELOW the results, where it
- * reads better anyway: it is provenance, and provenance goes with the answer rather than in
- * front of it.
- *
- * ## Nothing here searches
- *
- * `find()` in [`../finder.ts`](../finder.ts) does all of it, and is tested without rendering
- * anything. This file formats. It does not know what a hex looks like, what a term is, or how
- * ΔE00 is computed.
+ * `finder-readout.ts` holds the state and computes every figure and word; `finder.ts` searches and
+ * ranks through the corpus's one index. This file composes `09` and formats nothing of its own.
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
-import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { FlatList, View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import {
   Appear,
   Arrival,
   Card,
+  ChoiceGroup,
   EmptyState,
-  Row,
+  Illustration,
   Screen,
   SearchField,
+  Slider,
   Stack,
-  Surface,
   Swatch,
   Text,
+  type Sample,
 } from '@irodora/ui';
-import { LEXICON_AXES, type LexiconAxis } from '@irodora/corpus';
-import { find, type FinderKind } from '../finder';
-import { colorFor, type PublishedEntry } from '../corpus';
+import { colorFor } from '../corpus';
+import type { NearestEntry, Reading } from '../finder';
+import {
+  answerOf,
+  AXES,
+  AXIS_LABEL_KEYS,
+  AXIS_NAME_KEYS,
+  BACK_GLYPH_09,
+  choose,
+  CLEAR_GLYPH,
+  cleared,
+  clearedText,
+  FINDER_APP_BAR,
+  FINDER_ART,
+  MODE_CHIP,
+  MODE_KEYS,
+  moved,
+  QUERY_CLEAR_GLYPH,
+  READINGS,
+  readingInEffect,
+  RESULT_HEIGHT,
+  resultLines,
+  SLIDER_RANGE,
+  sliderReadings,
+  start,
+  typed,
+  type FinderState,
+} from '../finder-readout';
+import { japaneseRun } from '../i18n';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
 
 /**
- * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the phrase
- * found nothing.
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the set a
+ * query names is empty, or the reading chosen cannot read the text — `00`'s caption with its hint.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
-/** Answer kind → the sentence that names it. Total, so a fourth kind is a compile error. */
-const ANSWERED: Readonly<Record<Exclude<FinderKind, 'empty'>, MessageKey>> = {
-  hex: 'finder.answered.hex',
-  phrase: 'finder.answered.phrase',
-  name: 'finder.answered.name',
+/** Words laid over a sample are read by the sample's own name, once (F-248's tile form). */
+const HIDDEN = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: 'no-hide-descendants' as const,
 };
-
-/** Answer kind → the hint shown when it found nothing. Each says something different. */
-const NOTHING: Readonly<Record<Exclude<FinderKind, 'empty'>, MessageKey>> = {
-  hex: 'finder.noneHexHint',
-  phrase: 'finder.nonePhraseHint',
-  name: 'finder.noneNameHint',
-};
-
-/** Axis → its label. Reused from the Atlas's filters, so one word has one name. */
-const AXIS_KEYS: Readonly<Record<LexiconAxis, MessageKey>> = {
-  lightness: 'filter.lightness',
-  chroma: 'filter.chroma',
-  hue: 'axis.hue',
-};
-
-/** How many results a list shows before it stops. A phrase can match most of the corpus. */
-const LIST_LIMIT = 40;
 
 export interface FinderProps {
-  /** Open a colour. Supplied by the route; absent in the conformance suite. */
-  readonly onOpenColour?: (slug: string) => void;
   /** A query to open on, so a test or a deep link can start on a known answer. */
   readonly initialQuery?: string;
+  /** A reading chosen at the start, as if its chip had been tapped. */
+  readonly initialReading?: Reading;
+  /** Back to the Atlas. Absent in the conformance suite, and then no back is drawn. */
+  readonly onBack?: () => void;
+  /** Open a colour. Supplied by the route; absent, a card is an image rather than a control. */
+  readonly onOpenColour?: (slug: string) => void;
 }
 
-export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.JSX.Element {
-  const { t, script } = useMessages();
-  const [query, setQuery] = useState(initialQuery ?? '');
+export function Finder({
+  initialQuery,
+  initialReading,
+  onBack,
+  onOpenColour,
+}: FinderProps = {}): React.JSX.Element {
+  const { t, locale, script } = useMessages();
+  const [state, setState] = useState<FinderState>(() => {
+    const opened = initialQuery === undefined ? start() : typed(start(), initialQuery);
+    return initialReading === undefined ? opened : choose(opened, initialReading);
+  });
 
-  // Recomputed only when the query changes. `find` is a filter over 120 entries plus, for a
-  // hex, a bounded two-stage search — cheap, but not cheap enough to redo on every re-render.
-  const result = useMemo(() => find(query), [query]);
-  const shown = result.entries.slice(0, LIST_LIMIT);
+  // Recomputed on every change — a keystroke, a chip, a slider tick — in the render that makes it.
+  const answer = useMemo(() => answerOf(state), [state]);
+  const readings = useMemo(() => sliderReadings(state.point, locale, t), [state.point, locale, t]);
+  const reading = readingInEffect(state);
 
-  function ResultRow({ entry, distance }: { entry: PublishedEntry; distance?: number }) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${entry.entry.name.kanji} ${entry.entry.name.en}`}
-        onPress={() => {
-          onOpenColour?.(entry.entry.slug);
+  const header = (
+    <View>
+      {/*
+        THE ART LAYER, first and behind everything (F-247's lesson; ADR-0161 D6): `09`'s leaves on the
+        ground, under the opaque cards, clipped at the list's top — no word sits on a stroke.
+      */}
+      <View
+        pointerEvents="none"
+        testID="finder.art"
+        style={{
+          position: 'absolute',
+          top: -nativeSpacing.lg,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden',
         }}
-        style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
       >
-        <Row gap="sm" padY="sm">
-          <Swatch
-            caption="name"
-            name={entry.entry.name.en}
-            hex={entry.derived.hex}
-            color={colorFor(entry.entry)}
-            size={40}
+        <View style={{ position: 'absolute', ...FINDER_ART }}>
+          <Illustration
+            name="leaves"
+            tone="backdrop"
+            color="foreground"
+            width={FINDER_ART.width}
+            testID="finder.art.leaves"
           />
-          <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-            <Text size="body" color="foreground" script={script}>
-              {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
-            </Text>
-            <Text size="label" color="foreground.2" numeric selectable>
-              {entry.derived.hex}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }} />
-          {/*
-            The distance, on a hex answer only. It is the thing that makes "nearest" a claim a
-            reader can check rather than an ordering they have to trust — and it carries its
-            unit, like every other number in this app (FR-48).
-          */}
-          {distance === undefined ? null : (
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text size="label" color="foreground" numeric selectable>
-                {distance.toFixed(2)}
-              </Text>
-              <Text size="caption" color="foreground.2" script={script}>
-                {t('unit.deltaE00')}
-              </Text>
+        </View>
+      </View>
+
+      <View style={{ paddingHorizontal: nativeSpacing.md }}>
+        {/* `09.search`: the field and its clear, then the chips; md at the sides, lg under the chips. */}
+        <Card level="1" radius="sm" padding="sm" testID="finder.search">
+          <View style={{ paddingHorizontal: nativeSpacing.sm, paddingBottom: nativeSpacing.md }}>
+            <SearchField
+              bare
+              label={t('finder.search')}
+              value={state.text}
+              onChangeText={(text) => {
+                setState((s) => typed(s, text));
+              }}
+              size="body"
+              autoCorrect={false}
+              autoCapitalize="none"
+              testID="finder.search.query"
+              clear={{
+                label: t('finder.queryClear'),
+                size: QUERY_CLEAR_GLYPH,
+                onPress: () => {
+                  setState((s) => clearedText(s));
+                },
+                testID: 'finder.search.clear',
+              }}
+            />
+            <View style={{ marginTop: nativeSpacing.sm }}>
+              <ChoiceGroup
+                label={t('finder.readAs')}
+                value={reading}
+                options={READINGS.map((r) => ({ value: r, label: t(MODE_KEYS[r]) }))}
+                onChange={(r) => {
+                  if (r !== null) setState((s) => choose(s, r));
+                }}
+                pills={{
+                  height: MODE_CHIP,
+                  gap: 'sm',
+                  restFill: 'surface.3',
+                  selectedFill: 'surface.3',
+                  radius: 'md',
+                }}
+                script={script}
+                testID="finder.modes"
+              />
             </View>
-          )}
-        </Row>
-      </Pressable>
+          </View>
+        </Card>
+
+        <View style={{ marginTop: nativeSpacing.md }}>
+          <Text
+            size="body"
+            weight={500}
+            color="foreground"
+            heading
+            script={script}
+            testID="finder.dimensions"
+          >
+            {t('finder.dimensions')}
+          </Text>
+        </View>
+
+        {/* The title → the card: drawn tighter than the scale, named `xs` (ADR-0161 D1). */}
+        <View style={{ marginTop: nativeSpacing.xs }}>
+          <Card level="1" radius="sm" padding="sm" testID="finder.sliders">
+            <View style={{ paddingTop: nativeSpacing.md, paddingBottom: nativeSpacing.sm }}>
+              <Stack gap="md">
+                {AXES.map((axis, i) => (
+                  <Slider
+                    key={axis}
+                    layout="row"
+                    label={t(AXIS_LABEL_KEYS[axis])}
+                    name={t(AXIS_NAME_KEYS[axis])}
+                    value={state.point[i] ?? 0}
+                    min={SLIDER_RANGE[axis].min}
+                    max={SLIDER_RANGE[axis].max}
+                    step={SLIDER_RANGE[axis].step}
+                    valueLabel={readings[axis].text}
+                    valueName={readings[axis].spoken}
+                    valueColor="foreground.2"
+                    onValueChange={(v) => {
+                      setState((s) => moved(s, axis, v));
+                    }}
+                    script={script}
+                    testID={`finder.sliders.${axis}`}
+                  />
+                ))}
+              </Stack>
+            </View>
+          </Card>
+        </View>
+
+        <View style={{ marginTop: nativeSpacing.md, marginBottom: nativeSpacing.xs }}>
+          <Text
+            size="body"
+            weight={500}
+            color="foreground"
+            heading
+            script={script}
+            testID="finder.nearest"
+          >
+            {t('finder.nearest')}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  function ResultCard({ item, index }: { item: NearestEntry; index: number }): React.JSX.Element {
+    const { entry } = item;
+    const lines = resultLines(item, index, t);
+    const sample: Sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
+    const id = `finder.result.${String(index)}`;
+    return (
+      <View style={{ flex: 1, minHeight: RESULT_HEIGHT }} testID={id}>
+        {/*
+          THE CARD IS THE SAMPLE (R9 §5; ADR-0161 D2): the colour, with its words on it in the one ink
+          that clears 4.5:1 against it (C8, ADR-0116). One stop for a screen reader — the sample's own
+          name and provenance — with the words hidden beneath it (ADR-0160 D5).
+        */}
+        <Swatch
+          name={lines.spoken}
+          hex={entry.derived.hex}
+          color={sample.color}
+          width="fill"
+          height="fill"
+          corner="md"
+          keyline={false}
+          group={false}
+          testID={`${id}.open`}
+          {...(onOpenColour === undefined
+            ? {}
+            : {
+                onPress: () => {
+                  onOpenColour(entry.entry.slug);
+                },
+              })}
+        >
+          <View
+            pointerEvents="none"
+            style={{
+              flexGrow: 1,
+              paddingVertical: nativeSpacing.sm,
+              paddingHorizontal: nativeSpacing.md,
+              gap: nativeSpacing.xs,
+            }}
+            {...HIDDEN}
+          >
+            <Text
+              size="body"
+              weight={500}
+              face="gothic"
+              on={sample}
+              script={script}
+              testID={`${id}.name`}
+            >
+              {lines.name}
+            </Text>
+            <Text size="body" on={sample} testID={`${id}.english`}>
+              {lines.english}
+            </Text>
+            <Text size="label" on={sample} numeric selectable testID={`${id}.distance`}>
+              {lines.distance}
+            </Text>
+            {lines.oklch === undefined ? null : (
+              <Text size="label" on={sample} numeric selectable testID={`${id}.oklch`}>
+                {lines.oklch}
+              </Text>
+            )}
+          </View>
+        </Swatch>
+      </View>
     );
   }
 
   return (
-    <Screen title={t('finder.title')} script={script}>
-      <SearchField label={t('finder.search')} value={query} onChangeText={setQuery} />
-      <Text size="caption" color="foreground.2" script={script}>
-        {t('finder.hint')}
-      </Text>
-
+    <Screen
+      scroll={false}
+      bleed
+      script={script}
+      appBar={{
+        height: FINDER_APP_BAR,
+        inset: nativeSpacing.md,
+        gap: nativeSpacing.sm,
+        script,
+        ...(onBack === undefined
+          ? {}
+          : {
+              back: {
+                glyph: 'back' as const,
+                label: t('tab.atlas'),
+                name: t('detail.backToAtlas'),
+                size: BACK_GLYPH_09,
+                onPress: onBack,
+              },
+            }),
+        title: {
+          text: t('finder.title'),
+          // The run repeats 検索 in Japanese, so it is drawn in English only (ADR-0159 D5).
+          ...(script === 'japanese' ? {} : { ja: japaneseRun('finder.title') }),
+          align: 'centre',
+          placement: 'bar',
+          layout: 'inline',
+          size: 'body',
+          weight: 600,
+        },
+        trailing: {
+          button: {
+            variant: 'plain',
+            glyph: 'close',
+            glyphSize: CLEAR_GLYPH,
+            label: t('finder.clear'),
+            name: t('finder.clearName'),
+            step: 'body',
+            script,
+            onPress: () => {
+              setState(cleared());
+            },
+            testID: 'finder.clear',
+          },
+        },
+      }}
+    >
       {/*
-        WHICH QUESTION WAS ANSWERED — ONE LINE, ALWAYS (F-151).
-
-        A single field that routes three ways will sometimes route differently from what the
-        person meant, and this is the difference between "these results are wrong" and "ah, it
-        read that as a hex".
-
-        It is now the SAME line in every state, including the empty one. It used to be a small
-        grey sentence before a query and a heading after it, which is two different heights in
-        the one slot everything below depends on — so the results moved on the first keystroke,
-        under the thumb that had just typed it.
+        A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the first answer's cards stagger in; a card a later
+        change brings is simply there. The scope draws no view, so the list's `flex: 1` is untouched.
       */}
-      <Text size="body" color="foreground" script={script} heading>
-        {result.kind === 'empty' ? t('finder.empty') : t(ANSWERED[result.kind])}
-      </Text>
-
-      {result.kind === 'empty' ? null : (
-        <>
-          {shown.length === 0 ? (
-            // 00's empty (F-236): the phrase that would change it is in the field above.
-            <EmptyState
-              message={t('finder.none')}
-              hint={t(NOTHING[result.kind])}
-              resolvedHere
-              script={script}
-            />
-          ) : (
-            <Surface
-              /* surface-not-card: a result list opened by a count. A count is a fact about the list, not a heading over it. */
-              level="1"
-              padding="sm"
+      <Arrival>
+        <FlatList
+          data={answer.results}
+          numColumns={2}
+          keyExtractor={(item) => item.entry.entry.slug}
+          // An ELEMENT, never a component type: a new type each render would remount the field.
+          ListHeaderComponent={header}
+          ListEmptyComponent={
+            // 00's empty (F-236): what would change it is the field above (ADR-0160 D8).
+            <View style={{ paddingHorizontal: nativeSpacing.md }}>
+              <EmptyState
+                message={t('finder.none')}
+                {...(answer.hint === undefined ? {} : { hint: t(answer.hint) })}
+                resolvedHere
+                script={script}
+              />
+            </View>
+          }
+          columnWrapperStyle={{ paddingHorizontal: nativeSpacing.md }}
+          ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+          renderItem={({ item, index }) => (
+            // TWO TO A ROW, `sm` APART: each cell padded `xs` on its inner side; a row is one height.
+            <View
+              style={{
+                flex: 1,
+                maxWidth: '50%',
+                ...(index % 2 === 0
+                  ? { paddingRight: nativeSpacing.xs }
+                  : { paddingLeft: nativeSpacing.xs }),
+              }}
             >
-              <View>
-                <Text size="caption" color="foreground.2" script={script} numeric>
-                  {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
-                </Text>
-                {/*
-                  A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the first answer's rows stagger in, and
-                  a row a later keystroke brings is simply there while the results stay on screen.
-                  An answer that empties and comes back is a new list, and arrives again.
-                */}
-                <Arrival>
-                  {shown.map((entry, i) => (
-                    <Appear key={entry.entry.slug} index={i}>
-                      <ResultRow
-                        entry={entry}
-                        {...(result.distances === undefined
-                          ? {}
-                          : { distance: result.distances[i] ?? 0 })}
-                      />
-                    </Appear>
-                  ))}
-                </Arrival>
-              </View>
-            </Surface>
+              <Appear index={index} fill>
+                <ResultCard item={item} index={index} />
+              </Appear>
+            </View>
           )}
-
-          {/*
-            THE REGION, AFTER THE RESULTS AND NOT BEFORE THEM.
-
-            This panel appears for a phrase answer and for nothing else, so above the list it was
-            the layout jump: type one more word, the words stop resolving, the panel vanishes and
-            forty rows slide up the screen.
-
-            Below, it costs nothing and reads better — it is PROVENANCE, and provenance in this
-            product goes with the answer rather than in front of it. The vocabulary version is
-            here for FR-10's reason: an answer that cannot say what produced it cannot be
-            reproduced once the lexicon moves.
-          */}
-          {result.region === undefined ? null : (
-            <Card
-              level="1"
-              padding="sm"
-              header={
-                <Text size="caption" color="foreground.2" script={script} heading>
-                  {t('finder.region')}
-                </Text>
-              }
-            >
-              <Stack gap="xs">
-                {LEXICON_AXES.map((axis) => {
-                  const range = result.region?.[axis];
-                  if (range === undefined) return null;
-                  return (
-                    <Row key={axis} gap="sm" align="baseline">
-                      <Text size="label" color="foreground.2" script={script}>
-                        {t(AXIS_KEYS[axis])}
-                      </Text>
-                      <View style={{ flex: 1 }} />
-                      <Text size="label" color="foreground" numeric selectable>
-                        {`${range.min.toFixed(axis === 'hue' ? 0 : 3)} – ${range.max.toFixed(axis === 'hue' ? 0 : 3)}`}
-                      </Text>
-                      <Text size="caption" color="foreground.2" script={script}>
-                        {t('space.oklch')}
-                      </Text>
-                    </Row>
-                  );
-                })}
-                <Text size="caption" color="foreground.2" script={script} numeric>
-                  {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
-                </Text>
-              </Stack>
-            </Card>
-          )}
-        </>
-      )}
+          style={{ flex: 1 }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingTop: nativeSpacing.lg, paddingBottom: nativeSpacing.md }}
+          showsVerticalScrollIndicator={false}
+        />
+      </Arrival>
     </Screen>
   );
 }

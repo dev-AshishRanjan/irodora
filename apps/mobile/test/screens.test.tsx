@@ -161,6 +161,7 @@ import type { ImageSource } from '../src/wardrobe/source';
 import type { NewGarment } from '@irodora/store';
 import type { LensReading } from '../src/lens/reading';
 import { Finder, STATES as FINDER_STATES } from '../src/screens/Finder';
+import { answerOf, sliderReadings, typed, start as finderStart } from '../src/finder-readout';
 import { ColourCard, STATES as COLOUR_CARD_STATES } from '../src/screens/ColourCard';
 import {
   ProfileSetup,
@@ -190,7 +191,6 @@ import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import type { Mode, Theme } from '@irodora/design-tokens';
 import { deviceTheme } from '../src/appearance';
-import { find } from '../src/finder';
 import { deriveWeights, toStoreWrite } from '../src/palette';
 import { equivalentsFor } from '../src/contemporary';
 import { PALETTE_ROLES } from '@irodora/corpus';
@@ -1317,6 +1317,18 @@ const showing = <S extends ScreenStates>(
   ...shown: readonly ShownBy<S>[]
 ): readonly StateKind[] => shown;
 
+/**
+ * 09's fixture phrase (F-250, ADR-0158): chosen by the plan's rule from the data — the first of
+ * `dark muted green` (FR-47's own example), `muted green`, `green` whose region holds at least four
+ * entries and whose chroma reads two terms. `dark muted green` holds three.
+ */
+const FINDER_PHRASE = 'muted green';
+/** Every handler the route passes, so each drawn control is drawn. */
+const FINDER_HANDLERS = {
+  onBack: () => undefined,
+  onOpenColour: () => undefined,
+} as const;
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Preferences',
@@ -1923,25 +1935,33 @@ const SCREENS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    /*
+     * 09's START (F-250, ADR-0158 D2): the field empty, no chip chosen, the sliders at the corpus
+     * medoid and its nearest eight. `static`, like the rest: its interactive parts — the bare field,
+     * the chips, the row sliders — are registered in packages/ui, where the suite renders their states.
+     */
     name: 'screens/Finder',
     shows: showing(FINDER_STATES),
-    // `static`, like the rest: its one interactive part is SearchField, registered in
-    // packages/ui where the suite makes it render focus, active, disabled and loading.
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Finder />, theme),
+    render: (_state, theme) => draw(<Finder {...FINDER_HANDLERS} />, theme),
   },
   {
-    /*
-     * The SAME screen with an answer on it. Empty and answered render almost disjoint trees —
-     * an empty Finder draws no swatch, no region and no result row, so registering only that
-     * would check a screen nobody has used yet.
-     */
+    // 09 as drawn: a phrase, its chip chosen, its region ranked from its medoid (the sweep's own).
     name: 'screens/Finder (with a phrase answer)',
     shows: showing(FINDER_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Finder initialQuery="dark muted green" />, theme),
+    render: (_state, theme) =>
+      draw(<Finder initialQuery={FINDER_PHRASE} {...FINDER_HANDLERS} />, theme),
+  },
+  {
+    // A hex: its own point, the corpus's nearest eight.
+    name: 'screens/Finder (a hex)',
+    shows: showing(FINDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Finder initialQuery="#526A6B" {...FINDER_HANDLERS} />, theme),
   },
   {
     name: 'screens/OutfitBuilder',
@@ -2960,14 +2980,14 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
-     * THE PHRASE FOUND NOTHING (F-236): 00's caption with the reason, under the field that would
-     * change it.
+     * NOTHING MATCHES (F-236, ADR-0160 D8): 00's caption with the reason, under the field that would
+     * change it — the witness for the screen's `empty`.
      */
-    name: 'screens/Finder (the phrase found nothing)',
+    name: 'screens/Finder (nothing matches)',
     shows: showing(FINDER_STATES, 'empty'),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Finder initialQuery="zzqx" />, theme),
+    render: (_state, theme) => draw(<Finder initialQuery="zzqx" {...FINDER_HANDLERS} />, theme),
   },
   {
     /*
@@ -4161,7 +4181,7 @@ describe('the route wires the real repository, not a fake', () => {
  * the app decided to answer, and that a phrase answer shows the region and the vocabulary
  * behind it.
  */
-describe('the Finder says which question it answered (FR-47)', () => {
+describe('the Finder says which question it answered, and shows its point (FR-47, F-250)', () => {
   function textOf(node: TestNode, out: string[] = []): string[] {
     for (const child of node.children ?? []) {
       if (typeof child === 'string') out.push(child);
@@ -4171,64 +4191,69 @@ describe('the Finder says which question it answered (FR-47)', () => {
     if (typeof label === 'string') out.push(label);
     return out;
   }
-
-  const nodes = (query?: string): string[] =>
-    textOf(draw(<Finder {...(query === undefined ? {} : { initialQuery: query })} />, 'light'));
+  const tree = (query?: string): TestNode =>
+    draw(
+      <Finder {...(query === undefined ? {} : { initialQuery: query })} {...FINDER_HANDLERS} />,
+      'light',
+    );
+  /** The chips announced as chosen, by their words. */
+  const chosen = (node: TestNode): string[] => {
+    const out: string[] = [];
+    const walk = (n: TestNode): void => {
+      if (
+        (n.props['role'] ?? n.props['accessibilityRole']) === 'radio' &&
+        (n.props['accessibilityState'] as { selected?: boolean } | undefined)?.selected === true
+      )
+        out.push(String(n.props['accessibilityLabel']));
+      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
+    };
+    walk(node);
+    return [...new Set(out)];
+  };
 
   it.each([
-    ['#526A6B', 'Nearest colours to that hex'],
-    ['dark muted green', 'Colours in the region that phrase describes'],
-    ['ai', 'Colours whose name matches'],
-  ])('names the question for %s', (query, sentence) => {
-    expect(nodes(query).join(' ')).toContain(sentence);
+    ['#526A6B', '# Hex Code'],
+    [FINDER_PHRASE, 'Natural Phrase'],
+    ['ai', 'Colour Name'],
+  ])('marks the chip of the question %s was read as', (query, chip) => {
+    expect(chosen(tree(query))).toStrictEqual([chip]);
   });
 
-  /*
-   * THE DECOY. Without it, "the sentence is present" would be equally true of a screen that
-   * renders all three at once, and every case above would be measuring nothing.
-   */
-  it('DECOY — only one of the three sentences is shown at a time', () => {
-    const shown = nodes('dark muted green').join(' ');
-    expect(shown).toContain('Colours in the region that phrase describes');
-    expect(shown).not.toContain('Nearest colours to that hex');
-    expect(shown).not.toContain('Colours whose name matches');
+  it('DECOY — marks no chip at the start, as 09 draws them', () => {
+    expect(chosen(tree())).toStrictEqual([]);
   });
 
-  it('shows the region a phrase resolved to, with the space it is measured in', () => {
-    const shown = nodes('dark muted green').join(' ');
-    expect(shown).toContain('That phrase means');
-    // The axes, by the same labels the Atlas filters use — one word, one name.
-    for (const axis of ['Lightness', 'Chroma', 'Hue']) expect(shown).toContain(axis);
-    expect(shown).toContain('OKLCh');
+  it('prints every card’s ΔE00 from the point, on every kind of answer', () => {
+    for (const query of [undefined, '#526A6B', FINDER_PHRASE, 'ai']) {
+      const answer = answerOf(query === undefined ? finderStart() : typed(finderStart(), query));
+      const shown = textOf(tree(query)).join(' ');
+      expect(answer.results.length).toBeGreaterThan(0);
+      for (const r of answer.results) {
+        expect(shown).toContain(r.entry.entry.name.en);
+        expect(shown).toContain(`${r.entry.derived.hex} • ΔE00 ${r.deltaE00.toFixed(2)}`);
+      }
+    }
   });
 
-  it('names the vocabulary version behind a phrase answer', () => {
-    // An answer that cannot say what produced it cannot be reproduced once the lexicon moves.
-    expect(nodes('dark muted green').join(' ')).toContain('2026.08.1');
+  it('shows the sliders’ figures and words for the point it holds', () => {
+    const s = typed(finderStart(), FINDER_PHRASE);
+    const readings = sliderReadings(s.point, 'en', (k) => en[k]);
+    const shown = textOf(tree(FINDER_PHRASE)).join(' ');
+    for (const axis of ['lightness', 'chroma', 'hue'] as const)
+      expect(shown).toContain(readings[axis].text);
+    expect(readings.chroma.text).toContain('Muted / Soft');
   });
 
-  it('shows a distance with its unit on a hex answer, and none on a phrase answer', () => {
-    // ΔE00 is what makes "nearest" checkable rather than an order to be trusted. It has no
-    // meaning for a region, so showing one there would be a number with no question behind it.
-    expect(nodes('#526A6B').join(' ')).toContain('ΔE00');
-    expect(nodes('dark muted green').join(' ')).not.toContain('ΔE00');
-  });
-
-  it('draws every result as a swatch, not only as a name', () => {
-    const shown = nodes('#526A6B').join(' ');
-    const first = find('#526A6B').entries[0]!;
-    expect(shown).toContain(first.entry.name.en);
-    expect(shown).toContain(first.derived.hex);
-  });
-
-  it('invites a query rather than listing the whole corpus when empty', () => {
-    const shown = nodes().join(' ');
-    expect(shown).toContain('Type something to search');
-    expect(shown).not.toContain('Colours whose name matches');
+  it('lists the corpus’s nearest eight at the start, never the whole corpus', () => {
+    const answer = answerOf(finderStart());
+    expect(answer.results).toHaveLength(8);
+    const shown = textOf(tree()).join(' ');
+    const outside = allEntries().find((e) => !answer.results.some((r) => r.entry === e))!;
+    expect(shown).not.toContain(`${outside.derived.hex} • ΔE00`);
   });
 
   it('says nothing matched, and why, rather than showing an empty list', () => {
-    const shown = nodes('zzzzzznotacolour').join(' ');
+    const shown = textOf(tree('zzzzzznotacolour')).join(' ');
     expect(shown).toContain('Nothing matches that');
     expect(shown).toContain('No name, reading or slug contains that');
   });
@@ -5422,13 +5447,26 @@ describe('the pair leads Compare, drawn apart as 08 draws it (F-151, ADR-0154)',
     }
   });
 
-  it('DECOY — a Finder result is still a thumbnail, because ranking is not judging', () => {
+  it('DECOY — a chooser row is still a thumbnail, because ranking is not judging', () => {
     /*
      * Without this the feature could have raised every sample on every surface, which turns a
-     * scannable list into four results a screen and is worse at the job a list has. The Finder ranks
-     * by ΔE00 in a list you scan, which is the case the line is about.
+     * scannable list into four results a screen and is worse at the job a list has. Compare's
+     * chooser ranks by the Finder's own query in a list you scan, which is the case the line is
+     * about. (09's result cards are the colour itself, 172 × 108 dp as drawn — F-250, ADR-0160.)
      */
-    const heights = inOrder(draw(<Finder initialQuery="ai" />, 'light'))
+    const page = draw(
+      <Compare
+        initialA={FIXTURE_A}
+        initialB={FIXTURE_B}
+        initialPicking="a"
+        initialQuery="aka"
+        {...COMPARE_HANDLERS}
+      />,
+      'light',
+    );
+    const sheet = inOrder(page).find((n) => n.props['testID'] === 'compare.pick');
+    expect(sheet).toBeDefined();
+    const heights = inOrder(sheet!)
       .map((n) => styleOf(n)['height'])
       .filter((h): h is number => typeof h === 'number');
 
@@ -5492,66 +5530,55 @@ describe('the Studio shows the palette as one thing (F-151)', () => {
   });
 });
 
-describe('the Finder results do not move (F-151)', () => {
+describe('the Finder results do not move (F-151, F-250)', () => {
   /**
-   * Where the answer line sits, as the number of nodes rendered before it.
+   * Where the results heading sits, as the number of nodes rendered before it, outside the query
+   * card — whose clear appears with words and whose chosen chip draws its dot, by design.
    *
    * A layout jump is a position changing between two states, and this is the only position a
-   * rendered tree can be asked about without a layout engine. It is a real proxy rather than a
-   * convenient one: the region panel used to sit above the list, so a phrase answer put a whole
-   * Surface in front of the results and one more typed word took it away again.
+   * rendered tree can be asked about without a layout engine. 09 puts the query card, the sliders
+   * card and the heading above the cards in every state, so the heading's place cannot move.
    */
-  function answerAt(query?: string): number {
+  function headingAt(query?: string): number {
+    const nodes: TestNode[] = [];
+    const walk = (n: TestNode): void => {
+      if (n.props['testID'] === 'finder.search') return;
+      nodes.push(n);
+      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
+    };
+    walk(
+      draw(
+        <Finder {...(query === undefined ? {} : { initialQuery: query })} {...FINDER_HANDLERS} />,
+        'light',
+      ),
+    );
+    const index = nodes.findIndex((n) => n.props['testID'] === 'finder.nearest');
+    if (index < 0) throw new Error('no results heading rendered');
+    return index;
+  }
+
+  it('holds the results heading in one place across every kind of answer', () => {
+    // Five states, one position — the start and nothing found included.
+    const positions = [
+      headingAt(),
+      headingAt('#526A6B'),
+      headingAt(FINDER_PHRASE),
+      headingAt('ai'),
+      headingAt('zzqx'),
+    ];
+    expect(new Set(positions).size).toBe(1);
+  });
+
+  it('DECOY — the count would see a card added above the heading', () => {
+    // The query card is left out on purpose; the sliders card is not, and it has three rows.
     const nodes: TestNode[] = [];
     const walk = (n: TestNode): void => {
       nodes.push(n);
       for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
     };
-    walk(draw(<Finder {...(query === undefined ? {} : { initialQuery: query })} />, 'light'));
-
-    const index = nodes.findIndex((n) =>
-      (n.children ?? []).some(
-        (c) =>
-          typeof c === 'string' &&
-          /^(Nearest colours|Colours in the region|Colours whose name|Type something)/u.test(c),
-      ),
-    );
-    if (index < 0) throw new Error('no answer line rendered');
-    return index;
-  }
-
-  it('holds the answer line in one place across every kind of answer', () => {
-    // Four states, one position — the empty one included, because the answer used to be a small
-    // grey sentence where the heading later went, so the list moved on the FIRST keystroke,
-    // under the thumb that had just typed it.
-    const positions = [
-      answerAt(),
-      answerAt('#526A6B'),
-      answerAt('dark muted green'),
-      answerAt('ai'),
-    ];
-    expect(new Set(positions).size).toBe(1);
-  });
-
-  it('puts the region beneath the results, where it is provenance rather than a gate', () => {
-    /*
-     * The region panel appears for a phrase answer and for nothing else. Above the list it was
-     * the jump: one more word, the words stop resolving, and forty rows slide up the screen.
-     * Below it costs nothing — and it reads better, because it says what produced the answer.
-     */
-    const texts: string[] = [];
-    const walk = (n: TestNode): void => {
-      for (const c of n.children ?? []) {
-        if (typeof c === 'string') texts.push(c);
-        else walk(c);
-      }
-    };
-    walk(draw(<Finder initialQuery="dark muted green" />, 'light'));
-
-    const showing = texts.findIndex((x) => x.startsWith('Showing'));
-    const region = texts.indexOf('That phrase means');
-    expect(showing).toBeGreaterThan(-1);
-    expect(region).toBeGreaterThan(showing);
+    walk(draw(<Finder {...FINDER_HANDLERS} />, 'light'));
+    const withSearch = nodes.findIndex((n) => n.props['testID'] === 'finder.nearest');
+    expect(withSearch).toBeGreaterThan(headingAt());
   });
 });
 
