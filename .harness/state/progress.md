@@ -8,6 +8,113 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-10-28 — F-250 Finder is mockup 09
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** The Finder is rebuilt to `09`: 09's app bar (back, *Colour Finder • 検索*, *✕ Clear*; no
+rule); the query card — a bare field with its clear, and three chips (*Natural Phrase · Colour Name ·
+# Hex Code*) as one radio group that says which reading is in effect; three one-row sliders showing
+the search point (L %, C to 3 dp, h°) and the lexicon terms that hold each printed figure; *Instantaneous
+nearest results ranked by ΔE00* over two-column cards that are the colour, their words on it; the
+leaves behind; 01's tab bar. It is the sixth whole screen in the inventory sweep. Increments `124b3bb`
+through this one.
+
+- **Measured first.** `09.mjs` re-read every box, type, corner, fill and ink (its header names each
+  method). F-220's record did not survive in six places: the title, back, Clear and each card's
+  English line are `body`; both cards `sm` (median corner 8.0 dp, the midpoint, the smaller); the
+  chips are rounded rectangles in level 3, unedged, none chosen; the field is bare; the bar draws no
+  rule (58 dp, symmetric); the art runs to 518 px on the ground only. The caret is the platform's.
+- **Four decisions, under the person's delegation of 2026-10-05:**
+  - **ADR-0158:** a query names a set and sets a point — a hex at its own OKLCh over the corpus, a
+    phrase or a name at its set's medoid, the empty field at the corpus medoid (*hai-suna*); the
+    sliders are the point; the results are the set ranked by ΔE00 from it through the one route.
+    `find()` is unchanged (`findAs` added), so the Atlas and Compare read what they read.
+  - **ADR-0159:** CSS Color 4's OKLCh ranges; each reading is the locale's terms whose region holds
+    the PRINTED point, each on its naming axis, joined as 09 joins *Muted / Soft*; *No term* where
+    none holds. *Japanese Kanji* is an E2 row: *Colour Name*. The ja title is 検索 (09's own run).
+  - **ADR-0160:** the chips (detected or chosen; a chosen one reads the words its way), the two
+    clears, the sliders, a card as one stop; the answered sentence, region card and count leave.
+  - **ADR-0161:** the composition — three intervals named tighter than the scale, cards at least
+    108 dp and taller where words wrap, the art clipped at the bar's foot, 09.back's edge kept as
+    F-220 read it so APP_BAR_INSET stays one method's median (F-282).
+- **Built alongside:** `medoid.ts` (the Atlas's dots delegate to it), `finder.ts#findAs`, `#hexPoint`,
+  `#rankedFrom`, `finder-readout.ts`; additive in `@irodora/ui`: the Slider's row form, part ids,
+  `valueName` and `name`, the SearchField's bare form and clear, the ChoiceGroup pills' rest fill and
+  corner. The Japanese subset gains 消.
+- **Census** (ADR-0158, ADR-0159): Japanese names no term for 33 of 101 lightness values, 49 of 401
+  chroma values and 132 of 360 hues — the start point reads none in Japanese; filed **F-356**.
+
+**Review (once): FAIL as delivered**, 4 significant and 12 minor, none blocking. Every one is fixed or
+recorded (`f0ef401`).
+
+- **S1, fixed:** the query card's box was F-220's, to its shadow's foot; re-measured to its edge (177
+  px), the chips → foot is `md` and the card → sliders title `lg`. The fidelity test had recomputed
+  from the wrong record and passed.
+- **S2, fixed:** on Android the field's and the clear's targets reached outside their parent; the bare
+  field takes only the room above its words its body gives (`touchAbove`), and the body reaches into
+  the card's inset, so both targets lie inside it (ADR-0161 D5a).
+- **S3, fixed:** the result card and the separator were component types made in the render, so every
+  keystroke and slider tick remounted every card; both are at module scope, memoised, with the Atlas's
+  windowing.
+- **S4, fixed in part, the rest recorded:** a reading that wraps moved the thumb under the finger; the
+  row is now top-aligned with its track one label line tall. The cards still move a line while a
+  reading wraps: ADR-0161 D5's cost, and ADR-0160 supersedes F-151 c3 in part.
+- **M1–M12:** an independent oracle for `find()` (M1); a hand-written term → axis table (M2); the
+  glyphs from `09.json`'s recorded ink, the leaves' aspect from `illustrationBox`, the widths at 320
+  and 360, every text but the headings in an opaque box and the headings 4.5:1 over a stroke in every
+  palette (M3); the disc re-measured, 19 (M4); the start E4 and the cards' height E3 in `09.json`, the
+  comparison list completed, R9 §5 (M5); a doc comment (M6); the slider's name holds its label, refused
+  otherwise, and the row is one stop (M7); an unchanged answer keeps the point (M8); M9–M11 cleanups;
+  05's 検索 named for the person (M12).
+
+**Gates run on the final tree (`f0ef401`):**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`, each
+  exit 0.
+- `pnpm turbo run test --force`: every package passed but one test — `@irodora/ui`'s conformance suite
+  (1,532 of 1,533) had one cleanup hook exceed jest's 5 s under the full run (340 s for the suite); alone
+  it passes, 618 of 618 in 33 s. That is F-317's case, recorded there; F-250 added three subjects to the
+  suite. The mobile suites passed, the readout's corpus-wide tests inside their stated timeouts.
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`, each exit 0.
+- `node scripts/verify-ci.mjs --all`: every step passed but the two recorded reds below — gate 4 and
+  every mutation proof included.
+- **Before the review's fixes** (Tier 2 on `87511f7`): the same, except the CI mirror's gate 4 timed out
+  design-tokens' `on-sample.test` under load (F-348), and the contrast proof hit the Windows write error
+  (errno −4094, F-333) whose journal stopped the gate 11, 12 and 15 proofs; the manifest matched HEAD,
+  `plant.mjs --recover` cleared the journal, and the four proofs re-run alone each passed.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on gate 15: nine unaccepted advisories (shell-quote, brace-expansion ×2,
+  node-forge, source-map-js, compression, vite and launch-editor, zod), every one already recorded on
+  F-322. F-250 changed no dependency.
+- `verify-ci --all` exits 1 on gate 15 and on the iOS config half (no ios/ project on win32), both
+  recorded.
+
+**Not run:**
+
+- e2e and the fidelity capture: no Maestro or JDK here. The attestations are the person's:
+  - a release Android build;
+  - `pnpm fidelity:capture -- --erase-app-data`;
+  - `/atlas/find` compared with `09` (25's palette for Washi) in both languages — the start state,
+    the corpus medoid's readings and nearest eight, *Colour Name*, the readings as lexicon terms,
+    cards taller where real names wrap, 検索 alone in Japanese, no leaked labels, 01's tab bar are
+    expected;
+  - the device checks: back, typing a phrase, a hex and a romaji, TalkBack on the chips and sliders,
+    a slider dragged (no lag a person notices), both clears, a card; 200 % text (the chips clip,
+    F-344).
+
+### Lessons
+
+[[a-cards-box-ends-at-its-edge-not-at-its-shadows-foot]] and
+[[once-a-function-delegates-an-equivalence-test-against-its-delegate-compares-it-with-itself]] (new).
+
+### Next
+
+The loop: the next eligible R9 feature after F-250 (F-243 to F-245 wait on OQ-8).
+
+---
+
 ## 2026-10-27 — F-249 Compare is mockup 08
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device
