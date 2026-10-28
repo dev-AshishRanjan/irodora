@@ -1092,6 +1092,42 @@ function compareLocators(): Readonly<Record<string, Locator>> {
   return out;
 }
 
+/**
+ * 09's locators (F-250): the cards, the field, its clear, the sliders' parts and each result's lines
+ * by the screen's own ids; the title by its words in each locale. What 09.json binds to a real
+ * catalogue key (Clear, the chips, the slider labels, the headings), an icon, the art and the tab
+ * bar are found from the record itself.
+ */
+function finderLocators(): Readonly<Record<string, Locator>> {
+  const out: Record<string, Locator> = {
+    '09.back': { by: 'text', key: 'tab.atlas' },
+    '09.title': {
+      by: 'value',
+      text: (locale) =>
+        locale === 'ja'
+          ? message('ja', 'finder.title')
+          : `${message('en', 'finder.title')}${BILINGUAL_SEPARATOR}${japaneseRun('finder.title')}`,
+    },
+    '09.search': { by: 'testID', id: 'finder.search' },
+    '09.search.query': { by: 'testID', id: 'finder.search.query' },
+    '09.search.clear': { by: 'testID', id: 'finder.search.clear' },
+    '09.sliders': { by: 'testID', id: 'finder.sliders' },
+    '09.tabs.indicator': { by: 'testID', id: TAB_INDICATOR_TEST_ID },
+  };
+  for (const axis of ['lightness', 'chroma', 'hue'] as const) {
+    out[`09.sliders.${axis}.track`] = { by: 'testID', id: `finder.sliders.${axis}.track` };
+    out[`09.sliders.${axis}.value`] = { by: 'testID', id: `finder.sliders.${axis}.value` };
+  }
+  for (let n = 1; n <= 4; n += 1) {
+    const id = `finder.result.${String(n - 1)}`;
+    out[`09.results.result-${String(n)}`] = { by: 'testID', id };
+    for (const line of ['name', 'english', 'distance'] as const)
+      out[`09.results.result-${String(n)}.${line}`] = { by: 'testID', id: `${id}.${line}` };
+  }
+  out['09.results.result-1.oklch'] = { by: 'testID', id: 'finder.result.0.oklch' };
+  return out;
+}
+
 /** Every slot filled, the top locked: an outfit the Lab can save (F-238). */
 const OUTFIT_COMPLETE: OutfitDraft = [
   { slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true },
@@ -6112,6 +6148,33 @@ const ENROLLED: readonly Enrolled[] = [
     locators: compareLocators(),
   },
   {
+    /*
+     * 09, THE COLOUR FINDER (F-250), drawn as it is drawn: the fixture phrase, its chip chosen, its
+     * region ranked from its medoid, every handler wired, under 01's tab bar. 09 draws a four-item bar;
+     * C1 makes it 01's five, so its compass, map and settings glyphs are no tab's (ADR-0144).
+     */
+    surface: '09.screen',
+    root: 'finder.surface',
+    render: (theme) =>
+      draw(
+        <View testID="finder.surface">
+          <Finder initialQuery={FINDER_PHRASE} {...FINDER_HANDLERS} />
+          <AppTabBar
+            state={{ index: 1, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: finderLocators(),
+    superseded: {
+      '09.tabs.atlas.icon': 'C1',
+      '09.tabs.map.icon': 'C1',
+      '09.tabs.settings.icon': 'C1',
+    },
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -6311,6 +6374,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '06.screen',
         '07.screen',
         '08.screen',
+        '09.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -6536,6 +6600,35 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         findingsFor('08.screen', without(json, 'compare.b.change'), live),
         '08.pair.b.change',
       );
+    });
+
+    it('09: the chroma reading, the fourth card, the field’s clear and the hex chip are each found as themselves (F-250)', () => {
+      const { json, live } = drawnAs('09.screen');
+      expectOnly(
+        findingsFor('09.screen', without(json, 'finder.sliders.chroma.value'), live),
+        '09.sliders.chroma.value',
+      );
+      // The fourth card's lines go with it; only the card is reported, its lines under it.
+      const card = findingsFor('09.screen', without(json, 'finder.result.3'), live);
+      expect(card.some((f) => f.startsWith('09.results.result-4: not drawn'))).toBe(true);
+      expect(card.every((f) => f.startsWith('09.results.result-4'))).toBe(true);
+      expectOnly(
+        findingsFor('09.screen', without(json, 'finder.search.clear'), live),
+        '09.search.clear',
+      );
+      // A chip is found by its words or by the name its radio announces, so the decoy takes the
+      // whole chip — its name and the words inside it — and the hex chip alone is reported.
+      const withoutNamed = (node: TestNode, name: string): TestNode => ({
+        ...node,
+        children: (node.children ?? [])
+          .filter((c) => typeof c === 'string' || c.props['accessibilityLabel'] !== name)
+          .map((c) => (typeof c === 'string' ? c : withoutNamed(c, name))),
+      });
+      expectOnly(
+        findingsFor('09.screen', withoutNamed(json, message('en', 'finder.mode.hex')), live),
+        '09.search.mode-hex',
+      );
+      // The art cannot be removed by id or words alone, so no decoy is written for it (F-249 M6).
     });
 
     it('07: three Swaps are located by one word, so one fewer is reported (F-248’s review, M5)', () => {
