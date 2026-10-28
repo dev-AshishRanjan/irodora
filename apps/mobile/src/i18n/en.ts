@@ -231,6 +231,21 @@ export const en = {
   'finder.noneHexHint': 'Every colour in this version is further away than the list shows.',
   'finder.nonePhraseHint': 'No colour in this version falls inside that region.',
   'finder.noneNameHint': 'No name, reading or slug contains that.',
+  // F-250 (ADR-0159): 09's sliders, its chips and the words the readout prints.
+  'finder.lightness': 'Lightness (L)',
+  'finder.chroma': 'Chroma (C)',
+  'finder.hue': 'Hue (H)',
+  'finder.lightnessName': 'OKLCh lightness of the search point',
+  'finder.chromaName': 'OKLCh chroma of the search point',
+  'finder.hueName': 'OKLCh hue angle of the search point',
+  'finder.mode.phrase': 'Natural Phrase',
+  'finder.mode.name': 'Colour Name',
+  'finder.mode.hex': '# Hex Code',
+  /** Where no lexicon term holds the printed value (ADR-0159 D2): never a blank. */
+  'finder.noTerm': 'No term',
+  'finder.fromPoint': 'from the search point',
+  'finder.notHex': 'That is not a hex: a hex is three or six digits, 0–9 and A–F.',
+  'finder.notPhrase': 'Not every word is in the vocabulary.',
   'axis.hue': 'Hue',
   // F-023 — Shareable colour cards (FR-50).
   'card.title': 'Colour card',

@@ -627,6 +627,12 @@ interface InteractiveSliderProps extends SliderShared {
   /** In the row form, the track's least width in dp. Defaults to {@link SLIDER_TRACK_MIN}. */
   readonly trackMinWidth?: number;
   /**
+   * The thumb's accessible name where the drawn label is not the whole of what it sets: `09`'s
+   * *Lightness (L)* is announced as the OKLCh lightness of the search point (ADR-0159 D1). It must
+   * contain no less than the label says; without it the label is the name.
+   */
+  readonly name?: string;
+  /**
    * What a screen reader says for the value where it differs from what is drawn: `09`'s
    * *0.045 (Muted / Soft)* is spoken without its slash and parentheses (F-249's M9). Defaults to
    * `valueLabel`.
@@ -762,6 +768,7 @@ function InteractiveSlider({
   layout,
   trackMinWidth = SLIDER_TRACK_MIN,
   valueName,
+  name,
 }: InteractiveSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
@@ -800,7 +807,7 @@ function InteractiveSlider({
               this the platform walks into it and announces what is inside.
             */
           accessible
-          accessibilityLabel={label}
+          accessibilityLabel={name ?? label}
           /*
               `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
               bridge cannot carry a fraction; the caller's formatted string is the quantity a

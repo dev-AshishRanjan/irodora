@@ -323,6 +323,31 @@ describe('09’s one-row form (F-250, ADR-0161 D5)', () => {
     ).toBe('0.050, Muted, Soft');
   });
 
+  it('names its thumb by what it sets, where the drawn label says less', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <Slider
+          layout="row"
+          label="Hue (H)"
+          name="OKLCh hue angle of the search point"
+          value={72}
+          max={359}
+          step={1}
+          valueLabel="72° (No term)"
+          onValueChange={() => undefined}
+          testID="h"
+        />
+      </ThemeProvider>,
+    );
+    const [thumb] = hostsOf('h');
+    expect((thumb?.props as { accessibilityLabel?: string }).accessibilityLabel).toBe(
+      'OKLCh hue angle of the search point',
+    );
+    // The drawn label stays what the screen draws.
+    const [label] = hostsOf('h.label');
+    expect(String((label?.props as { children?: unknown }).children)).toBe('Hue (H)');
+  });
+
   it('DECOY — without a valueName it speaks what it draws', () => {
     row({ testID: 'r' });
     const [thumb] = hostsOf('r');

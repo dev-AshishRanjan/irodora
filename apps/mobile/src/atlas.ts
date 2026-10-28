@@ -22,7 +22,6 @@
  * bundle's.
  */
 
-import { deltaE00 } from '@irodora/color-difference';
 import { swatchAccessibleName } from '@irodora/ui';
 import type { FamilyGroupId } from '@irodora/corpus';
 import {
@@ -35,6 +34,7 @@ import {
 } from './corpus';
 import { HEX_LIMIT, hexNearest } from './finder';
 import type { MessageKey } from './i18n';
+import { medoid } from './medoid';
 import { capitalised, oklchLine } from './notation';
 
 /* ------------------------------------------------------------------ the vocabulary's words */
@@ -273,22 +273,10 @@ export function familyDotEntry(
   group: FamilyGroup,
   entries: readonly PublishedEntry[],
 ): PublishedEntry {
-  const members = entries
-    .filter((e) => group.families.includes(e.entry.taxonomy.family))
-    .sort((a, b) => a.entry.slug.localeCompare(b.entry.slug));
-  const first = members[0];
-  if (first === undefined) throw new Error(`the ${group.group} chip holds no entry`);
-  let best = first;
-  let bestSum = Number.POSITIVE_INFINITY;
-  for (const m of members) {
-    let sum = 0;
-    for (const o of members) if (o !== m) sum += deltaE00(m.derived.lab, o.derived.lab);
-    if (sum < bestSum) {
-      best = m;
-      bestSum = sum;
-    }
-  }
-  return best;
+  const members = entries.filter((e) => group.families.includes(e.entry.taxonomy.family));
+  if (members.length === 0) throw new Error(`the ${group.group} chip holds no entry`);
+  // One definition, shared with the Finder's search point (`medoid.ts`, E-231).
+  return medoid(members);
 }
 
 /** The dot of a chip, as a sample: its medoid's hex and colour, remembered per group and list. */

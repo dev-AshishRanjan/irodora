@@ -49,7 +49,7 @@ import { allEntries, entryBySlug, type PublishedEntry } from './corpus';
 import { axisKey, bandKey } from './delta-readings';
 import { find, lexicon } from './finder';
 import type { Locale, MessageKey } from './i18n';
-import { capitalised, oklchLine } from './notation';
+import { nameLine, oklchLine } from './notation';
 import { HARMONY_KEYS } from './temperature';
 
 type T = (key: MessageKey) => string;
@@ -165,9 +165,7 @@ export interface PairReadout {
 }
 
 /** `08`'s name line: the kanji, then the romaji. */
-export function nameLine(entry: PublishedEntry): string {
-  return `${entry.entry.name.kanji} ${capitalised(entry.entry.name.romaji)}`;
-}
+export { nameLine };
 
 /** `08`'s meta line: the hex, then the record's OKLCh L and h. C is not printed (ADR-0155 D1). */
 export function pairMeta(entry: PublishedEntry): string {

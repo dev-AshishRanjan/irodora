@@ -44,7 +44,7 @@ import {
   type PhraseLexicon,
   type PhraseRegion,
 } from '@irodora/corpus';
-import { oklchToXyz, xyzToLab, type Triple } from '@irodora/color-spaces';
+import { oklchToXyz, xyzToLab, xyzToOklch, type Triple } from '@irodora/color-spaces';
 import { allEntries, corpus, sha256, type PublishedEntry } from './corpus';
 import {
   LEXICON_DIGEST,
@@ -91,6 +91,9 @@ export function hexNearest(query: string, limit: number): readonly NearestEntry[
 
 export type FinderKind = 'hex' | 'phrase' | 'name' | 'empty';
 
+/** A way to read a query: what `09`'s chips choose between (ADR-0160 D1). */
+export type Reading = Exclude<FinderKind, 'empty'>;
+
 export interface FinderResult {
   readonly kind: FinderKind;
   readonly entries: readonly PublishedEntry[];
@@ -106,6 +109,12 @@ export interface FinderResult {
    * cannot be replayed when the vocabulary moves.
    */
   readonly lexiconVersion?: string;
+  /**
+   * Set by `findAs` only: the text cannot be read the way it was asked to be — a forced hex that is
+   * no hex, a forced phrase with a word the vocabulary lacks. `find()` never sets it, because it reads
+   * each text the way it can.
+   */
+  readonly unreadable?: true;
 }
 
 let cachedLexicon: PhraseLexicon | null = null;
@@ -235,11 +244,28 @@ export function nearestByLab(lab: Triple, limit: number): readonly NearestEntry[
 export function find(query: string): FinderResult {
   const text = query.trim();
   if (text === '') return { kind: 'empty', entries: [] };
+  if (looksLikeHex(text)) return findAs(text, 'hex');
+  if (resolvePhrase(lexicon(), text) !== null) return findAs(text, 'phrase');
+  return findAs(text, 'name');
+}
 
-  // Through the engine, never re-implemented: hex → sRGB → XYZ → Lab, ranked by `hexNearest` —
-  // the Atlas's field's own route, so the two cannot disagree (F-246's review, M1; E-210).
-  const nearest = hexNearest(text, HEX_LIMIT);
-  if (nearest !== null) {
+/**
+ * Read a query the way a person chose (`09`'s chips, ADR-0158 D1). `find(q)` is
+ * `findAs(q, find(q).kind)` for every query, so the Atlas and Compare read what they read before.
+ *
+ * A chosen hex reads any three or six hex digits, with or without `#` — the chip is how a person says
+ * they meant the colour, so `beaded` and `ffffff` become hexes under it, which closes
+ * {@link looksLikeHex}'s stated cost. Text a reading cannot read comes back empty and `unreadable`.
+ */
+export function findAs(query: string, reading: Reading): FinderResult {
+  const text = query.trim();
+  if (text === '') return { kind: 'empty', entries: [] };
+
+  if (reading === 'hex') {
+    if (!HEX_ANY.test(text)) return { kind: 'hex', entries: [], unreadable: true };
+    // Through the engine, never re-implemented: hex → sRGB → XYZ → Lab, ranked by `nearestByLab` —
+    // the Atlas's field's own route, so the two cannot disagree (F-246's review, M1; E-210).
+    const nearest = nearestByLab(labOfHex(normaliseHex(text)), HEX_LIMIT);
     return {
       kind: 'hex',
       entries: nearest.map((n) => n.entry),
@@ -247,8 +273,9 @@ export function find(query: string): FinderResult {
     };
   }
 
-  const phrase = resolvePhrase(lexicon(), text);
-  if (phrase !== null) {
+  if (reading === 'phrase') {
+    const phrase = resolvePhrase(lexicon(), text);
+    if (phrase === null) return { kind: 'phrase', entries: [], unreadable: true };
     const entries = allEntries().filter((e) => matchesRegion(phrase.region, e.derived.oklch));
     return {
       kind: 'phrase',
@@ -260,6 +287,32 @@ export function find(query: string): FinderResult {
   }
 
   return { kind: 'name', entries: byName(text) };
+}
+
+/**
+ * A typed hex's own point in OKLCh, through the engine (`hexToXyz` → `xyzToOklch`) — or `null` when
+ * the text is no hex at all. `09`'s sliders show it (ADR-0158 D2).
+ */
+export function hexPoint(query: string): Triple | null {
+  const text = query.trim();
+  if (!HEX_ANY.test(text)) return null;
+  return xyzToOklch(hexToXyz(normaliseHex(text)));
+}
+
+/**
+ * The entries of a set ranked by ΔE00 from a point, through the one ranking route: the whole corpus
+ * ranked by {@link nearestByOklch}, narrowed to the set — the Atlas's form (ADR-0143 D1). The corpus
+ * itself is cut at `limit`; a named set is returned whole (ADR-0158 D3).
+ */
+export function rankedFrom(
+  point: Triple,
+  set: 'corpus' | readonly PublishedEntry[],
+  limit = Number.POSITIVE_INFINITY,
+): readonly NearestEntry[] {
+  const ranked = nearestByOklch(point, allEntries().length);
+  if (set === 'corpus') return ranked.slice(0, limit);
+  const members = new Set(set.map((e) => e.entry.slug));
+  return ranked.filter((n) => members.has(n.entry.entry.slug));
 }
 
 /**

@@ -9,7 +9,7 @@
  */
 
 import { allEntries, entryBySlug } from '../src/corpus';
-import { byName, find, HEX_LIMIT, lexicon } from '../src/finder';
+import { byName, find, findAs, hexPoint, HEX_LIMIT, lexicon, rankedFrom } from '../src/finder';
 
 const slugOf = (r: { entries: readonly { entry: { slug: string } }[] }): string[] =>
   r.entries.map((e) => e.entry.slug);
@@ -204,5 +204,72 @@ describe('name search covers every form (FR-47)', () => {
 
   it('returns nothing for a query that matches nothing, rather than everything', () => {
     expect(byName('zzzzzznotacolour')).toHaveLength(0);
+  });
+});
+
+describe('a chosen reading (F-250, ADR-0158 D1)', () => {
+  const QUERIES: readonly string[] = [
+    ...allEntries().flatMap((e) => [
+      e.derived.hex,
+      e.entry.name.kanji,
+      e.entry.name.kana,
+      e.entry.name.romaji,
+      e.entry.name.en,
+      e.entry.slug,
+    ]),
+    ...lexicon().terms.map((t) => t.term),
+    'dark muted green',
+    'muted green',
+    '#0af',
+    'zzqx',
+  ];
+
+  it('is find() itself when the reading is the one find() makes, for every query tried', () => {
+    for (const q of QUERIES) {
+      const f = find(q);
+      if (f.kind === 'empty') continue;
+      expect({ [q]: findAs(q, f.kind) }).toStrictEqual({ [q]: f });
+    }
+  });
+
+  it('reads a six-letter word as a hex when the hex is chosen, closing the stated cost', () => {
+    for (const word of ['beaded', 'facade', 'decade', 'accede', 'ffffff']) {
+      expect(find(word).kind).toBe('name');
+      const r = findAs(word, 'hex');
+      expect(r.kind).toBe('hex');
+      expect(r.entries).toHaveLength(HEX_LIMIT);
+      expect(r.unreadable).toBeUndefined();
+    }
+  });
+
+  it('says it cannot read a phrase with a word the vocabulary lacks, or a hex that is none', () => {
+    expect(findAs('dark sparkly green', 'phrase')).toStrictEqual({
+      kind: 'phrase',
+      entries: [],
+      unreadable: true,
+    });
+    expect(findAs('ai', 'hex')).toStrictEqual({ kind: 'hex', entries: [], unreadable: true });
+    // DECOY — find() never says so: it reads each text the way it can.
+    expect(find('dark sparkly green').unreadable).toBeUndefined();
+  });
+
+  it('puts a typed hex at its own OKLCh, through the engine, and a word at none', () => {
+    const p = hexPoint('#87817A');
+    expect(p).not.toBeNull();
+    expect(hexPoint('87817a')).toStrictEqual(p);
+    expect(hexPoint('ai')).toBeNull();
+  });
+
+  it('ranks a named set whole and the corpus to its limit, through one route', () => {
+    const point = allEntries()[0]!.derived.oklch as [number, number, number];
+    const all = rankedFrom(point, 'corpus');
+    expect(all).toHaveLength(allEntries().length);
+    expect(rankedFrom(point, 'corpus', HEX_LIMIT)).toStrictEqual(all.slice(0, HEX_LIMIT));
+    const greens = find('green').entries;
+    const ranked = rankedFrom(point, greens);
+    expect(ranked.map((r) => r.entry)).toHaveLength(greens.length);
+    expect(ranked.map((r) => r.entry.entry.slug)).toStrictEqual(
+      all.filter((r) => greens.includes(r.entry)).map((r) => r.entry.entry.slug),
+    );
   });
 });

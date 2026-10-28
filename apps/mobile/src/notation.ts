@@ -10,8 +10,18 @@
  */
 
 /** A romaji name as the mockups print it: its first letter capitalised — *Kumori-garasu*. */
+import type { PublishedEntry } from './corpus';
+
 export function capitalised(romaji: string): string {
   return romaji.charAt(0).toUpperCase() + romaji.slice(1);
+}
+
+/**
+ * An entry's name as `08` and `09` print it: its kanji, then its capitalised romaji. One line here,
+ * so the two pages cannot name one colour two ways (moved from `compare-readout.ts` by F-250).
+ */
+export function nameLine(entry: PublishedEntry): string {
+  return `${entry.entry.name.kanji} ${capitalised(entry.entry.name.romaji)}`;
 }
 
 /**
