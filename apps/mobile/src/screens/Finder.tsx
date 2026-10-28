@@ -146,7 +146,10 @@ export function Finder({
       <View style={{ paddingHorizontal: nativeSpacing.md }}>
         {/* `09.search`: the field and its clear, then the chips; md at the sides, lg under the chips. */}
         <Card level="1" radius="sm" padding="sm" testID="finder.search">
-          <View style={{ paddingHorizontal: nativeSpacing.sm, paddingBottom: nativeSpacing.md }}>
+          <View
+            testID="finder.search.body"
+            style={{ paddingHorizontal: nativeSpacing.sm, paddingBottom: nativeSpacing.md }}
+          >
             <SearchField
               bare
               label={t('finder.search')}
@@ -205,7 +208,10 @@ export function Finder({
         {/* The title → the card: drawn tighter than the scale, named `xs` (ADR-0161 D1). */}
         <View style={{ marginTop: nativeSpacing.xs }}>
           <Card level="1" radius="sm" padding="sm" testID="finder.sliders">
-            <View style={{ paddingTop: nativeSpacing.md, paddingBottom: nativeSpacing.sm }}>
+            <View
+              testID="finder.sliders.body"
+              style={{ paddingTop: nativeSpacing.md, paddingBottom: nativeSpacing.sm }}
+            >
               <Stack gap="md">
                 {AXES.map((axis, i) => (
                   <Slider
