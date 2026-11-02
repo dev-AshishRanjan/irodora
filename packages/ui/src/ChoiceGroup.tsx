@@ -384,6 +384,7 @@ function Pill({
   height,
   form = {},
   kanji,
+  testID,
 }: {
   readonly value: string;
   readonly label: string;
@@ -395,6 +396,8 @@ function Pill({
   readonly height: number;
   readonly form?: Pills;
   readonly kanji?: string | undefined;
+  /** `<group's id>.<value>`, and its dot `.dot`, as a segment's: how a sweep finds a pill (F-251). */
+  readonly testID?: string | undefined;
 }): React.JSX.Element {
   const { colors } = useTheme();
   const press = usePress();
@@ -419,6 +422,7 @@ function Pill({
       isDisabled={disabled}
       accessibilityLabel={kanji === undefined ? label : `${label} ${kanji}`}
       accessibilityState={{ selected: chosen, disabled }}
+      {...(testID === undefined ? {} : { testID })}
       // Drawn at the pill's height; the rest of the target is in the hit area (ADR-0114).
       hitSlop={hitArea(height, height)}
       style={{
@@ -436,7 +440,11 @@ function Pill({
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <SelectionDot visible={tone.dot} color={colors[tone.ink]} />
+      <SelectionDot
+        visible={tone.dot}
+        color={colors[tone.ink]}
+        {...(testID === undefined ? {} : { testID: `${testID}.dot` })}
+      />
       <Text size={size} color={tone.ink} script={script} numeric={numeric} numberOfLines={1}>
         {label}
       </Text>
@@ -630,6 +638,7 @@ export function ChoiceGroup<V extends string>({
               height={height}
               form={pills}
               kanji={o.kanji}
+              testID={testID === undefined ? undefined : `${testID}.${o.value}`}
             />
           ))}
         </HeroRadioGroup>

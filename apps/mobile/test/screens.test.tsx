@@ -193,7 +193,7 @@ import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import type { Mode, Theme } from '@irodora/design-tokens';
 import { deviceTheme } from '../src/appearance';
-import { deriveWeights, draftOf, toStoreWrite } from '../src/palette';
+import { deriveWeights, draftOf, SLOT_ROLES, toStoreWrite } from '../src/palette';
 import { BAND_HEIGHT } from '../src/palette-readout';
 import { equivalentsFor } from '../src/contemporary';
 import { PALETTE_ROLES } from '@irodora/corpus';
@@ -1214,6 +1214,98 @@ function finderLocators(): Readonly<Record<string, Locator>> {
       out[`09.results.result-${String(n)}.${line}`] = { by: 'testID', id: `${id}.${line}` };
   }
   out['09.results.result-1.oklch'] = { by: 'testID', id: 'finder.result.0.oklch' };
+  return out;
+}
+
+/** 10's first form-1 card and its first kasane, in the catalogue's order (ADR-0164 D1). */
+const STUDIO_BAND = 'studio.palette.curated:earth-and-clay';
+const STUDIO_LAYERS = 'studio.palette.curated:kasane-aki-no-tsuyu';
+
+/**
+ * 10's locators (F-251): the two cards 10 draws are the catalogue's first band and first kasane, each
+ * part by the screen's own id; the title by its words in each locale; the badges and tags by their
+ * places, so one missing is reported as itself. What 10.json binds to a real catalogue key, a glyph,
+ * the art and the generic parts are found from the record itself.
+ */
+function studioLocators(): Readonly<Record<string, Locator>> {
+  const out: Record<string, Locator> = {
+    '10.title': {
+      by: 'value',
+      text: (locale) =>
+        locale === 'ja'
+          ? message('ja', 'studio.title')
+          : `${message('en', 'studio.title')}${BILINGUAL_SEPARATOR}${japaneseRun('studio.title')}`,
+    },
+    '10.source.selected': { by: 'testID', id: 'studio.view.curated' },
+    '10.source.selected.dot': { by: 'testID', id: 'studio.view.curated.dot' },
+    '10.palette-1': { by: 'testID', id: STUDIO_BAND },
+    '10.palette-1.badges.sep': { by: 'testID', id: `${STUDIO_BAND}.badge.sep` },
+    '10.palette-1.badge-contrast': { by: 'testID', id: `${STUDIO_BAND}.badge.0` },
+    '10.palette-1.badge-cvd': { by: 'testID', id: `${STUDIO_BAND}.badge.1` },
+    '10.palette-2': { by: 'testID', id: STUDIO_LAYERS },
+    '10.palette-2.kind': { by: 'text', key: 'palettes.kind.curated' },
+    '10.palette-2.title': { by: 'testID', id: `${STUDIO_LAYERS}.title` },
+    '10.palette-2.tags.sep': { by: 'testID', id: `${STUDIO_LAYERS}.tag.sep` },
+    '10.palette-2.tag-layering': { by: 'testID', id: `${STUDIO_LAYERS}.tag.0` },
+    '10.palette-2.tag-provenance': { by: 'testID', id: `${STUDIO_LAYERS}.tag.1` },
+  };
+  for (const part of ['title', 'description', 'provenance'] as const)
+    out[`10.palette-1.${part}`] = { by: 'testID', id: `${STUDIO_BAND}.${part}` };
+  for (let n = 1; n <= 4; n += 1) {
+    for (const line of ['role', 'hex', 'name'] as const)
+      out[`10.palette-1.colour-${String(n)}.${line}`] = {
+        by: 'testID',
+        id: `${STUDIO_BAND}.column.${String(n - 1)}.${line}`,
+      };
+    out[`10.palette-2.swatch-${String(n)}.hex`] = {
+      by: 'testID',
+      id: `${STUDIO_LAYERS}.layer.${String(n - 1)}.hex`,
+    };
+  }
+  return out;
+}
+
+/**
+ * 16's locators (F-251): the slots, the matrix and the tray by the screen's own ids — a tray tile by
+ * its place on the page, the peeking tiles and the dividers by theirs — and the words 16 binds under
+ * other keys by the keys the screen reads (the type chips, Locked, Replace, the matrix's labels).
+ */
+function builderLocators(): Readonly<Record<string, Locator>> {
+  const out: Record<string, Locator> = {
+    '16.header-rule': { by: 'testID', id: APP_BAR_RULE_TEST_ID },
+    '16.name': { by: 'testID', id: 'builder.name' },
+    '16.name.field': { by: 'testID', id: 'builder.name.field' },
+    '16.name.kind.capsule': { by: 'text', key: 'palettes.type.contemporary' },
+    '16.name.kind.kasane': { by: 'text', key: 'palettes.type.kasane' },
+    '16.name.kind.editorial': { by: 'text', key: 'palettes.type.seasonal' },
+    '16.name.kind.capsule.selected': { by: 'testID', id: 'builder.type.contemporary.dot' },
+    '16.slots.slot-1.locked': { by: 'testID', id: 'builder.slot.anchor.locked' },
+    '16.matrix': { by: 'testID', id: 'builder.matrix' },
+    '16.matrix.title': { by: 'text', key: 'palettes.matrix.title' },
+    '16.matrix.contrast.label': { by: 'text', key: 'palettes.matrix.contrast' },
+    '16.matrix.contrast.pair': { by: 'text', key: 'palettes.matrix.pair' },
+    '16.matrix.harmony.label': { by: 'text', key: 'palettes.matrix.harmony' },
+    '16.matrix.separation.label': { by: 'text', key: 'palettes.matrix.separation' },
+    '16.tray': { by: 'testID', id: 'builder.tray' },
+    '16.tray.chip-1': { by: 'testID', id: 'builder.tray.peek.left' },
+    '16.tray.chip-9': { by: 'testID', id: 'builder.tray.peek.right' },
+    '16.tray.divider-left': { by: 'testID', id: 'builder.tray.divider.left' },
+    '16.tray.divider-right': { by: 'testID', id: 'builder.tray.divider.right' },
+  };
+  SLOT_ROLES.forEach((role, i) => {
+    const n = String(i + 1);
+    const id = `builder.slot.${role}`;
+    out[`16.slots.slot-${n}`] = { by: 'testID', id };
+    for (const part of ['heading', 'hex', 'name', 'role'] as const)
+      out[`16.slots.slot-${n}.${part}`] = { by: 'testID', id: `${id}.${part}` };
+    if (i > 0) out[`16.slots.slot-${n}.replace`] = { by: 'testID', id: `${id}.replace` };
+  });
+  ['contrast', 'harmony', 'separation'].forEach((key, i) => {
+    out[`16.matrix.rule-${String(i + 1)}`] = { by: 'testID', id: `builder.matrix.${key}.rule` };
+    out[`16.matrix.${key}.value`] = { by: 'testID', id: `builder.matrix.${key}.value` };
+  });
+  for (let n = 2; n <= 8; n += 1)
+    out[`16.tray.chip-${String(n)}`] = { by: 'testID', id: `builder.tray.tile.${String(n - 2)}` };
   return out;
 }
 
@@ -6327,6 +6419,49 @@ const ENROLLED: readonly Enrolled[] = [
     },
   },
   {
+    /*
+     * 10, THE PALETTE STUDIO (F-251), drawn as it is drawn: the curated palettes, a profile stored so
+     * Apply is live, every handler wired, under 01's tab bar (E4). 10's two cards are the catalogue's
+     * first band and first kasane; its sample palettes are E1.
+     */
+    surface: '10.screen',
+    root: 'studio.surface',
+    render: (theme) =>
+      draw(
+        <View testID="studio.surface">
+          <PaletteStudio store={fakeStore()} hasProfile {...STUDIO_HANDLERS} />
+          <AppTabBar
+            state={{ index: 1, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: studioLocators(),
+  },
+  {
+    /*
+     * 16, BUILDING A PALETTE (F-251): 16's draft — four slots, slot 1 locked, a type, a name — every
+     * handler wired, under 01's tab bar (E4).
+     */
+    surface: '16.screen',
+    root: 'builder.surface',
+    render: (theme) =>
+      draw(
+        <View testID="builder.surface">
+          <PaletteBuilder store={fakeStore()} initialDraft={BUILT} {...BUILDER_HANDLERS} />
+          <AppTabBar
+            state={{ index: 1, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: builderLocators(),
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -6527,6 +6662,8 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '07.screen',
         '08.screen',
         '09.screen',
+        '10.screen',
+        '16.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -6781,6 +6918,39 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '09.search.mode-hex',
       );
       // The art cannot be removed by id or words alone, so no decoy is written for it (F-249 M6).
+    });
+
+    it('10: the contrast badge, the third layer’s hex and the bullet between the tags are each found as themselves (F-251)', () => {
+      const { json, live } = drawnAs('10.screen');
+      expectOnly(
+        findingsFor('10.screen', without(json, `${STUDIO_BAND}.badge.0`), live),
+        '10.palette-1.badge-contrast',
+      );
+      expectOnly(
+        findingsFor('10.screen', without(json, `${STUDIO_LAYERS}.layer.2.hex`), live),
+        '10.palette-2.swatch-3.hex',
+      );
+      expectOnly(
+        findingsFor('10.screen', without(json, `${STUDIO_LAYERS}.tag.sep`), live),
+        '10.palette-2.tags.sep',
+      );
+      // The art cannot be removed by id or words alone, so no decoy is written for it (F-249 M6).
+    });
+
+    it('16: slot 4’s Replace, the fifth tile and the matrix’s separation are each found as themselves (F-251)', () => {
+      const { json, live } = drawnAs('16.screen');
+      expectOnly(
+        findingsFor('16.screen', without(json, 'builder.slot.accent.replace'), live),
+        '16.slots.slot-4.replace',
+      );
+      expectOnly(
+        findingsFor('16.screen', without(json, 'builder.tray.tile.4'), live),
+        '16.tray.chip-6',
+      );
+      expectOnly(
+        findingsFor('16.screen', without(json, 'builder.matrix.separation.value'), live),
+        '16.matrix.separation.value',
+      );
     });
 
     it('07: three Swaps are located by one word, so one fewer is reported (F-248’s review, M5)', () => {

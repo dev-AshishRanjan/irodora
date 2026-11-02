@@ -397,6 +397,32 @@ describe('ChoiceGroup’s pill form is 15’s CVD row, recomputed (F-240)', () =
     ]);
   });
 
+  it('gives each pill and the chosen one’s dot an id under the group’s, as a segment’s (F-251)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <ChoiceGroup
+          label="Type"
+          value="kasane"
+          options={[
+            { value: 'contemporary', label: 'Wardrobe Capsule' },
+            { value: 'kasane', label: 'Seasonal Kasane' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 20 }}
+          testID="type"
+        />
+      </ThemeProvider>,
+    );
+    expect(screen.getAllByTestId('type.contemporary').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('type.kasane.dot', { includeHiddenElements: true }).length).toBe(
+      1,
+    );
+    // DECOY: an unchosen pill draws no dot to find.
+    expect(
+      screen.queryAllByTestId('type.contemporary.dot', { includeHiddenElements: true }),
+    ).toHaveLength(0);
+  });
+
   it('DECOY — without a rest fill an unchosen pill is outlined, as 15 draws it', () => {
     render(
       <ThemeProvider theme="dark">

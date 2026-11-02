@@ -302,12 +302,14 @@ function SeparationBlock({
 
 interface TileProps {
   readonly entry: PublishedEntry;
+  /** Its place on the page, 0–6: how a sweep finds a drawn tile whatever the page holds. */
+  readonly index: number;
   readonly chosen: boolean;
   readonly onChoose: (slug: string) => void;
 }
 
 /** One tray tile (`16.tray.chip-n`): the colour whole, its kanji set down it (C8). */
-const Tile = memo(function Tile({ entry, chosen, onChoose }: TileProps): React.JSX.Element {
+const Tile = memo(function Tile({ entry, index, chosen, onChoose }: TileProps): React.JSX.Element {
   const sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
   return (
     <Swatch
@@ -322,7 +324,7 @@ const Tile = memo(function Tile({ entry, chosen, onChoose }: TileProps): React.J
       onPress={() => {
         onChoose(entry.entry.slug);
       }}
-      testID={`builder.tray.${entry.entry.slug}`}
+      testID={`builder.tray.tile.${String(index)}`}
     >
       <View
         pointerEvents="none"
@@ -687,10 +689,17 @@ export function PaletteBuilder({
 }
 
 /** A one-dp rule in `border`, as the matrix draws between its rows and the tray beside its chevrons. */
-function Rule({ vertical = false }: { readonly vertical?: boolean }): React.JSX.Element {
+function Rule({
+  vertical = false,
+  testID,
+}: {
+  readonly vertical?: boolean;
+  readonly testID?: string;
+}): React.JSX.Element {
   const { colors } = useTheme();
   return (
     <View
+      {...(testID === undefined ? {} : { testID })}
       style={
         vertical
           ? { width: 1, height: TILE_HEIGHT, backgroundColor: colors.border }
@@ -710,6 +719,7 @@ function Peek({
 }): React.JSX.Element {
   return (
     <View
+      testID={`builder.tray.peek.${side}`}
       style={{
         width: TRAY_PEEK,
         overflow: 'hidden',
@@ -756,7 +766,7 @@ function TrayRow({
   return (
     <Row gap="xs" align="center">
       <Peek entry={previous} side="left" />
-      <Rule vertical />
+      <Rule vertical testID="builder.tray.divider.left" />
       <IconButton
         name="chevron-left"
         label={t('palettes.previous')}
@@ -770,9 +780,10 @@ function TrayRow({
       />
       <View style={{ flex: 1 }}>
         <Row gap="xs" justify="between" align="center">
-          {tray.map((entry) => (
+          {tray.map((entry, index) => (
             <Tile
               key={entry.entry.slug}
+              index={index}
               entry={entry}
               chosen={entry.entry.slug === handSlug}
               onChoose={onChoose}
@@ -791,7 +802,7 @@ function TrayRow({
         }}
         testID="builder.tray.next"
       />
-      <Rule vertical />
+      <Rule vertical testID="builder.tray.divider.right" />
       <Peek entry={following} side="right" />
     </Row>
   );

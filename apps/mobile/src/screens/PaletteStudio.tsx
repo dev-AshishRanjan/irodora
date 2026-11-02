@@ -123,7 +123,7 @@ function Badges({
       {words.map((word, i) => (
         <Row key={word} gap="xs" align="center">
           {i === 0 ? null : (
-            <Text size="caption" color="foreground.2" {...HIDDEN}>
+            <Text size="caption" color="foreground.2" testID={`${testID}.sep`} {...HIDDEN}>
               •
             </Text>
           )}
@@ -256,10 +256,23 @@ const BandCard = memo(function BandCard({
                   style={{ flex: 1, alignItems: 'center', gap: nativeSpacing.xs }}
                   testID={`${id}.column.${String(n)}`}
                 >
-                  <Text size="caption" color="foreground.2" align="center" script={script}>
+                  <Text
+                    size="caption"
+                    color="foreground.2"
+                    align="center"
+                    script={script}
+                    testID={`${id}.column.${String(n)}.role`}
+                  >
                     {lines.role}
                   </Text>
-                  <Text size="caption" color="foreground" align="center" numeric selectable>
+                  <Text
+                    size="caption"
+                    color="foreground"
+                    align="center"
+                    numeric
+                    selectable
+                    testID={`${id}.column.${String(n)}.hex`}
+                  >
                     {lines.hex}
                   </Text>
                   <Text
@@ -268,6 +281,7 @@ const BandCard = memo(function BandCard({
                     align="center"
                     face="gothic"
                     script="japanese"
+                    testID={`${id}.column.${String(n)}.name`}
                   >
                     {lines.name}
                   </Text>
@@ -375,7 +389,14 @@ const LayerCard = memo(function LayerCard({
                     style={{ flexGrow: 1, justifyContent: 'flex-end', padding: nativeSpacing.xs }}
                     {...HIDDEN}
                   >
-                    <Text size="caption" weight={500} on={sample} numeric align="center">
+                    <Text
+                      size="caption"
+                      weight={500}
+                      on={sample}
+                      numeric
+                      align="center"
+                      testID={`${id}.layer.${String(i)}.hex`}
+                    >
                       {member.hex}
                     </Text>
                   </View>
