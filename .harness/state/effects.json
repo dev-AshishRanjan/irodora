@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-10-28",
+  "updated": "2026-11-02",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -944,7 +944,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:test",
+      "guard": "gate:test F-251: 16’s drafts carry a category; draftProblem names a one-layer kasane (tooFewLayers), and palette.test judges all 96 of 16’s draft shapes against parsePalette directly.",
       "memory": "memory/effects/the-palette-schema-now-runs-on-a-phone.md",
       "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it. SEEN ON A SCREEN, UNPLANNED (F-224 review): ColourDetail lists every palette containing the entry, so from 2026.09.3 the 28 entries that are kasane layers show kasane rows there, each labelled with the palette ROLE word — 夏影, a green layer of 夏野, reads \"夏野 · Neutral\". Nothing asserts it and the layer order is not shown. It is not wrong data, and the colour page is rebuilt to mockup 06 by F-247, which decides what that section becomes; recorded here so F-247 starts from it rather than discovering it. F-247 rebuilt the colour page to 06, which lists no palettes (ADR-0147): the page no longer reads them, so it left this link; the kasane note the link carried is answered — palettes are 10’s.",
       "confidence": 0.9,
@@ -3544,7 +3544,7 @@
         "packages/design-tokens"
       ],
       "severity": "medium",
-      "guard": "BOTH COMPONENTS ARE REGISTERED SUBJECTS, and `Strip` in its own right rather than through `Pair` — three members at unequal weights, which is the only arrangement in which a middle segment exists. `pair.test.tsx` asserts the shared edge in BOTH directions: no line and no corner where two samples meet, and a line on the three outer edges of each half, so a component that drew nothing at all would fail. The size floor is asserted from the manifest inputs rather than from 77, refuses to go under and does grow above, and the narrowest-phone case is computed from the well’s padding and the ring instead of a measured width. On the screens, `screens.test.tsx` asserts the pair precedes every figure in tree order, the strip’s widths equal `deriveWeights` and change when the palette does, and the Finder’s answer line holds one position across all four kinds of answer. Gate 8’s scope check is what forced the direct registration; gate 9 and the F-171 pairing rule cover the colours. F-249: Compare leaves Pair — 08 draws its samples apart (ADR-0154); Contemporary keeps Pair. screens.test’s F-151 describe now holds the samples apart with the seam between, both before every figure, and each at or above the floor at 320 dp. F-250: the Finder’s answer line left with ADR-0160 D7 (the chips say which question was answered); screens.test’s F-151 describe now holds the results heading in one place across the start, a hex, a phrase, a name and nothing found, and the thumbnail decoy moved to Compare’s chooser rows.",
+      "guard": "BOTH COMPONENTS ARE REGISTERED SUBJECTS, and `Strip` in its own right rather than through `Pair` — three members at unequal weights, which is the only arrangement in which a middle segment exists. `pair.test.tsx` asserts the shared edge in BOTH directions: no line and no corner where two samples meet, and a line on the three outer edges of each half, so a component that drew nothing at all would fail. The size floor is asserted from the manifest inputs rather than from 77, refuses to go under and does grow above, and the narrowest-phone case is computed from the well’s padding and the ring instead of a measured width. On the screens, `screens.test.tsx` asserts the pair precedes every figure in tree order, the strip’s widths equal `deriveWeights` and change when the palette does, and the Finder’s answer line holds one position across all four kinds of answer. Gate 8’s scope check is what forced the direct registration; gate 9 and the F-171 pairing rule cover the colours. F-249: Compare leaves Pair — 08 draws its samples apart (ADR-0154); Contemporary keeps Pair. screens.test’s F-151 describe now holds the samples apart with the seam between, both before every figure, and each at or above the floor at 320 dp. F-250: the Finder’s answer line left with ADR-0160 D7 (the chips say which question was answered); screens.test’s F-151 describe now holds the results heading in one place across the start, a hex, a phrase, a name and nothing found, and the thumbnail decoy moved to Compare’s chooser rows. F-251 (ADR-0162): Strip gains judged; 10’s band is shown at BAND_HEIGHT (judged={false}), the only declared opt-out (E-235); Pair and every judging surface keep the floor.",
       "memory": "memory/effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md",
       "rationale": "A COMPONENT REACHED ONLY THROUGH ANOTHER IS EXERCISED ONLY IN THE SHAPE ITS PARENT USES, and from outside that is indistinguishable from coverage. `Pair` became `Strip` with two members so the edge rule — no line and no corner where two samples meet — would have ONE home; `a11y-scope.mjs` then refused the build saying `Strip` was unreachable, which looked wrong because `Pair` is registered and renders it on every run. THE GATE WAS RIGHT FOR A BETTER REASON THAN IT GAVE: `Pair` renders two EQUAL members, which is the shape that cannot go wrong. Everything the component exists for lives in the others — unequal weights, a middle segment with a rounded corner on neither side, a member list that is not two — and none of it had a subject. \"It is rendered\" and \"its behaviour is rendered\" are different claims and only the first is one a registry can answer. THIS IS THE MIRROR OF EVERY BLIND SPOT RECORDED BEFORE IT: those were checkers that could not see their subject; here the checker is fine and the SUBJECT arrived in one shape out of many. THREE SMALLER THINGS CAME WITH IT. F-171’s pairing rule fired on the new component within minutes, on two good tokens in a combination gate 9 has never measured — a rule one feature old catching something that did not exist when it was written, and the fix (labels out of the well) is better design anyway. The FR-48 tabular check had only one direction, asserting that what is marked is selectable and never that a figure is marked, so a bare `4.23` with no prop rendered in proportional digits and passed everything. And the new check was VACUOUS on two screens of three, caught by its own non-vacuity assertion an hour after E-090 was written about that exact failure — one of the two legitimately so, because a palette draft with no CVD finding carries no numbers at all.",
       "confidence": 0.9,
@@ -6978,7 +6978,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways. F-249: atlas/compare leaves PLATFORM_HEADER — 08 draws its own bar; the decoy moved to atlas/find, still on the platform header. F-250: atlas/find leaves PLATFORM_HEADER — 09 draws its own bar; the decoy moved to atlas/palettes, still on the platform header.",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways. F-249: atlas/compare leaves PLATFORM_HEADER — 08 draws its own bar; the decoy moved to atlas/find, still on the platform header. F-250: atlas/find leaves PLATFORM_HEADER — 09 draws its own bar; the decoy moved to atlas/palettes, still on the platform header. F-251: atlas/palettes left PLATFORM_HEADER (10 and 16 draw their own bars); the stale-entry decoy moved to profile/measure, the longest-lived row.",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -9579,7 +9579,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/outfit-from-wear.test.ts: each slot takes the owned garment nearest the colour by ΔE00, ties by id whatever the wardrobe order, the top locked, an empty slot left empty, taken once (decoy: a second take is null), a second offer replacing the first. wear-states.test reads the Lab route’s source: it takes the hand-off once, in a state initialiser, and opens with labDraftFrom’s draft. F-257 carries a note.",
+      "guard": "apps/mobile/test/outfit-from-wear.test.ts: each slot takes the owned garment nearest the colour by ΔE00, ties by id whatever the wardrobe order, the top locked, an empty slot left empty, taken once (decoy: a second take is null), a second offer replacing the first. wear-states.test reads the Lab route’s source: it takes the hand-off once, in a state initialiser, and opens with labDraftFrom’s draft. F-257 carries a note. F-251: a second writer — 10’s Apply to Outfit Lab offers labHandOff(members) (anchor on top, a non-accent on the trousers, an accent on the shoes); palette-readout.test holds it over every palette.",
       "memory": "memory/effects/a-hand-off-the-receiving-screen-forgets-opens-it-empty.md",
       "rationale": "07’s save stores nothing: it hands the combination to the Lab, which opens with it. When F-257 rebuilds the Lab, a route that stops taking the hand-off makes the save open an empty Lab, and nothing on 07 fails."
     },
@@ -9871,7 +9871,7 @@
           "ref": "test"
         }
       ],
-      "guard": "packages/recommendation/test/outfit-score.test.ts: the harmony component is what it was before the export, against the old formula kept as an oracle; warmCoolRelation agrees with scoreOutfit’s harmony for all 14,280 ordered corpus pairs, every relation present; a warm pair and a warm–cool pair differ (decoy).",
+      "guard": "packages/recommendation/test/outfit-score.test.ts: the harmony component is what it was before the export, against the old formula kept as an oracle; warmCoolRelation agrees with scoreOutfit’s harmony for all 14,280 ordered corpus pairs, every relation present; a warm pair and a warm–cool pair differ (decoy). F-251: a new reader — 16’s Colour Harmony row; palette-readout.test holds the row to warmCoolRelation’s direction.",
       "memory": "memory/effects/one-pairs-temperature-is-one-measure-on-two-pages.md",
       "rationale": "The warm–cool relation was private to the harmony component. 08 prints a pair’s relation in 07’s words, so the measure was exported and harmony delegates to it: one definition for both pages, and a change to it moves 07, 08 and every outfit score together."
     },
@@ -9912,7 +9912,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/compare-states.test.tsx reads each handler’s own body in the route (decoys: a back that only pops, swapped targets, format=pdf on the glyph) and that the export reads pair and a writer’s own format and the Studio colours as a draft; export-subject.test writes the pair for every corpus colour in all six formats, a pair of one colour twice falling back; palette.test holds draftOf (A the anchor, B a neutral; an unknown slug no draft); verify-route-targets.",
+      "guard": "apps/mobile/test/compare-states.test.tsx reads each handler’s own body in the route (decoys: a back that only pops, swapped targets, format=pdf on the glyph) and that the export reads pair and a writer’s own format and the Studio colours as a draft; export-subject.test writes the pair for every corpus colour in all six formats, a pair of one colour twice falling back; palette.test holds draftOf (A the anchor, B a neutral; an unknown slug no draft); verify-route-targets. F-251: colours now opens 16 with A locked in slot 1 and B in slot 3 (palette.test); the export also reads palette and saved (E-237).",
       "memory": "memory/effects/a-drawn-action-is-a-route-and-a-parameter-another-screen-reads.md",
       "rationale": "Each of 08’s actions hands the pair to another screen in a query parameter. 18 (F-263) and 10/16 (F-251) are rebuilt later; a rebuild that renames a route or stops reading a parameter breaks 08’s actions with nothing on 08 failing."
     },
@@ -10152,6 +10152,257 @@
       "guard": "packages/ui/test/search-field.test.tsx: the bare form draws no fill and no outline, its touch the platform’s target; its clear is a named action with no selected state, drawn only with words (decoy: none on an empty field), its whole target inside the field on iOS and Android; the filled field unchanged (decoy). pill-selection.test: 09’s chips filled level 3 at rest with no edge to see, md corners, the chosen edged with its dot; without restFill a pill is outlined (decoy). The 09.screen sweep finds the clear and each chip (decoys). F-250’s review (S2): the bare form takes only touchAbove above its words and the rest below, and the Finder’s body reaches into the card’s inset so the field’s and the clear’s targets lie inside it — search-field.test per platform, and finder-fidelity.test against the body’s own padding.",
       "memory": "memory/effects/a-clear-is-an-action-and-is-drawn-only-with-something-to-clear.md",
       "rationale": "09 draws its field bare with a disc that clears it, and its chips filled where 15 outlines them. Rendering the clear as a toggle would announce a selected state that is not one; drawing it on an empty field offers an action with nothing to do; an outline on the bare field restyles 09."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-251",
+      "id": "E-234",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/palette-readout.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteBuilder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/export/subject.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/outfit/fromWear.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-readout.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-studio-fidelity.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-builder-fidelity.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "claims"
+        }
+      ],
+      "guard": "apps/mobile/test/palette-readout.test.ts over all 13 curated palettes and stored ones of both forms: the contrast pair against a hand-written table (anchor and first light by rank; none without a light — decoy), the ratio floored to one place and its threshold from the printed ratio (decoy: 4.46 prints 4.4, under AA), the separation against an independent loop over separationScore, approximate only on tritan, 100 only when it is 100 (a corpus pair in [99.5, 100) prints 99; rounding would print 100 — decoy); each card’s words the record’s, a personal palette never Irodora original (decoy: a curated palette passed off as personal loses its classification); the Lab hand-off (decoy: an accent second); the catalogue order; 16’s matrix and its Choose two colours; the words claim nothing (decoy). The fidelity tests recompute every drawn constant from 10.json and 16.json.",
+      "memory": "memory/effects/a-badge-is-the-engine-over-the-pair-its-words-name.md",
+      "rationale": "10 prints a contrast badge, a separation badge, a description, a provenance line and tags on every card, and 16 a three-row matrix; each figure is the engine’s over a pair or a set the words name, and each word the record’s. Drift here is a figure for the wrong pair, a threshold claimed by rounding, or a person’s palette presented as Irodora’s own — none of which any screen test would see."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-251",
+      "id": "E-235",
+      "severity": "high",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Pair.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/pair.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-studio-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/pair.test.tsx: judged={false} honours 60; the default floors the same 60 to 77 (decoy), and so does an explicit judged; Pair stays floored. palette-studio-states.test scans apps/mobile/src for judged={false} and finds it only on 10’s band, declared by ADR-0162 — a new opt-out fails until it is declared. screens.test: 10’s band is drawn at BAND_HEIGHT; Compare’s samples stay at or above the floor (ADR-0154’s describe).",
+      "memory": "memory/effects/a-strip-says-whether-it-is-judged.md",
+      "rationale": "ADR-0162 lets a strip shown for choosing drop ADR-0095’s floor. The prop is the hazard: a judging surface (Compare, a pair) that set judged={false} would draw a difference under 2° beside the figure that measures it, and every test would still pass."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-251",
+      "id": "E-236",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/palette.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteBuilder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/palette-readout.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/corpus/src/palette.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-studio-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/palette.test.ts: every draft shape 16 can make (96 — 16 slot subsets, named or not, three categories) judged against parsePalette directly, each problem sentence the shape’s, ranks contiguous in slot order and weights deriveWeights’; choose over every pair of slots × locked or not (a held colour moves; the slot’s own colour again empties it; a locked slot keeps its colour both ways); clearSlot, toggleLock, nextEmpty; draftOf locks A in slot 1 with B in slot 3; fitsSlots refuses a role held twice and every curated system. palette-studio-states.test: Edit is disabled with its reason for a palette the slots cannot hold (decoy); a locked slot draws no Replace; FR-35’s swap refuses a locked slot (decoy).",
+      "memory": "memory/effects/a-slot-holds-one-colour-and-a-lock-holds-it.md",
+      "rationale": "16 builds in four slots, one a role, with a lock and a category. A draft that lost a member reopening an old-Studio palette, a colour moved out of a locked slot, or a one-layer kasane saved would each be a palette the person did not make — and the schema catches only the last."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-251",
+      "id": "E-237",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/export/subject.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/profile/export.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/export-subject.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/palette-studio-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/export-subject.test.ts: palette exports a curated palette in rank order and saved a stored one by its id (decoy: no parameter exports the latest, which is the other one); a slug or id it does not hold exports nothing; an empty parameter is none; 08’s pair still wins; every corpus palette and every fixture stored palette writes in every format. palette-studio-states.test: the export route passes palette and saved; Export Tokens and the chooser address the palette by slug or id. compare-states.test holds the route’s literal.",
+      "memory": "memory/effects/an-export-address-names-the-palette-or-exports-nothing.md",
+      "rationale": "10’s Export Tokens and Export Selected open the export with palette or saved. If a rebuild of the export screen (F-263) stopped reading one, 10 would export the latest saved palette instead — a different palette under the one the person chose — and nothing on 10 would fail."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-251",
+      "id": "E-238",
+      "severity": "medium",
+      "scope": [
+        "packages",
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Button.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/ChoiceGroup.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/TextField.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Tategaki.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteBuilder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/button-forms.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/text-field.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/tategaki.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "packages/ui/test/button-forms.test.tsx: the strong fill in all four palettes, its ink STRONG_INK’s and at or above 4.5:1 on it (decoy: in Washi the dark ink is the fill itself); the surface levels unchanged (decoy). The manifest declares border.strong’s pairings (foreground on the dark palettes, accent.foreground on Washi), which gate 9 measures and generate-design-tokens --check holds. text-field.test: inside draws no label row, the label is the placeholder and the name; the drawn form’s height, outline and target (decoy: without a height the filled field). tategaki.test: one accessible node holding the whole name, a character with its marks on one line, the ink the sample takes (decoy). pill-selection.test: sm corners, the chosen filled and edged, ids under the group’s.",
+      "memory": "memory/effects/a-strong-fill-takes-the-ink-its-palette-declares.md",
+      "rationale": "10 fills its export bar in border.strong, a token that was decorative; in Washi it is the ink colour, so the ink must turn. 16 needs a field labelled inside, sm chips and kanji set top to bottom. A refactor that dropped the pairing would leave words on a fill gate 9 never measures; a Tategaki that announced per character would read a name as noise."
     }
   ]
 }

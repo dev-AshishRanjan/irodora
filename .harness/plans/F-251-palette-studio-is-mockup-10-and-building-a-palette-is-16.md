@@ -471,6 +471,24 @@ The platform header leaves: `headerShown: false`, and `PLATFORM_HEADER['atlas/pa
   route literal; cvd-mode's copy scan widened to F-251's CVD words. screen-insets re-captured the
   palette subjects only.
 - **The e2e anchor** for `/atlas/palettes` is `palettes.curated`.
+- **The art's height is not a constant:** the viewport gate refuses a 575 dp layout number, so the
+  leaves are drawn at 10's width and keep their own proportion, as 09's are.
+
+**After increments 5–8 (2026-11-02):**
+
+- **Enrolment** locates by the screens' own ids where 10 and 16 bind data or sample content (10's
+  two cards are the catalogue's first band and first kasane; a tray tile by its place on the page),
+  and by the keys the screens read where 16 binds words under other names; the bindings in the
+  inventories are left as F-220 wrote them. ChoiceGroup's pills gained `<group>.<value>` and `.dot`
+  ids, as segments have, so the chosen chip's dot is found. The plan's "tile 6's frame" decoy is the
+  fifth tile removed: the sweep counts elements, not a tile's frame.
+- **The fidelity tests recompute** every constant; three moved: `LAYER_HEIGHT` 62, `SLOT_SAMPLE` 35,
+  `CHEVRON_GLYPH` 16.5.
+- **The states test** also holds two seams: `judged={false}` appears only on 10's band (E-235), and
+  the export route reads `palette` and `saved` (E-237). palette-readout.test holds 16's harmony row to
+  `warmCoolRelation` (E-226).
+- **Effects:** E-234 to E-238 with their notes; E-024, E-091, E-164, E-219, E-226 and E-227's guards
+  say what F-251 changed.
 
 ---
 

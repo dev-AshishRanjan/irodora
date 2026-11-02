@@ -53,6 +53,8 @@ import {
   type ShownPalette,
 } from '../src/palette-readout';
 import { HARMONY_KEYS } from '../src/temperature';
+import { ruleSet } from '../src/rules';
+import { warmCoolRelation } from '@irodora/recommendation';
 import { contrastLine, separationLine } from '../src/wear';
 import { storedPalette } from './stored-palettes';
 
@@ -439,5 +441,23 @@ describe('the words', () => {
 
   it('DECOY — a planted “Verified” is found', () => {
     expect('Heian Verified').toMatch(BANNED);
+  });
+});
+
+describe('16’s harmony row reads warmCoolRelation (E-226)', () => {
+  it('prints the set’s relation in 07’s words, for a draft of every curated palette’s first four', () => {
+    for (const published of allPalettes()) {
+      const slugs = [...published.palette.colors]
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, SLOT_ROLES.length)
+        .map((m) => m.slug);
+      const draft: PaletteDraft = {
+        name: 'x',
+        members: slugs.map((slug, i) => ({ slug, role: SLOT_ROLES[i]! })),
+      };
+      const colours = slugs.map((s) => colorFor(entryBySlug(s)!.entry));
+      const direction = warmCoolRelation(colours, ruleSet()).direction;
+      expect(matrixRows(draft, tEn, 'latin')[1]!.value).toBe(en[HARMONY_KEYS[direction]]);
+    }
   });
 });

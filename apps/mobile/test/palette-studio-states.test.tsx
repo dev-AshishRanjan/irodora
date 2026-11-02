@@ -13,6 +13,8 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageTag: mockLanguageTag }],
 }));
 
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { TextInput } from 'react-native';
 import { ThemeProvider } from '@irodora/ui';
@@ -352,6 +354,40 @@ describe('16: the slots, the tray and the saves (ADR-0165)', () => {
     press('builder.cvd.swap.light');
     expect(screen.getByTestId('builder.slot.light.hex').props['children']).toBe(
       entryBySlug('usu-shiba')!.derived.hex,
+    );
+  });
+});
+
+/* ------------------------------------------------------------------------- the seams (E-235, E-237) */
+
+describe('the seams F-251’s effects name', () => {
+  /** Every source file under a directory, recursively. */
+  const sources = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+      d.isDirectory()
+        ? sources(join(dir, d.name))
+        : /\.tsx?$/u.test(d.name)
+          ? [join(dir, d.name)]
+          : [],
+    );
+
+  it('declares a strip not judged only on 10’s band, as ADR-0162 says (E-235)', () => {
+    const src = join(__dirname, '..', 'src');
+    const declared = sources(src)
+      .filter((f) => readFileSync(f, 'utf8').includes('judged={false}'))
+      .map((f) => relative(src, f).split(sep).join('/'));
+    expect(declared).toStrictEqual(['screens/PaletteStudio.tsx']);
+  });
+
+  it('the export route reads the palette and the saved id it is sent (E-237)', () => {
+    const route = readFileSync(
+      join(__dirname, '..', 'app', '(tabs)', 'profile', 'export.tsx'),
+      'utf8',
+    );
+    expect(route).toContain('first(params.palette)');
+    expect(route).toContain('first(params.saved)');
+    expect(route).toContain(
+      'exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair, palette, saved)',
     );
   });
 });
