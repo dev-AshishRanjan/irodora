@@ -66,7 +66,11 @@
         "border": "border.strong",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palettes.save",
@@ -94,7 +98,11 @@
         "h": 9
       },
       "tokens": {},
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "back",
       "illustration": null,
       "binding": "static:palettes.back",
@@ -218,7 +226,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "store:draft.palette.name",
@@ -274,7 +286,11 @@
         "border": "text.primary",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palette.kind.capsule",
@@ -305,7 +321,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palette.kind.kasane",
@@ -336,7 +356,11 @@
         "border": "border.subtle",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palette.kind.editorial",
@@ -614,7 +638,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 600,
         "tabular": true
       },
@@ -649,7 +673,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 600,
         "tabular": true
       },
@@ -1086,7 +1110,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 600,
         "tabular": true
       },
@@ -1121,7 +1145,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 600,
         "tabular": true
       },
@@ -1362,7 +1386,7 @@
       "tokens": {
         "bg": "level1",
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -1396,7 +1420,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 600
       },
       "icon": null,
@@ -1769,37 +1793,8 @@
       }
     },
     {
-      "id": "16.next-card",
-      "order": 55,
-      "parent": null,
-      "component": "ui:Card",
-      "box": {
-        "x": 81,
-        "y": 1057,
-        "w": 606,
-        "h": 13
-      },
-      "dp": {
-        "x": 40.5,
-        "y": 528.5,
-        "w": 303,
-        "h": 6.5
-      },
-      "tokens": {
-        "bg": "level1",
-        "border": "border.subtle",
-        "radius": "md"
-      },
-      "type": null,
-      "icon": null,
-      "illustration": null,
-      "binding": null,
-      "action": null,
-      "copy": null
-    },
-    {
       "id": "16.tray",
-      "order": 56,
+      "order": 55,
       "parent": null,
       "component": "new:CorpusTray",
       "box": {
@@ -1826,7 +1821,7 @@
     },
     {
       "id": "16.tray.chip-1",
-      "order": 57,
+      "order": 56,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -1844,7 +1839,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.0",
@@ -1856,7 +1855,7 @@
     },
     {
       "id": "16.tray.divider-left",
-      "order": 58,
+      "order": 57,
       "parent": "16.tray",
       "component": null,
       "box": {
@@ -1883,7 +1882,7 @@
     },
     {
       "id": "16.tray.chip-2",
-      "order": 59,
+      "order": 58,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -1901,7 +1900,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.1",
@@ -1913,7 +1916,7 @@
     },
     {
       "id": "16.tray.chip-3",
-      "order": 60,
+      "order": 59,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -1931,7 +1934,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.2",
@@ -1943,7 +1950,7 @@
     },
     {
       "id": "16.tray.chip-4",
-      "order": 61,
+      "order": 60,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -1961,7 +1968,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.3",
@@ -1973,7 +1984,7 @@
     },
     {
       "id": "16.tray.chip-5",
-      "order": 62,
+      "order": 61,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -1991,7 +2002,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.4",
@@ -2003,7 +2018,7 @@
     },
     {
       "id": "16.tray.chip-6",
-      "order": 63,
+      "order": 62,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -2022,7 +2037,11 @@
         "border": "text.primary",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.5",
@@ -2034,7 +2053,7 @@
     },
     {
       "id": "16.tray.chip-7",
-      "order": 64,
+      "order": 63,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -2052,7 +2071,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.6",
@@ -2064,7 +2087,7 @@
     },
     {
       "id": "16.tray.chip-8",
-      "order": 65,
+      "order": 64,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -2082,7 +2105,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.7",
@@ -2094,7 +2121,7 @@
     },
     {
       "id": "16.tray.divider-right",
-      "order": 66,
+      "order": 65,
       "parent": "16.tray",
       "component": null,
       "box": {
@@ -2121,7 +2148,7 @@
     },
     {
       "id": "16.tray.chip-9",
-      "order": 67,
+      "order": 66,
       "parent": "16.tray",
       "component": "new:CorpusChip",
       "box": {
@@ -2139,7 +2166,11 @@
       "tokens": {
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:tray.8",
@@ -2151,7 +2182,7 @@
     },
     {
       "id": "16.tray.previous",
-      "order": 68,
+      "order": 67,
       "parent": "16.tray",
       "component": "ui:Button",
       "box": {
@@ -2176,7 +2207,7 @@
     },
     {
       "id": "16.tray.next",
-      "order": 69,
+      "order": 68,
       "parent": "16.tray",
       "component": "ui:Button",
       "box": {
@@ -2201,7 +2232,7 @@
     },
     {
       "id": "16.actions",
-      "order": 70,
+      "order": 69,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -2226,7 +2257,7 @@
     },
     {
       "id": "16.create",
-      "order": 71,
+      "order": 70,
       "parent": "16.actions",
       "component": "ui:Button",
       "box": {
@@ -2245,7 +2276,11 @@
         "bg": "action.primary",
         "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "arrow-right",
       "illustration": null,
       "binding": "static:palettes.createAndSave",
@@ -2266,6 +2301,136 @@
         "w": 229,
         "h": 10
       }
+    },
+    {
+      "what": "presentation",
+      "note": "the top of a card under the matrix whose content no image draws (F-251; §2’s cut page)",
+      "box": {
+        "x": 81,
+        "y": 1057,
+        "w": 606,
+        "h": 13
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-1.heading: notation, not copy",
+      "box": {
+        "x": 101,
+        "y": 315,
+        "w": 238,
+        "h": 22
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-2.heading: notation, not copy",
+      "box": {
+        "x": 407,
+        "y": 316,
+        "w": 182,
+        "h": 22
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-3.heading: notation, not copy",
+      "box": {
+        "x": 100,
+        "y": 554,
+        "w": 149,
+        "h": 20
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-4.heading: notation, not copy",
+      "box": {
+        "x": 407,
+        "y": 553,
+        "w": 192,
+        "h": 22
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-1.role: notation, not copy",
+      "box": {
+        "x": 216,
+        "y": 488,
+        "w": 110,
+        "h": 18
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-2.role: notation, not copy",
+      "box": {
+        "x": 407,
+        "y": 488,
+        "w": 155,
+        "h": 19
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-3.role: notation, not copy",
+      "box": {
+        "x": 101,
+        "y": 726,
+        "w": 126,
+        "h": 18
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-4.role: notation, not copy",
+      "box": {
+        "x": 408,
+        "y": 726,
+        "w": 108,
+        "h": 19
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-2.replace: notation, not copy",
+      "box": {
+        "x": 576,
+        "y": 487,
+        "w": 95,
+        "h": 19
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-3.replace: notation, not copy",
+      "box": {
+        "x": 266,
+        "y": 726,
+        "w": 96,
+        "h": 19
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-4.replace: notation, not copy",
+      "box": {
+        "x": 576,
+        "y": 725,
+        "w": 96,
+        "h": 21
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around slot-1.locked: notation, not copy",
+      "box": {
+        "x": 102,
+        "y": 487,
+        "w": 103,
+        "h": 19
+      }
     }
   ],
   "departures": [
@@ -2278,6 +2443,31 @@
       "rule": "E2",
       "element": "16.matrix.separation.value",
       "why": "the computed separation score (FR-5) for the palette shown, printing 100 only when it is 100; a safety claim about people does not ship"
+    },
+    {
+      "rule": "E2",
+      "element": "16.matrix.harmony.value",
+      "why": "the colours’ warm–cool relation in 07’s words (FR-6, E-226); Tonal Kasane Complement names a relation no engine computes and claims a tradition (ADR-0164 D6)"
+    },
+    {
+      "rule": "E2",
+      "element": "16.name.kind.editorial",
+      "why": "Seasonal (the seasonal category): Editorial would present a person’s palette as editorial work (ADR-0067; ADR-0164 D7)"
+    },
+    {
+      "rule": "E1",
+      "element": "16.name.field",
+      "why": "the field holds the person’s name for the palette; 16’s Kyoto Autumn Linen Capsule, its slots’ names and hexes, and the tray’s tiles are sample content (ADR-0164)"
+    },
+    {
+      "rule": "E1",
+      "element": "16.tray.chip-6",
+      "why": "a tile is the colour whole: 16 darkens each tile’s lower half to hold its kanji, and a darkened part of a sample is not the colour (as 12’s woven texture, §4 E1)"
+    },
+    {
+      "rule": "E4",
+      "element": "16.slots.slot-1",
+      "why": "the empty draft and its empty slots, the edit state’s title and action, the save note, FR-35’s block and the tab bar are drawn by no mockup (ADR-0165)"
     }
   ],
   "conflicts": [

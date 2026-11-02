@@ -64,13 +64,20 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "plus",
       "illustration": null,
       "binding": "static:palettes.create",
-      "action": "navigate:/atlas/palettes/new",
+      "action": "navigate:/atlas/palettes?draft=new",
+      "raw": {
+        "cornerPx": 7.75
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -94,10 +101,14 @@
         "h": 10
       },
       "tokens": {},
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": "back",
       "illustration": null,
-      "binding": "static:atlas.back",
+      "binding": "static:tab.atlas",
       "action": "navigate:/atlas",
       "copy": {
         "shape": "label",
@@ -151,7 +162,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 600
       },
       "icon": null,
@@ -209,7 +220,7 @@
         "h": 24.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
       "type": null,
@@ -217,6 +228,9 @@
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#33383F"
+      },
       "copy": null
     },
     {
@@ -268,7 +282,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -302,7 +316,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -334,7 +348,7 @@
       "tokens": {
         "bg": "level1",
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -345,7 +359,7 @@
         "bg": "#1C2026"
       },
       "raw": {
-        "cornerPx": 20.5
+        "cornerPx": 15.2
       },
       "copy": null
     },
@@ -405,7 +419,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -439,7 +453,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -470,7 +484,7 @@
       },
       "tokens": {
         "keyline": "keyline",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -482,6 +496,9 @@
         "band2": "#E9E6DE",
         "band3": "#879098",
         "band4": "#A48164"
+      },
+      "raw": {
+        "cornerPx": 11
       },
       "copy": null
     },
@@ -507,7 +524,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -541,7 +558,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -575,7 +592,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -609,7 +626,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -643,7 +660,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400,
         "tabular": true
       },
@@ -678,7 +695,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400,
         "tabular": true
       },
@@ -713,7 +730,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400,
         "tabular": true
       },
@@ -748,7 +765,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400,
         "tabular": true
       },
@@ -923,7 +940,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -953,14 +970,21 @@
         "h": 19.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:palette.contrast",
       "action": null,
+      "measured": {
+        "bg": "#32363D"
+      },
       "copy": {
         "shape": "badge",
         "script": "mixed"
@@ -984,10 +1008,14 @@
         "h": 19.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "engine:palette.separation",
@@ -998,8 +1026,35 @@
       }
     },
     {
-      "id": "10.palette-1.apply",
+      "id": "10.palette-1.badges.sep",
       "order": 31,
+      "parent": "10.palette-1",
+      "component": null,
+      "box": {
+        "x": 254,
+        "y": 768,
+        "w": 5,
+        "h": 6
+      },
+      "dp": {
+        "x": 127,
+        "y": 384,
+        "w": 2.5,
+        "h": 3
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "10.palette-1.apply",
+      "order": 32,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -1016,13 +1071,20 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palettes.applyToLab",
-      "action": "navigate:/wardrobe/lab",
+      "action": "navigate:/wardrobe/outfit",
+      "raw": {
+        "cornerPx": 9
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1030,7 +1092,7 @@
     },
     {
       "id": "10.palette-1.export",
-      "order": 32,
+      "order": 33,
       "parent": "10.palette-1",
       "component": "ui:Button",
       "box": {
@@ -1047,13 +1109,17 @@
       },
       "tokens": {
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palettes.exportTokens",
-      "action": "navigate:/profile/export",
+      "action": "navigate:/profile/export?palette=",
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1061,7 +1127,7 @@
     },
     {
       "id": "10.palette-2",
-      "order": 33,
+      "order": 34,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1079,7 +1145,7 @@
       "tokens": {
         "bg": "level1",
         "border": "border.subtle",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -1093,7 +1159,7 @@
     },
     {
       "id": "10.palette-2.kind",
-      "order": 34,
+      "order": 35,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1113,7 +1179,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 400
       },
       "icon": null,
@@ -1127,7 +1193,7 @@
     },
     {
       "id": "10.palette-2.title",
-      "order": 35,
+      "order": 36,
       "parent": "10.palette-2",
       "component": "ui:Text",
       "box": {
@@ -1161,7 +1227,7 @@
     },
     {
       "id": "10.palette-2.swatch-1",
-      "order": 36,
+      "order": 37,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1178,18 +1244,21 @@
       },
       "tokens": {
         "keyline": "keyline",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "corpus:kasane.colours.0.hex",
       "action": null,
+      "raw": {
+        "cornerPx": 12
+      },
       "copy": null
     },
     {
       "id": "10.palette-2.swatch-2",
-      "order": 37,
+      "order": 38,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1206,21 +1275,18 @@
       },
       "tokens": {
         "keyline": "keyline",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "corpus:kasane.colours.1.hex",
       "action": null,
-      "raw": {
-        "cornerPx": 16
-      },
       "copy": null
     },
     {
       "id": "10.palette-2.swatch-3",
-      "order": 38,
+      "order": 39,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1237,7 +1303,7 @@
       },
       "tokens": {
         "keyline": "keyline",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -1248,7 +1314,7 @@
     },
     {
       "id": "10.palette-2.swatch-4",
-      "order": 39,
+      "order": 40,
       "parent": "10.palette-2",
       "component": "ui:Swatch",
       "box": {
@@ -1265,7 +1331,7 @@
       },
       "tokens": {
         "keyline": "keyline",
-        "radius": "md"
+        "radius": "sm"
       },
       "type": null,
       "icon": null,
@@ -1276,7 +1342,7 @@
     },
     {
       "id": "10.palette-2.swatch-1.hex",
-      "order": 40,
+      "order": 41,
       "parent": "10.palette-2.swatch-1",
       "component": "ui:Text",
       "box": {
@@ -1294,7 +1360,7 @@
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 500,
         "tabular": true
       },
@@ -1309,7 +1375,7 @@
     },
     {
       "id": "10.palette-2.swatch-2.hex",
-      "order": 41,
+      "order": 42,
       "parent": "10.palette-2.swatch-2",
       "component": "ui:Text",
       "box": {
@@ -1327,7 +1393,7 @@
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 500,
         "tabular": true
       },
@@ -1342,7 +1408,7 @@
     },
     {
       "id": "10.palette-2.swatch-3.hex",
-      "order": 42,
+      "order": 43,
       "parent": "10.palette-2.swatch-3",
       "component": "ui:Text",
       "box": {
@@ -1360,7 +1426,7 @@
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 500,
         "tabular": true
       },
@@ -1375,7 +1441,7 @@
     },
     {
       "id": "10.palette-2.swatch-4.hex",
-      "order": 43,
+      "order": 44,
       "parent": "10.palette-2.swatch-4",
       "component": "ui:Text",
       "box": {
@@ -1393,7 +1459,7 @@
       "tokens": {},
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "caption",
         "weight": 500,
         "tabular": true
       },
@@ -1408,7 +1474,7 @@
     },
     {
       "id": "10.palette-2.tag-layering",
-      "order": 44,
+      "order": 45,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1424,14 +1490,21 @@
         "h": 19
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:kasane.tags",
       "action": null,
+      "measured": {
+        "bg": "#31363D"
+      },
       "copy": {
         "shape": "badge",
         "script": "latin"
@@ -1439,7 +1512,7 @@
     },
     {
       "id": "10.palette-2.tag-provenance",
-      "order": 45,
+      "order": 46,
       "parent": "10.palette-2",
       "component": "ui:Chip",
       "box": {
@@ -1455,10 +1528,14 @@
         "h": 19
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "corpus:kasane.provenance",
@@ -1469,8 +1546,35 @@
       }
     },
     {
+      "id": "10.palette-2.tags.sep",
+      "order": 47,
+      "parent": "10.palette-2",
+      "component": null,
+      "box": {
+        "x": 377,
+        "y": 1196,
+        "w": 5,
+        "h": 5
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 598,
+        "w": 2.5,
+        "h": 2.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "10.export-bar",
-      "order": 46,
+      "order": 48,
       "parent": null,
       "component": "ui:ActionBar",
       "box": {
@@ -1497,7 +1601,7 @@
     },
     {
       "id": "10.export-bar.button",
-      "order": 47,
+      "order": 49,
       "parent": "10.export-bar",
       "component": "ui:Button",
       "box": {
@@ -1514,15 +1618,22 @@
       },
       "tokens": {
         "bg": "border.strong",
-        "radius": "md"
+        "radius": "sm"
       },
-      "type": null,
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
       "icon": null,
       "illustration": null,
       "binding": "static:palettes.exportSelected",
       "action": "navigate:/profile/export",
       "measured": {
         "bg": "#464F58"
+      },
+      "raw": {
+        "cornerPx": 11
       },
       "copy": {
         "shape": "label",
@@ -1540,13 +1651,78 @@
         "w": 259,
         "h": 25
       }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around column 1's role: notation, not copy",
+      "box": {
+        "x": 110,
+        "y": 601,
+        "w": 78,
+        "h": 21
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around column 2's role: notation, not copy",
+      "box": {
+        "x": 241,
+        "y": 601,
+        "w": 131,
+        "h": 22
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around column 3's role: notation, not copy",
+      "box": {
+        "x": 413,
+        "y": 601,
+        "w": 97,
+        "h": 21
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "square brackets around column 4's role: notation, not copy",
+      "box": {
+        "x": 548,
+        "y": 601,
+        "w": 142,
+        "h": 21
+      }
     }
   ],
   "departures": [
     {
       "rule": "E2",
       "element": "10.palette-1.badge-cvd",
-      "why": "the computed separation score (FR-5) for the palette shown; it prints 100 only when it is 100"
+      "why": "CVD ‹n›% Separation (Machado 2009): the floored worst separation over the palette’s pairs and three deficiencies at severity 1, with its model; it prints 100 only when it is 100 (ADR-0164 D3)"
+    },
+    {
+      "rule": "E2",
+      "element": "10.palette-1.badge-contrast",
+      "why": "WCAG ‹threshold› ‹floored ratio›:1 over the anchor and the first light member by rank; 10’s AA 8.4:1 is sample content (ADR-0164 D3)"
+    },
+    {
+      "rule": "E2",
+      "element": "10.palette-2.tag-layering",
+      "why": "Kasane-inspired Layering: Traditional Kasane Layering presents our curation as the Heian system (FR-23, C14; ADR-0164 D4)"
+    },
+    {
+      "rule": "E1",
+      "element": "10.palette-1.title",
+      "why": "every palette is the corpus’s or the person’s, ordered by category then slug; 10’s names, hexes, description and provenance lines are sample content, and Kasane no Irome: is dropped (ADR-0164)"
+    },
+    {
+      "rule": "E1",
+      "element": "10.palette-1.strip",
+      "why": "the band is every member in rank order at the record’s weights, the columns four a row under it; 10 draws four equal members (ADR-0164 D2)"
+    },
+    {
+      "rule": "E4",
+      "element": "10.export-bar.button",
+      "why": "Export Selected opens 03’s floating sheet to choose the palette (no card is drawn selected at rest); a personal card’s overflow, Apply disabled with its reason without a profile, and 00’s caption with no palettes of one’s own are drawn by no mockup (ADR-0165)"
     },
     {
       "rule": "E1",

@@ -73,7 +73,8 @@ describe('the defaults are the inventories’, recomputed', () => {
     const sm = samples.filter((e) => e.tokens?.['radius'] === 'sm').length;
     const md = samples.filter((e) => e.tokens?.['radius'] === 'md').length;
     // F-247 measured 06's hero: sm, 44 → 45. F-249 measured 08's two samples: sm, 45 → 47.
-    expect([sm, md]).toStrictEqual([47, 27]);
+    // F-251 measured 10's four kasane layers: sm, 47 → 51.
+    expect([sm, md]).toStrictEqual([51, 23]);
     const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} />);
     expect(sampleNode(tree)['borderRadius']).toBe(swatchCorner(SWATCH_SIZE, 'sm').sample);
   });
@@ -340,7 +341,8 @@ describe('the joined samples’ defaults are the inventories’, recomputed', ()
   it('STRIP_CORNER is the step most joined samples are bound to', () => {
     const md = strips.filter((e) => e.tokens?.['radius'] === 'md').length;
     const sm = strips.filter((e) => e.tokens?.['radius'] === 'sm').length;
-    expect([md, sm]).toStrictEqual([4, 1]);
+    // F-251 measured 10's band: sm, 4 → 3.
+    expect([md, sm]).toStrictEqual([3, 2]);
     expect(STRIP_CORNER).toBe(md > sm ? 'md' : 'sm');
   });
 

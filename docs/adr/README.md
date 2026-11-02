@@ -177,6 +177,11 @@ Two rules that matter more than the format:
 | [0159](0159-09s-figures-and-words-say-what-the-corpus-and-the-lexicon-hold.md) | 09's figures and words say what the corpus and the lexicon hold | Accepted |
 | [0160](0160-what-09s-controls-do-and-what-leaves-the-finder.md) | What 09's controls do, and what leaves the Finder | Accepted |
 | [0161](0161-09s-composition-its-art-and-its-result-cards.md) | 09's composition, its art and its result cards | Accepted |
+| [0162](0162-a-catalogue-shows-a-palette-and-a-pair-is-judged.md) | A catalogue shows a palette and a pair is judged — 10's band and 16's slots are drawn at their drawn size | Accepted |
+| [0163](0163-square-brackets-around-a-label-heading-role-or-button-are-notation.md) | Square brackets around a label, heading, role or button are notation | Accepted |
+| [0164](0164-10s-and-16s-figures-and-words-say-what-the-corpus-the-store-and-the-engine-hold.md) | 10's and 16's figures and words say what the corpus, the store and the engine hold | Accepted |
+| [0165](0165-what-10s-and-16s-controls-do-the-routes-states-and-what-leaves-the-studio.md) | What 10's and 16's controls do, the route's states, and what leaves the Studio | Accepted |
+| [0166](0166-10s-and-16s-composition-their-art-and-the-tray.md) | 10's and 16's composition, their art and the tray | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

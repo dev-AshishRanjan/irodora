@@ -45,7 +45,8 @@ describe('the defaults are the inventories’, recomputed', () => {
     // F-247 measured 06's three cards (readout, provenance, combinations): md, 66 → 69.
     // F-249 measured 08's three (the pair, the metrics, the access card): sm, 69 → 66.
     // F-250 measured 09's two (the query, the sliders): sm, 66 → 64.
-    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([64, 26, 4]);
+    // F-251 measured 10's two cards and 16's matrix: sm; 16's cut card is not design: 64 → 60.
+    expect([count('md'), count('sm'), count('lg')]).toStrictEqual([60, 29, 4]);
     expect(CARD_RADIUS).toBe('md');
     expect(CARD_RADIUS).not.toBe('lg');
   });
@@ -53,7 +54,8 @@ describe('the defaults are the inventories’, recomputed', () => {
   it('a filled level-1 card carries the edge; board 00’s levels 2 and 3 carry none', () => {
     const filled = cards.filter((e) => e.tokens?.['bg'] !== undefined);
     const edged = filled.filter((e) => e.tokens?.['border'] === 'border.subtle');
-    expect([edged.length, filled.length]).toStrictEqual([83, 90]);
+    // F-251: 16's cut card, filled and edged, is not design.
+    expect([edged.length, filled.length]).toStrictEqual([82, 89]);
     for (const level of ['level2', 'level3'])
       expect(
         cards.filter((e) => e.tokens?.['bg'] === level && e.tokens['border'] !== undefined),

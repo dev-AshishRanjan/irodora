@@ -907,12 +907,12 @@ Every commit passes **Tier 1** (ADR-0132):
   - four columns, where the corpus has 7–8 members.
 - **E2:**
   - *WCAG AA 8.4:1* → threshold words and the floored ratio;
-  - *CVD 100% Distinction* → *CVD ‹n›% Separation (Machado 2009)*;
+  - *CVD 100% Distinction* → *CVD ‹n›% Separation (Machado 2009)*; (claims-ok: quotes the drawn construction it replaces)
   - *Traditional Kasane Layering* → *Kasane-inspired Layering*;
   - *Heian Verified* → the classification label;
   - *11.4:1 (APCA Passed - AAA)* → ratio · Lc;
   - *Tonal Kasane Complement* → 07's warm–cool words;
-  - *100% Distinguishable across …* → `separationLine`;
+  - *100% Distinguishable across …* → `separationLine`; (claims-ok: quotes the drawn construction it replaces)
   - *Editorial* → *Seasonal*.
 - **E3:**
   - the chosen chip's and tile's marks;
@@ -1094,7 +1094,7 @@ The nine subjects from increment 4. `blank-panel` and `bare-zero` run on every s
 
 - **Names:** 静寂のニュートラル, *Kasane no Irome*, *Nureba-iro*, *Jet Slate*, *Shiro-neri*, *Raw Silk*, *Gin-nezumi*, *Silver Grey*, *Kuchiba*, *Decayed Leaf Ochre*, *Ai-nezumi*, *Indigo Grey*, 濡羽色, 白練, 銀鼠, 朽葉, 藍鼠, *Kyoto Autumn Linen Capsule*.
 - **Hexes:** `#1E2224`, `#E8E5DF`, `#8A929A`, `#A88468`, `#4E596B`, `#B58A63`, `#E1D9C6`, `#74323E`, `#5B6B78`.
-- **Figures and words:** `8.4:1`, `11.4:1`, *100% Distinction*, *Distinguishable*, *APCA Passed*, *Heian*, *Traditional Kasane*, *Tonal Kasane Complement*, *Editorial verified*, *Color Harmony*, `'Irodora' (/atlas/palettes)`, `[`.
+- **Figures and words:** `8.4:1`, `11.4:1`, *100% Distinction*, *Distinguishable*, *APCA Passed*, *Heian*, *Traditional Kasane*, *Tonal Kasane Complement*, *Editorial verified*, *Color Harmony*, `'Irodora' (/atlas/palettes)`, `[`. (claims-ok: lists the drawn words a test bans)
 
 The precondition is asserted: the fixture's own figures differ from these. *Quiet Neutrals* and *Autumn Dew* are corpus names and are **not** banned (stated). Decoy: a planted *Jet Slate* is found.
 
@@ -1232,6 +1232,30 @@ Declared in increment 0 (Appendix F). All three block release.
 - [Rockwell Automation documentation conventions](https://www.rockwellautomation.com/en-in/docs/factorytalk-data-explorer/4-05-00/user-guide-ditamap/page/read-me-first/conventions.html): UI labels written in square brackets in documentation prose (a notation).
 - [Balsamiq, annotation guidelines](https://balsamiq.com/learn/annotations/): wireframe annotations use their own delimiters. No source found brackets a shipped UI label.
 - arXiv 1904.11293, as cited by ADR-0154 (CIEDE2000's hairline-pair reference conditions). It was not re-read here.
+
+## Implementing session's decisions on this design
+
+**After increment 1 (2026-11-02), where the measurement moved the plan:**
+
+- **Every corner on both screens is `sm`** (corner fits: 10's cards 15.2 px, band 11, layers 12, buttons 9,
+  Create 7.75; 16's name card 10.5, slot 1 10.25, matrix 9, samples 7.75, field 10–10.5). F-220 had `md`
+  for 10's cards, band, layers and buttons and 16's matrix. The badges and tags are pills. The censuses
+  move: cards 64 → 60 `md` (16's cut card leaves too: filled and edged 83/90 → 82/89), samples 47 → 51
+  `sm` (10's four layers), joined samples 4 → 3 `md` (`STRIP_CORNER` stays `md`).
+- **Type:** the small type on both is `caption`; 10's title body 600, its Apply and Export body, the
+  export bar's button label; 16's title, field and tray kanji label, everything else caption (the hexes
+  and matrix title 600).
+- **Fills:** 10's chosen segment, badges and tags are level 3; 10's export button is `border.strong`.
+- **Two bullets** on 10 (the badges' and tags' separators), `text.secondary`.
+- **The tray's tiles are drawn whole** (the darkened lower half is not the colour; E1), one width.
+- **16's lower right art** is a basket weave in a circle; `sashiko` stands for it (ADR-0166 D7).
+- **16's cut card** is not design (presentation).
+- **Three of 10's container boxes** (the segmented control, Create, the band) stay as F-220 read them:
+  they feed shared medians read one way (ADR-0161 D8; F-282). `BAND_HEIGHT` is 60.
+- **Records:** ADR-0162 to ADR-0166 written from Appendices A–E with the census; R9 §2, §4, §8, §10, §11
+  and PRD §10 amended; OQ-23 closed; OQ-45 answered for 10 and 16; F-357 filed (07's separation is
+  rounded where 10 and 16 floor; 16 corpus pairs lie in [99.5, 100)). The plan's quotations of 10's
+  and 16's drawn safety constructions carry `claims-ok` markers.
 
 ---
 
