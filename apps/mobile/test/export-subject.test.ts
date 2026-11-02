@@ -16,12 +16,14 @@ import {
   colourSubject,
   COLOURS_SEPARATOR,
   combinationSubject,
+  curatedPaletteSubject,
   exportSubjectFor,
   pairSubject,
   paletteSubject,
 } from '../src/export/subject';
 import { deltaE00 } from '@irodora/color-difference';
-import { allEntries, CORPUS_LABEL } from '../src/corpus';
+import { allEntries, allPalettes, CORPUS_LABEL } from '../src/corpus';
+import { storedPalette } from './stored-palettes';
 import { ruleSet } from '../src/rules';
 import { RESTING_WEAR, shownColours, wearCombination } from '../src/wear';
 import { rankingContext } from '../src/wardrobe/coverage';
@@ -310,5 +312,98 @@ describe('the export route exports the pair 08 shows', () => {
     }
     expect(failures).toStrictEqual([]);
     expect(WRITERS.map((w) => w.format)).toContain('pdf');
+  });
+});
+
+/*
+ * 10'S PALETTES (F-251, ADR-0165 D2): *Export Tokens* opens the export with `palette` (a curated slug)
+ * or `saved` (a stored id). Every corpus palette and every fixture stored palette, in every format;
+ * a parameter that names nothing exports nothing; and the parameters' place among the others.
+ */
+describe('the export route exports the palette 10 shows', () => {
+  const STORED = [
+    PALETTE,
+    storedPalette(
+      'p-layers',
+      'Morning layers',
+      [
+        [SLUGS[0]!, 'anchor'],
+        [SLUGS[1]!, 'light'],
+      ],
+      'kasane',
+    ),
+  ];
+
+  it('exports a curated palette’s members in rank order, titled with its English name', () => {
+    for (const published of allPalettes()) {
+      const subject = exportSubjectFor(
+        undefined,
+        STORED,
+        undefined,
+        undefined,
+        published.palette.slug,
+      );
+      expect(subject).toStrictEqual(curatedPaletteSubject(published));
+      expect(subject?.title).toBe(published.palette.name.en);
+      expect(subject?.colours.map((c) => c.id)).toStrictEqual(
+        [...published.palette.colors].sort((a, b) => a.rank - b.rank).map((m) => m.slug),
+      );
+    }
+  });
+
+  it('exports a saved palette by its id, not the latest one', () => {
+    expect(
+      exportSubjectFor(undefined, STORED, undefined, undefined, undefined, PALETTE.id),
+    ).toStrictEqual(paletteSubject(PALETTE));
+    // DECOY: with no parameter the latest is exported, which is the other one.
+    expect(exportSubjectFor(undefined, STORED)?.title).toBe('Morning layers');
+  });
+
+  it('exports nothing for a palette or an id it does not hold, rather than another subject', () => {
+    const [entry] = allEntries();
+    expect(
+      exportSubjectFor(entry!.entry.slug, STORED, undefined, undefined, 'no-such-palette'),
+    ).toBeNull();
+    expect(
+      exportSubjectFor(entry!.entry.slug, STORED, undefined, undefined, undefined, 'no-such-id'),
+    ).toBeNull();
+    // An empty parameter is no parameter.
+    expect(exportSubjectFor(entry!.entry.slug, STORED, undefined, undefined, '', '')).toStrictEqual(
+      colourSubject(entry!),
+    );
+  });
+
+  it('lets 08’s pair win, as it is read first', () => {
+    const [a, b] = allEntries();
+    const pair = `${a!.entry.slug}${COLOURS_SEPARATOR}${b!.entry.slug}`;
+    expect(
+      exportSubjectFor(undefined, STORED, undefined, pair, 'quiet-neutrals', PALETTE.id),
+    ).toStrictEqual(pairSubject(a!, b!));
+  });
+
+  it('writes in every format, the PDF included, for every corpus palette and every stored one', () => {
+    const subjects = [
+      ...allPalettes().map((p) =>
+        exportSubjectFor(undefined, [], undefined, undefined, p.palette.slug),
+      ),
+      ...STORED.map((p) =>
+        exportSubjectFor(undefined, STORED, undefined, undefined, undefined, p.id),
+      ),
+    ];
+    const failures: string[] = [];
+    for (const subject of subjects) {
+      if (subject === null) {
+        failures.push('no subject');
+        continue;
+      }
+      for (const writer of WRITERS)
+        try {
+          writer.write(subject);
+        } catch (error) {
+          failures.push(`${subject.title} ${writer.format}: ${String(error)}`);
+        }
+    }
+    expect(failures).toStrictEqual([]);
+    expect(subjects).toHaveLength(15);
   });
 });

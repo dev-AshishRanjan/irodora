@@ -430,7 +430,25 @@ The platform header leaves: `headerShown: false`, and `PLATFORM_HEADER['atlas/pa
   touch kept at the platform's target by negative margins.
 - **`Tategaki`** advances each character by its em at the person's text size (not the Japanese line
   height, which would stack two characters 49 dp tall in a 56.5 dp tile), and exports
-  `tategakiReady` for a corpus test (increment 3).
+  `tategakiReady` for a corpus test (increment 3). It splits by a base character with its marks
+  (`tategakiCharacters`), so a combining voiced mark or a variation selector stays on its line.
+
+**After increment 3 (2026-11-02):**
+
+- **The contrast badge prints the ratio floored to ONE place** (10 draws *8.4:1*), and the threshold
+  from that printed ratio; ADR-0164's census lists two places, the precision it was computed at.
+- **A personal palette's card shows the colours it holds as stored** (the row's hex and a `Color`
+  from its XYZ, via the wardrobe's `colorOf`), its names from the bundle where the bundle holds the
+  slug; a curated card's members come from the bundle, and a member it does not hold is a corrupt
+  bundle and throws (gate 11 holds the invariant).
+- **The figures compute on the bundle's derived sRGB where it holds the entry**, as 08's do, so the
+  same pair prints the same ratio on 08, 10 and 16.
+- **`draftOf` locks the anchor**, as an optional `locked` field on the draft; `category` is optional
+  too, so every draft built before F-251 is unchanged. `reviewLineOf` takes any record's provenance,
+  and `reviewLine` delegates to it.
+- **The draft's 96 shapes** are judged against `parsePalette` directly; `tooFewLayers` is chosen only
+  for a named, anchored, one-layer kasane.
+- **Fonts:** 襲, 控 and 厳 joined the Noto Sans JP subset.
 
 ---
 

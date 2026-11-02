@@ -13,24 +13,37 @@
  * rule no test can state plainly.
  */
 
-import { CorpusError, parsePalette } from '@irodora/corpus';
+import { CorpusError, PALETTE_ROLES, parsePalette, type PaletteRole } from '@irodora/corpus';
 import {
   addMember,
+  choose,
+  clearSlot,
   deriveWeights,
   draftProblem,
   draftFrom,
+  draftFromStored,
   draftOf,
+  DRAFT_CATEGORIES,
   EMPTY_DRAFT,
+  fitsSlots,
+  inSlotOrder,
+  isLocked,
   moveMember,
+  nextEmpty,
   removeMember,
   rename,
+  setCategory,
   setRole,
+  slotOf,
+  SLOT_ROLES,
   toCorpusRecord,
+  toggleLock,
   toStoreWrite,
   validateDraft,
   type PaletteDraft,
 } from '../src/palette';
-import { allEntries, CORPUS_LABEL, entryBySlug } from '../src/corpus';
+import { allEntries, allPalettes, CORPUS_LABEL, entryBySlug } from '../src/corpus';
+import { storedPalette } from './stored-palettes';
 
 /** Real slugs from the pinned bundle. A draft may only hold published entries. */
 const [A, B, C] = allEntries().map((e) => e.entry.slug);
@@ -272,7 +285,12 @@ describe('a draft of the colours a route was opened with', () => {
         { slug: A, role: 'anchor' },
         { slug: B, role: 'neutral' },
       ],
+      // A, the colour the person came with, is fixed (F-251, ADR-0165).
+      locked: new Set(['anchor']),
     });
+    // 16's slots: A in slot 1, B in slot 3 — the neutral's.
+    expect(slotOf(draft!, SLOT_ROLES[0])).toBe(A);
+    expect(slotOf(draft!, SLOT_ROLES[2])).toBe(B);
     // Unnamed, so the Studio's save asks for a name before anything is stored (FR-49).
     expect(draftProblem(draft!, CONTEXT)).toBe('noName');
   });
@@ -283,4 +301,203 @@ describe('a draft of the colours a route was opened with', () => {
     // And a colour twice is one member, as a person tapping it twice gets.
     expect(draftOf([A!, A!])?.members).toHaveLength(1);
   });
+});
+
+/* ------------------------------------------------------------------ 16's slots (F-251) */
+
+const D = allEntries()[3]!.entry.slug;
+
+/** A draft holding these colours in these slots, and these slots locked. */
+const slotted = (
+  members: readonly (readonly [PaletteRole, string])[],
+  locked: readonly PaletteRole[] = [],
+): PaletteDraft => ({
+  name: 'Evening walk',
+  members: inSlotOrder(members.map(([role, slug]) => ({ role, slug }))),
+  locked: new Set(locked),
+});
+
+describe('16’s slots are the schema’s roles, one colour each (ADR-0165)', () => {
+  it('SLOT_ROLES is a permutation of the schema’s roles', () => {
+    expect([...SLOT_ROLES].sort()).toStrictEqual([...PALETTE_ROLES].sort());
+    // DECOY: a fifth role would not be one.
+    expect([...SLOT_ROLES, 'shadow'].sort()).not.toStrictEqual([...PALETTE_ROLES].sort());
+  });
+
+  it('a type chip names a category a person’s palette may take, never traditional (FR-23)', () => {
+    expect(DRAFT_CATEGORIES).toStrictEqual(['contemporary', 'kasane', 'seasonal']);
+    expect(DRAFT_CATEGORIES).not.toContain('traditional');
+  });
+});
+
+describe('choosing a colour, over every pair of slots, locked or not', () => {
+  for (const from of SLOT_ROLES)
+    for (const to of SLOT_ROLES)
+      for (const lock of ['none', 'from', 'to'] as const) {
+        const locked = lock === 'none' ? [] : [lock === 'from' ? from : to];
+        it(`${from} → ${to}, ${lock} locked`, () => {
+          const draft = slotted([[from, A!]], locked);
+          const after = choose(draft, to, A!);
+          if (isLocked(draft, to) || isLocked(draft, from)) {
+            // A locked slot keeps its colour: no replacement in, no move out.
+            expect(after).toBe(draft);
+          } else if (from === to) {
+            // The slot's own colour, chosen again, empties it.
+            expect(slotOf(after, to)).toBeNull();
+          } else {
+            // A colour another slot holds MOVES: the slot it left empties.
+            expect(slotOf(after, to)).toBe(A);
+            expect(slotOf(after, from)).toBeNull();
+          }
+          // Never two slots for one colour, and the members always in slot order.
+          expect(after.members.filter((m) => m.slug === A).length).toBeLessThanOrEqual(1);
+          expect(after.members).toStrictEqual(inSlotOrder(after.members));
+        });
+      }
+
+  it('fills an empty slot, replacing nothing else, in slot order', () => {
+    const after = choose(slotted([['accent', B!]]), 'anchor', A!);
+    expect(after.members).toStrictEqual([
+      { slug: A, role: 'anchor' },
+      { slug: B, role: 'accent' },
+    ]);
+  });
+
+  it('replaces the colour an unlocked slot held', () => {
+    const after = choose(slotted([['light', B!]]), 'light', C!);
+    expect(slotOf(after, 'light')).toBe(C);
+    expect(after.members.some((m) => m.slug === B)).toBe(false);
+  });
+});
+
+describe('clearing, locking and the slot in hand', () => {
+  it('clears a slot, and a locked one keeps its colour', () => {
+    expect(slotOf(clearSlot(slotted([['neutral', A!]]), 'neutral'), 'neutral')).toBeNull();
+    const locked = slotted([['neutral', A!]], ['neutral']);
+    expect(clearSlot(locked, 'neutral')).toBe(locked);
+  });
+
+  it('locks a filled slot and unlocks it again; an empty slot has nothing to fix', () => {
+    const draft = slotted([['anchor', A!]]);
+    const on = toggleLock(draft, 'anchor');
+    expect(isLocked(on, 'anchor')).toBe(true);
+    expect(isLocked(toggleLock(on, 'anchor'), 'anchor')).toBe(false);
+    expect(toggleLock(draft, 'light')).toBe(draft);
+  });
+
+  it('brings the next empty slot in hand, in slot order, wrapping', () => {
+    expect(nextEmpty(EMPTY_DRAFT)).toBe('anchor');
+    expect(nextEmpty(slotted([['anchor', A!]]), 'anchor')).toBe('light');
+    expect(
+      nextEmpty(
+        slotted([
+          ['light', B!],
+          ['neutral', C!],
+          ['accent', D],
+        ]),
+        'accent',
+      ),
+    ).toBe('anchor');
+    expect(
+      nextEmpty(
+        slotted([
+          ['anchor', A!],
+          ['light', B!],
+          ['neutral', C!],
+          ['accent', D],
+        ]),
+      ),
+    ).toBeNull();
+  });
+
+  it('opens 08’s pair with A locked in slot 1, so a choice cannot replace it (E-227)', () => {
+    const draft = draftOf([A!, B!])!;
+    expect(choose(draft, 'anchor', C!)).toBe(draft);
+    // B, in slot 3, is the person's to change.
+    expect(slotOf(choose(draft, 'neutral', C!), 'neutral')).toBe(C);
+  });
+});
+
+describe('a stored palette in the slots', () => {
+  it('fits when it holds one colour a role, and is reopened in slot order with its category', () => {
+    const stored = storedPalette(
+      'p-1',
+      'Evening walk',
+      [
+        [C!, 'accent'],
+        [A!, 'anchor'],
+      ],
+      'kasane',
+    );
+    expect(draftFromStored(stored)).toStrictEqual({
+      name: 'Evening walk',
+      category: 'kasane',
+      members: [
+        { slug: A, role: 'anchor' },
+        { slug: C, role: 'accent' },
+      ],
+    });
+  });
+
+  it('does not fit when a role holds two colours: four slots cannot show it without dropping one', () => {
+    const two = storedPalette('p-2', 'Two neutrals', [
+      [A!, 'anchor'],
+      [B!, 'neutral'],
+      [C!, 'neutral'],
+    ]);
+    expect(fitsSlots(two.members)).toBe(false);
+    expect(draftFromStored(two)).toBeNull();
+    // Every curated system holds seven or eight members: none fits.
+    const quiet = allPalettes().find((p) => p.palette.slug === 'quiet-neutrals')!;
+    expect(quiet.palette.colors.length).toBeGreaterThan(SLOT_ROLES.length);
+    expect(fitsSlots(quiet.palette.colors)).toBe(false);
+  });
+});
+
+describe('every draft shape 16 can make is judged by the schema (FR-49)', () => {
+  const SLUG_FOR: Record<PaletteRole, string> = { anchor: A!, light: B!, neutral: C!, accent: D };
+  const shapes = Array.from({ length: 2 ** SLOT_ROLES.length }, (_, mask) =>
+    SLOT_ROLES.filter((_, bit) => (mask & (1 << bit)) !== 0),
+  );
+
+  it('enumerates 96 shapes: 16 slot subsets, named or not, in three categories', () => {
+    expect(shapes.length * 2 * DRAFT_CATEGORIES.length).toBe(96);
+  });
+
+  for (const roles of shapes)
+    for (const name of ['', 'Evening walk'])
+      for (const category of DRAFT_CATEGORIES)
+        it(`[${roles.join(', ') || 'empty'}] ${name === '' ? 'unnamed' : 'named'} ${category}`, () => {
+          const draft = setCategory(
+            { ...slotted(roles.map((role) => [role, SLUG_FOR[role]] as const)), name },
+            category,
+          );
+          // The ORACLE calls the schema itself, not draftProblem's own path.
+          let parses = true;
+          try {
+            parsePalette(toCorpusRecord(draft, CONTEXT), 'oracle');
+          } catch (error) {
+            if (!(error instanceof CorpusError)) throw error;
+            parses = false;
+          }
+          const problem = draftProblem(draft, CONTEXT);
+          expect(problem === null).toBe(parses);
+          // The sentence chosen is the one the shape calls for.
+          if (roles.length === 0) expect(problem).toBe('empty');
+          else if (!roles.includes('anchor')) expect(problem).toBe('noAnchor');
+          else if (name === '') expect(problem).toBe('noName');
+          else if (category === 'kasane' && roles.length === 1)
+            expect(problem).toBe('tooFewLayers');
+          else expect(problem).toBeNull();
+          if (problem === null) {
+            const record = parsePalette(toCorpusRecord(draft, CONTEXT), 'oracle');
+            // Ranks contiguous in slot order; weights the ladder's; the category the chip's.
+            expect(record.colors.map((m) => m.role)).toStrictEqual(
+              SLOT_ROLES.filter((r) => roles.includes(r)),
+            );
+            expect(record.colors.map((m) => m.rank)).toStrictEqual(roles.map((_, i) => i + 1));
+            expect(record.colors.map((m) => m.weight)).toStrictEqual(deriveWeights(roles.length));
+            expect(record.category).toBe(category);
+          }
+        });
 });

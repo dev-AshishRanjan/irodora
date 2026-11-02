@@ -196,6 +196,36 @@ export const ja: Record<MessageKey, string> = {
   'studio.problem.noAnchor': '1つの色を「基準」にしてください。ほかの色はそれに合わせて選びます。',
   'studio.problem.noName': '保存するには、名前をつけてください。',
   'studio.problem.other': 'この配色はまだ保存できません。',
+  'studio.problem.tooFewLayers': '襲には2色以上が必要です。1色だけでは重ねになりません。',
+  // F-251 — 10's catalogue and 16's builder (ADR-0164): what palette-readout.ts prints.
+  'palettes.category.contemporary': '現代の配色',
+  'palettes.category.traditional': '伝統色の配色',
+  'palettes.category.seasonal': '季節の配色',
+  'palettes.category.kasane': '襲の配色',
+  'palettes.column.anchor': '基準',
+  'palettes.column.light': '明るい地',
+  'palettes.column.neutral': '中間色',
+  'palettes.column.accent': '控えめな差し色',
+  'palettes.slot.anchor': '基準／濃い地',
+  'palettes.slot.light': '明るい地',
+  'palettes.slot.neutral': '中間色',
+  'palettes.slot.accent': '控えめな差し色',
+  'palettes.type.contemporary': 'ワードローブ・カプセル',
+  'palettes.type.kasane': '季節の襲',
+  'palettes.type.seasonal': '季節',
+  'palettes.provenance': '出典：',
+  'palettes.builtFrom': 'この端末で作成、収録色',
+  'palettes.kind.curated': '厳選の配色',
+  'palettes.kind.personal': 'あなたの配色',
+  'palettes.layering': '襲に着想を得た重ね',
+  'palettes.madeHere': 'この端末であなたが作成',
+  'palettes.badge.wcag': 'WCAG',
+  'palettes.badge.cvd': '色覚',
+  'palettes.matrix.contrast': 'コントラスト比',
+  'palettes.matrix.pair': '（スロット1と2）',
+  'palettes.matrix.harmony': '色の調和',
+  'palettes.matrix.separation': '色覚での識別',
+  'palettes.chooseTwo': '色を2つ選んでください',
   // F-021 — Colour Finder (FR-47).
   // 09's own run (F-250, ADR-0159 D5).
   'finder.title': '検索',
@@ -964,6 +994,8 @@ export const NOTATION_KEYS: readonly MessageKey[] = [
   // rule improved the copy rather than being worked around.
   'lens.space.srgb',
   'lens.space.displayP3',
+  // F-251. The standard 10's contrast badge names: a symbol, as 'sRGB' is.
+  'palettes.badge.wcag',
 ];
 
 /**

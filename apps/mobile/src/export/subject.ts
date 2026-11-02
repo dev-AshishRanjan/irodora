@@ -16,7 +16,13 @@
  * the file, made by the layer least able to know.
  */
 
-import { CORPUS_LABEL, entryBySlug, type PublishedEntry } from '../corpus';
+import {
+  allPalettes,
+  CORPUS_LABEL,
+  entryBySlug,
+  type PublishedEntry,
+  type PublishedPalette,
+} from '../corpus';
 import { deltaE00 } from '@irodora/color-difference';
 import { ENGINE_VERSION } from '@irodora/color-spaces';
 import { ruleSet } from '../rules';
@@ -127,6 +133,24 @@ export function pairSubject(a: PublishedEntry, b: PublishedEntry): ExportSubject
   };
 }
 
+/**
+ * A curated palette, ready to export (F-251, ADR-0165 D2: `10`'s *Export Tokens*): its members in rank
+ * order, titled with its English name, as a stored palette's is.
+ */
+export function curatedPaletteSubject(published: PublishedPalette): ExportSubject {
+  const { palette } = published;
+  return {
+    title: palette.name.en,
+    envelope: envelope(),
+    colours: [...palette.colors]
+      .sort((a, b) => a.rank - b.rank)
+      .flatMap((m) => {
+        const entry = entryBySlug(m.slug);
+        return entry === null ? [] : [corpusColour(entry)];
+      }),
+  };
+}
+
 /** The separator between the slugs of the export route's `colours` and `pair` parameters. */
 export const COLOURS_SEPARATOR = ',';
 
@@ -153,6 +177,8 @@ export function exportSubjectFor(
   palettes: readonly StoredPalette[],
   colours?: string,
   pair?: string,
+  palette?: string,
+  saved?: string,
 ): ExportSubject | null {
   // 08's pair first (F-249): exactly two different corpus colours, or nothing — never a guess. A pair
   // the route was given and cannot read exports nothing rather than another subject (review, M2).
@@ -162,6 +188,17 @@ export function exportSubjectFor(
     return two?.length === 2 && a !== undefined && b !== undefined && a.entry.slug !== b.entry.slug
       ? pairSubject(a, b)
       : null;
+  }
+  // 10's palettes (F-251, ADR-0165 D2), by the same rule: a curated palette by its slug, a saved one
+  // by its id, or nothing — a palette the route names and this device does not hold is not exported
+  // as some other subject.
+  if (palette !== undefined && palette !== '') {
+    const found = allPalettes().find((p) => p.palette.slug === palette);
+    return found === undefined ? null : curatedPaletteSubject(found);
+  }
+  if (saved !== undefined && saved !== '') {
+    const found = palettes.find((p) => p.id === saved);
+    return found === undefined ? null : paletteSubject(found);
   }
   const combination = combinationOf(colours);
   if (combination !== null) return combinationSubject(combination);

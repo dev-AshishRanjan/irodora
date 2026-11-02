@@ -30,6 +30,7 @@ import {
   type ReadoutPart,
   type TableRow,
 } from '@irodora/ui';
+import type { RecordProvenance } from '@irodora/corpus';
 import type { OutfitPiece } from '@irodora/recommendation';
 import type { StoredGarment } from '@irodora/store';
 import { seasonLine } from './atlas';
@@ -276,7 +277,16 @@ export function provenanceBody(entry: PublishedEntry, t: T): string {
  * when (F-084) — after the bold *Editorial Review*. Never *Verified*: the words say what was done.
  */
 export function reviewLine(entry: PublishedEntry, t: T, script: Script): string {
-  const { reviewIndependence, verifiedAt } = entry.entry.provenance;
+  return reviewLineOf(entry.entry.provenance, t, script);
+}
+
+/** {@link reviewLine} over any record's provenance: a palette's, as `10` prints it (F-251). */
+export function reviewLineOf(
+  provenance: Pick<RecordProvenance, 'reviewIndependence' | 'verifiedAt'>,
+  t: T,
+  script: Script,
+): string {
+  const { reviewIndependence, verifiedAt } = provenance;
   const who =
     reviewIndependence === null
       ? t('detail.notRecorded')

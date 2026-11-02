@@ -102,6 +102,7 @@ const PROBLEM_KEYS = {
   empty: 'studio.problem.empty',
   noAnchor: 'studio.problem.noAnchor',
   noName: 'studio.problem.noName',
+  tooFewLayers: 'studio.problem.tooFewLayers',
   other: 'studio.problem.other',
 } as const satisfies Record<DraftProblem, MessageKey>;
 

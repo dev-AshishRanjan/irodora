@@ -21,6 +21,16 @@
  * derived value is ever recomputed
  * ([ADR-0046](../../../docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md)).
  *
+ * ## The slots (F-251, ADR-0165)
+ *
+ * `16` builds a palette in four slots, one a role, in the order it draws them: {@link SLOT_ROLES}. A
+ * draft built there holds at most one colour a role, its members kept in slot order, so rank is slot
+ * order among the filled slots and the weights are `deriveWeights`'s. Choosing a colour another slot
+ * holds MOVES it — that is how FR-49's reordering survives without *Move up* and *Move down* — and a
+ * locked slot keeps its colour: it refuses a move out and a replacement in. The draft also carries
+ * the category its type chip names (`contemporary`, `kasane` or `seasonal`; a person's palette is
+ * never `traditional`, FR-23). Both are optional, so a draft built the old way is unchanged.
+ *
  * ## What this module is NOT
  *
  * It computes no colour maths. Not one conversion, not one difference. Members are corpus
@@ -31,7 +41,9 @@ import {
   CorpusError,
   DEVICE_LOCAL_AUTHOR_ID,
   DEVICE_LOCAL_SOURCE_ID,
+  KASANE_MIN_LAYERS,
   parsePalette,
+  PALETTE_ROLES,
   type CorpusPalette,
   type PaletteRole,
 } from '@irodora/corpus';
@@ -58,14 +70,108 @@ export interface DraftMember {
   readonly role: PaletteRole;
 }
 
+/** The categories a person's palette may take: `16`'s three type chips (ADR-0164 D7). */
+export const DRAFT_CATEGORIES = ['contemporary', 'kasane', 'seasonal'] as const;
+export type DraftCategory = (typeof DRAFT_CATEGORIES)[number];
+
+/** `16`'s slots, in the order it draws them: one colour a role (ADR-0165). */
+export const SLOT_ROLES = [
+  'anchor',
+  'light',
+  'neutral',
+  'accent',
+] as const satisfies readonly PaletteRole[];
+
 export interface PaletteDraft {
   /** What the person typed. One name, in one language — see `toCorpusRecord`. */
   readonly name: string;
   /** In the order the person put them. Position is rank; rank is weight. */
   readonly members: readonly DraftMember[];
+  /** The type chip's category. `contemporary` when absent, as every palette built before F-251. */
+  readonly category?: DraftCategory;
+  /** The slots whose colour is fixed: it neither moves out nor is replaced. */
+  readonly locked?: ReadonlySet<PaletteRole>;
 }
 
 export const EMPTY_DRAFT: PaletteDraft = { name: '', members: [] };
+
+/** The draft's category: its type chip's, or `contemporary`. */
+export function categoryOf(draft: PaletteDraft): DraftCategory {
+  return draft.category ?? 'contemporary';
+}
+
+/** Whether a slot's colour is fixed. */
+export function isLocked(draft: PaletteDraft, role: PaletteRole): boolean {
+  return draft.locked?.has(role) ?? false;
+}
+
+/** The colour in a slot, or `null` when it is empty. */
+export function slotOf(draft: PaletteDraft, role: PaletteRole): string | null {
+  return draft.members.find((m) => m.role === role)?.slug ?? null;
+}
+
+/** The members in slot order: rank is a filled slot's place among the filled ones. */
+export function inSlotOrder(members: readonly DraftMember[]): readonly DraftMember[] {
+  return [...members].sort((a, b) => SLOT_ROLES.indexOf(a.role) - SLOT_ROLES.indexOf(b.role));
+}
+
+/** Whether these members fit `16`'s slots: at most one colour a role. */
+export function fitsSlots(members: readonly { readonly role: string }[]): boolean {
+  const roles = members.map((m) => m.role);
+  return (
+    roles.every((r) => (PALETTE_ROLES as readonly string[]).includes(r)) &&
+    new Set(roles).size === roles.length
+  );
+}
+
+/**
+ * Put `slug` in `role`'s slot (ADR-0165).
+ *
+ * - A colour another slot holds is MOVED: the slot it left empties.
+ * - The colour the slot already holds, chosen again, empties it.
+ * - A locked slot keeps its colour: a replacement in it, or a move out of it, returns the draft as
+ *   it was.
+ */
+export function choose(draft: PaletteDraft, role: PaletteRole, slug: string): PaletteDraft {
+  if (isLocked(draft, role)) return draft;
+  const holder = draft.members.find((m) => m.slug === slug);
+  if (holder?.role === role) return clearSlot(draft, role);
+  if (holder !== undefined && isLocked(draft, holder.role)) return draft;
+  const others = draft.members.filter((m) => m.slug !== slug && m.role !== role);
+  return { ...draft, members: inSlotOrder([...others, { slug, role }]) };
+}
+
+/** Empty a slot. A locked slot keeps its colour. */
+export function clearSlot(draft: PaletteDraft, role: PaletteRole): PaletteDraft {
+  if (isLocked(draft, role)) return draft;
+  return { ...draft, members: draft.members.filter((m) => m.role !== role) };
+}
+
+/** Lock a filled slot, or unlock a locked one. An empty slot has nothing to fix. */
+export function toggleLock(draft: PaletteDraft, role: PaletteRole): PaletteDraft {
+  const locked = new Set(draft.locked);
+  if (locked.has(role)) locked.delete(role);
+  else if (slotOf(draft, role) !== null) locked.add(role);
+  else return draft;
+  return { ...draft, locked };
+}
+
+export function setCategory(draft: PaletteDraft, category: DraftCategory): PaletteDraft {
+  return { ...draft, category };
+}
+
+/**
+ * The slot that comes in hand next: the first empty one after `after` in slot order, wrapping, or
+ * the first empty one when `after` is not given. `null` when every slot is filled.
+ */
+export function nextEmpty(draft: PaletteDraft, after?: PaletteRole): PaletteRole | null {
+  const start = after === undefined ? 0 : SLOT_ROLES.indexOf(after) + 1;
+  for (let i = 0; i < SLOT_ROLES.length; i += 1) {
+    const role = SLOT_ROLES[(start + i) % SLOT_ROLES.length];
+    if (role !== undefined && slotOf(draft, role) === null) return role;
+  }
+  return null;
+}
 
 /**
  * The role a colour takes when it is added.
@@ -96,7 +202,9 @@ export function addMember(draft: PaletteDraft, slug: string): PaletteDraft {
  */
 export function draftOf(slugs: readonly string[]): PaletteDraft | null {
   if (slugs.length === 0 || slugs.some((s) => entryBySlug(s) === null)) return null;
-  return slugs.reduce(addMember, EMPTY_DRAFT);
+  // The colour the person came with is fixed, as 13 opens with its top locked (ADR-0152 D5): A is
+  // the anchor, in slot 1, locked (ADR-0165).
+  return { ...slugs.reduce(addMember, EMPTY_DRAFT), locked: new Set<PaletteRole>(['anchor']) };
 }
 
 export function removeMember(draft: PaletteDraft, slug: string): PaletteDraft {
@@ -199,7 +307,7 @@ export function toCorpusRecord(draft: PaletteDraft, context: SaveContext): unkno
     // ours. Its LABEL ("Irodora original") is never rendered for a palette somebody else made;
     // the Studio shows where it came from in its own words.
     classification: 'editorial',
-    category: 'contemporary',
+    category: categoryOf(draft),
     colors: draft.members.map((m, i) => ({
       slug: m.slug,
       role: m.role,
@@ -256,7 +364,7 @@ export function validateDraft(draft: PaletteDraft, context: SaveContext): Corpus
 }
 
 /** Which sentence to show when the schema refuses a draft. */
-export type DraftProblem = 'empty' | 'noAnchor' | 'noName' | 'other';
+export type DraftProblem = 'empty' | 'noAnchor' | 'noName' | 'tooFewLayers' | 'other';
 
 /**
  * Why this draft cannot be saved — or `null` if it can.
@@ -282,6 +390,9 @@ export function draftProblem(draft: PaletteDraft, context: SaveContext): DraftPr
     if (draft.members.length === 0) return 'empty';
     if (!draft.members.some((m) => m.role === 'anchor')) return 'noAnchor';
     if (draft.name.trim() === '') return 'noName';
+    // The schema's kasane rule: a single colour is not a layering (`checkKasane`).
+    if (categoryOf(draft) === 'kasane' && draft.members.length < KASANE_MIN_LAYERS)
+      return 'tooFewLayers';
     return 'other';
   }
 }
@@ -343,9 +454,28 @@ export function toStoreWrite(
     nameEn: draft.name,
     nameJa: draft.name,
     classification: 'editorial',
-    category: 'contemporary',
+    category: categoryOf(draft),
     versionId: CORPUS_LABEL,
     members,
+  };
+}
+
+/**
+ * A stored palette as `16`'s draft, to edit — or `null` when it does not fit the slots: a palette
+ * built before F-251 may hold several colours in one role, which four slots cannot show without
+ * dropping one (ADR-0165: *Edit* is then disabled with its reason).
+ */
+export function draftFromStored(stored: StoredPalette): PaletteDraft | null {
+  if (!fitsSlots(stored.members)) return null;
+  const category = (DRAFT_CATEGORIES as readonly string[]).includes(stored.category)
+    ? (stored.category as DraftCategory)
+    : 'contemporary';
+  return {
+    name: stored.nameEn,
+    category,
+    members: inSlotOrder(
+      stored.members.map((m) => ({ slug: m.slug, role: m.role as PaletteRole })),
+    ),
   };
 }
 
