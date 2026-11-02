@@ -366,6 +366,37 @@ describe('ChoiceGroup’s pill form is 15’s CVD row, recomputed (F-240)', () =
     ]);
   });
 
+  it('draws 16’s type chips: outlined at rest, the chosen filled level 3 and edged, sm corners (F-251)', () => {
+    render(
+      <ThemeProvider theme="dark">
+        <ChoiceGroup
+          label="Type"
+          value="contemporary"
+          options={[
+            { value: 'contemporary', label: 'Wardrobe Capsule' },
+            { value: 'kasane', label: 'Seasonal Kasane' },
+            { value: 'seasonal', label: 'Seasonal' },
+          ]}
+          onChange={() => undefined}
+          pills={{ height: 20.5, size: 'caption', selectedFill: 'surface.3', radius: 'sm' }}
+        />
+      </ThemeProvider>,
+    );
+    const radios = screen.getAllByRole('radio');
+    const pills = radios.map((p) => flattenStyle((p.props as { style?: unknown }).style));
+    for (const style of pills) expect(style['borderRadius']).toBe(nativeRadius.sm);
+    expect(pills[0]).toMatchObject({
+      backgroundColor: dark['surface.3'],
+      borderColor: dark.foreground,
+    });
+    expect(pills[1]).toMatchObject({ backgroundColor: 'transparent', borderColor: dark.border });
+    expect(radios.map((r) => drawsDot(r as unknown as TestNode))).toStrictEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+
   it('DECOY — without a rest fill an unchosen pill is outlined, as 15 draws it', () => {
     render(
       <ThemeProvider theme="dark">

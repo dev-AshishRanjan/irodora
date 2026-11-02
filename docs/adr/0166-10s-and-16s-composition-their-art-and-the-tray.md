@@ -12,7 +12,10 @@
 - **D3. Sizes from the tree.** 10's layer cells are a quarter of the row each; 16's slots are half the content width;
   both are read from the tree at 320, 360 and 384.
 - **D4. 10's bar.** One `tonal`/`strong` action. In Washi `border.strong` is the ink colour (P4); its ink is a declared
-  gate-9 pairing.
+  gate-9 pairing: `foreground` on the dark palettes (7.9:1 on Sumi), `accent.foreground` on Washi — the primary's ink,
+  since there the fill is the primary's (16:1). `border.strong` keeps its decorative reading everywhere it is an outline;
+  the manifest's `uncheckedReason` gives way to the two pairings (`Button`'s `STRONG_INK`, held in all four palettes by
+  `button-forms.test`).
 - **D5. 16's bottom chrome.** `scroll={false} bleed`; the tray fixed above the action bar; the action bar with no rule.
 - **D6. The tray.** Peek | divider | ‹ | seven | › | divider | peek. Tiles are `Swatch`es with `Tategaki` kanji in the
   sample's ink; the chosen tile takes `SelectionFrame`; the chevrons' targets lie inside the tray.

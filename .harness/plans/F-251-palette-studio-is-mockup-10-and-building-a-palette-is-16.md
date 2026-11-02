@@ -393,7 +393,44 @@ The platform header leaves: `headerShown: false`, and `PLATFORM_HEADER['atlas/pa
 
 ## Implementing session's decisions on this design
 
-*(The session records here, beside this plan, what increment 1's measurements and the census moved, and later what the review moved.)*
+**After increment 1 (2026-11-02), where the measurement moved the plan:**
+
+- **Every corner on both screens is `sm`** (corner fits: 10's cards 15.2 px, band 11, layers 12, buttons 9,
+  Create 7.75; 16's name card 10.5, slot 1 10.25, matrix 9, samples 7.75, field 10–10.5). F-220 had `md`
+  for 10's cards, band, layers and buttons and 16's matrix. The badges and tags are pills. The censuses
+  move: cards 64 → 60 `md` (16's cut card leaves too: filled and edged 83/90 → 82/89), samples 47 → 51
+  `sm` (10's four layers), joined samples 4 → 3 `md` (`STRIP_CORNER` stays `md`).
+- **Type:** the small type on both is `caption`; 10's title body 600, its Apply and Export body, the
+  export bar's button label; 16's title, field and tray kanji label, everything else caption (the hexes
+  and matrix title 600).
+- **Fills:** 10's chosen segment, badges and tags are level 3; 10's export button is `border.strong`.
+- **Two bullets** on 10 (the badges' and tags' separators), `text.secondary`.
+- **The tray's tiles are drawn whole** (the darkened lower half is not the colour; E1), one width.
+- **16's lower right art** is a basket weave in a circle; `sashiko` stands for it (ADR-0166 D7).
+- **16's cut card** is not design (presentation).
+- **Three of 10's container boxes** (the segmented control, Create, the band) stay as F-220 read them:
+  they feed shared medians read one way (ADR-0161 D8; F-282). `BAND_HEIGHT` is 60.
+- **Records:** ADR-0162 to ADR-0166 written from Appendices A–E with the census; R9 §2, §4, §8, §10, §11
+  and PRD §10 amended; OQ-23 closed; OQ-45 answered for 10 and 16; F-357 filed (07's separation is
+  rounded where 10 and 16 floor; 16 corpus pairs lie in [99.5, 100)). The plan's quotations of 10's
+  and 16's drawn safety constructions carry `claims-ok` markers.
+
+**After increment 2 (2026-11-02):**
+
+- **16's chosen type chip is filled level 3** (#31363A–#33373B inside, above and below its words); the
+  others and the name field hold the card's ground. F-220 recorded no fill; `16.mjs` now does. So the
+  chips are `pills` with `selectedFill: 'surface.3'`, the default outlined rest, `radius: 'sm'` —
+  `selectedFill: 'none'` was not needed.
+- **`border.strong` pairs** with `foreground` (dark) and `accent.foreground` (Washi), not
+  `background`: `background` is not a text token, and in Washi `accent.foreground` is the same
+  #F6F5F2, the primary's ink on the primary's fill. Its `uncheckedReason` gives way to the pairings;
+  the suite's `DECLARED_PAIRINGS` reads Sumi's, and Washi's reading is already covered there.
+- **`TextField`** takes `height`, `radius` and `size` as well as `labelPlacement`: 16's field is
+  outlined, unfilled, 27 dp, `sm`, its words `label` — `SearchField`'s drawn form (F-246), the
+  touch kept at the platform's target by negative margins.
+- **`Tategaki`** advances each character by its em at the person's text size (not the Japanese line
+  height, which would stack two characters 49 dp tall in a 56.5 dp tile), and exports
+  `tategakiReady` for a corpus test (increment 3).
 
 ---
 
@@ -1232,30 +1269,6 @@ Declared in increment 0 (Appendix F). All three block release.
 - [Rockwell Automation documentation conventions](https://www.rockwellautomation.com/en-in/docs/factorytalk-data-explorer/4-05-00/user-guide-ditamap/page/read-me-first/conventions.html): UI labels written in square brackets in documentation prose (a notation).
 - [Balsamiq, annotation guidelines](https://balsamiq.com/learn/annotations/): wireframe annotations use their own delimiters. No source found brackets a shipped UI label.
 - arXiv 1904.11293, as cited by ADR-0154 (CIEDE2000's hairline-pair reference conditions). It was not re-read here.
-
-## Implementing session's decisions on this design
-
-**After increment 1 (2026-11-02), where the measurement moved the plan:**
-
-- **Every corner on both screens is `sm`** (corner fits: 10's cards 15.2 px, band 11, layers 12, buttons 9,
-  Create 7.75; 16's name card 10.5, slot 1 10.25, matrix 9, samples 7.75, field 10–10.5). F-220 had `md`
-  for 10's cards, band, layers and buttons and 16's matrix. The badges and tags are pills. The censuses
-  move: cards 64 → 60 `md` (16's cut card leaves too: filled and edged 83/90 → 82/89), samples 47 → 51
-  `sm` (10's four layers), joined samples 4 → 3 `md` (`STRIP_CORNER` stays `md`).
-- **Type:** the small type on both is `caption`; 10's title body 600, its Apply and Export body, the
-  export bar's button label; 16's title, field and tray kanji label, everything else caption (the hexes
-  and matrix title 600).
-- **Fills:** 10's chosen segment, badges and tags are level 3; 10's export button is `border.strong`.
-- **Two bullets** on 10 (the badges' and tags' separators), `text.secondary`.
-- **The tray's tiles are drawn whole** (the darkened lower half is not the colour; E1), one width.
-- **16's lower right art** is a basket weave in a circle; `sashiko` stands for it (ADR-0166 D7).
-- **16's cut card** is not design (presentation).
-- **Three of 10's container boxes** (the segmented control, Create, the band) stay as F-220 read them:
-  they feed shared medians read one way (ADR-0161 D8; F-282). `BAND_HEIGHT` is 60.
-- **Records:** ADR-0162 to ADR-0166 written from Appendices A–E with the census; R9 §2, §4, §8, §10, §11
-  and PRD §10 amended; OQ-23 closed; OQ-45 answered for 10 and 16; F-357 filed (07's separation is
-  rounded where 10 and 16 floor; 16 corpus pairs lie in [99.5, 100)). The plan's quotations of 10's
-  and 16's drawn safety constructions carry `claims-ok` markers.
 
 ---
 

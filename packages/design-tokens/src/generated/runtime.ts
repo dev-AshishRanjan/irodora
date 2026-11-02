@@ -193,8 +193,9 @@ export const runtimeManifest: CheckableManifest = {
         "srgb": "#464D5B",
         "role": "",
         "usage": "nonText",
-        "pairsWith": [],
-        "uncheckedReason": ""
+        "pairsWith": [
+          "foreground"
+        ]
       },
       "border.indicator": {
         "oklch": {
@@ -914,8 +915,9 @@ export const runtimeManifest: CheckableManifest = {
         "srgb": "#1A1B1E",
         "role": "",
         "usage": "nonText",
-        "pairsWith": [],
-        "uncheckedReason": ""
+        "pairsWith": [
+          "accent.foreground"
+        ]
       },
       "border.indicator": {
         "oklch": {

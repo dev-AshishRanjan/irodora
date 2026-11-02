@@ -22,8 +22,10 @@
  *
  * `04` draws its target bar, `10` its first palette and `23` its kasane as joined samples: no well,
  * no ring around the whole, the corner a step (`sm` on `04`, `md` on `10` and `23`), and the README
- * keyline on `04` and `10` but not on `23`. The height is not yet what they draw: all three sit
- * under ADR-0095's floor, and whether the drawing or the floor governs is OQ-45, a person's.
+ * keyline on `04` and `10` but not on `23`. All three are drawn under ADR-0095's floor. ADR-0162
+ * (F-251) answers OQ-45 for `10`: the floor binds a sample presented for a person to JUDGE a colour
+ * difference beside its figure, not one that shows a palette for choosing or building — so a strip
+ * says which it is ({@link StripProps.judged}), and `04` and `23` stay with F-245 and F-260.
  *
  * ## When the boundary is invisible, that is the answer
  *
@@ -98,8 +100,15 @@ export interface StripProps {
    * rather than a decoration.
    */
   readonly weights?: readonly number[];
-  /** See `PairProps.height`. */
+  /** See `PairProps.height`. Under the floor it is honoured only when {@link judged} is `false`. */
   readonly height?: number;
+  /**
+   * Whether a person judges a colour difference by eye on this strip (ADR-0162). `true`, the
+   * default, keeps ADR-0095's floor: a strip is a judging surface unless its caller says otherwise.
+   * `false` is a palette SHOWN for choosing or building (`10`'s band) — its figures are computed from
+   * the values and name their model — and draws at the given height. It must be said, never assumed.
+   */
+  readonly judged?: boolean;
   /** The corner step at the strip's two ends. Defaults to {@link STRIP_CORNER}. */
   readonly corner?: SwatchCornerStep;
   /** Whether the element draws the README keyline. Defaults to {@link STRIP_KEYLINE}. */
@@ -138,6 +147,7 @@ export function Strip({
   height,
   corner: step = STRIP_CORNER,
   keyline = STRIP_KEYLINE,
+  judged = true,
   testID,
 }: StripProps): React.JSX.Element {
   const { source, paint } = useTheme();
@@ -145,10 +155,11 @@ export function Strip({
   /*
    * THE FLOOR IS A FLOOR. A caller asking for less gets the floor, silently, rather than a
    * throw: a strip drawn small is a degraded reading, not a programming error, and a component
-   * that crashed a screen over it would be traded for a bare View within a week. (OQ-45 asks a
-   * person whether the drawn heights should govern instead.)
+   * that crashed a screen over it would be traded for a bare View within a week. A strip that is
+   * not judged (ADR-0162) is drawn at the height its caller read off the mockup.
    */
-  const tall = Math.max(height ?? nativeJudgeableSample, nativeJudgeableSample);
+  const asked = height ?? nativeJudgeableSample;
+  const tall = judged ? Math.max(asked, nativeJudgeableSample) : asked;
   const corner = swatchCorner(tall, step);
 
   const last = members.length - 1;

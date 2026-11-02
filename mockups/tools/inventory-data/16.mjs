@@ -27,6 +27,8 @@
 // - THE LOWER RIGHT ART is a basket weave clipped to a circle, not asanoha; the product's `sashiko`
 //   stands for it (ADR-0166 D7), a difference the person's comparison lists.
 // - THE CARD CUT UNDER THE MATRIX is a card's top whose content no image draws: not design.
+// - THE CHOSEN TYPE CHIP is filled level 3 (#31363A–#33373B), edged in text.primary, with its dot;
+//   the other chips are outlined only and the name field is unfilled (the card's #1D2226 inside).
 // - BRACKETS around the slot headings, roles, Locked and Replace are notation (OQ-23, ADR-0163).
 const B = (x, y, w, h) => ({ x, y, w, h });
 const el = (id, component, box, extra = {}) => ({
@@ -53,9 +55,12 @@ const cap = (emDp, weight = 400) => ({ type: text('sans', 'caption', weight), ra
 const kind = (key, box, selected = false) =>
   el(`16.name.kind.${key}`, 'ui:Chip', box, {
     parent: '16.name',
+    // F-251 (increment 2): the chosen chip is filled level 3 (#31363A–#33373B inside, above and
+    // below its words); the others and the name field hold the card's ground (#1D2226).
     tokens: selected
-      ? { border: 'text.primary', radius: 'sm' }
+      ? { bg: 'level3', border: 'text.primary', radius: 'sm' }
       : { border: 'border.subtle', radius: 'sm' },
+    ...(selected ? { measured: { bg: '#32373B' } } : {}),
     type: text('sans', 'caption'),
     binding: `static:palette.kind.${key}`,
     action: `select:palette.kind.${key}`,

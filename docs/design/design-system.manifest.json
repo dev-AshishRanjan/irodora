@@ -2,7 +2,7 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-10-21",
+  "updated": "2026-11-02",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
     "date": "2026-09-25",
@@ -267,10 +267,11 @@
           "h": 264.256403293355
         },
         "usage": "nonText",
-        "role": "The README `border.strong` where a LABEL ALSO IDENTIFIES THE COMPONENT — an outlined button — and so is decorative (R9-MOCKUP-FIDELITY §4 E3 ¶2): it keeps its drawn value. Where the same drawn colour is the only thing that identifies a component (the sheet handle), the token is `border.indicator`; where it is the only indicator of a state (focus, the active edge), it is `ring`. Both are checked.",
-        "pairsWith": [],
-        "srgb": "#464D5B",
-        "uncheckedReason": "Decorative by §4 E3 ¶2: every element the inventories draw with it carries its own label (00 03 04 13 15 16 — inventory-pairings.test.ts checks that per element). The sheet handle, which has none, is `border.indicator`; focus and the active edge are `ring`. Both are checked on every surface."
+        "role": "The README `border.strong` where a LABEL ALSO IDENTIFIES THE COMPONENT — an outlined button — and so is decorative (R9-MOCKUP-FIDELITY §4 E3 ¶2): it keeps its drawn value. Where the same drawn colour is the only thing that identifies a component (the sheet handle), the token is `border.indicator`; where it is the only indicator of a state (focus, the active edge), it is `ring`. Both are checked. It is also 10's export bar's FILL (F-251, ADR-0166 D4): words sit on it there, so it pairs with the ink that clears 4.5:1 on it in each palette — `foreground` on the dark ones; `accent.foreground` in Washi, where it is the ink colour and the primary fill, so the bar takes the primary ink.",
+        "pairsWith": [
+          "foreground"
+        ],
+        "srgb": "#464D5B"
       },
       "border.indicator": {
         "oklch": {
@@ -989,9 +990,10 @@
         },
         "srgb": "#1A1B1E",
         "usage": "nonText",
-        "role": "The README `border.strong` where a LABEL ALSO IDENTIFIES THE COMPONENT — an outlined button — and so is decorative (R9-MOCKUP-FIDELITY §4 E3 ¶2): it keeps its drawn value. Where the same drawn colour is the only thing that identifies a component (the sheet handle), the token is `border.indicator`; where it is the only indicator of a state (focus, the active edge), it is `ring`. Both are checked.",
-        "pairsWith": [],
-        "uncheckedReason": "Decorative by §4 E3 ¶2: every element the inventories draw with it carries its own label (00 03 04 13 15 16 — inventory-pairings.test.ts checks that per element). The sheet handle, which has none, is `border.indicator`; focus and the active edge are `ring`. Both are checked on every surface."
+        "role": "The README `border.strong` where a LABEL ALSO IDENTIFIES THE COMPONENT — an outlined button — and so is decorative (R9-MOCKUP-FIDELITY §4 E3 ¶2): it keeps its drawn value. Where the same drawn colour is the only thing that identifies a component (the sheet handle), the token is `border.indicator`; where it is the only indicator of a state (focus, the active edge), it is `ring`. Both are checked. It is also 10's export bar's FILL (F-251, ADR-0166 D4): words sit on it there, so it pairs with the ink that clears 4.5:1 on it in each palette — `foreground` on the dark ones; `accent.foreground` in Washi, where it is the ink colour and the primary fill, so the bar takes the primary ink.",
+        "pairsWith": [
+          "accent.foreground"
+        ]
       },
       "border.indicator": {
         "oklch": {

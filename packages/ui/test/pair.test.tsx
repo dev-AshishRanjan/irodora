@@ -14,7 +14,7 @@
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeJudgeableSample } from '@irodora/design-tokens';
-import { halfWidth, Pair, sampleEdge, STRIP_KEYLINE, ThemeProvider } from '../src/index.js';
+import { halfWidth, Pair, sampleEdge, Strip, STRIP_KEYLINE, ThemeProvider } from '../src/index.js';
 
 /** The narrowest phone the viewport gate supports, and the most padding a screen may take. */
 const NARROWEST_WIDTH = 320;
@@ -137,6 +137,44 @@ describe('the size floor (ADR-0095)', () => {
     // Without this, `halfWidth` could return a constant and the case above would pass. Nothing
     // surrounds the pair since F-233, so a genuinely tight container fails.
     expect(halfWidth(20)).toBe(10);
+  });
+});
+
+describe('a strip that is shown, not judged (ADR-0162, F-251)', () => {
+  // 10's band: a palette shown for choosing, its figures computed from the values (ADR-0162).
+  const BAND_HEIGHT = 60;
+
+  it('draws at the height its caller read off the mockup when it says it is not judged', () => {
+    const shown = samples(draw(<Strip members={[A, B]} height={BAND_HEIGHT} judged={false} />));
+    expect(shown.map((s) => s['height'])).toStrictEqual([BAND_HEIGHT, BAND_HEIGHT]);
+    expect(BAND_HEIGHT).toBeLessThan(nativeJudgeableSample);
+  });
+
+  it('DECOY — the default is judged: the same height asked without the word is floored', () => {
+    // The floor is the default, so a strip is a judging surface unless its caller says otherwise.
+    const judged = samples(draw(<Strip members={[A, B]} height={BAND_HEIGHT} />));
+    expect(judged.map((s) => s['height'])).toStrictEqual([
+      nativeJudgeableSample,
+      nativeJudgeableSample,
+    ]);
+    const said = samples(draw(<Strip members={[A, B]} height={BAND_HEIGHT} judged />));
+    expect(said[0]?.['height']).toBe(nativeJudgeableSample);
+  });
+
+  it('keeps the shared edge’s rule when shown: no line and no corner where two samples meet', () => {
+    const [left, right] = samples(
+      draw(<Strip members={[A, B]} height={BAND_HEIGHT} judged={false} />),
+    );
+    expect(left?.['borderRightWidth']).toBe(0);
+    expect(right?.['borderLeftWidth']).toBe(0);
+    expect(left?.['borderTopRightRadius']).toBe(0);
+    expect(right?.['borderTopLeftRadius']).toBe(0);
+  });
+
+  it('leaves Pair floored: a pair is judged, always', () => {
+    // Pair passes no `judged`, so asking it for the band's height still gets the floor.
+    const pair = samples(draw(<Pair a={A} b={B} height={BAND_HEIGHT} />));
+    expect(pair[0]?.['height']).toBe(nativeJudgeableSample);
   });
 });
 

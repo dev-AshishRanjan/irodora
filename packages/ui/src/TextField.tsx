@@ -15,6 +15,20 @@
  * rendered above the input as well as set as the accessible name, from one string, so the two
  * cannot diverge.
  *
+ * ## The label inside, and the drawn form (F-251)
+ *
+ * `16` draws its palette's name field with no label row: an outline in `border` at the `sm` corner,
+ * 27 dp tall, the person's words at `label`. `labelPlacement="inside"` draws that. The label is still
+ * the accessible name, always; it is the placeholder while the field is empty, and nothing else is
+ * (ADR-0165 D5: the screen states what the field is for in its own heading and title, so the words a
+ * person typed are never the only clue). A hint is refused alongside it — the placeholder is taken.
+ *
+ * Given `height`, the field is drawn so, and its TOUCH is still the platform's target: the control's
+ * box is `max(target, height)` tall, centred on the drawn box by negative margins, so layout takes the
+ * drawn height while the input that receives the touch is the target's size (`SearchField`'s drawn
+ * form, F-246 — Android delivers no touch outside a view's parent). The outline is drawn under the
+ * input and takes no touch. Without `height` the field is the filled one it always was.
+ *
  * ## Why it is here rather than in the screen
  *
  * The same reason as `Chip` and `SearchField`: an interactive control built inside a screen is
@@ -34,8 +48,27 @@
 
 import { TextInput, View, type TextInputProps } from 'react-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import { platformTapTarget } from './hitArea.js';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
+
+/** Where the label is: a row above the field (the default), or the placeholder inside it (`16`). */
+type Placement =
+  | {
+      readonly labelPlacement?: 'above';
+      /**
+       * A hint inside the field, shown only while it is empty.
+       *
+       * Never the label. It is optional precisely because a field is complete without it and is
+       * not complete without a label.
+       */
+      readonly hint?: string;
+    }
+  | {
+      /** `16`'s form: no label row; the label is the placeholder and, always, the accessible name. */
+      readonly labelPlacement: 'inside';
+      readonly hint?: never;
+    };
 
 export type TextFieldProps = Omit<
   TextInputProps,
@@ -46,32 +79,36 @@ export type TextFieldProps = Omit<
   | 'role'
   | 'editable'
   | 'multiline'
-> & {
-  /** Shown above the field AND used as the accessible name. One string, so they agree. */
-  readonly label: string;
-  readonly value: string;
-  readonly onChangeText: (text: string) => void;
-  /**
-   * A hint inside the field, shown only while it is empty.
-   *
-   * Never the label. It is optional precisely because a field is complete without it and is
-   * not complete without a label.
-   */
-  readonly hint?: string;
-  /** Japanese needs more leading at the same size; the label carries the script through. */
-  readonly script?: keyof typeof nativeType;
-  readonly disabled?: boolean;
-  /** The value is still being written or checked. Announced as busy, not only dimmed. */
-  readonly loading?: boolean;
-  /** Focused by an external keyboard or Switch Control. */
-  readonly focused?: boolean;
-};
+> &
+  Placement & {
+    /** Shown above the field (or inside it) AND used as the accessible name. One string, so they agree. */
+    readonly label: string;
+    readonly value: string;
+    readonly onChangeText: (text: string) => void;
+    /** The drawn height in dp (`16`: 27). Given, the field takes its drawn, outlined form. */
+    readonly height?: number;
+    /** The drawn form's corner. Defaults to `md`; `16` draws `sm`. */
+    readonly radius?: 'sm' | 'md';
+    /** The words' step in the drawn form. Defaults to `body`; `16` sets its name at `label`. */
+    readonly size?: 'body' | 'label' | 'caption';
+    /** Japanese needs more leading at the same size; the label carries the script through. */
+    readonly script?: keyof typeof nativeType;
+    readonly disabled?: boolean;
+    /** The value is still being written or checked. Announced as busy, not only dimmed. */
+    readonly loading?: boolean;
+    /** Focused by an external keyboard or Switch Control. */
+    readonly focused?: boolean;
+  };
 
 export function TextField({
   label,
   value,
   onChangeText,
   hint,
+  labelPlacement = 'above',
+  height,
+  radius = 'md',
+  size = 'body',
   script = 'latin',
   disabled = false,
   loading = false,
@@ -80,12 +117,63 @@ export function TextField({
 }: TextFieldProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
+  const inside = labelPlacement === 'inside';
+  const placeholder = inside ? label : hint;
+  const above = inside ? null : (
+    <Text size="caption" color="foreground.2" script={script}>
+      {label}
+    </Text>
+  );
+
+  if (height !== undefined) {
+    const touch = Math.max(platformTapTarget(), height);
+    const overhang = (touch - height) / 2;
+    return (
+      <View style={{ gap: nativeSpacing.xs }}>
+        {above}
+        <View style={{ height: touch, marginVertical: -overhang, justifyContent: 'center' }}>
+          {/* The drawn field: its outline, under the input. No touch; focus is its ring. */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: overhang,
+              height,
+              borderRadius: nativeRadius[radius],
+              borderWidth: focused ? 2 : 1,
+              borderColor: focused ? colors.ring : colors.border,
+              opacity: inert ? 0.5 : 1,
+            }}
+          />
+          <TextInput
+            accessibilityLabel={label}
+            accessibilityState={{ disabled: inert, busy: loading }}
+            editable={!inert}
+            {...(placeholder === undefined ? {} : { placeholder })}
+            // `foreground.2` on the ground the field sits on: the outlined form has no fill of its own.
+            placeholderTextColor={colors['foreground.2']}
+            value={value}
+            onChangeText={onChangeText}
+            {...rest}
+            style={{
+              height: touch,
+              minWidth: nativeTapTarget,
+              paddingHorizontal: nativeSpacing.sm,
+              color: colors.foreground,
+              fontSize: nativeType[script][size].fontSize,
+              opacity: inert ? 0.5 : 1,
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ gap: nativeSpacing.xs }}>
-      <Text size="caption" color="foreground.2" script={script}>
-        {label}
-      </Text>
+      {above}
       {/*
         NO ROLE, deliberately. React Native has no role that means "a field you type into" —
         `Role` offers `searchbox` and no `textbox`, and `AccessibilityRole`'s nearest is
@@ -101,7 +189,7 @@ export function TextField({
         accessibilityLabel={label}
         accessibilityState={{ disabled: inert, busy: loading }}
         editable={!inert}
-        {...(hint === undefined ? {} : { placeholder: hint })}
+        {...(placeholder === undefined ? {} : { placeholder })}
         // `foreground.2` pairs with `surface.2` in the manifest. A hint is text on the
         // field's own ground, so that pairing is the one the contrast gate measures.
         placeholderTextColor={colors['foreground.2']}

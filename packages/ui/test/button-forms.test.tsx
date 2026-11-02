@@ -12,7 +12,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { Platform, Text as RNText } from 'react-native';
-import { nativeColors, nativeRadius } from '@irodora/design-tokens';
+import { wcagContrast } from '@irodora/color-difference';
+import { nativeColors, nativeRadius, themeMode, type Theme } from '@irodora/design-tokens';
 import {
   Button,
   BUTTON_HEIGHT,
@@ -23,6 +24,7 @@ import {
   type GlyphName,
   hitArea,
   ICON_PLATE,
+  STRONG_INK,
   Text,
   ThemeProvider,
 } from '../src/index.js';
@@ -440,6 +442,48 @@ describe('the chrome’s forms (F-234)', () => {
       <Button key="t" label="x" variant="tonal" level={2} fill="surface.1" />,
     ];
     expect(wrong).toHaveLength(2);
+  });
+
+  it('fills 10’s export bar in border.strong, its words in the ink its pairing declares (F-251)', () => {
+    const rgb = (hex: string): readonly [number, number, number] => [
+      parseInt(hex.slice(1, 3), 16) / 255,
+      parseInt(hex.slice(3, 5), 16) / 255,
+      parseInt(hex.slice(5, 7), 16) / 255,
+    ];
+    const themes = Object.keys(nativeColors) as Theme[];
+    expect(themes).toHaveLength(4);
+    for (const theme of themes) {
+      const colors = nativeColors[theme];
+      const { UNSAFE_getAllByType, unmount } = render(
+        <ThemeProvider theme={theme}>
+          <Button label="Export Selected" variant="tonal" level="strong" radius="sm" testID="x" />
+        </ThemeProvider>,
+      );
+      expect(hostOf('x').style).toMatchObject({
+        backgroundColor: colors['border.strong'],
+        borderWidth: 0,
+      });
+      const ink = String(
+        flattenStyle((UNSAFE_getAllByType(RNText)[0]?.props as { style?: unknown }).style)['color'],
+      );
+      expect(ink).toBe(colors[STRONG_INK[themeMode(theme)]]);
+      // The pairing the manifest declares, measured here as gate 9 measures it.
+      expect(wcagContrast(rgb(ink), rgb(colors['border.strong']))).toBeGreaterThanOrEqual(4.5);
+      unmount();
+    }
+    // DECOY: in Washi the dark palettes' ink is the fill itself — 1:1 — so the ink must turn.
+    expect(nativeColors.light.foreground).toBe(nativeColors.light['border.strong']);
+  });
+
+  it('DECOY — the surface levels’ trees are unchanged by the strong fill', () => {
+    render(
+      <ThemeProvider theme="light">
+        <Button label="Save to Wardrobe" variant="tonal" level={2} testID="t2" />
+        <Button label="Build outfit" variant="tonal" level={3} testID="t3" />
+      </ThemeProvider>,
+    );
+    expect(hostOf('t2').style['backgroundColor']).toBe(nativeColors.light['surface.2']);
+    expect(hostOf('t3').style['backgroundColor']).toBe(nativeColors.light['surface.3']);
   });
 
   it('refuses a form’s props on another form', () => {

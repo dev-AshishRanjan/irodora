@@ -163,8 +163,8 @@ export interface Pills {
    * them. The chosen one keeps its edge and its dot, so a choice is a highlight and a mark.
    */
   readonly restFill?: 'surface.2' | 'surface.3';
-  /** The corner: a pill by default; `09` draws its chips' at `md`. */
-  readonly radius?: 'md' | 'pill';
+  /** The corner: a pill by default; `09` draws its chips' at `md`, `16` its type chips' at `sm` (F-251). */
+  readonly radius?: 'sm' | 'md' | 'pill';
 }
 
 /** One layout or the other, never both: the type makes the choice a decision. */
@@ -410,7 +410,7 @@ function Pill({
           dot: false,
         };
   const size = form.size ?? 'label';
-  const corner = form.radius === 'md' ? nativeRadius.md : nativeRadius.pill;
+  const corner = nativeRadius[form.radius ?? 'pill'];
   return (
     <HeroRadioGroup.Item
       onPressIn={press.onPressIn}

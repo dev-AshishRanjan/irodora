@@ -283,6 +283,7 @@
         "h": 21
       },
       "tokens": {
+        "bg": "level3",
         "border": "text.primary",
         "radius": "sm"
       },
@@ -295,6 +296,9 @@
       "illustration": null,
       "binding": "static:palette.kind.capsule",
       "action": "select:palette.kind.capsule",
+      "measured": {
+        "bg": "#32373B"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"

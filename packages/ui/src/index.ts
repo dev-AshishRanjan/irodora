@@ -276,10 +276,12 @@ export {
   GLYPH_IN_PLATE,
   glyphSide,
   ICON_PLATE,
+  STRONG_INK,
   type ButtonProps,
   type ButtonRadius,
   type ButtonVariant,
   type GlyphSide,
+  type TonalLevel,
 } from './Button.js';
 export { IconButton, type IconButtonProps } from './IconButton.js';
 export { hitArea, platformTapTarget } from './hitArea.js';
@@ -345,6 +347,7 @@ export {
   type SearchFieldToggle,
 } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
+export { Tategaki, tategakiCharacters, tategakiReady, type TategakiProps } from './Tategaki.js';
 export {
   Pair,
   Strip,

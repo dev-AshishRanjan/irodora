@@ -89,7 +89,7 @@ import { useTheme } from './theme.js';
 /**
  * The labelled forms the mockups draw. `plain` and `tonal` are the chrome's (F-234): a back label or
  * a text action (`plain`: no fill, no edge), and a filled button in a surface level (`tonal`: 10,
- * 19, 20, 03's *hold*).
+ * 19, 20, 03's *hold*) or in `border.strong` (10's export bar, F-251).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'plain' | 'tonal';
 
@@ -257,8 +257,11 @@ type PlainProps = LabelledBase & {
 type TonalProps = LabelledBase & {
   readonly variant: 'tonal';
   readonly fill?: never;
-  /** The surface level it is filled with: `level2` (20, 03's *hold*) or `level3` (19). */
-  readonly level: 2 | 3;
+  /**
+   * What it is filled with: the surface level `level2` (20, 03's *hold*) or `level3` (19), or
+   * `strong` — `border.strong`, as 10 fills its export bar's button (F-251, ADR-0166 D4).
+   */
+  readonly level: TonalLevel;
   readonly edge?: never;
   readonly ink?: never;
   readonly on?: never;
@@ -266,6 +269,20 @@ type TonalProps = LabelledBase & {
 };
 
 type LabelledProps = PrimaryProps | SecondaryProps | PlainProps | TonalProps;
+
+/** A tonal button's fill: a surface level, or `border.strong` (`strong`). */
+export type TonalLevel = 2 | 3 | 'strong';
+
+/**
+ * The ink on a `strong` fill, by the palette's mode: the one its pairing declares in the manifest.
+ * `border.strong` is a mid grey on the dark palettes, so `foreground` (7.9:1 on Sumi); in Washi it
+ * is the ink colour itself — the primary fill — so the primary's ink, `accent.foreground` (16:1).
+ * `button.test` holds each against its fill in every drawn palette.
+ */
+export const STRONG_INK = {
+  dark: 'foreground',
+  light: 'accent.foreground',
+} as const satisfies Record<'dark' | 'light', 'foreground' | 'accent.foreground'>;
 
 type IconOnlyProps = Shared & {
   /** The glyph, by the name its inventory binds. */
@@ -310,7 +327,9 @@ interface LabelledPaint {
 interface PaintProps {
   readonly variant: ButtonVariant;
   readonly edge: 'border' | 'border.strong' | undefined;
-  readonly level: 2 | 3 | undefined;
+  readonly level: TonalLevel | undefined;
+  /** The palette's mode: it chooses a `strong` fill's ink (see {@link STRONG_INK}). */
+  readonly mode: 'dark' | 'light';
   readonly ink: 'foreground' | 'foreground.2' | undefined;
   readonly weight: 400 | 500 | undefined;
   readonly fill: 'surface.1' | undefined;
@@ -340,7 +359,16 @@ function labelledPaint(
         padded: false,
       };
     case 'tonal':
-      // Filled in a surface level; `foreground` on `surface.2` and `surface.3` are both declared.
+      // Filled in a surface level; `foreground` on `surface.2` and `surface.3` are both declared. On
+      // `border.strong` the ink is the one its pairing declares in this palette's mode.
+      if (props.level === 'strong')
+        return {
+          background: colors['border.strong'],
+          edge: undefined,
+          ink: STRONG_INK[props.mode],
+          weight: 400,
+          padded: true,
+        };
       return {
         background: colors[props.level === 2 ? 'surface.2' : 'surface.3'],
         edge: undefined,
@@ -385,13 +413,13 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     fill,
     ...rest
   } = props;
-  const { colors, source, paint: painted } = useTheme();
+  const { colors, source, paint: painted, mode } = useTheme();
   if (name !== undefined && !name.toLocaleLowerCase().includes(label.toLocaleLowerCase()))
     throw new TypeError(
       `Button: the name "${name}" does not contain the visible label "${label}" (WCAG 2.5.3)`,
     );
   const inert = disabled || loading;
-  const paint = labelledPaint({ variant, edge, level, ink, weight, fill }, colors);
+  const paint = labelledPaint({ variant, edge, level, mode, ink, weight, fill }, colors);
   /*
    * ON A SAMPLE (F-248, C8): the words, the glyph and the outline take the sample's text ink, solved on
    * the declared palette and painted as `Text on` paints it, so the three are one ink that clears
@@ -445,7 +473,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
         alignItems: 'center',
         /*
          * Every drawn pairing is DECLARED in the manifest: `accent.foreground` on `accent`;
-         * `foreground` on `surface.2` and `surface.3` (tonal); and `foreground` or `foreground.2` on
+         * `foreground` on `surface.2` and `surface.3` (tonal); {@link STRONG_INK} on `border.strong`; and `foreground` or `foreground.2` on
          * whatever surface an outline or a plain label sits on. The secondary has NO FILL: board 00
          * draws an outline and nothing inside it (F-232).
          */

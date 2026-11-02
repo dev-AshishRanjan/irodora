@@ -81,6 +81,7 @@ import {
   swatchCorner,
   TabBar,
   Tabs,
+  Tategaki,
   Text,
   TextField,
   TextureBadge,
@@ -1096,6 +1097,11 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         'Button (plain, back word at 500)',
         { label: 'Ai-nezumi', variant: 'plain', glyph: 'back', weight: 500, height: 13 },
       ],
+      // 10's export bar (F-251): filled in border.strong, its ink the pairing declared per palette.
+      [
+        'Button (tonal, strong)',
+        { label: 'Export Selected', variant: 'tonal', level: 'strong', radius: 'sm', height: 29 },
+      ],
     ] as const
   ).map(([name, form]): ConformanceSubject => ({
     name,
@@ -1589,6 +1595,34 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           label="Palette name"
           hint="Evening walk"
           value={state === 'active' ? 'Evening walk' : ''}
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * 16'S NAME FIELD (F-251, ADR-0165): the label inside, as the placeholder and the accessible name,
+     * the field outlined at its drawn 27 dp and `sm` corner, its words at `label`.
+     */
+    name: 'TextField (label inside)',
+    kind: 'interactive',
+    forbiddenNames: ['field', 'input', 'name', 'text'],
+    render: (state, theme) =>
+      draw(
+        <TextField
+          label="Palette name"
+          labelPlacement="inside"
+          height={27}
+          radius="sm"
+          size="label"
+          value={state === 'active' ? 'Kyoto Autumn Linen' : ''}
           onChangeText={() => {
             /* the suite renders; it does not drive */
           }}
@@ -3246,6 +3280,12 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         { corner: 'md', keyline: true },
       ],
       ['Strip (23, a kasane)', ['#526a6b', '#87795d', '#5a6f78'], { corner: 'md', keyline: false }],
+      // 10's band, shown and not judged, at its drawn 60 dp (F-251, ADR-0162).
+      [
+        'Strip (10, shown at its drawn height)',
+        ['#1e2225', '#e9e6de', '#879098', '#a48164'],
+        { corner: 'sm', keyline: true, judged: false, height: 60 },
+      ],
     ] as const
   ).map(([name, hexes, form]): ConformanceSubject => ({
     name,
@@ -3258,6 +3298,22 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           members={hexes.map((hex, i) => ({ name: `Colour ${String(i + 1)}`, hex, color: SAMPLE }))}
           {...form}
         />,
+        theme,
+      ),
+  })),
+  /*
+   * 16'S TRAY KANJI (F-251): set top to bottom on the sample, in the ink that sample takes, on a pale
+   * sample and a dark one. One accessible node, the whole name.
+   */
+  ...(['#E8E5DF', '#4E596B'] as const).map((hex): ConformanceSubject => ({
+    name: `Tategaki (16, ${hex})`,
+    kind: 'static',
+    sampleValues: [hex],
+    render: (_state, theme) =>
+      draw(
+        <Swatch name="Shiro-neri" hex={hex} color={SAMPLE} size={40}>
+          <Tategaki text="白練" on={{ hex, color: SAMPLE }} />
+        </Swatch>,
         theme,
       ),
   })),

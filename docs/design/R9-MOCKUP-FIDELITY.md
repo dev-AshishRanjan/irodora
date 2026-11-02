@@ -231,7 +231,9 @@ was approved, so `F-267` carries it for a person to confirm.
 
 Dark `text.tertiary` on the **ground** passes (4.59:1) and keeps the mockup value there. Dark
 `border.strong` where a label also identifies the component is decorative and keeps its value;
-`inventory-pairings.test.ts` checks the label element by element. **Where nothing else identifies
+`inventory-pairings.test.ts` checks the label element by element. Where it is a FILL under words —
+`10`'s export bar — it pairs with the ink that clears 4.5:1 on it: `foreground` on the dark palettes,
+`accent.foreground` on Washi, where it is the ink colour (`F-251`, ADR-0166 D4). **Where nothing else identifies
 the component**, the sheet's drag handle in `03` and `04`, the token is `border.indicator`. It takes
 the row-3 move on Sumi and keeps the drawn ink on Washi. Every other mockup token passes as drawn.
 
@@ -246,7 +248,7 @@ typed.
 |---|---|---|---|---|
 | Sumi | `foreground.3` (ground) | `#768290` | `#768290` | nothing: 4.59:1 passes |
 | Sumi | `foreground.3.card` | `#768290` | `#94A1AF` | row 1 |
-| Sumi | `border.strong` | `#464D5B` | `#464D5B` | nothing: decorative, a label identifies the component |
+| Sumi | `border.strong` | `#464D5B` | `#464D5B` | nothing: decorative, a label identifies the component; as `10`'s bar's fill it pairs with `foreground` (`F-251`) |
 | Sumi | `border.indicator` (the sheet handle) | `#464D5B` | **`#788090`** | row 3: the handle has no label, and the drawn value is 2.11:1 on the ground a sheet sits on |
 | Sumi | `ring` | `#464D5B` | **`#788090`** | row 3 **as corrected**: `#5C6472` was measured on the ground only, and focus also lands on levels 1–3 (2.0–2.64:1 there). The same rule over those surfaces gives this value (F-225 decision A) |
 | Washi | `foreground.3`, `foreground.3.card` | `#8C96A5` | `#5D6674` | row 2 |

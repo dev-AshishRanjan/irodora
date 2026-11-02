@@ -21,7 +21,10 @@ component, the border is **decorative** and keeps its drawn value. Where the bor
 of a state, the token is `ring`: `#788090` on Sumi, which passes on the ground and on levels 1–3
 where focus lands, and `#3A3B3E` on Washi, separated from the drawn ink by gate 10.
 
-So `border.strong` pairs with nothing now, and carries an `uncheckedReason`.
+So `border.strong` paired with nothing, and carried an `uncheckedReason`. **Until F-251:** `10` fills its
+export bar's button in it and sets words on it, so it pairs with `foreground` on the dark palettes and
+`accent.foreground` on Washi (ADR-0166 D4). Its outline uses are still decorative — the pairing covers
+the fill's words, not an edge's 3:1.
 
 ## The trap
 
