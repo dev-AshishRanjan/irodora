@@ -485,7 +485,7 @@ export const BADGE = 19.5;
 /** A card's two actions (`10.palette-1.apply`, `.export`). */
 export const CARD_ACTION = 27.5;
 /** A kasane's layer (`10.palette-2.swatch-*`): siblings, one height. */
-export const LAYER_HEIGHT = 61.5;
+export const LAYER_HEIGHT = 62;
 /** The export bar's button (`10.export-bar.button`). */
 export const EXPORT_SELECTED = 29;
 /** `10`'s leaves down the right margin (`10.art`), from the screen's top, drawn at their width: the drawing keeps its own proportion. */
@@ -500,7 +500,7 @@ export const NAME_FIELD = 27;
 /** A type chip (`16.name.kind.*`): siblings, one height. */
 export const TYPE_CHIP = 20;
 /** A slot's sample (`16.slots.slot-*.swatch`): siblings, one height. */
-export const SLOT_SAMPLE = 34.5;
+export const SLOT_SAMPLE = 35;
 /** The padlock on *Locked* (`16.slots.slot-1.locked`). */
 export const LOCK_GLYPH_16 = 9.5;
 /** The glyph after *Replace* (`16.slots.slot-*.replace`). */
@@ -515,7 +515,7 @@ export const TRAY_PEEK = 21;
 /** The tray's rule to its tiles (`16.tray` to `16.tray.chip-*`). */
 export const TRAY_INSET = 11;
 /** The tray's chevrons (`16.tray.previous`, `.next`). */
-export const CHEVRON_GLYPH = 15;
+export const CHEVRON_GLYPH = 16.5;
 /** *Create & Save Palette* (`16.create`). */
 export const CREATE_AND_SAVE = 30.5;
 /** `16`'s art, from the top of the page under its bar (`16.art-*`; ADR-0166 D7). */
