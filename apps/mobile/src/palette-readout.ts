@@ -463,3 +463,64 @@ export function pageOf(pages: readonly (readonly PublishedEntry[])[], slug: stri
   const index = pages.findIndex((page) => page.some((e) => e.entry.slug === slug));
   return index === -1 ? null : index;
 }
+
+/* ------------------------------------------------------------------ the drawn sizes */
+
+/*
+ * What 10 and 16 draw, in dp, from their inventories (`mockups/inventory/10.json`, `16.json`). Each is
+ * recomputed from the JSON by the screens' fidelity tests, so a re-measured element that moves one
+ * fails a test instead of leaving a stale constant (F-248's lesson).
+ */
+
+/** `10`'s app bar, its title row below the controls included (`10.header`). */
+export const STUDIO_APP_BAR = 84;
+/** *Create New Palette* (`10.create`). */
+export const CREATE = 24;
+/** The segmented control (`10.source`). */
+export const SOURCE_HEIGHT = 33;
+/** The band (`10.palette-1.strip`): shown, not judged (ADR-0162). */
+export const BAND_HEIGHT = 60;
+/** A badge or a tag (`10.palette-1.badge-*`, `10.palette-2.tag-*`): siblings, one height. */
+export const BADGE = 19.5;
+/** A card's two actions (`10.palette-1.apply`, `.export`). */
+export const CARD_ACTION = 27.5;
+/** A kasane's layer (`10.palette-2.swatch-*`): siblings, one height. */
+export const LAYER_HEIGHT = 61.5;
+/** The export bar's button (`10.export-bar.button`). */
+export const EXPORT_SELECTED = 29;
+/** `10`'s leaves down the right margin (`10.art`), from the screen's top, drawn at their width: the drawing keeps its own proportion. */
+export const STUDIO_ART = { top: 30, width: 62.5 } as const;
+
+/** `16`'s bar, to its rule (`16.header-rule`). */
+export const BUILDER_APP_BAR = 49;
+/** *Save Palette* (`16.save`). */
+export const SAVE = 25.5;
+/** The name field (`16.name.field`). */
+export const NAME_FIELD = 27;
+/** A type chip (`16.name.kind.*`): siblings, one height. */
+export const TYPE_CHIP = 20;
+/** A slot's sample (`16.slots.slot-*.swatch`): siblings, one height. */
+export const SLOT_SAMPLE = 34.5;
+/** The padlock on *Locked* (`16.slots.slot-1.locked`). */
+export const LOCK_GLYPH_16 = 9.5;
+/** The glyph after *Replace* (`16.slots.slot-*.replace`). */
+export const REPLACE_GLYPH = 9.5;
+/** The matrix's label column: from a label's start to its value's (`16.matrix.*.label`, `.value`). */
+export const MATRIX_LABEL_COLUMN = 148;
+/** A tray tile (`16.tray.chip-*`): siblings, one width — the median — and one height. */
+export const TILE_WIDTH = 35.5;
+export const TILE_HEIGHT = 56.5;
+/** How much of a neighbouring page's tile shows at the screen's edge (`16.tray.chip-1`). */
+export const TRAY_PEEK = 21;
+/** The tray's rule to its tiles (`16.tray` to `16.tray.chip-*`). */
+export const TRAY_INSET = 11;
+/** The tray's chevrons (`16.tray.previous`, `.next`). */
+export const CHEVRON_GLYPH = 15;
+/** *Create & Save Palette* (`16.create`). */
+export const CREATE_AND_SAVE = 30.5;
+/** `16`'s art, from the top of the page under its bar (`16.art-*`; ADR-0166 D7). */
+export const BUILDER_ART = [
+  { key: 'kimono', name: 'kimono', side: 'left', top: 116, width: 40 },
+  { key: 'sashiko-top', name: 'sashiko', side: 'right', top: 45, width: 39 },
+  { key: 'sashiko-bottom', name: 'sashiko', side: 'right', top: 391, width: 36.5 },
+] as const;

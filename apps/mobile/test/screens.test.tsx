@@ -126,6 +126,8 @@ import { combinationsFor } from '../src/combinations';
 import { allCombinations } from '../src/corpus';
 import { Contemporary, STATES as CONTEMPORARY_STATES } from '../src/screens/Contemporary';
 import { PaletteStudio, STATES as PALETTE_STUDIO_STATES } from '../src/screens/PaletteStudio';
+import { PaletteBuilder, STATES as PALETTE_BUILDER_STATES } from '../src/screens/PaletteBuilder';
+import { storedPalette } from './stored-palettes';
 import {
   Preferences,
   type PreferenceStore,
@@ -191,7 +193,8 @@ import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import type { Mode, Theme } from '@irodora/design-tokens';
 import { deviceTheme } from '../src/appearance';
-import { deriveWeights, toStoreWrite } from '../src/palette';
+import { deriveWeights, draftOf, toStoreWrite } from '../src/palette';
+import { BAND_HEIGHT } from '../src/palette-readout';
 import { equivalentsFor } from '../src/contemporary';
 import { PALETTE_ROLES } from '@irodora/corpus';
 import type { PaletteDraft, PaletteStore } from '../src/palette';
@@ -209,7 +212,14 @@ import {
   nativeJudgeableSample,
   nativeNumericFeature,
 } from '@irodora/design-tokens';
-import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL, entryBySlug } from '../src/corpus';
+import {
+  allEntries,
+  allPalettes,
+  colorFor,
+  CORPUS_ENTRY_COUNT,
+  CORPUS_LABEL,
+  entryBySlug,
+} from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
 
@@ -529,6 +539,85 @@ const DRAFT: PaletteDraft = {
     { slug: allEntries()[2]!.entry.slug, role: 'accent' },
   ],
 };
+
+/**
+ * 16 as drawn (F-251): four slots filled, slot 1 locked, *Wardrobe Capsule*, a name — corpus colours
+ * near 16's sample content (E1), in slot order.
+ */
+const BUILT: PaletteDraft = {
+  name: 'Kyoto Autumn Linen Capsule',
+  category: 'contemporary',
+  members: [
+    { slug: 'soko-zumi', role: 'anchor' },
+    { slug: 'usu-gami', role: 'light' },
+    { slug: allEntries()[0]!.entry.slug, role: 'neutral' },
+    { slug: allEntries()[1]!.entry.slug, role: 'accent' },
+  ],
+  locked: new Set(['anchor']),
+};
+
+/** A store holding these palettes, oldest first, as the device lists them. */
+function storeWith(palettes: readonly StoredPalette[]): PaletteStore {
+  const rows = [...palettes];
+  return {
+    savePalette: () => undefined,
+    listPalettes: () => rows.filter((p) => p.deletedAt === null),
+    deletePalette: (id) => {
+      const at = rows.findIndex((p) => p.id === id);
+      if (at >= 0) rows.splice(at, 1);
+    },
+  };
+}
+
+/** Every node of a rendered tree, in render order (F-251's tests). */
+function nodesOf(node: TestNode, out: TestNode[] = []): TestNode[] {
+  out.push(node);
+  for (const child of node.children ?? []) if (typeof child !== 'string') nodesOf(child, out);
+  return out;
+}
+
+/** A node's style, its layers flattened (F-251's tests). */
+function flatStyleOf(node: TestNode): Record<string, unknown> {
+  const raw: unknown = node.props['style'];
+  if (Array.isArray(raw))
+    return (raw as unknown[]).reduce<Record<string, unknown>>(
+      (acc, layer) =>
+        typeof layer === 'object' && layer !== null
+          ? { ...acc, ...(layer as Record<string, unknown>) }
+          : acc,
+      {},
+    );
+  return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+}
+
+/** Two of the person's own palettes, one of each form (ADR-0164 D1). */
+const YOURS: readonly StoredPalette[] = [
+  storedPalette('p-band', 'Evening walk', [
+    [allEntries()[0]!.entry.slug, 'anchor'],
+    [allEntries()[1]!.entry.slug, 'light'],
+    [allEntries()[2]!.entry.slug, 'neutral'],
+  ]),
+  storedPalette(
+    'p-layers',
+    'Morning layers',
+    [
+      [allEntries()[3]!.entry.slug, 'anchor'],
+      [allEntries()[4]!.entry.slug, 'light'],
+    ],
+    'kasane',
+    2,
+  ),
+];
+
+/** Every handler 10 and 16 take: an absent handler is an absent control, so all are supplied. */
+const STUDIO_HANDLERS = {
+  onBack: () => undefined,
+  onCreate: () => undefined,
+  onApply: () => undefined,
+  onExport: () => undefined,
+  onEdit: () => undefined,
+} as const;
+const BUILDER_HANDLERS = { onBack: () => undefined, onSaved: () => undefined } as const;
 
 /**
  * Home's port, in memory (F-146).
@@ -2621,52 +2710,111 @@ const SCREENS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    // 10 at rest (F-251): the curated palettes, a profile stored so *Apply* is live.
     name: 'screens/PaletteStudio',
-    shows: showing(PALETTE_STUDIO_STATES, 'empty'),
-    // `static`, like the rest: its interactive parts are TextField, SearchField, Chip, Button
-    // and Swatch, each registered in packages/ui where the suite makes them render focus,
-    // active, disabled and loading differently.
-    kind: 'static',
-    sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<PaletteStudio store={fakeStore()} />, theme),
-  },
-  {
-    /*
-     * The SAME screen with a draft in it.
-     *
-     * The empty and populated branches of this screen render almost disjoint trees — an empty
-     * Studio draws no swatch, no role chip and no reorder control, so a registry entry for it
-     * alone would check the accessibility of a screen nobody has used yet.
-     */
-    name: 'screens/PaletteStudio (with a draft)',
     shows: showing(PALETTE_STUDIO_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme),
+      draw(<PaletteStudio store={fakeStore()} hasProfile {...STUDIO_HANDLERS} />, theme),
   },
   {
-    /*
-     * The Studio with a pair CVD mode flags (F-032). It draws a sentence, a separation number,
-     * a proposed swatch and an improvement that none of the other Studio entries draw — and it
-     * is the branch where F-069 matters most, since a status colour beside a colour sample is
-     * exactly what this panel would reach for if nobody had decided otherwise.
-     */
-    name: 'screens/PaletteStudio (CVD flag)',
+    // *My Custom Palettes*: a band and a layered palette of the person's own, each with its overflow.
+    name: 'screens/PaletteStudio (your palettes)',
     shows: showing(PALETTE_STUDIO_STATES),
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(
-        <PaletteStudio
+        <PaletteStudio store={storeWith(YOURS)} initialView="custom" {...STUDIO_HANDLERS} />,
+        theme,
+      ),
+  },
+  {
+    // The witness for `empty`: no palettes of one's own, 00's caption, *Create New Palette* above.
+    name: 'screens/PaletteStudio (no palettes of your own)',
+    shows: showing(PALETTE_STUDIO_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<PaletteStudio store={fakeStore()} initialView="custom" {...STUDIO_HANDLERS} />, theme),
+  },
+  {
+    // 16 as drawn: four slots, slot 1 locked, a type chosen, a name, the matrix computing.
+    name: 'screens/PaletteBuilder',
+    shows: showing(PALETTE_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <PaletteBuilder store={fakeStore()} initialDraft={BUILT} {...BUILDER_HANDLERS} />,
+        theme,
+      ),
+  },
+  {
+    // An empty draft: four empty slots, each saying how it is filled, and the save's reason (E4).
+    name: 'screens/PaletteBuilder (an empty draft)',
+    shows: showing(PALETTE_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<PaletteBuilder store={fakeStore()} {...BUILDER_HANDLERS} />, theme),
+  },
+  {
+    // 08's pair (E-227): A locked in slot 1, B in slot 3, unnamed.
+    name: 'screens/PaletteBuilder (a pair from Compare)',
+    shows: showing(PALETTE_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <PaletteBuilder
+          store={fakeStore()}
+          initialDraft={draftOf([FIXTURE_A, FIXTURE_B])!}
+          {...BUILDER_HANDLERS}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * FR-35's block (F-032; ADR-0165 D6): the hardest pair in the corpus, so the flag, the separation,
+     * the swap and its gain are drawn — and F-069 matters most, since a status colour beside a sample
+     * is what this block would reach for if nobody had decided otherwise.
+     */
+    name: 'screens/PaletteBuilder (a hard pair)',
+    shows: showing(PALETTE_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <PaletteBuilder
           store={fakeStore()}
           initialDraft={{
             name: 'Hard to separate',
             members: [
               { slug: 'kawaki-suna', role: 'anchor' },
-              { slug: 'usu-shiba', role: 'neutral' },
+              { slug: 'usu-shiba', role: 'light' },
             ],
           }}
+          {...BUILDER_HANDLERS}
+        />,
+        theme,
+      ),
+  },
+  {
+    // Editing a saved palette: the edit title and the edit action (E4).
+    name: 'screens/PaletteBuilder (editing)',
+    shows: showing(PALETTE_BUILDER_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <PaletteBuilder
+          store={fakeStore()}
+          initialDraft={BUILT}
+          editingId="p-band"
+          {...BUILDER_HANDLERS}
         />,
         theme,
       ),
@@ -3197,6 +3345,7 @@ describe('every screen declares its data conditions', () => {
     Wear: WEAR_STATES,
     Contemporary: CONTEMPORARY_STATES,
     PaletteStudio: PALETTE_STUDIO_STATES,
+    PaletteBuilder: PALETTE_BUILDER_STATES,
     Preferences: PREFERENCES_STATES,
     AddGarment: ADD_GARMENT_STATES,
     Wardrobe: WARDROBE_STATES,
@@ -3828,7 +3977,7 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
      * failure C9 exists for.
      */
     const finder = draw(<Finder initialQuery="dark muted green" />, 'light');
-    const studio = draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, 'light');
+    const studio = draw(<PaletteBuilder store={fakeStore()} initialDraft={DRAFT} />, 'light');
 
     /*
      * FOUND SOMETHING FIRST. "No ragged figures" and "no figures" print the same result, and
@@ -3969,108 +4118,101 @@ describe('Palette Studio builds, edits, reorders and saves (FR-49)', () => {
     return out;
   }
 
-  const nodes = (draft?: PaletteDraft, store: PaletteStore = fakeStore()): string[] =>
+  const builder = (draft?: PaletteDraft, store: PaletteStore = fakeStore()): string[] =>
     textOf(
       draw(
-        // `exactOptionalPropertyTypes` is on: an optional prop is absent or present, never
-        // explicitly `undefined`. Spreading is how "absent" is expressed.
-        <PaletteStudio store={store} {...(draft === undefined ? {} : { initialDraft: draft })} />,
+        <PaletteBuilder store={store} {...(draft === undefined ? {} : { initialDraft: draft })} />,
         'light',
       ),
     );
 
-  it('offers a role control for every role the schema defines', () => {
-    const text = nodes(DRAFT).join(' ').toLowerCase();
-    // Read from the schema's own list, not from four strings typed here: a fifth role would
-    // otherwise be a chip nobody renders and a test nobody fails.
-    for (const role of PALETTE_ROLES) expect(text).toContain(role);
+  it('has a slot for every role the schema defines, in 16’s order', () => {
+    // Read from the schema's own list: a fifth role would be a slot nobody renders and a test nobody fails.
+    const tree = draw(<PaletteBuilder store={fakeStore()} initialDraft={BUILT} />, 'light');
+    for (const role of PALETTE_ROLES)
+      expect(nodesOf(tree).some((n) => n.props['testID'] === `builder.slot.${role}`)).toBe(true);
+    const text = builder(BUILT).join(' ');
+    expect(text).toContain('Slot 1: Anchor / Dark Base');
+    expect(text).toContain('Slot 4: Subtle Accent');
   });
 
-  it('names each reorder and remove control by the colour it acts on', () => {
-    const labels = nodes(DRAFT);
-    const first = allEntries()[0]!.entry.name.en;
-    // A screen reader moving down a member list otherwise hears "Move up" three times with
-    // nothing to tell the rows apart.
-    expect(labels).toContain(`Move up — ${first}`);
-    expect(labels).toContain(`Move down — ${first}`);
-    expect(labels).toContain(`Remove — ${first}`);
+  it('names each slot’s Replace by the slot it acts on', () => {
+    const text = builder(BUILT).join(' | ');
+    expect(text).toContain('Replace, Slot 2: Light Ground');
+    // A locked slot draws no Replace (ADR-0165): it says Locked instead.
+    expect(text).not.toContain('Replace, Slot 1');
+    expect(text).toContain('Locked');
   });
 
-  it('draws every member as a swatch, not only as a name', () => {
-    const text = nodes(DRAFT).join(' ');
-    for (const m of DRAFT.members) {
-      const entry = allEntries().find((e) => e.entry.slug === m.slug)!;
+  it('draws every filled slot as a sample, its hex and its name', () => {
+    const text = builder(BUILT).join(' ');
+    for (const member of BUILT.members) {
+      const entry = entryBySlug(member.slug)!;
       expect(text).toContain(entry.entry.name.en);
       expect(text).toContain(entry.derived.hex);
     }
   });
 
-  it('says what the ordering DOES, rather than offering a reorder with no visible effect', () => {
-    expect(nodes(DRAFT).join(' ')).toContain('order sets how much');
-  });
-
   it('explains why an empty draft cannot be saved rather than only disabling the control', () => {
-    // A disabled control with no stated reason is the accessibility failure that looks like
-    // polish. The sentence comes from the schema's verdict via `draftProblem`.
-    expect(nodes().join(' ')).toContain('Add at least one colour before saving');
+    expect(builder().join(' ')).toContain('Add at least one colour before saving');
   });
 
-  it('explains the anchor rule when the anchor is gone', () => {
-    const noAnchor: PaletteDraft = {
-      ...DRAFT,
-      members: DRAFT.members.map((m) => ({ ...m, role: 'neutral' as const })),
+  it('explains the anchor rule when the anchor slot is empty', () => {
+    const noAnchor: PaletteDraft = { name: 'x', members: [{ slug: FIXTURE_A, role: 'light' }] };
+    expect(builder(noAnchor).join(' ')).toContain('must be the anchor');
+  });
+
+  it('explains a one-layer kasane', () => {
+    const one: PaletteDraft = {
+      name: 'x',
+      category: 'kasane',
+      members: [{ slug: FIXTURE_A, role: 'anchor' }],
     };
-    expect(nodes(noAnchor).join(' ')).toContain('must be the anchor');
+    expect(builder(one).join(' ')).toContain('A kasane needs at least two layers');
   });
 
-  /*
-   * THE DECOY. Without it every assertion above is equally true of a screen that shows every
-   * sentence at once [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
-   */
   it('DECOY — a valid draft shows no problem sentence at all', () => {
-    const text = nodes(DRAFT).join(' ');
+    const text = builder(BUILT).join(' ');
     expect(text).not.toContain('Add at least one colour before saving');
     expect(text).not.toContain('must be the anchor');
     expect(text).not.toContain('Give the palette a name');
   });
 
-  /*
-   * FR-23's negative form, applied to a palette the person made.
-   *
-   * A device-built palette is `classification: "editorial"` — the honest field — and that
-   * token's label reads "Irodora original", which is untrue of somebody else's work. Compared
-   * as WHOLE text nodes rather than as a substring, because "original" appears legitimately
-   * elsewhere and a substring assertion would fail on the wrong thing.
-   */
   it('never presents a palette the person made as Irodora own work (ADR-0067)', () => {
-    const shown = nodes(DRAFT);
-    for (const label of ['Irodora original', 'Irodora original, Japanese-inspired'])
-      expect(shown).not.toContain(label);
-    expect(shown.join(' ')).toContain('Made by you, on this device');
+    const label = en['classification.editorial'];
+    // The draft, and the person's own palettes in 10.
+    expect(builder(BUILT).join(' ')).not.toContain(label);
+    const yours = textOf(
+      draw(<PaletteStudio store={storeWith(YOURS)} initialView="custom" />, 'light'),
+    );
+    expect(yours.join(' ')).not.toContain(label);
+    expect(yours.join(' ')).toContain('Made by you, on this device');
+    // DECOY: the scope is right — a curated kasane's tag DOES carry its classification.
+    const curated = textOf(draw(<PaletteStudio store={fakeStore()} />, 'light')).join(' ');
+    expect(curated).toContain(en['classification.japanese-inspired']);
   });
 
-  it('shows a saved palette in the list, having written it through the port', () => {
+  it('shows a saved palette under My Custom Palettes, having written it through the port', () => {
     const store = fakeStore();
-    // Written the way the screen writes it, so this exercises `toStoreWrite` end to end
-    // rather than a shape invented here.
-    let n = 0;
     store.savePalette(
       toStoreWrite(
         DRAFT,
-        { id: '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4e', today: '2026-08-25' },
-        () => `color-${String(n++)}`,
+        { id: '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4e', today: '2026-11-02' },
+        () => 'color-1',
       ),
       1000,
     );
-    expect(nodes(undefined, store).join(' ')).toContain('Evening walk');
+    const shown = textOf(draw(<PaletteStudio store={store} initialView="custom" />, 'light'));
+    expect(shown.join(' ')).toContain('Evening walk');
   });
 
-  it('says nothing is saved when nothing is, rather than showing an empty list', () => {
-    expect(nodes().join(' ')).toContain('Nothing saved yet');
+  it('says nothing is saved when nothing is, with what resolves it', () => {
+    const shown = textOf(draw(<PaletteStudio store={fakeStore()} initialView="custom" />, 'light'));
+    expect(shown.join(' ')).toContain('Nothing saved yet');
   });
 });
 
-/** A11 — the Studio announces structure a screen reader can navigate. */
+/** A11 — 10 and 16 announce structure a screen reader can navigate. */
 describe('Palette Studio has headings (A11)', () => {
   function roles(node: TestNode, out: string[] = []): string[] {
     const here = node.props['accessibilityRole'];
@@ -4082,11 +4224,15 @@ describe('Palette Studio has headings (A11)', () => {
     return out;
   }
 
-  for (const theme of ['light', 'dark'] as const)
-    it(`announces its sections as headings in ${theme}`, () => {
-      const tree = draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme);
-      expect(roles(tree)).toContain('header');
+  for (const theme of ['light', 'dark'] as const) {
+    it(`announces 10’s cards as headings in ${theme}`, () => {
+      expect(roles(draw(<PaletteStudio store={fakeStore()} />, theme))).toContain('header');
     });
+    it(`announces 16’s slots and matrix as headings in ${theme}`, () => {
+      const tree = draw(<PaletteBuilder store={fakeStore()} initialDraft={BUILT} />, theme);
+      expect(roles(tree).filter((r) => r === 'header').length).toBeGreaterThanOrEqual(5);
+    });
+  }
 });
 
 /**
@@ -4128,9 +4274,24 @@ describe('no screen puts a status colour beside a colour sample (F-069)', () => 
 describe('the route wires the real repository, not a fake', () => {
   const route = readFileSync(join(process.cwd(), 'app', '(tabs)', 'atlas', 'palettes.tsx'), 'utf8');
 
-  it('imports the device repository and hands it to the screen', () => {
+  it('imports the device repository and hands it to both of its screens', () => {
     expect(route).toContain("from '../../../src/store/repository'");
-    expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
+    expect(route).toMatch(/<PaletteStudio[\s\S]*?store=\{repo\}/u);
+    expect(route).toMatch(/<PaletteBuilder[\s\S]*?store=\{repo\}/u);
+    expect(route).toContain('const repo = deviceRepository();');
+  });
+
+  it('wires 10’s and 16’s actions where ADR-0165 sends them', () => {
+    for (const wire of [
+      "router.navigate('/atlas')",
+      "router.push('/atlas/palettes?draft=new')",
+      "router.push('/wardrobe/outfit')",
+      'offerCombination(combination)',
+      'router.push(href)',
+      "router.navigate('/atlas/palettes?view=custom')",
+      'activeProfile(repo)',
+    ])
+      expect(route).toContain(wire);
   });
 
   it('does the same for guided setup, whose port is the other half of this seam', () => {
@@ -4710,12 +4871,12 @@ describe('CVD mode flags a hard pair and proposes a swap (FR-35)', () => {
     return out;
   }
 
-  /** The hardest pair in the corpus by the model's own reckoning (0.68 of 100). */
+  /** The hardest pair in the corpus by the model's own reckoning (0.68 of 100), in slots 1 and 2. */
   const HARD: PaletteDraft = {
     name: 'Hard to separate',
     members: [
       { slug: 'kawaki-suna', role: 'anchor' },
-      { slug: 'usu-shiba', role: 'neutral' },
+      { slug: 'usu-shiba', role: 'light' },
     ],
   };
   /** A near-black and a near-white: separable under every deficiency. */
@@ -4723,41 +4884,37 @@ describe('CVD mode flags a hard pair and proposes a swap (FR-35)', () => {
     name: 'Easy to separate',
     members: [
       { slug: 'soko-zumi', role: 'anchor' },
-      { slug: 'usu-gami', role: 'neutral' },
+      { slug: 'usu-gami', role: 'light' },
     ],
   };
 
   const nodes = (draft: PaletteDraft): string[] =>
-    textOf(draw(<PaletteStudio store={fakeStore()} initialDraft={draft} />, 'light'));
+    textOf(draw(<PaletteBuilder store={fakeStore()} initialDraft={draft} />, 'light'));
 
-  it('flags the pair, naming both colours', () => {
+  it('flags the pair under the matrix, naming both slots', () => {
     const text = nodes(HARD).join(' ');
-    expect(text).toContain('These two are hard to tell apart');
-    expect(text).toContain('Dry Sand');
-    expect(text).toContain('Thin Turf');
+    expect(text).toContain(
+      'These two are hard to tell apart: Slot 1: Anchor / Dark Base · Slot 2: Light Ground',
+    );
   });
 
-  it('DECOY — a well-separated palette is not flagged, and says so', () => {
-    // Without this, "it shows the flag" would be equally true of a screen that always shows it.
+  it('DECOY — a well-separated palette draws nothing extra, as 16 draws it', () => {
     const text = nodes(EASY).join(' ');
     expect(text).not.toContain('These two are hard to tell apart');
-    expect(text).toContain('Every pair here stays distinguishable');
   });
 
-  it('shows the improvement as a number, with the swap that earns it', () => {
+  it('shows the gain as a number, with the swap that earns it and its control', () => {
     const text = nodes(HARD).join(' ');
     expect(text).toContain('Swapping the second for this raises it to');
-    // A gain, signed, so the direction is legible without reading the sentence around it.
     expect(text).toMatch(/A gain of \+\d+/u);
+    expect(text).toContain('Replace — Light Ground');
   });
 
   it('states how the number was produced', () => {
-    // ADR-0031: a measurement without its conditions is a claim.
     expect(nodes(HARD).join(' ')).toContain('strongest tabulated severity');
   });
 
   it('says nothing about the reader’s vision, on either palette', () => {
-    // Criterion 3, on the surface rather than only in the catalogue.
     for (const draft of [HARD, EASY]) {
       const text = nodes(draft).join(' ');
       expect(text).not.toMatch(/\byour (?:eyes|vision)\b/iu);
@@ -5512,57 +5669,48 @@ describe('the pair leads Compare, drawn apart as 08 draws it (F-151, ADR-0154)',
 });
 
 describe('the Studio shows the palette as one thing (F-151)', () => {
-  function styleOf(node: TestNode): Record<string, unknown> {
-    const raw: unknown = node.props['style'];
-    if (Array.isArray(raw))
-      return (raw as unknown[]).reduce<Record<string, unknown>>(
-        (acc, layer) =>
-          typeof layer === 'object' && layer !== null
-            ? { ...acc, ...(layer as Record<string, unknown>) }
-            : acc,
-        {},
-      );
-    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  /** A card's band segments, found by its testID rather than by guessing at the tree shape. */
+  function segments(tree: TestNode, key: string): readonly Record<string, unknown>[] {
+    const band = nodesOf(tree).find((n) => n.props['testID'] === `studio.palette.${key}.band`);
+    if (band === undefined) return [];
+    return nodesOf(band)
+      .map(flatStyleOf)
+      .filter((st) => typeof st['flex'] === 'number' && typeof st['height'] === 'number');
   }
 
-  /** The strip's segments, found by the testID rather than by guessing at the tree shape. */
-  function segments(draft: PaletteDraft): readonly Record<string, unknown>[] {
-    const found: Record<string, unknown>[] = [];
-    const collect = (n: TestNode): void => {
-      const s = styleOf(n);
-      if (typeof s['flex'] === 'number' && typeof s['height'] === 'number') found.push(s);
-      for (const c of n.children ?? []) if (typeof c !== 'string') collect(c);
-    };
-    const walk = (n: TestNode): void => {
-      if (n.props['testID'] === 'studio-strip') collect(n);
-      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
-    };
-    walk(draw(<PaletteStudio store={fakeStore()} initialDraft={draft} />, 'light'));
-    return found;
-  }
-
-  it('draws one segment per member, at the weights the SAVED RECORD will carry', () => {
-    /*
-     * `studio.order` has said "order is proportion" since F-049 and nothing has ever shown it.
-     * The widths are `deriveWeights` — the same function that writes the stored record — so the
-     * strip cannot become a second opinion about proportion. It is the record, seen.
-     */
-    const found = segments(DRAFT);
-    expect(found).toHaveLength(DRAFT.members.length);
-    expect(found.map((s) => s['flex'])).toEqual([...deriveWeights(DRAFT.members.length)]);
+  it('draws one segment per member, at the record’s weights, curated and stored', () => {
+    const curated = draw(<PaletteStudio store={fakeStore()} />, 'light');
+    for (const published of allPalettes().filter((p) => p.palette.category !== 'kasane')) {
+      const found = segments(curated, `curated:${published.palette.slug}`);
+      const ranked = [...published.palette.colors].sort((a, b) => a.rank - b.rank);
+      expect(found.map((st) => st['flex'])).toStrictEqual(ranked.map((m) => m.weight));
+    }
+    const yours = draw(<PaletteStudio store={storeWith(YOURS)} initialView="custom" />, 'light');
+    expect(segments(yours, 'personal:p-band').map((st) => st['flex'])).toStrictEqual([
+      ...deriveWeights(3),
+    ]);
   });
 
-  it('changes when the palette does, which is the only reason a reorder control is worth having', () => {
-    // The decoy for the case above: equal widths would satisfy "one segment per member" and say
-    // nothing at all about proportion.
-    const shorter: PaletteDraft = { ...DRAFT, members: DRAFT.members.slice(1) };
-    expect(segments(shorter).map((s) => s['flex'])).not.toEqual(
-      segments(DRAFT).map((s) => s['flex']),
+  it('changes when the palette does: two palettes, two sets of widths', () => {
+    const curated = draw(<PaletteStudio store={fakeStore()} />, 'light');
+    expect(segments(curated, 'curated:quiet-neutrals').map((st) => st['flex'])).not.toStrictEqual(
+      segments(curated, 'curated:seasonal').map((st) => st['flex']),
     );
   });
 
-  it('draws the strip at the judgeable height', () => {
-    for (const s of segments(DRAFT)) expect(s['height']).toBe(nativeJudgeableSample);
+  /*
+   * ADR-0162 replaces "draws the strip at the judgeable height": a palette shown for choosing is drawn
+   * at 10's height, declared `judged={false}`; every surface where a difference is judged by eye
+   * keeps the floor.
+   */
+  it('draws 10’s band shown, at BAND_HEIGHT, and keeps the floor wherever a pair is judged', () => {
+    const curated = draw(<PaletteStudio store={fakeStore()} />, 'light');
+    const found = segments(curated, 'curated:quiet-neutrals');
+    expect(found.length).toBeGreaterThan(0);
+    for (const st of found) expect(st['height']).toBe(BAND_HEIGHT);
+    expect(BAND_HEIGHT).toBeLessThan(nativeJudgeableSample);
+    // Where a pair is judged the floor stays: Compare's samples are held at or above it by
+    // 'the pair leads Compare' (ADR-0154) and `Pair` by pair.test — both unchanged by ADR-0162.
   });
 });
 
@@ -7049,20 +7197,17 @@ describe('every list surface arrives once (F-266)', () => {
     expect(findings(arrived)).toStrictEqual([]);
   });
 
-  it('Palette Studio’s saved palettes arrive once, in order', () => {
-    const store = fakeStore();
-    let n = 0;
-    for (const id of [
-      '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4e',
-      '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4f',
-    ])
-      store.savePalette(
-        toStoreWrite(DRAFT, { id, today: '2026-10-12' }, () => `color-${String(n++)}`),
-        1000,
-      );
-    expect(findings(capture(() => draw(<PaletteStudio store={store} />, 'dark')))).toStrictEqual(
-      [],
-    );
+  it('Palette Studio’s palettes arrive once, in order, in both views', () => {
+    expect(
+      findings(
+        capture(() =>
+          draw(<PaletteStudio store={storeWith(YOURS)} initialView="custom" />, 'dark'),
+        ),
+      ),
+    ).toStrictEqual([]);
+    expect(
+      findings(capture(() => draw(<PaletteStudio store={fakeStore()} />, 'dark'))),
+    ).toStrictEqual([]);
   });
 
   it('the Wardrobe’s lookbook arrives once, in order (F-238)', () => {

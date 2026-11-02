@@ -450,6 +450,28 @@ The platform header leaves: `headerShown: false`, and `PLATFORM_HEADER['atlas/pa
   for a named, anchored, one-layer kasane.
 - **Fonts:** 襲, 控 and 厳 joined the Noto Sans JP subset.
 
+**After increment 4 (2026-11-02):**
+
+- **The builder declares no screen state** (`STATES = {}`): an empty draft draws its empty slots,
+  each saying how it is filled (E4), not a state panel. The Studio keeps `absent → empty` (its
+  *My Custom Palettes* with none saved).
+- **The slot's foot row is as 16 draws it:** a locked slot shows *Locked* (its padlock in
+  `glyph.lock`) and the role; an unlocked one the role and *Replace*. *Locked* unlocks; there is no
+  lock control on an unlocked slot, since 16 draws none. *Replace*'s name holds its slot.
+- **FR-35's swap control is named by the slot's role** (*Replace — Light Ground*), so its label
+  carries no figure a button cannot set tabular; the separation and gain it prints are floored.
+- **Every text with a figure is tabular** (slot headings, the matrix's pair, provenance dates, the
+  badges), and every builder button takes the script, so Japanese is set in the bundled face.
+- **Keys:** the old Studio's (`studio.members` … `studio.new`, `atlas.search`, `cvd.title`,
+  `cvd.none`) left with it; `role.*` took 16's role words; ja `studio.title` is 配色工房 and
+  Compare's *Add Pair* button follows it (2色を配色工房に追加); 房 and 始 joined the subset.
+- **Tests moved with the screens:** screens.test's subjects (three for 10, five for 16), FR-49,
+  FR-35, the headings and F-151 (ADR-0162: the band is shown at `BAND_HEIGHT`; Compare's and
+  `Pair`'s floor tests stand); chrome.test's decoy moved to `profile/measure`; compare-states'
+  route literal; cvd-mode's copy scan widened to F-251's CVD words. screen-insets re-captured the
+  palette subjects only.
+- **The e2e anchor** for `/atlas/palettes` is `palettes.curated`.
+
 ---
 
 ## Approach

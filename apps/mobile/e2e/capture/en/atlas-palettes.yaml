@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/palettes'
-- assertVisible: 'Palette Studio'
+- assertVisible: 'Curated Systems'
 - waitForAnimationToEnd
 - takeScreenshot: capture

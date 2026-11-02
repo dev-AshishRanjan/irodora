@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/palettes'
-- assertVisible: '配色スタジオ'
+- assertVisible: '収録の配色'
 - waitForAnimationToEnd
 - takeScreenshot: capture

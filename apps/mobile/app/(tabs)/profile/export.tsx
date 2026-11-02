@@ -33,6 +33,8 @@ export default function ExportRoute(): React.JSX.Element {
     slug?: string | string[];
     colours?: string | string[];
     pair?: string | string[];
+    palette?: string | string[];
+    saved?: string | string[];
     format?: string | string[];
   }>();
   const first = (v: string | string[] | undefined): string | undefined =>
@@ -40,11 +42,14 @@ export default function ExportRoute(): React.JSX.Element {
   const slug = first(params.slug);
   const colours = first(params.colours);
   const pair = first(params.pair);
+  // 10's palettes (F-251, ADR-0165 D2): a curated slug or a saved id.
+  const palette = first(params.palette);
+  const saved = first(params.saved);
   // A writer's own name, or nothing: a parameter is never trusted to name a format (ADR-0156 D4).
   const format = WRITERS.find((w) => w.format === first(params.format))?.format;
   const subject = useMemo(
-    () => exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair),
-    [slug, colours, pair],
+    () => exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair, palette, saved),
+    [slug, colours, pair, palette, saved],
   );
 
   return (

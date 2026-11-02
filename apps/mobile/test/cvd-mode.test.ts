@@ -189,7 +189,12 @@ describe('it reads as an observation about the colours (criterion 3)', () => {
   const ADDRESSES_THE_READER =
     /\byou (?:may|might|could|cannot|can't|will) (?:not )?(?:be able to )?(?:see|tell|distinguish|perceive)\b|\byour (?:eyes|vision|colour vision|color vision)\b|あなたの目|あなたには見/iu;
 
-  const CVD_KEYS = Object.keys(en).filter((k) => k.startsWith('cvd.'));
+  // F-251's CVD words too: 10's separation badge, 16's matrix row and FR-35's swap control.
+  const CVD_KEYS = Object.keys(en).filter(
+    (k) =>
+      k.startsWith('cvd.') ||
+      ['palettes.badge.cvd', 'palettes.matrix.separation', 'palettes.replace'].includes(k),
+  );
 
   it('has copy to check at all', () => {
     // A scan over an empty set reports the same "no offenders" as a clean one.
@@ -216,7 +221,9 @@ describe('it reads as an observation about the colours (criterion 3)', () => {
     // The decoy proves the check fires; this proves the copy says the right thing rather than
     // merely avoiding the wrong one.
     expect(en['cvd.hard']).toContain('These two');
-    expect(en['cvd.none']).toContain('Every pair here');
+    // F-251: 16 draws nothing extra for a well-separated palette, so the old all-clear line left
+    // with the old Studio's card; the swap's words still describe colours, not a person.
+    expect(en['cvd.swapTo']).toContain('Swapping the second');
   });
 
   it('states how the number was produced, rather than presenting it bare', () => {

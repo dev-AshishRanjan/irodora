@@ -175,7 +175,7 @@
     {
       "route": "/atlas/palettes",
       "file": "(tabs)/atlas/palettes.tsx",
-      "anchor": "studio.title"
+      "anchor": "palettes.curated"
     },
     {
       "route": "/atlas/card/[slug]",

@@ -1,46 +1,26 @@
 /**
- * Palette Studio — build, edit, reorder and save a palette (FR-49).
+ * Palette Studio — mockup `10` (F-251): the curated palettes and the person's own, each shown as one
+ * thing with what it is, where it came from, and what the engine computes of it (FR-22, FR-23, FR-49).
  *
- * ## The screen decides nothing about validity
+ * ## Two forms, by category (ADR-0164 D1)
  *
- * Whether a draft can be saved is `parsePalette`'s answer, reached through `draftProblem` and
- * `toStoreWrite` in [`../palette.ts`](../palette.ts). This file disables a control and shows a
- * sentence; it does not know what an anchor is, what a rank is, or that ranks must be
- * contiguous. A screen that re-stated those rules would be a second copy of them, and the
- * corpus one is the copy nobody would be looking at when they drifted apart.
+ * A kasane is its layers drawn apart, outermost first, the hex on each (form 2). Every other palette is
+ * a band of its members at the record's weights — order is proportion (F-151) — with its columns,
+ * badges and actions beneath (form 1). Curated and personal palettes take the same two forms; the
+ * words say which is which (ADR-0067).
  *
- * ## Order is proportion, and that is why reordering is here at all
+ * ## The band is shown, not judged (ADR-0162)
  *
- * The weight ladder is derived from rank, so moving a colour up changes its share of the
- * palette. The screen says so (`studio.order`) rather than leaving a reorder control whose
- * only visible effect is the order of some rows.
+ * A palette shown for choosing is drawn at `10`'s height; its figures are computed from the values and
+ * name their model. The judgeable floor stays where a difference is judged by eye (`08`, `Pair`).
  *
- * ## What this screen must never render
+ * ## Nothing here computes
  *
- * **The corpus classification label.** A device-built palette is `classification: "editorial"`
- * — the honest field for work that is neither canonical nor ours — and that token's label
- * reads *"Irodora original"*, which is untrue of a palette somebody else made. The origin is
- * stated in the Studio's own words instead, and `screens.test.tsx` asserts the label is absent
- * as a whole text node. See
- * [ADR-0067](../../../docs/adr/0067-a-palette-built-on-a-device-is-validated-by-the-corpus-schema-and-says-it-came-from-a-device.md).
- *
- * ## Why the messages are plain text rather than `Status`
- *
- * F-069: a status colour may not sit beside a colour sample without a `swatch.well` between
- * them, because simultaneous contrast changes how the sample reads. This screen is mostly
- * samples, and a saved-confirmation is prose rather than a reading about data — so it carries
- * no colour channel at all, which satisfies golden rule 13 by having nothing to satisfy.
- * `screens.test.tsx` now runs `checkStatusAdjacency` over every screen, so the next person to
- * reach for a status token here is told rather than trusted.
- *
- * ## The store arrives as a prop
- *
- * Required, not defaulted. A default that quietly did not persist would look identical to one
- * that did, right up to the moment somebody reopened the app. The route supplies the device
- * repository; the conformance registry supplies an in-memory one.
+ * `palette-readout.ts` decides every word and figure; this file composes `10`. Building a palette is
+ * `16`, the route's draft state (`PaletteBuilder`).
  */
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
@@ -49,574 +29,660 @@ import {
   Button,
   Card,
   Chip,
+  ChoiceGroup,
   EmptyState,
+  IconButton,
+  Illustration,
   Row,
   Screen,
-  SearchField,
+  Sheet,
   Stack,
   Strip,
-  Surface,
   Swatch,
   Text,
-  TextField,
+  type Script,
 } from '@irodora/ui';
-import { PALETTE_ROLES, type PaletteRole } from '@irodora/corpus';
-import { uuidv7 } from '@irodora/store';
+import type { WornCombination } from '../outfit/fromWear';
+import type { PaletteStore } from '../palette';
+import { fitsSlots } from '../palette';
 import {
-  addMember,
-  draftFrom,
-  draftProblem,
-  EMPTY_DRAFT,
-  moveMember,
-  deriveWeights,
-  removeMember,
-  rename,
-  setRole,
-  toStoreWrite,
-  type DraftProblem,
-  type PaletteDraft,
-  type PaletteStore,
-} from '../palette';
-import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
-import { findSeparationProblems } from '../outfit/cvd';
+  BADGE,
+  BAND_HEIGHT,
+  CARD_ACTION,
+  cardForm,
+  columnLines,
+  contrastBadge,
+  CREATE,
+  curatedOrder,
+  curatedShown,
+  descriptionLine,
+  EXPORT_SELECTED,
+  exportHref,
+  kindLabel,
+  labHandOff,
+  LAYER_HEIGHT,
+  layeringTag,
+  personalShown,
+  provenanceLine,
+  provenanceTag,
+  separationBadge,
+  SOURCE_HEIGHT,
+  STUDIO_APP_BAR,
+  STUDIO_ART,
+  titleLine,
+  type ShownMember,
+  type ShownPalette,
+} from '../palette-readout';
+import { japaneseRun, type MessageKey } from '../i18n';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
 import type { ScreenStates } from '../states';
 
 /**
- * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: the draft
- * has no colour yet.
+ * What this screen shows in each data condition it can reach (F-236, ADR-0129). Absent: *My Custom
+ * Palettes* with none saved — `00`'s caption, and *Create New Palette* above resolves it.
  */
 export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
-/** Role → catalogue key. Total, so a fifth role is a compile error rather than a blank chip. */
-const ROLE_KEYS = {
-  anchor: 'role.anchor',
-  neutral: 'role.neutral',
-  light: 'role.light',
-  accent: 'role.accent',
-} as const satisfies Record<PaletteRole, MessageKey>;
+/** The two views the segmented control switches between (ADR-0165 D2). */
+export type StudioView = 'curated' | 'custom';
 
-/** Problem → catalogue key. Total for the same reason. */
-const PROBLEM_KEYS = {
-  empty: 'studio.problem.empty',
-  noAnchor: 'studio.problem.noAnchor',
-  noName: 'studio.problem.noName',
-  tooFewLayers: 'studio.problem.tooFewLayers',
-  other: 'studio.problem.other',
-} as const satisfies Record<DraftProblem, MessageKey>;
+/** Four columns a row beneath the band (ADR-0164 D2). */
+const COLUMNS = 4;
 
-/** How many matches the picker offers. Enough to choose from, few enough to scan. */
-const MATCH_LIMIT = 8;
+/** Words laid over a sample are read by the sample's own name, once (F-248's tile form). */
+const HIDDEN = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: 'no-hide-descendants' as const,
+};
 
-function matches(query: string, taken: ReadonlySet<string>): readonly PublishedEntry[] {
-  const q = query.trim().toLowerCase();
-  if (q === '') return [];
-  return allEntries()
-    .filter((e) => !taken.has(e.entry.slug))
-    .filter((e) =>
-      [
-        e.entry.name.kanji,
-        e.entry.name.kana,
-        e.entry.name.romaji,
-        e.entry.name.en,
-        e.entry.slug,
-      ].some((v) => v.toLowerCase().includes(q)),
-    )
-    .slice(0, MATCH_LIMIT);
+type T = (key: MessageKey) => string;
+
+interface CardProps {
+  readonly palette: ShownPalette;
+  readonly t: T;
+  readonly script: Script;
+  /** The Lab ranks against a profile; without one, *Apply* is disabled and says why. */
+  readonly hasProfile: boolean;
+  readonly onApply: ((combination: WornCombination) => void) | undefined;
+  readonly onExport: ((href: string) => void) | undefined;
+  readonly onMore: ((palette: ShownPalette) => void) | undefined;
 }
 
+/** The two badges, a bullet between them as `10` draws it. */
+function Badges({
+  words,
+  script,
+  testID,
+}: {
+  readonly words: readonly string[];
+  readonly script: Script;
+  readonly testID: string;
+}): React.JSX.Element {
+  return (
+    <Row gap="xs" wrap align="center">
+      {words.map((word, i) => (
+        <Row key={word} gap="xs" align="center">
+          {i === 0 ? null : (
+            <Text size="caption" color="foreground.2" {...HIDDEN}>
+              •
+            </Text>
+          )}
+          <Chip
+            form="badge"
+            label={word}
+            fill="surface.3"
+            radius="pill"
+            height={BADGE}
+            size="caption"
+            numeric
+            wrap
+            script={script}
+            testID={`${testID}.${String(i)}`}
+          />
+        </Row>
+      ))}
+    </Row>
+  );
+}
+
+/** A title row: the title, and on a personal palette the overflow that edits or deletes it. */
+function TitleRow({
+  palette,
+  t,
+  script,
+  onMore,
+  id,
+}: {
+  readonly palette: ShownPalette;
+  readonly t: T;
+  readonly script: Script;
+  readonly onMore: CardProps['onMore'];
+  readonly id: string;
+}): React.JSX.Element {
+  return (
+    <Row gap="xs" align="center">
+      <View style={{ flex: 1 }}>
+        <Text
+          size="body"
+          weight={600}
+          color="foreground"
+          heading
+          script={script}
+          testID={`${id}.title`}
+        >
+          {titleLine(palette)}
+        </Text>
+      </View>
+      {palette.origin === 'personal' && onMore !== undefined ? (
+        <IconButton
+          name="more"
+          label={`${t('palettes.more')} ${titleLine(palette)}`}
+          color="foreground.2"
+          onPress={() => {
+            onMore(palette);
+          }}
+          testID={`${id}.more`}
+        />
+      ) : null}
+    </Row>
+  );
+}
+
+/**
+ * Form 1 (`10.palette-1`): the band at the record's weights, its columns, the two badges and the two
+ * actions. At module scope and memoised (F-250 S3).
+ */
+const BandCard = memo(function BandCard({
+  palette,
+  t,
+  script,
+  hasProfile,
+  onApply,
+  onExport,
+  onMore,
+}: CardProps): React.JSX.Element {
+  const id = `studio.palette.${palette.key}`;
+  const rows = useMemo(() => {
+    const out: ShownMember[][] = [];
+    palette.members.forEach((m, i) => {
+      if (i % COLUMNS === 0) out.push([]);
+      out[out.length - 1]?.push(m);
+    });
+    return out;
+  }, [palette.members]);
+  const badges = [
+    contrastBadge(palette.members, t),
+    separationBadge(palette.members, t, script),
+  ].filter((w): w is string => w !== null);
+  return (
+    <Card level="1" radius="sm" padding="md" testID={id}>
+      <TitleRow palette={palette} t={t} script={script} onMore={onMore} id={id} />
+      <View style={{ marginTop: nativeSpacing.xs, gap: nativeSpacing.xs }}>
+        <Text size="caption" color="foreground.2" script={script} testID={`${id}.description`}>
+          {descriptionLine(palette, t, script)}
+        </Text>
+        <Text
+          size="caption"
+          color="foreground.2"
+          numeric
+          script={script}
+          testID={`${id}.provenance`}
+        >
+          {provenanceLine(palette, t, script)}
+        </Text>
+      </View>
+      <View style={{ marginTop: nativeSpacing.sm }}>
+        <Strip
+          judged={false}
+          height={BAND_HEIGHT}
+          corner="sm"
+          keyline
+          members={palette.members.map((m) => ({ name: m.name, hex: m.hex, color: m.color }))}
+          weights={palette.members.map((m) => m.weight)}
+          testID={`${id}.band`}
+        />
+      </View>
+      <View style={{ marginTop: nativeSpacing.xs, gap: nativeSpacing.sm }}>
+        {rows.map((row, r) => (
+          <Row key={String(r)} gap="xs" align="start">
+            {Array.from({ length: COLUMNS }, (_, c) => {
+              const member = row[c];
+              if (member === undefined) return <View key={String(c)} style={{ flex: 1 }} />;
+              const lines = columnLines(member, t);
+              const n = r * COLUMNS + c;
+              return (
+                <View
+                  key={member.slug}
+                  style={{ flex: 1, alignItems: 'center', gap: nativeSpacing.xs }}
+                  testID={`${id}.column.${String(n)}`}
+                >
+                  <Text size="caption" color="foreground.2" align="center" script={script}>
+                    {lines.role}
+                  </Text>
+                  <Text size="caption" color="foreground" align="center" numeric selectable>
+                    {lines.hex}
+                  </Text>
+                  <Text
+                    size="caption"
+                    color="foreground.2"
+                    align="center"
+                    face="gothic"
+                    script="japanese"
+                  >
+                    {lines.name}
+                  </Text>
+                  {lines.english === null ? null : (
+                    <Text size="caption" color="foreground.2" align="center" script={script}>
+                      {lines.english}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </Row>
+        ))}
+      </View>
+      {badges.length === 0 ? null : (
+        <View style={{ marginTop: nativeSpacing.sm, gap: nativeSpacing.xs }}>
+          <Text size="caption" color="foreground.2" script={script}>
+            {t('palettes.badges')}
+          </Text>
+          <Badges words={badges} script={script} testID={`${id}.badge`} />
+        </View>
+      )}
+      <View style={{ marginTop: nativeSpacing.sm, gap: nativeSpacing.xs }}>
+        <Row gap="xs">
+          <View style={{ flex: 1 }}>
+            <Button
+              variant="secondary"
+              edge="border"
+              label={t('palettes.applyToLab')}
+              height={CARD_ACTION}
+              radius="sm"
+              script={script}
+              disabled={!hasProfile || onApply === undefined}
+              onPress={() => {
+                onApply?.(labHandOff(palette.members));
+              }}
+              testID={`${id}.apply`}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              variant="secondary"
+              edge="border"
+              label={t('palettes.exportTokens')}
+              height={CARD_ACTION}
+              radius="sm"
+              script={script}
+              disabled={onExport === undefined}
+              onPress={() => {
+                onExport?.(exportHref(palette, 'tokens'));
+              }}
+              testID={`${id}.export`}
+            />
+          </View>
+        </Row>
+        {hasProfile ? null : (
+          <Text size="caption" color="foreground.2" script={script} testID={`${id}.applyReason`}>
+            {t('palettes.applyNeedsProfile')}
+          </Text>
+        )}
+      </View>
+    </Card>
+  );
+});
+
+/**
+ * Form 2 (`10.palette-2`): a kasane's layers drawn apart, the hex on each in the ink its layer takes
+ * (C8), the kind above and the tags beneath. At module scope and memoised.
+ */
+const LayerCard = memo(function LayerCard({
+  palette,
+  t,
+  script,
+  onMore,
+}: CardProps): React.JSX.Element {
+  const id = `studio.palette.${palette.key}`;
+  return (
+    <Card level="1" radius="sm" padding="md" testID={id}>
+      <Text size="caption" color="foreground.2" script={script} testID={`${id}.kind`}>
+        {kindLabel(palette, t)}
+      </Text>
+      <View style={{ marginTop: nativeSpacing.xs }}>
+        <TitleRow palette={palette} t={t} script={script} onMore={onMore} id={id} />
+      </View>
+      <View style={{ marginTop: nativeSpacing.sm }}>
+        <Row gap="xs">
+          {Array.from({ length: COLUMNS }, (_, i) => {
+            const member = palette.members[i];
+            if (member === undefined) return <View key={String(i)} style={{ flex: 1 }} />;
+            const sample = { hex: member.hex, color: member.color };
+            return (
+              <View key={member.slug} style={{ flex: 1 }} testID={`${id}.layer.${String(i)}`}>
+                <Swatch
+                  name={member.name}
+                  hex={member.hex}
+                  color={member.color}
+                  width="fill"
+                  height={LAYER_HEIGHT}
+                  corner="sm"
+                  keyline
+                  group={false}
+                >
+                  <View
+                    pointerEvents="none"
+                    style={{ flexGrow: 1, justifyContent: 'flex-end', padding: nativeSpacing.xs }}
+                    {...HIDDEN}
+                  >
+                    <Text size="caption" weight={500} on={sample} numeric align="center">
+                      {member.hex}
+                    </Text>
+                  </View>
+                </Swatch>
+              </View>
+            );
+          })}
+        </Row>
+      </View>
+      <View style={{ marginTop: nativeSpacing.sm }}>
+        <Badges
+          words={[layeringTag(t), provenanceTag(palette, t)]}
+          script={script}
+          testID={`${id}.tag`}
+        />
+      </View>
+    </Card>
+  );
+});
+
 export interface PaletteStudioProps {
-  /** Where palettes are written. Required — see the note above. */
+  /** Where the person's palettes are read and deleted. */
   readonly store: PaletteStore;
-  /**
-   * A draft to open on, so a test or a future "edit this palette" route can start populated.
-   *
-   * The same affordance `Compare` has, for the same reason: the empty and populated branches
-   * of this screen render almost disjoint trees, and a suite that can only reach the empty one
-   * is checking a screen nobody has used yet.
-   */
-  readonly initialDraft?: PaletteDraft;
-  /** `YYYY-MM-DD`. Injected so a saved record is testable at a chosen date. */
-  readonly today?: string;
+  /** The view to open on: the route's `view`. */
+  readonly initialView?: StudioView;
+  /** Whether a profile is stored: the Outfit Lab ranks against one (ADR-0165 D2). */
+  readonly hasProfile?: boolean;
+  /** Back to the Atlas. Absent in the conformance suite, and then no back is drawn. */
+  readonly onBack?: () => void;
+  /** *Create New Palette*: `16`, an empty draft. */
+  readonly onCreate?: () => void;
+  /** *Apply to Outfit Lab*: the combination handed to the Lab (E-219). */
+  readonly onApply?: (combination: WornCombination) => void;
+  /** *Export Tokens* and the chooser: the export screen at this address. */
+  readonly onExport?: (href: string) => void;
+  /** *Edit this palette*: `16`, holding it. */
+  readonly onEdit?: (id: string) => void;
 }
 
 export function PaletteStudio({
   store,
-  initialDraft,
-  today,
+  initialView = 'curated',
+  hasProfile = false,
+  onBack,
+  onCreate,
+  onApply,
+  onExport,
+  onEdit,
 }: PaletteStudioProps): React.JSX.Element {
   const { t, script } = useMessages();
-
-  const [draft, setDraft] = useState<PaletteDraft>(initialDraft ?? EMPTY_DRAFT);
-  /*
-   * The id is held in state, so re-saving an edited palette UPDATES it rather than writing a
-   * second one. A fresh id per save would leave the person with a new palette for every
-   * keystroke they came back to fix.
-   */
-  const [id, setId] = useState<string>(() => uuidv7());
-  const [query, setQuery] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [view, setView] = useState<StudioView>(initialView);
   const [stored, setStored] = useState(() => store.listPalettes());
+  const [choosing, setChoosing] = useState(false);
+  const [more, setMore] = useState<ShownPalette | null>(null);
 
-  const context = useMemo(
-    () => ({ id, today: today ?? new Date().toISOString().slice(0, 10) }),
-    [id, today],
-  );
+  const curated = useMemo(() => curatedOrder().map(curatedShown), []);
+  // Newest first (ADR-0164 D1): the store lists in creation order.
+  const personal = useMemo(() => [...stored].reverse().map(personalShown), [stored]);
+  const shown = view === 'curated' ? curated : personal;
 
-  const problem = draftProblem(draft, context);
-  const taken = new Set(draft.members.map((m) => m.slug));
-  const found = matches(query, taken);
-
-  /*
-   * F-032. Recomputed on every render and memoised on the members, because the corpus search
-   * behind `proposeAlternative` runs over all 120 entries per flagged pair — cheap, but not
-   * cheap enough to redo on a keystroke in the search field.
-   */
-  const separationProblems = useMemo(
-    () =>
-      findSeparationProblems(
-        draft.members.flatMap((m) => {
-          const entry = entryBySlug(m.slug);
-          return entry === null
-            ? []
-            : [{ id: m.slug, label: entry.entry.name.en, color: colorFor(entry.entry) }];
-        }),
-      ),
-    [draft.members],
-  );
-
-  /*
-   * The draft's members as samples, in rank order, with the ones whose slug no longer resolves
-   * dropped rather than drawn as a hole. Memoised on the members for the same reason the CVD
-   * scan is: `entryBySlug` is a lookup over all 120 entries and this runs on every keystroke
-   * in the search field otherwise.
-   */
-  const strip = useMemo(
-    () =>
-      draft.members.flatMap((m) => {
-        const entry = entryBySlug(m.slug);
-        return entry === null
-          ? []
-          : [
-              {
-                name: entry.entry.name.en,
-                hex: entry.derived.hex,
-                color: colorFor(entry.entry),
-              },
-            ];
-      }),
-    [draft.members],
-  );
-
-  /** Any edit invalidates the confirmation: "saved" must mean what is on screen now. */
-  const edit = (next: PaletteDraft): void => {
-    setDraft(next);
-    setSaved(false);
-  };
-
-  const save = (): void => {
-    store.savePalette(
-      toStoreWrite(draft, context, () => uuidv7()),
-      Date.now(),
-    );
-    setStored(store.listPalettes());
-    setSaved(true);
-  };
-
-  function Member({ slug, role, index }: { slug: string; role: PaletteRole; index: number }) {
-    const entry = entryBySlug(slug);
-    if (entry === null) return null;
-    return (
-      <View style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}>
-        <Row gap="sm">
-          <Swatch
-            caption="name"
-            name={entry.entry.name.en}
-            hex={entry.derived.hex}
-            color={colorFor(entry.entry)}
-            size={48}
-          />
-          <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-            <Text size="body" color="foreground" script={script}>
-              {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
-            </Text>
-            {/* Tabular and selectable, like every other colour value in the app (C9). */}
-            <Text size="label" color="foreground.2" numeric selectable>
-              {entry.derived.hex}
-            </Text>
-          </View>
-        </Row>
-
-        <Text size="caption" color="foreground.2" script={script}>
-          {t('studio.role')}
-        </Text>
-        <Row gap="sm" wrap>
-          {PALETTE_ROLES.map((r) => (
-            <Chip
-              key={r}
-              label={t(ROLE_KEYS[r])}
-              selected={r === role}
-              onPress={() => {
-                edit(setRole(draft, slug, r));
-              }}
-              script={script}
-            />
-          ))}
-        </Row>
-
-        <Row gap="sm" wrap>
-          {/*
-            The colour's name is in each label. A screen reader moving through a list of
-            members otherwise hears "Move up" four times with nothing to tell them apart, and
-            `Button` ties its label to its accessible name on purpose.
-          */}
-          <Button
-            label={`${t('studio.moveUp')} — ${entry.entry.name.en}`}
-            variant="secondary"
-            disabled={index === 0}
-            onPress={() => {
-              edit(moveMember(draft, slug, -1));
-            }}
-            script={script}
-          />
-          <Button
-            label={`${t('studio.moveDown')} — ${entry.entry.name.en}`}
-            variant="secondary"
-            disabled={index === draft.members.length - 1}
-            onPress={() => {
-              edit(moveMember(draft, slug, 1));
-            }}
-            script={script}
-          />
-        </Row>
-
-        {/*
-          THE IRREVERSIBLE ONE, ON ITS OWN LINE (F-152 criterion 3).
-
-          It was the third of three identical secondary buttons in one row, so the only thing
-          separating "reorder this" from "delete this" was reading the label — and a tap lands
-          before anybody reads anything.
-
-          THE CHANNEL IS STRUCTURE RATHER THAN COLOUR, and that is a constraint rather than a
-          preference: a status colour may not sit beside a colour sample without a
-          `swatch.well` between them (F-069), and this row is directly under one.
-        */}
-        <Row gap="sm" wrap>
-          <Button
-            label={`${t('studio.remove')} — ${entry.entry.name.en}`}
-            variant="secondary"
-            onPress={() => {
-              edit(removeMember(draft, slug));
-            }}
-            script={script}
-          />
-        </Row>
-      </View>
-    );
-  }
+  const onMore = onEdit === undefined ? undefined : setMore;
+  const moreStored = more === null ? undefined : stored.find((p) => p.id === more.id);
+  const editable = moreStored !== undefined && fitsSlots(moreStored.members);
 
   return (
-    <Screen title={t('studio.title')} script={script}>
+    <Screen
+      script={script}
+      padding="md"
+      appBar={{
+        height: STUDIO_APP_BAR,
+        inset: nativeSpacing.md,
+        gap: nativeSpacing.sm,
+        script,
+        ...(onBack === undefined
+          ? {}
+          : {
+              back: {
+                glyph: 'back' as const,
+                label: t('tab.atlas'),
+                name: t('detail.backToAtlas'),
+                ink: 'foreground.2' as const,
+                onPress: onBack,
+              },
+            }),
+        title: {
+          text: t('studio.title'),
+          // In Japanese the run is the title itself (ADR-0164 D8; the OQ-48 interim).
+          ...(script === 'japanese' ? {} : { ja: japaneseRun('studio.title') }),
+          align: 'leading',
+          placement: 'below',
+          layout: 'inline',
+          size: 'body',
+          weight: 600,
+        },
+        trailing: {
+          button: {
+            variant: 'secondary',
+            edge: 'border',
+            glyph: 'plus',
+            label: t('palettes.create'),
+            height: CREATE,
+            radius: 'sm',
+            step: 'caption',
+            inset: 'sm',
+            script,
+            disabled: onCreate === undefined,
+            onPress: () => {
+              onCreate?.();
+            },
+            testID: 'studio.create',
+          },
+        },
+      }}
+      actionBar={{
+        actions: [
+          {
+            variant: 'tonal',
+            level: 'strong',
+            label: t('palettes.exportSelected'),
+            height: EXPORT_SELECTED,
+            radius: 'sm',
+            step: 'label',
+            script,
+            disabled: onExport === undefined || shown.length === 0,
+            onPress: () => {
+              setChoosing(true);
+            },
+            testID: 'studio.exportSelected',
+          },
+        ],
+        padding: { top: nativeSpacing.lg, side: nativeSpacing.md, bottom: nativeSpacing.lg },
+        script,
+      }}
+    >
       {/*
-        Where this palette came from, in the Studio's own words. NEVER the corpus
-        classification label — see the note at the top of this file.
+        THE ART, behind everything (F-247's lesson; ADR-0166 D7): `10`'s leaves down the right margin,
+        under the opaque cards. No word sits on a stroke.
       */}
-      <Text size="label" color="foreground.2" script={script}>
-        {t('studio.origin')}
-      </Text>
-
-      <Surface
-        /* surface-not-card: one TextField. A header over a single labelled field is the label written twice. */
-        level="1"
-        padding="md"
+      <View
+        pointerEvents="none"
+        testID="studio.art"
+        style={{
+          position: 'absolute',
+          top: STUDIO_ART.top - STUDIO_APP_BAR,
+          right: 0,
+          width: STUDIO_ART.width,
+        }}
       >
-        <TextField
-          label={t('studio.name')}
-          hint={t('studio.nameHint')}
-          script={script}
-          value={draft.name}
-          onChangeText={(text) => {
-            edit(rename(draft, text));
-          }}
+        <Illustration
+          name="leaves"
+          tone="backdrop"
+          color="foreground"
+          width={STUDIO_ART.width}
+          testID="studio.art.leaves"
         />
-      </Surface>
+      </View>
 
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('studio.members')}
-          </Text>
-        }
+      <ChoiceGroup
+        label={t('palettes.view')}
+        value={view}
+        options={[
+          { value: 'curated', label: t('palettes.curated') },
+          { value: 'custom', label: t('palettes.custom') },
+        ]}
+        onChange={(v) => {
+          if (v !== null) setView(v);
+        }}
+        segmented={{
+          mark: 'dot',
+          height: SOURCE_HEIGHT,
+          radius: 'pill',
+          edge: 'border',
+          selectedFill: 'surface.3',
+        }}
+        script={script}
+        testID="studio.view"
+      />
+
+      {shown.length === 0 ? (
+        <EmptyState
+          message={t('studio.none')}
+          hint={t('palettes.noneHint')}
+          resolvedHere
+          script={script}
+        />
+      ) : (
+        /* A LIST ARRIVES ONCE (F-266): each view's cards stagger in the first time they are drawn. */
+        <Arrival key={view}>
+          <Stack gap="sm">
+            {shown.map((palette, index) => (
+              <Appear key={palette.key} index={index}>
+                {cardForm(palette.category) === 'layers' ? (
+                  <LayerCard
+                    palette={palette}
+                    t={t}
+                    script={script}
+                    hasProfile={hasProfile}
+                    onApply={onApply}
+                    onExport={onExport}
+                    onMore={onMore}
+                  />
+                ) : (
+                  <BandCard
+                    palette={palette}
+                    t={t}
+                    script={script}
+                    hasProfile={hasProfile}
+                    onApply={onApply}
+                    onExport={onExport}
+                    onMore={onMore}
+                  />
+                )}
+              </Appear>
+            ))}
+          </Stack>
+        </Arrival>
+      )}
+
+      {/*
+        EXPORT SELECTED (ADR-0165 D2, E4): `03`'s floating sheet listing this view's palettes, one to
+        choose. The rest state stays as `10` draws it: no card is marked selected.
+      */}
+      <Sheet
+        form="floating"
+        open={choosing}
+        onOpenChange={setChoosing}
+        title={t('palettes.chooseExport')}
+        closeLabel={t('palettes.chooseClose')}
+        handleLabel={t('palettes.chooseHandle')}
+        handleHint={t('palettes.chooseHandleHint')}
+        testID="studio.chooser"
       >
         <Stack gap="xs">
-          {/*
-            THE PALETTE, AS ONE THING (F-151).
-
-            The rows below are a list of members; this is the palette. Relationships between
-            colours are judged at the boundaries between them, and until now there were none —
-            every member sat in its own row with a screen's worth of controls between it and
-            the next, which is the arrangement in which no two of them are ever adjacent.
-
-            THE WIDTHS ARE THE WEIGHT LADDER, not a layout choice. `studio.order` has said
-            "order is proportion" since F-049 and nothing has ever shown it; the strip is that
-            sentence drawn. `deriveWeights` is the same function that writes the saved record,
-            so the strip cannot disagree with what gets stored — it is the record, seen.
-          */}
-          {strip.length === 0 ? null : (
-            <Strip members={strip} weights={deriveWeights(strip.length)} testID="studio-strip" />
-          )}
-
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('studio.order')}
-          </Text>
-
-          {draft.members.length === 0 ? (
-            // 00's empty (F-236): the search that adds a colour is on this screen.
-            <EmptyState
-              message={t('studio.empty')}
-              hint={t('studio.emptyHint')}
-              resolvedHere
-              script={script}
-            />
-          ) : (
-            draft.members.map((m, i) => (
-              <Member key={m.slug} slug={m.slug} role={m.role} index={i} />
-            ))
-          )}
-        </Stack>
-      </Card>
-
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('studio.add')}
-          </Text>
-        }
-      >
-        <Stack gap="sm">
-          <SearchField label={t('atlas.search')} value={query} onChangeText={setQuery} />
-          {found.map((m) => (
+          {shown.map((palette) => (
             <Pressable
-              key={m.entry.slug}
+              key={palette.key}
+              testID={`studio.chooser.${palette.key}`}
               accessibilityRole="button"
-              accessibilityLabel={`${t('studio.add')} — ${m.entry.name.en}`}
+              accessibilityLabel={titleLine(palette)}
               onPress={() => {
-                edit(addMember(draft, m.entry.slug));
-                setQuery('');
+                setChoosing(false);
+                onExport?.(exportHref(palette));
               }}
-              style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+              style={{ minHeight: nativeTapTarget, justifyContent: 'center' }}
             >
-              <Row gap="sm">
-                <Swatch
-                  caption="name"
-                  name={m.entry.name.en}
-                  hex={m.derived.hex}
-                  color={colorFor(m.entry)}
-                  size={32}
-                />
-                <Text size="label" color="foreground.2" script={script}>
-                  {`${m.entry.name.kanji} ${m.entry.name.en}`}
-                </Text>
-              </Row>
+              <Text size="label" color="foreground" script={script}>
+                {titleLine(palette)}
+              </Text>
             </Pressable>
           ))}
         </Stack>
-      </Card>
+      </Sheet>
 
-      <Surface
-        /* surface-not-card: a save button and the reason it is disabled, which belongs beside the control rather than under a title. */
-        level="1"
-        padding="md"
+      {/* A PERSONAL PALETTE'S OVERFLOW (ADR-0165 D2, E4): Edit, and Delete on its own row. */}
+      <Sheet
+        form="floating"
+        open={more !== null}
+        onOpenChange={(open) => {
+          if (!open) setMore(null);
+        }}
+        title={more === null ? t('palettes.more') : `${t('palettes.more')} ${titleLine(more)}`}
+        closeLabel={t('palettes.chooseClose')}
+        handleLabel={t('palettes.chooseHandle')}
+        handleHint={t('palettes.chooseHandleHint')}
+        testID="studio.more"
       >
-        <Stack gap="sm">
-          <Button
-            label={t('studio.save')}
-            disabled={problem !== null}
-            onPress={() => {
-              save();
-            }}
-            script={script}
-          />
-          {/*
-            The reason, beside the control it disables. A disabled button with no explanation
-            is the accessibility failure that looks like polish — and the sentence comes from
-            the schema's verdict, not from a second opinion about it.
-          */}
-          {problem === null ? null : (
-            <Text size="label" color="foreground" script={script}>
-              {t(PROBLEM_KEYS[problem])}
-            </Text>
-          )}
-          {saved ? (
-            <Text size="label" color="foreground" script={script}>
-              {t('studio.saved')}
-            </Text>
-          ) : null}
-        </Stack>
-      </Surface>
-
-      {/*
-        F-032 — CVD mode, on the surface that exists.
-
-        FR-35 calls it "outfit mode" and there is no outfit surface: the builder is F-033 and it
-        is R4. A palette is a set of colours the person assembled by hand, which is exactly the
-        input this check takes — so the flag lands here, and the computation is identical when an
-        outfit surface arrives.
-
-        NO SIMULATION PREVIEW. What is drawn is a sentence about a pair, a number, and a swap
-        [[cvd-is-scoring-not-rendering]]. And no status token: F-069 forbids a status colour
-        beside a colour sample without a `swatch.well` between them, and this panel is mostly
-        samples — so the flag carries no colour channel at all, which satisfies golden rule 13
-        by having nothing to satisfy.
-      */}
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('cvd.title')}
-          </Text>
-        }
-      >
-        <Stack gap="sm">
-          {separationProblems.length === 0 ? (
-            <Text size="label" color="foreground" script={script}>
-              {t('cvd.none')}
-            </Text>
-          ) : (
-            separationProblems.map((finding) => (
-              <View
-                key={`${finding.a.id}-${finding.b.id}`}
-                style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}
+        {more === null ? null : (
+          <Stack gap="sm">
+            <Button
+              variant="secondary"
+              edge="border"
+              label={t('palettes.edit')}
+              radius="sm"
+              script={script}
+              disabled={!editable}
+              onPress={() => {
+                setMore(null);
+                onEdit?.(more.id);
+              }}
+              testID="studio.more.edit"
+            />
+            {editable ? null : (
+              <Text
+                size="caption"
+                color="foreground.2"
+                script={script}
+                testID="studio.more.editReason"
               >
-                <Text size="label" color="foreground" script={script}>
-                  {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
-                </Text>
-                <Row gap="sm" align="baseline">
-                  <Text size="caption" color="foreground.2" script={script}>
-                    {t('cvd.separation')}
-                  </Text>
-                  {/* Tabular, like every other measured value in the app. */}
-                  <Text size="caption" color="foreground.2" numeric>
-                    {finding.separation.toFixed(0)}
-                  </Text>
-                </Row>
-                {finding.alternative === null ? (
-                  <Text size="caption" color="foreground.2" script={script}>
-                    {t('cvd.noAlternative')}
-                  </Text>
-                ) : (
-                  <Row gap="sm" wrap>
-                    {(() => {
-                      const entry = entryBySlug(finding.alternative.slug);
-                      return entry === null ? null : (
-                        <Swatch
-                          caption="name"
-                          name={entry.entry.name.en}
-                          hex={entry.derived.hex}
-                          color={colorFor(entry.entry)}
-                          size={40}
-                        />
-                      );
-                    })()}
-                    <Text size="caption" color="foreground.2" script={script}>
-                      {`${t('cvd.swapTo')} ${finding.alternative.label}`}
-                    </Text>
-                    {/* Tabular AND Japanese: the string is a figure and a sentence at once. */}
-                    <Text size="caption" color="foreground.2" numeric script={script}>
-                      {`${finding.alternative.separation.toFixed(0)} (${t('cvd.improvement')} +${finding.alternative.improvement.toFixed(0)})`}
-                    </Text>
-                  </Row>
-                )}
-              </View>
-            ))
-          )}
-          <Text size="caption" color="foreground.2" script={script}>
-            {t('cvd.method')}
-          </Text>
-        </Stack>
-      </Card>
-
-      <Card
-        level="1"
-        padding="md"
-        header={
-          <Text size="body" color="foreground" script={script} heading>
-            {t('studio.yours')}
-          </Text>
-        }
-      >
-        <Stack gap="sm">
-          {stored.length === 0 ? (
-            <Text size="label" color="foreground.2" script={script}>
-              {t('studio.none')}
-            </Text>
-          ) : (
-            /* A LIST ARRIVES ONCE (F-266, ADR-0133 §7): the saved palettes, in order. */
-            <Arrival>
-              {stored.map((p, i) => (
-                <Appear key={p.id} index={i}>
-                  <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
-                    <Text size="label" color="foreground" script={script}>
-                      {p.nameEn}
-                    </Text>
-                    <Row gap="sm" wrap>
-                      <Button
-                        label={`${t('studio.open')} — ${p.nameEn}`}
-                        variant="secondary"
-                        onPress={() => {
-                          setId(p.id);
-                          setDraft(draftFrom(p.members, p.nameEn));
-                          setSaved(false);
-                        }}
-                        script={script}
-                      />
-                    </Row>
-                    {/*
-                      Deletable, because the alternative is a record the person cannot get rid of
-                      on a device they own — and with no server there is no other way to. On its
-                      own line for the reason the member's Remove is: a delete beside an open,
-                      both secondary and both the same size, is a difference only the label
-                      carries.
-                    */}
-                    <Row gap="sm" wrap>
-                      <Button
-                        label={`${t('studio.delete')} — ${p.nameEn}`}
-                        variant="secondary"
-                        onPress={() => {
-                          store.deletePalette(p.id, Date.now());
-                          setStored(store.listPalettes());
-                          if (p.id === id) {
-                            setId(uuidv7());
-                            setDraft(EMPTY_DRAFT);
-                          }
-                          setSaved(false);
-                        }}
-                        script={script}
-                      />
-                    </Row>
-                  </View>
-                </Appear>
-              ))}
-            </Arrival>
-          )}
-          <Button
-            label={t('studio.new')}
-            variant="secondary"
-            onPress={() => {
-              setId(uuidv7());
-              setDraft(EMPTY_DRAFT);
-              setSaved(false);
-            }}
-            script={script}
-          />
-        </Stack>
-      </Card>
+                {t('palettes.editUnfit')}
+              </Text>
+            )}
+            <Button
+              variant="secondary"
+              edge="border"
+              label={t('studio.delete')}
+              radius="sm"
+              script={script}
+              onPress={() => {
+                store.deletePalette(more.id, Date.now());
+                setStored(store.listPalettes());
+                setMore(null);
+              }}
+              testID="studio.more.delete"
+            />
+          </Stack>
+        )}
+      </Sheet>
     </Screen>
   );
 }

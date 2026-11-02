@@ -116,7 +116,6 @@ describe('one tab bar (F-234, ADR-0117)', () => {
 const PLATFORM_HEADER: Readonly<Record<string, string>> = {
   'atlas/card/[slug]': 'F-253 (20)',
   'atlas/nearby/[slug]': 'F-254 (21)',
-  'atlas/palettes': 'F-251 (10, 16)',
   'atlas/with/[slug]': 'F-252 (19)',
   'atlas/with/reading/[id]': 'F-259 (24)',
   'profile/export': 'F-263 (18)',
@@ -177,10 +176,11 @@ describe('the routes still on the platform header (F-234, ADR-0118)', () => {
 
   it('DECOY: a route that hid the header itself is no longer on it, so its entry is stale', () => {
     const files = new Map([
-      ['app/(tabs)/atlas/_layout.tsx', LAYOUT],
-      ['app/(tabs)/atlas/palettes.tsx', `<Stack.Screen options={{ headerShown: false }} />`],
+      ['app/(tabs)/profile/_layout.tsx', LAYOUT],
+      ['app/(tabs)/profile/measure.tsx', `<Stack.Screen options={{ headerShown: false }} />`],
     ]);
     expect(onPlatformHeader(files)).toStrictEqual([]);
-    expect(Object.keys(PLATFORM_HEADER)).toContain('atlas/palettes');
+    // `profile/measure` waits on OQ-7, so it is the longest-lived row (F-251 moved this decoy).
+    expect(Object.keys(PLATFORM_HEADER)).toContain('profile/measure');
   });
 });

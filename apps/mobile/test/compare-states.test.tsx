@@ -380,7 +380,7 @@ describe('the route sends each drawn action where ADR-0156 says (E-227)', () => 
 
   it('the export reads the pair and a writer’s own format; the Studio reads the colours as a draft', () => {
     expect(EXPORT).toContain(
-      'exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair)',
+      'exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair, palette, saved)',
     );
     expect(EXPORT).toContain('WRITERS.find((w) => w.format === first(params.format))?.format');
     expect(EXPORT).toContain('{...(format === undefined ? {} : { initialFormat: format })}');
