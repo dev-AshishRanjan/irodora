@@ -364,3 +364,34 @@ describe('provenance is required (ADR-0005)', () => {
     expect(nativeRadius.sm).toBeGreaterThan(0);
   });
 });
+
+describe('a pressable sample says what a press does, where its name does not (F-251)', () => {
+  const COLOUR = fromSpace('oklch', [0.42, 0.09, 264], { source: 'declared', confidence: 1 });
+  const ignore = (): void => undefined;
+  const draw = (node: React.JSX.Element) =>
+    render(<ThemeProvider theme="dark">{node}</ThemeProvider>);
+  const hostOf = (tree: ReturnType<typeof draw>): Readonly<Record<string, unknown>> =>
+    tree.UNSAFE_root.findAll(
+      (n) => typeof n.type === 'string' && n.props['accessibilityRole'] === 'button',
+    )[0]?.props ?? {};
+
+  for (const group of [true, false])
+    it(`announces the hint after the name (${group ? 'grouped' : 'apart from its children'})`, () => {
+      const tree = draw(
+        <Swatch
+          name="Ai-nezumi"
+          hex="#526A6B"
+          color={COLOUR}
+          group={group}
+          onPress={ignore}
+          hint="Puts this colour in Slot 2: Light Ground"
+        />,
+      );
+      expect(hostOf(tree)['accessibilityHint']).toBe('Puts this colour in Slot 2: Light Ground');
+    });
+
+  it('DECOY — without one, no hint is set at all', () => {
+    const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOUR} onPress={ignore} />);
+    expect(hostOf(tree)).not.toHaveProperty('accessibilityHint');
+  });
+});

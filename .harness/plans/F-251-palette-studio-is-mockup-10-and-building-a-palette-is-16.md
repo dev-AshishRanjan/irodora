@@ -490,6 +490,20 @@ The platform header leaves: `headerShown: false`, and `PLATFORM_HEADER['atlas/pa
 - **Effects:** E-234 to E-238 with their notes; E-024, E-091, E-164, E-219, E-226 and E-227's guards
   say what F-251 changed.
 
+**After the review (2026-11-03; once — FAIL as delivered, 3 S, 7 M, 9 L):**
+
+- **S1, fixed:** 16 goes back to the catalogue beneath, which re-reads the store on focus and shows a
+  palette it had not seen under My Custom Palettes (`revision`); navigating to the route again reused
+  the screen on top and left a stale catalogue under it.
+- **S2, fixed:** the slot's name line is kanji, romaji and English. **S3, fixed:** *Locked* carries its
+  dot. **M1, fixed:** 08's pair fills slots 1 and 2. **M4, fixed:** `editRefusal` refuses a palette
+  built against another corpus version. **M3, fixed:** tray names clip at the tile (F-344 noted).
+- **M2, fixed — with one adjustment:** the slot in hand on opening shows only by its framed tile, as
+  16 draws it (every word *Replace*); *Choosing* appears once *Replace* is pressed. A tile names its
+  slot (`Swatch hint`); Replace pages the tray; a full draft has its first unlocked slot in hand.
+- **M6, M7, L1–L6, L9:** fixed. **M5** → F-358 and the capture attestation's hand steps; **L7** → the
+  capture; **L8** → F-357 and F-265; the six newly published advisories → F-322.
+
 ---
 
 ## Approach

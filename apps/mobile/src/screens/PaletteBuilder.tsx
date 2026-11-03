@@ -21,7 +21,7 @@
  * flag and swap. This file composes `16`.
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import type { PaletteRole } from '@irodora/corpus';
@@ -34,6 +34,7 @@ import {
   Illustration,
   Row,
   Screen,
+  SelectionDot,
   Swatch,
   Tategaki,
   Text,
@@ -43,6 +44,7 @@ import {
 } from '@irodora/ui';
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
 import type { MessageKey } from '../i18n';
+import { nameLine } from '../notation';
 import { useMessages } from '../i18n/useMessages';
 import { findSeparationProblems, type SeparationFinding } from '../outfit/cvd';
 import {
@@ -103,14 +105,31 @@ const HIDDEN = {
   importantForAccessibility: 'no-hide-descendants' as const,
 };
 
+/** The joiners a line is built with, in each script's own punctuation (the review, L4). */
+const joiners = (script: Script) =>
+  script === 'japanese'
+    ? { space: '', colon: '：', comma: '、', middle: '・', open: '（', close: '）' }
+    : { space: ' ', colon: ': ', comma: ', ', middle: ' · ', open: ' (', close: ')' };
+
+/** The slot that comes in hand on opening: the first empty one, or the first not locked. */
+function inHandOf(draft: PaletteDraft): PaletteRole | null {
+  return nextEmpty(draft) ?? SLOT_ROLES.find((role) => !isLocked(draft, role)) ?? null;
+}
+
 /** `Slot n: Anchor / Dark Base` — ADR-0163 reads 16's brackets as notation; the colon is 16's own. */
-const slotHeading = (role: PaletteRole, t: T, script: Script): string =>
-  `${t('palettes.slotWord')}${script === 'japanese' ? '' : ' '}${String(SLOT_ROLES.indexOf(role) + 1)}${script === 'japanese' ? '：' : ': '}${t(SLOT_HEADING_KEYS[role])}`;
+const slotHeading = (role: PaletteRole, t: T, script: Script): string => {
+  const j = joiners(script);
+  return `${t('palettes.slotWord')}${j.space}${String(SLOT_ROLES.indexOf(role) + 1)}${j.colon}${t(SLOT_HEADING_KEYS[role])}`;
+};
 
 interface SlotProps {
   readonly role: PaletteRole;
   readonly draft: PaletteDraft;
-  readonly inHand: boolean;
+  /**
+   * The person pressed this slot's *Replace* and it is in hand: its word reads *Choosing*, announced
+   * as selected. The slot in hand on opening shows only by its framed tile, as 16 draws it.
+   */
+  readonly choosing: boolean;
   readonly t: T;
   readonly script: Script;
   readonly onReplace: (role: PaletteRole) => void;
@@ -121,17 +140,22 @@ interface SlotProps {
 const Slot = memo(function Slot({
   role,
   draft,
-  inHand,
+  choosing,
   t,
   script,
   onReplace,
   onUnlock,
 }: SlotProps): React.JSX.Element {
+  const { colors } = useTheme();
   const id = `builder.slot.${role}`;
   const slug = slotOf(draft, role);
   const entry = slug === null ? null : entryBySlug(slug);
   const locked = isLocked(draft, role);
-  const roleLine = `${t('palettes.role')}${script === 'japanese' ? '' : ' '}${t(ROLE_KEYS[role])}`;
+  const j = joiners(script);
+  const heading = slotHeading(role, t, script);
+  const roleLine = `${t('palettes.role')}${j.space}${t(ROLE_KEYS[role])}`;
+  // The slot in hand says so in words (M2): its Replace reads *Choosing*, announced as selected.
+  const replaceWord = t(choosing ? 'palettes.choosing' : 'palettes.replace');
   return (
     <Card level="1" radius="sm" padding="sm" testID={id}>
       <Text
@@ -186,29 +210,35 @@ const Slot = memo(function Slot({
           >
             {entry.derived.hex}
           </Text>
+          {/* 16's line: the kanji, the romaji and the English (the review, S2). */}
           <Text size="caption" color="foreground.2" script={script} testID={`${id}.name`}>
-            {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
+            {`${nameLine(entry)} ${entry.entry.name.en}`}
           </Text>
         </View>
       )}
       <View style={{ marginTop: nativeSpacing.xs }}>
         <Row gap="xs" align="center" justify="between">
           {locked ? (
-            <Button
-              variant="plain"
-              ink="foreground.2"
-              glyph="lock-solid"
-              glyphTint="glyph.lock"
-              glyphSize={LOCK_GLYPH_16}
-              step="caption"
-              script={script}
-              label={t('palettes.locked')}
-              selected
-              onPress={() => {
-                onUnlock(role);
-              }}
-              testID={`${id}.locked`}
-            />
+            // *• 🔒 Locked*: the dot is the on-state mark (ADR-0141; ADR-0163 D2), the word the state.
+            <Row gap="xs" align="center">
+              <SelectionDot visible color={colors['foreground.2']} testID={`${id}.locked.dot`} />
+              <Button
+                variant="plain"
+                ink="foreground.2"
+                glyph="lock-solid"
+                glyphTint="glyph.lock"
+                glyphSize={LOCK_GLYPH_16}
+                step="caption"
+                script={script}
+                label={t('palettes.locked')}
+                name={`${t('palettes.locked')}${j.comma}${heading}`}
+                selected
+                onPress={() => {
+                  onUnlock(role);
+                }}
+                testID={`${id}.locked`}
+              />
+            </Row>
           ) : null}
           <Text size="caption" color="foreground.2" script={script} testID={`${id}.role`}>
             {roleLine}
@@ -222,9 +252,9 @@ const Slot = memo(function Slot({
               glyphSize={REPLACE_GLYPH}
               step="caption"
               script={script}
-              label={t('palettes.replace')}
-              name={`${t('palettes.replace')}, ${slotHeading(role, t, script)}`}
-              selected={inHand}
+              label={replaceWord}
+              name={`${replaceWord}${j.comma}${heading}`}
+              selected={choosing}
               onPress={() => {
                 onReplace(role);
               }}
@@ -251,6 +281,7 @@ function SeparationBlock({
   readonly script: Script;
   readonly onSwap: (role: PaletteRole, slug: string) => void;
 }): React.JSX.Element {
+  const j = joiners(script);
   return (
     <View testID="builder.cvd" style={{ marginTop: nativeSpacing.sm, gap: nativeSpacing.sm }}>
       {findings.map((finding) => {
@@ -259,11 +290,11 @@ function SeparationBlock({
         return (
           <View key={`${finding.a.id}-${finding.b.id}`} style={{ gap: nativeSpacing.xs }}>
             <Text size="caption" color="foreground" numeric script={script}>
-              {`${t('cvd.hard')}: ${slotHeading(finding.a.id as PaletteRole, t, script)} · ${slotHeading(role, t, script)}`}
+              {`${t('cvd.hard')}${j.colon}${slotHeading(finding.a.id as PaletteRole, t, script)}${j.middle}${slotHeading(role, t, script)}`}
             </Text>
             <Text size="caption" color="foreground.2" numeric script={script}>
               {/* Floored, as every separation this screen prints (rule 11). */}
-              {`${t('cvd.separation')} ${String(Math.floor(finding.separation))}`}
+              {`${t('cvd.separation')}${j.space}${String(Math.floor(finding.separation))}`}
             </Text>
             {alternative === null ? (
               <Text size="caption" color="foreground.2" script={script}>
@@ -272,7 +303,7 @@ function SeparationBlock({
             ) : (
               <>
                 <Text size="caption" color="foreground.2" numeric script={script}>
-                  {`${t('cvd.swapTo')} ${alternative.label}: ${String(Math.floor(alternative.separation))} (${t('cvd.improvement')} +${String(Math.floor(alternative.improvement))})`}
+                  {`${t('cvd.swapTo')}${j.space}${alternative.label}${j.colon}${String(Math.floor(alternative.separation))}${j.open}${t('cvd.improvement')}${j.space}+${String(Math.floor(alternative.improvement))}${j.close}`}
                 </Text>
                 <Button
                   variant="secondary"
@@ -280,7 +311,7 @@ function SeparationBlock({
                   radius="sm"
                   step="caption"
                   // Named by the slot's role, so the label carries no figure to set (FR-48).
-                  label={`${t('palettes.replace')} — ${t(SLOT_HEADING_KEYS[role])}`}
+                  label={`${t('palettes.replace')}${script === 'japanese' ? '：' : ' — '}${t(SLOT_HEADING_KEYS[role])}`}
                   script={script}
                   disabled={isLocked(draft, role)}
                   onPress={() => {
@@ -305,11 +336,19 @@ interface TileProps {
   /** Its place on the page, 0–6: how a sweep finds a drawn tile whatever the page holds. */
   readonly index: number;
   readonly chosen: boolean;
+  /** What a press does, for a screen reader: puts it in the slot in hand, or removes it (M2). */
+  readonly hint: string | undefined;
   readonly onChoose: (slug: string) => void;
 }
 
 /** One tray tile (`16.tray.chip-n`): the colour whole, its kanji set down it (C8). */
-const Tile = memo(function Tile({ entry, index, chosen, onChoose }: TileProps): React.JSX.Element {
+const Tile = memo(function Tile({
+  entry,
+  index,
+  chosen,
+  hint,
+  onChoose,
+}: TileProps): React.JSX.Element {
   const sample = { hex: entry.derived.hex, color: colorFor(entry.entry) };
   return (
     <Swatch
@@ -321,6 +360,9 @@ const Tile = memo(function Tile({ entry, index, chosen, onChoose }: TileProps): 
       corner="sm"
       selected={chosen}
       group={false}
+      // No slot in hand, nothing to fill: the tile is shown, not pressed (every slot locked).
+      disabled={hint === undefined}
+      {...(hint === undefined ? {} : { hint })}
       onPress={() => {
         onChoose(entry.entry.slug);
       }}
@@ -333,6 +375,9 @@ const Tile = memo(function Tile({ entry, index, chosen, onChoose }: TileProps): 
           justifyContent: 'flex-end',
           alignItems: 'center',
           paddingBottom: nativeSpacing.xs,
+          // At large text a three-character name is taller than the tile: it is cut at the tile's
+          // edge, never drawn on the tray in the sample's ink (the review, M3; F-344).
+          overflow: 'hidden',
         }}
         {...HIDDEN}
       >
@@ -367,8 +412,12 @@ export function PaletteBuilder({
   const { t, script } = useMessages();
   const { colors } = useTheme();
   const [draft, setDraft] = useState<PaletteDraft>(initialDraft ?? EMPTY_DRAFT);
+  // The first empty slot, or on a full draft the first one not locked: some slot is always in hand,
+  // as 16 draws its tray with a tile chosen (the review, M2).
+  // The slot whose *Replace* was pressed, until a tile fills it (M2): an interaction 16 does not draw.
+  const [pressed, setPressed] = useState<PaletteRole | null>(null);
   const [inHand, setInHand] = useState<PaletteRole | null>(() =>
-    nextEmpty(initialDraft ?? EMPTY_DRAFT),
+    inHandOf(initialDraft ?? EMPTY_DRAFT),
   );
   // Held, so a second save updates the same record (FR-49; the old Studio's rule).
   const [id] = useState<string>(() => editingId ?? uuidv7());
@@ -403,18 +452,48 @@ export function PaletteBuilder({
   );
 
   /** Any edit invalidates the confirmation: *Saved* must mean what is on screen now. */
-  const edit = (next: PaletteDraft): void => {
+  const edit = useCallback((next: PaletteDraft): void => {
     setDraft(next);
     setSaved(false);
-  };
+  }, []);
 
-  const onChoose = (slug: string): void => {
-    const role = inHand ?? nextEmpty(draft);
-    if (role === null) return;
-    const next = choose(draft, role, slug);
-    edit(next);
-    // After a choice the next empty slot comes in hand; a cleared slot stays in hand.
-    setInHand(slotOf(next, role) === null ? role : (nextEmpty(next, role) ?? role));
+  const onChoose = useCallback(
+    (slug: string): void => {
+      const role = inHand ?? inHandOf(draft);
+      if (role === null) return;
+      const next = choose(draft, role, slug);
+      edit(next);
+      // After a choice the next empty slot comes in hand; a cleared slot stays in hand.
+      setInHand(slotOf(next, role) === null ? role : (nextEmpty(next, role) ?? role));
+      setPressed(null);
+    },
+    [draft, inHand, edit],
+  );
+
+  /** *Replace*: its slot comes in hand, and the tray opens on the page holding its colour (M2). */
+  const onReplace = useCallback(
+    (role: PaletteRole): void => {
+      setInHand(role);
+      setPressed(role);
+      const held = slotOf(draft, role);
+      const at = held === null ? null : pageOf(pages, held);
+      if (at !== null) setPage(at);
+    },
+    [draft, pages],
+  );
+
+  const onUnlock = useCallback((role: PaletteRole): void => {
+    setDraft((d) => toggleLock(d, role));
+    setSaved(false);
+  }, []);
+
+  /** What a tile's press does, in words, for the slot in hand (M2). */
+  const hintFor = (slug: string): string | undefined => {
+    if (inHand === null) return undefined;
+    const heading = slotHeading(inHand, t, script);
+    return slotOf(draft, inHand) === slug
+      ? `${t('palettes.removeFrom')}${joiners(script).space}${heading}`
+      : `${t('palettes.putIn')}${joiners(script).space}${heading}`;
   };
 
   const save = (): boolean => {
@@ -588,13 +667,11 @@ export function PaletteBuilder({
                       <Slot
                         role={role}
                         draft={draft}
-                        inHand={inHand === role}
+                        choosing={pressed === role && inHand === role}
                         t={t}
                         script={script}
-                        onReplace={setInHand}
-                        onUnlock={(r) => {
-                          edit(toggleLock(draft, r));
-                        }}
+                        onReplace={onReplace}
+                        onUnlock={onUnlock}
                       />
                     </View>
                   ))}
@@ -675,6 +752,7 @@ export function PaletteBuilder({
             following={following}
             handSlug={handSlug}
             t={t}
+            hintFor={hintFor}
             onChoose={onChoose}
             onPage={(by) => {
               setPage((p) => Math.min(Math.max(p + by, 0), pages.length - 1));
@@ -748,6 +826,7 @@ function TrayRow({
   following,
   handSlug,
   t,
+  hintFor,
   onChoose,
   onPage,
   atStart,
@@ -758,6 +837,7 @@ function TrayRow({
   readonly following: PublishedEntry | undefined;
   readonly handSlug: string | null;
   readonly t: T;
+  readonly hintFor: (slug: string) => string | undefined;
   readonly onChoose: (slug: string) => void;
   readonly onPage: (by: -1 | 1) => void;
   readonly atStart: boolean;
@@ -786,6 +866,7 @@ function TrayRow({
               index={index}
               entry={entry}
               chosen={entry.entry.slug === handSlug}
+              hint={hintFor(entry.entry.slug)}
               onChoose={onChoose}
             />
           ))}

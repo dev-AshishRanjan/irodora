@@ -16,8 +16,8 @@ jest.mock('expo-localization', () => ({
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { TextInput } from 'react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { StyleSheet, TextInput, type StyleProp, type ViewStyle } from 'react-native';
+import { Tategaki, ThemeProvider } from '@irodora/ui';
 import type { StoredPalette } from '@irodora/store';
 import { allEntries, colorFor, entryBySlug } from '../src/corpus';
 import { t as message, type MessageKey } from '../src/i18n';
@@ -372,11 +372,15 @@ describe('the seams F-251’s effects name', () => {
     );
 
   it('declares a strip not judged only on 10’s band, as ADR-0162 says (E-235)', () => {
+    // Any way of passing it — a literal, an expression, a spread of props that names it — is found,
+    // and only 10's band's literal `false` is declared (the review, L5).
     const src = join(__dirname, '..', 'src');
-    const declared = sources(src)
-      .filter((f) => readFileSync(f, 'utf8').includes('judged={false}'))
-      .map((f) => relative(src, f).split(sep).join('/'));
-    expect(declared).toStrictEqual(['screens/PaletteStudio.tsx']);
+    const declared = sources(src).flatMap((f) =>
+      (readFileSync(f, 'utf8').match(/\bjudged\s*[=:][^,\n}]*/gu) ?? []).map(
+        (use) => `${relative(src, f).split(sep).join('/')} ${use.replace(/\s+/gu, '')}`,
+      ),
+    );
+    expect(declared).toStrictEqual(['screens/PaletteStudio.tsx judged={false']);
   });
 
   it('the export route reads the palette and the saved id it is sent (E-237)', () => {
@@ -389,5 +393,167 @@ describe('the seams F-251’s effects name', () => {
     expect(route).toContain(
       'exportSubjectFor(slug, deviceRepository().listPalettes(), colours, pair, palette, saved)',
     );
+  });
+});
+
+/* ------------------------------------------------------------------------- the review's fixes */
+
+describe('the review’s fixes (F-251)', () => {
+  it('10 reads the store again when it comes back into view, and shows a palette just saved (S1)', () => {
+    const store = memoryStore();
+    const view = (revision: number) => (
+      <ThemeProvider theme="dark">
+        <PaletteStudio store={store} revision={revision} />
+      </ThemeProvider>
+    );
+    const { rerender } = render(view(0));
+    store.savePalette(
+      {
+        id: 'p-new',
+        nameEn: 'Just saved',
+        nameJa: 'Just saved',
+        classification: 'editorial',
+        category: 'contemporary',
+        versionId: '2026.09.3',
+        members: [],
+      },
+      1,
+    );
+    // DECOY: until the route says the page is shown again, nothing re-reads.
+    expect(screen.queryByText('Just saved')).toBeNull();
+    rerender(view(1));
+    expect(screen.getAllByText('Just saved').length).toBeGreaterThan(0);
+  });
+
+  it('16’s slot names its colour in kanji, romaji and English, as 16 does (S2)', () => {
+    const slug = SLUGS[0]!;
+    const entry = entryBySlug(slug)!;
+    drawBuilder({ initialDraft: { name: 'x', members: [{ slug, role: 'anchor' }] } });
+    const line = String(screen.getByTestId('builder.slot.anchor.name').props['children']);
+    expect(line).toContain(entry.entry.name.kanji);
+    expect(line.toLowerCase()).toContain(entry.entry.name.romaji.toLowerCase());
+    expect(line).toContain(entry.entry.name.en);
+  });
+
+  it('a locked slot draws the on-state dot before its padlock; an unlocked one none (S3)', () => {
+    const draft: PaletteDraft = {
+      name: 'x',
+      members: [
+        { slug: SLUGS[0]!, role: 'anchor' },
+        { slug: SLUGS[1]!, role: 'light' },
+      ],
+      locked: new Set(['anchor']),
+    };
+    drawBuilder({ initialDraft: draft });
+    expect(
+      screen.getByTestId('builder.slot.anchor.locked.dot', { includeHiddenElements: true }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByTestId('builder.slot.light.locked.dot', { includeHiddenElements: true }),
+    ).toBeNull();
+    // The Locked control names its slot (L2).
+    expect(screen.getByTestId('builder.slot.anchor.locked').props['accessibilityLabel']).toContain(
+      'Slot 1',
+    );
+  });
+
+  it('on a full draft the first slot not locked is in hand: a tile fills it, and it says so (M2)', () => {
+    const draft: PaletteDraft = {
+      name: 'x',
+      members: [
+        { slug: tileSlug(0, 0), role: 'anchor' },
+        { slug: tileSlug(0, 1), role: 'light' },
+        { slug: tileSlug(0, 2), role: 'neutral' },
+        { slug: tileSlug(0, 3), role: 'accent' },
+      ],
+      locked: new Set(['anchor']),
+    };
+    drawBuilder({ initialDraft: draft });
+    // Slot 2 is in hand on opening, shown as 16 draws it — by its framed tile — its word still Replace.
+    expect(screen.getByTestId('builder.slot.light.replace').props['accessibilityLabel']).toContain(
+      say('palettes.replace'),
+    );
+    expect(screen.getByTestId('builder.tray.tile.1').props['accessibilityState']).toMatchObject({
+      selected: true,
+    });
+    // A tile says which slot it fills.
+    expect(screen.getByTestId('builder.tray.tile.5').props['accessibilityHint']).toContain(
+      'Slot 2',
+    );
+    press('builder.tray.tile.5');
+    expect(screen.getByTestId('builder.slot.light.hex').props['children']).toBe(
+      entryBySlug(tileSlug(0, 5))!.derived.hex,
+    );
+    // Pressing Replace says so in words: slot 3 reads Choosing, announced as selected.
+    press('builder.slot.neutral.replace');
+    const replace = screen.getByTestId('builder.slot.neutral.replace');
+    expect(replace.props['accessibilityLabel']).toContain(say('palettes.choosing'));
+    expect(replace.props['accessibilityState']).toMatchObject({ selected: true });
+    expect(screen.getByTestId('builder.tray.tile.6').props['accessibilityHint']).toContain(
+      'Slot 3',
+    );
+  });
+
+  it('Replace brings the tray to the page holding its slot’s colour (M2)', () => {
+    const far = PAGES[2]![0]!.entry.slug;
+    drawBuilder({
+      initialDraft: {
+        name: 'x',
+        members: [
+          { slug: tileSlug(0, 0), role: 'anchor' },
+          { slug: far, role: 'light' },
+        ],
+      },
+    });
+    // It opens on the first colour's page.
+    expect(screen.getByTestId('builder.tray.tile.0').props['accessibilityLabel']).toContain(
+      PAGES[0]![0]!.entry.name.en,
+    );
+    press('builder.slot.light.replace');
+    expect(screen.getByTestId('builder.tray.tile.0').props['accessibilityLabel']).toContain(
+      PAGES[2]![0]!.entry.name.en,
+    );
+  });
+
+  it('a tile’s name is cut at its edge at large text, never drawn on the tray (M3)', () => {
+    drawBuilder();
+    const names = screen.UNSAFE_getAllByType(Tategaki);
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      let clipped = false;
+      for (let at = name.parent; at !== null && !clipped; at = at.parent) {
+        const style = StyleSheet.flatten((at.props as { style?: StyleProp<ViewStyle> }).style);
+        clipped = style.overflow === 'hidden';
+      }
+      expect(clipped).toBe(true);
+    }
+  });
+
+  it('Edit is refused with its reason for a palette built against another corpus version (M4)', () => {
+    const older = {
+      ...storedPalette('p-old', 'Older', [[SLUGS[0]!, 'anchor']]),
+      versionId: '2025.01.1',
+    };
+    const onEdit = jest.fn();
+    drawStudio({ store: memoryStore([older]), initialView: 'custom', onEdit });
+    press('studio.palette.personal:p-old.more');
+    expect(screen.getByText(say('palettes.editOtherVersion'))).toBeTruthy();
+    press('studio.more.edit');
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+
+  it('the export bar says why it is idle on a view with nothing to export (L9)', () => {
+    drawStudio({ initialView: 'custom', onExport: jest.fn() });
+    expect(screen.getByText(say('palettes.exportNone'))).toBeTruthy();
+  });
+
+  it('16’s edit state draws its own title and action words (M7)', () => {
+    drawBuilder({
+      editingId: 'p-1',
+      initialDraft: { name: 'Evening walk', members: [{ slug: SLUGS[0]!, role: 'anchor' }] },
+    });
+    expect(screen.getByText(say('palettes.editTitle'))).toBeTruthy();
+    expect(screen.getByText(say('palettes.saveAndReturn'))).toBeTruthy();
+    expect(screen.queryByText(say('palettes.createTitle'))).toBeNull();
   });
 });

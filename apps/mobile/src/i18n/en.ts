@@ -264,6 +264,12 @@ export const en = {
   'palettes.role': 'Role:',
   'palettes.locked': 'Locked',
   'palettes.replace': 'Replace',
+  'palettes.choosing': 'Choosing',
+  'palettes.putIn': 'Puts this colour in',
+  'palettes.removeFrom': 'Removes this colour from',
+  'palettes.editOtherVersion':
+    'This palette was built against another version of the corpus; editing it here would change its colours.',
+  'palettes.exportNone': 'Nothing in this view to export.',
   'palettes.emptySlot': 'Choose a colour below',
   'palettes.matrix.title': 'Live Scientific Harmony & Contrast Engine Matrix',
   'palettes.previous': 'Previous colours',

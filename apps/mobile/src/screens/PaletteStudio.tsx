@@ -20,7 +20,7 @@
  * `16`, the route's draft state (`PaletteBuilder`).
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
@@ -44,7 +44,7 @@ import {
 } from '@irodora/ui';
 import type { WornCombination } from '../outfit/fromWear';
 import type { PaletteStore } from '../palette';
-import { fitsSlots } from '../palette';
+import { editRefusal, type EditRefusal } from '../palette';
 import {
   BADGE,
   BAND_HEIGHT,
@@ -85,6 +85,16 @@ export const STATES = { absent: 'empty' } as const satisfies ScreenStates;
 
 /** The two views the segmented control switches between (ADR-0165 D2). */
 export type StudioView = 'curated' | 'custom';
+
+/** Why Edit is refused, in words (ADR-0165 D2; the review, M4). */
+const REFUSAL_KEYS = {
+  unfit: 'palettes.editUnfit',
+  otherVersion: 'palettes.editOtherVersion',
+} as const satisfies Record<EditRefusal, MessageKey>;
+
+/** *More for ‹palette›*, its joiner the script's own (the review, L4). */
+const moreFor = (t: T, script: Script, title: string): string =>
+  `${t('palettes.more')}${script === 'japanese' ? '' : ' '}${title}`;
 
 /** Four columns a row beneath the band (ADR-0164 D2). */
 const COLUMNS = 4;
@@ -176,7 +186,7 @@ function TitleRow({
       {palette.origin === 'personal' && onMore !== undefined ? (
         <IconButton
           name="more"
-          label={`${t('palettes.more')} ${titleLine(palette)}`}
+          label={moreFor(t, script, titleLine(palette))}
           color="foreground.2"
           onPress={() => {
             onMore(palette);
@@ -434,6 +444,11 @@ export interface PaletteStudioProps {
   readonly onExport?: (href: string) => void;
   /** *Edit this palette*: `16`, holding it. */
   readonly onEdit?: (id: string) => void;
+  /**
+   * Bumped by the route each time the page comes back into view: the store is read again, so a
+   * palette saved in `16` is listed when the person returns (the review, S1).
+   */
+  readonly revision?: number;
 }
 
 export function PaletteStudio({
@@ -445,10 +460,27 @@ export function PaletteStudio({
   onApply,
   onExport,
   onEdit,
+  revision = 0,
 }: PaletteStudioProps): React.JSX.Element {
   const { t, script } = useMessages();
   const [view, setView] = useState<StudioView>(initialView);
   const [stored, setStored] = useState(() => store.listPalettes());
+
+  /*
+   * READ AGAIN ON RETURN (S1): the route bumps `revision` when the page is shown again. A palette
+   * that was not here before — the one just built in 16 — is in My Custom Palettes, so that view is
+   * shown; an edit or a deletion elsewhere is simply re-read.
+   */
+  const seen = useRef(revision);
+  useEffect(() => {
+    if (seen.current === revision) return;
+    seen.current = revision;
+    const next = store.listPalettes();
+    setStored((was) => {
+      if (next.some((p) => !was.some((w) => w.id === p.id))) setView('custom');
+      return next;
+    });
+  }, [revision, store]);
   const [choosing, setChoosing] = useState(false);
   const [more, setMore] = useState<ShownPalette | null>(null);
 
@@ -459,7 +491,8 @@ export function PaletteStudio({
 
   const onMore = onEdit === undefined ? undefined : setMore;
   const moreStored = more === null ? undefined : stored.find((p) => p.id === more.id);
-  const editable = moreStored !== undefined && fitsSlots(moreStored.members);
+  const refusal = moreStored === undefined ? null : editRefusal(moreStored);
+  const editable = moreStored !== undefined && refusal === null;
 
   return (
     <Screen
@@ -528,6 +561,8 @@ export function PaletteStudio({
           },
         ],
         padding: { top: nativeSpacing.lg, side: nativeSpacing.md, bottom: nativeSpacing.lg },
+        // A view with nothing in it has nothing to export, and the bar says so (the review, L9).
+        ...(shown.length === 0 ? { note: t('palettes.exportNone') } : {}),
         script,
       }}
     >
@@ -657,7 +692,7 @@ export function PaletteStudio({
         onOpenChange={(open) => {
           if (!open) setMore(null);
         }}
-        title={more === null ? t('palettes.more') : `${t('palettes.more')} ${titleLine(more)}`}
+        title={more === null ? t('palettes.more') : moreFor(t, script, titleLine(more))}
         closeLabel={t('palettes.chooseClose')}
         handleLabel={t('palettes.chooseHandle')}
         handleHint={t('palettes.chooseHandleHint')}
@@ -685,7 +720,7 @@ export function PaletteStudio({
                 script={script}
                 testID="studio.more.editReason"
               >
-                {t('palettes.editUnfit')}
+                {t(REFUSAL_KEYS[refusal ?? 'unfit'])}
               </Text>
             )}
             <Button

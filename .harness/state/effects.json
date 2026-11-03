@@ -10248,7 +10248,7 @@
           "ref": "test"
         }
       ],
-      "guard": "packages/ui/test/pair.test.tsx: judged={false} honours 60; the default floors the same 60 to 77 (decoy), and so does an explicit judged; Pair stays floored. palette-studio-states.test scans apps/mobile/src for judged={false} and finds it only on 10’s band, declared by ADR-0162 — a new opt-out fails until it is declared. screens.test: 10’s band is drawn at BAND_HEIGHT; Compare’s samples stay at or above the floor (ADR-0154’s describe).",
+      "guard": "packages/ui/test/pair.test.tsx: judged={false} honours 60; the default floors the same 60 to 77 (decoy), and so does an explicit judged; Pair stays floored. palette-studio-states.test scans apps/mobile/src for every judged= or judged: — a literal, an expression or a spread object — and finds only 10’s band’s judged={false}, declared by ADR-0162 — a new opt-out fails until it is declared. screens.test: 10’s band is drawn at BAND_HEIGHT; Compare’s samples stay at or above the floor (ADR-0154’s describe).",
       "memory": "memory/effects/a-strip-says-whether-it-is-judged.md",
       "rationale": "ADR-0162 lets a strip shown for choosing drop ADR-0095’s floor. The prop is the hazard: a judging surface (Compare, a pair) that set judged={false} would draw a difference under 2° beside the figure that measures it, and every test would still pass."
     },
@@ -10293,7 +10293,7 @@
           "ref": "test"
         }
       ],
-      "guard": "apps/mobile/test/palette.test.ts: every draft shape 16 can make (96 — 16 slot subsets, named or not, three categories) judged against parsePalette directly, each problem sentence the shape’s, ranks contiguous in slot order and weights deriveWeights’; choose over every pair of slots × locked or not (a held colour moves; the slot’s own colour again empties it; a locked slot keeps its colour both ways); clearSlot, toggleLock, nextEmpty; draftOf locks A in slot 1 with B in slot 3; fitsSlots refuses a role held twice and every curated system. palette-studio-states.test: Edit is disabled with its reason for a palette the slots cannot hold (decoy); a locked slot draws no Replace; FR-35’s swap refuses a locked slot (decoy).",
+      "guard": "apps/mobile/test/palette.test.ts: every draft shape 16 can make (96 — 16 slot subsets, named or not, three categories) judged against parsePalette directly, each problem sentence the shape’s, ranks contiguous in slot order and weights deriveWeights’; choose over every pair of slots × locked or not (a held colour moves; the slot’s own colour again empties it; a locked slot keeps its colour both ways); clearSlot, toggleLock, nextEmpty; draftOf locks A in slot 1 with B in slot 3; fitsSlots refuses a role held twice and every curated system. palette-studio-states.test: Edit is disabled with its reason for a palette the slots cannot hold (decoy); a locked slot draws no Replace; FR-35’s swap refuses a locked slot (decoy). F-251’s review: editRefusal refuses a palette built against another corpus version (palette.test, the states test); draftOf fills slots 1 and 2 and refuses more colours than slots (decoy).",
       "memory": "memory/effects/a-slot-holds-one-colour-and-a-lock-holds-it.md",
       "rationale": "16 builds in four slots, one a role, with a lock and a category. A draft that lost a member reopening an old-Studio palette, a colour moved out of a locked slot, or a one-layer kasane saved would each be a palette the person did not make — and the schema catches only the last."
     },

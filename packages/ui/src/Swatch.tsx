@@ -110,6 +110,11 @@ export interface SwatchProps {
   readonly loading?: boolean;
   readonly onPress?: () => void;
   /**
+   * What pressing it does, where the name alone does not say (F-251: 16's tray tile, *Puts this colour
+   * in Slot 2*, or *Removes it from Slot 2*). Announced after the name; never drawn.
+   */
+  readonly hint?: string;
+  /**
    * The script the NAME is written in.
    *
    * Most swatch names are corpus entries in Latin, which is why this went unnoticed until the
@@ -241,6 +246,7 @@ export function Swatch({
   disabled = false,
   loading = false,
   onPress,
+  hint,
   script = 'latin',
   corner: cornerStep = 'sm',
   keyline = SWATCH_KEYLINE,
@@ -319,6 +325,7 @@ export function Swatch({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      {...(hint === undefined ? {} : { accessibilityHint: hint })}
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
       onPress={onPress}
@@ -444,6 +451,7 @@ export function Swatch({
     <AnimatedPressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      {...(hint === undefined ? {} : { accessibilityHint: hint })}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
       // All four announced. A swatch that is merely dimmed is unavailable to a sighted user

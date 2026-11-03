@@ -2853,7 +2853,7 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(<PaletteBuilder store={fakeStore()} {...BUILDER_HANDLERS} />, theme),
   },
   {
-    // 08's pair (E-227): A locked in slot 1, B in slot 3, unnamed.
+    // 08's pair (E-227): A locked in slot 1, B in slot 2, unnamed (the review, M1).
     name: 'screens/PaletteBuilder (a pair from Compare)',
     shows: showing(PALETTE_BUILDER_STATES),
     kind: 'static',
@@ -4380,10 +4380,20 @@ describe('the route wires the real repository, not a fake', () => {
       "router.push('/wardrobe/outfit')",
       'offerCombination(combination)',
       'router.push(href)',
-      "router.navigate('/atlas/palettes?view=custom')",
       'activeProfile(repo)',
+      // 16 goes BACK to the catalogue beneath, which reads the store again on focus (the review, S1).
+      'if (router.canGoBack()) router.back();',
+      "toCatalogue('custom')",
+      'useFocusEffect(',
+      'revision={shown}',
     ])
       expect(route).toContain(wire);
+    // DECOY: navigating to this route again from 16 would reuse the screen on top.
+    for (const stale of [
+      "router.navigate('/atlas/palettes?view=custom')",
+      "router.navigate('/atlas/palettes')",
+    ])
+      expect(route).not.toContain(stale);
   });
 
   it('does the same for guided setup, whose port is the other half of this seam', () => {

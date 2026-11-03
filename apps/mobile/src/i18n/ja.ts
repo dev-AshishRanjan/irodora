@@ -242,6 +242,12 @@ export const ja: Record<MessageKey, string> = {
   'palettes.role': '役割：',
   'palettes.locked': '固定中',
   'palettes.replace': '入れ替える',
+  'palettes.choosing': '選択中',
+  'palettes.putIn': 'この色の入れ先は',
+  'palettes.removeFrom': 'この色を外すのは',
+  'palettes.editOtherVersion':
+    'この配色は別の版の収録色で作られています。ここで編集すると色が変わってしまいます。',
+  'palettes.exportNone': 'この表示には書き出す配色がありません。',
   'palettes.emptySlot': '下から色を選ぶ',
   'palettes.matrix.title': '調和とコントラストの計算',
   'palettes.previous': '前の色',

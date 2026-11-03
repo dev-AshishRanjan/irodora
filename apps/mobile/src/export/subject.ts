@@ -144,9 +144,13 @@ export function curatedPaletteSubject(published: PublishedPalette): ExportSubjec
     envelope: envelope(),
     colours: [...palette.colors]
       .sort((a, b) => a.rank - b.rank)
-      .flatMap((m) => {
+      .map((m) => {
         const entry = entryBySlug(m.slug);
-        return entry === null ? [] : [corpusColour(entry)];
+        // As the card does (`curatedShown`): gate 11 holds every member to a published entry, and a
+        // file that silently dropped one would be a different palette under this one's name.
+        if (entry === null)
+          throw new Error(`palette ${palette.slug}: member ${m.slug} is not in this corpus`);
+        return corpusColour(entry);
       }),
   };
 }

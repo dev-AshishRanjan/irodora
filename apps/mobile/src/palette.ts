@@ -196,15 +196,24 @@ export function addMember(draft: PaletteDraft, slug: string): PaletteDraft {
 }
 
 /**
- * A draft of these colours, in order — the first the anchor, the rest neutrals, as `addMember` makes
- * them (F-249: 08's *Add Pair to Palette Studio*, ADR-0156 D5). `null` if any slug is not a corpus
- * colour: a route parameter is never trusted to name one.
+ * A draft of these colours, in `16`'s slots in order — the first the anchor, the next the light
+ * ground, and so on (F-249: 08's *Add Pair to Palette Studio*, ADR-0156 D5; ADR-0165). So 08's pair
+ * fills slots 1 and 2, and the matrix measures the pair the person was comparing. `null` if any slug
+ * is not a corpus colour — a route parameter is never trusted to name one — or if there are more
+ * colours than slots.
  */
 export function draftOf(slugs: readonly string[]): PaletteDraft | null {
   if (slugs.length === 0 || slugs.some((s) => entryBySlug(s) === null)) return null;
-  // The colour the person came with is fixed, as 13 opens with its top locked (ADR-0152 D5): A is
-  // the anchor, in slot 1, locked (ADR-0165).
-  return { ...slugs.reduce(addMember, EMPTY_DRAFT), locked: new Set<PaletteRole>(['anchor']) };
+  // A colour twice is one member, as a person tapping it twice gets.
+  const distinct = [...new Set(slugs)];
+  if (distinct.length > SLOT_ROLES.length) return null;
+  return {
+    name: '',
+    members: distinct.map((slug, i) => ({ slug, role: SLOT_ROLES[i] ?? 'neutral' })),
+    // The colour the person came with is fixed, as 13 opens with its top locked (ADR-0152 D5): A is
+    // the anchor, in slot 1, locked (ADR-0165).
+    locked: new Set<PaletteRole>(['anchor']),
+  };
 }
 
 export function removeMember(draft: PaletteDraft, slug: string): PaletteDraft {
@@ -460,13 +469,29 @@ export function toStoreWrite(
   };
 }
 
+/** Why a stored palette cannot be opened in `16`'s slots, or `null` when it can (ADR-0165). */
+export type EditRefusal = 'unfit' | 'otherVersion';
+
 /**
- * A stored palette as `16`'s draft, to edit — or `null` when it does not fit the slots: a palette
- * built before F-251 may hold several colours in one role, which four slots cannot show without
- * dropping one (ADR-0165: *Edit* is then disabled with its reason).
+ * - `unfit`: a palette built before F-251 may hold several colours in one role, which four slots
+ *   cannot show without dropping one.
+ * - `otherVersion`: it was built against another corpus version. The slots read this device's
+ *   bundle, so editing it would re-bind its colours to today's values without saying so — a palette
+ *   keeps the colours it was built from (`toCorpusRecord`'s `versionId`).
+ */
+export function editRefusal(stored: StoredPalette): EditRefusal | null {
+  if (!fitsSlots(stored.members)) return 'unfit';
+  if (stored.versionId !== CORPUS_LABEL || stored.members.some((m) => entryBySlug(m.slug) === null))
+    return 'otherVersion';
+  return null;
+}
+
+/**
+ * A stored palette as `16`'s draft, to edit — or `null` when {@link editRefusal} refuses it (*Edit*
+ * is then disabled with its reason).
  */
 export function draftFromStored(stored: StoredPalette): PaletteDraft | null {
-  if (!fitsSlots(stored.members)) return null;
+  if (editRefusal(stored) !== null) return null;
   const category = (DRAFT_CATEGORIES as readonly string[]).includes(stored.category)
     ? (stored.category as DraftCategory)
     : 'contemporary';

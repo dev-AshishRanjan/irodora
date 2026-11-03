@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { COLOURS_SEPARATOR } from '../../../src/export/subject';
 import { offerCombination } from '../../../src/outfit/fromWear';
 import { draftFromStored, draftOf } from '../../../src/palette';
@@ -22,6 +22,12 @@ import { deviceRepository } from '../../../src/store/repository';
  *
  * A parameter is never trusted to name something: a slug the corpus does not hold, or an id the
  * device does not, opens an empty draft rather than another palette.
+ *
+ * 16 is pushed over 10, so its Back and *Create & Save* GO BACK to the catalogue beneath rather than
+ * navigate to this route again — which reuses the screen on top and leaves a second, stale catalogue
+ * under it (F-251's review, S1). The catalogue reads the store again each time it comes into view;
+ * a palette just saved is listed, under My Custom Palettes. Opened on a draft with nothing beneath
+ * (a deep link), the builder replaces itself with the catalogue instead.
  */
 export default function PalettesRoute(): React.JSX.Element {
   const router = useRouter();
@@ -49,6 +55,18 @@ export default function PalettesRoute(): React.JSX.Element {
   }, [colours, editing]);
   const building = colours !== undefined || draft !== undefined;
 
+  // Read again whenever the catalogue comes back into view (S1), as the colour page and Home are.
+  const [shown, setShown] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setShown((n) => n + 1);
+    }, []),
+  );
+  const toCatalogue = (view: 'curated' | 'custom'): void => {
+    if (router.canGoBack()) router.back();
+    else router.replace(view === 'custom' ? '/atlas/palettes?view=custom' : '/atlas/palettes');
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -58,16 +76,17 @@ export default function PalettesRoute(): React.JSX.Element {
           {...(initialDraft === null ? {} : { initialDraft })}
           {...(editing === undefined || initialDraft === null ? {} : { editingId: editing.id })}
           onBack={() => {
-            router.navigate('/atlas/palettes');
+            toCatalogue('curated');
           }}
           onSaved={() => {
-            router.navigate('/atlas/palettes?view=custom');
+            toCatalogue('custom');
           }}
         />
       ) : (
         <PaletteStudio
           store={repo}
           initialView={view}
+          revision={shown}
           hasProfile={activeProfile(repo) !== null}
           onBack={() => {
             router.navigate('/atlas');

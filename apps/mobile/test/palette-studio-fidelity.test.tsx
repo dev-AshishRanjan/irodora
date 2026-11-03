@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import { StyleSheet, type StyleProp, type TextStyle } from 'react-native';
-import { nativeColors, nativeRadius, nativeSpacing, nativeType } from '@irodora/design-tokens';
+import { nativeSpacing, nativeType } from '@irodora/design-tokens';
 import {
   AppBar,
   Button,
@@ -34,6 +34,7 @@ import {
   Chip,
   ChoiceGroup,
   Illustration,
+  Screen,
   Strip,
   Swatch,
   ThemeProvider,
@@ -160,8 +161,6 @@ interface BarProps {
   readonly trailing?: { readonly button?: Readonly<Record<string, unknown>> };
 }
 const barOf = (root: Instance): BarProps => root.find((n) => n.type === AppBar).props;
-
-const dark = nativeColors.dark;
 
 /* ----------------------------------------------------------------------------- order */
 
@@ -391,9 +390,10 @@ describe('proportion: every size recomputed from 10.json', () => {
   });
 
   it('the page inset is md (10 draws 20 dp, a tie, the smaller; ADR-0139)', () => {
+    const { root } = setup();
     expect(half(el('10.palette-1').dp.x)).toBe(20);
-    expect(nativeSpacing.md).toBeLessThanOrEqual(20);
-    expect(nativeRadius.sm).toBe(6);
-    expect(dark['surface.3']).toBeDefined();
+    // 20 lies between md (16) and lg (24), equally: the smaller (§2).
+    expect(20 - nativeSpacing.md).toBe(nativeSpacing.lg - 20);
+    expect(root.find((n) => n.type === Screen).props['padding']).toBe('md');
   });
 });

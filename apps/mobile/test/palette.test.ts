@@ -23,6 +23,7 @@ import {
   draftFrom,
   draftFromStored,
   draftOf,
+  editRefusal,
   DRAFT_CATEGORIES,
   EMPTY_DRAFT,
   fitsSlots,
@@ -283,14 +284,14 @@ describe('a draft of the colours a route was opened with', () => {
       name: '',
       members: [
         { slug: A, role: 'anchor' },
-        { slug: B, role: 'neutral' },
+        { slug: B, role: 'light' },
       ],
       // A, the colour the person came with, is fixed (F-251, ADR-0165).
       locked: new Set(['anchor']),
     });
-    // 16's slots: A in slot 1, B in slot 3 — the neutral's.
+    // 16's slots 1 and 2, so the matrix measures the pair 08 was comparing (the review, M1).
     expect(slotOf(draft!, SLOT_ROLES[0])).toBe(A);
-    expect(slotOf(draft!, SLOT_ROLES[2])).toBe(B);
+    expect(slotOf(draft!, SLOT_ROLES[1])).toBe(B);
     // Unnamed, so the Studio's save asks for a name before anything is stored (FR-49).
     expect(draftProblem(draft!, CONTEXT)).toBe('noName');
   });
@@ -413,8 +414,25 @@ describe('clearing, locking and the slot in hand', () => {
   it('opens 08’s pair with A locked in slot 1, so a choice cannot replace it (E-227)', () => {
     const draft = draftOf([A!, B!])!;
     expect(choose(draft, 'anchor', C!)).toBe(draft);
-    // B, in slot 3, is the person's to change.
-    expect(slotOf(choose(draft, 'neutral', C!), 'neutral')).toBe(C);
+    // B, in slot 2, is the person's to change.
+    expect(slotOf(choose(draft, 'light', C!), 'light')).toBe(C);
+  });
+
+  it('DECOY — more colours than slots give no draft, rather than a palette missing some', () => {
+    expect(
+      draftOf(
+        allEntries()
+          .slice(0, 5)
+          .map((e) => e.entry.slug),
+      ),
+    ).toBeNull();
+    expect(
+      draftOf(
+        allEntries()
+          .slice(0, 4)
+          .map((e) => e.entry.slug),
+      )?.members,
+    ).toHaveLength(4);
   });
 });
 
@@ -439,6 +457,20 @@ describe('a stored palette in the slots', () => {
     });
   });
 
+  it('refuses to open a palette built against another corpus version: editing would re-bind it (M4)', () => {
+    const older = { ...storedPalette('p-old', 'Older', [[A!, 'anchor']]), versionId: '2025.01.1' };
+    expect(editRefusal(older)).toBe('otherVersion');
+    expect(draftFromStored(older)).toBeNull();
+    const gone = storedPalette('p-gone', 'Gone', [[A!, 'anchor']]);
+    const withMissing = {
+      ...gone,
+      members: gone.members.map((m) => ({ ...m, slug: 'no-such-colour' })),
+    };
+    expect(editRefusal(withMissing)).toBe('otherVersion');
+    // DECOY: one built against this bundle, one colour a role, opens.
+    expect(editRefusal(storedPalette('p-now', 'Now', [[A!, 'anchor']]))).toBeNull();
+  });
+
   it('does not fit when a role holds two colours: four slots cannot show it without dropping one', () => {
     const two = storedPalette('p-2', 'Two neutrals', [
       [A!, 'anchor'],
@@ -446,6 +478,7 @@ describe('a stored palette in the slots', () => {
       [C!, 'neutral'],
     ]);
     expect(fitsSlots(two.members)).toBe(false);
+    expect(editRefusal(two)).toBe('unfit');
     expect(draftFromStored(two)).toBeNull();
     // Every curated system holds seven or eight members: none fits.
     const quiet = allPalettes().find((p) => p.palette.slug === 'quiet-neutrals')!;
