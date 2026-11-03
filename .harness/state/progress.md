@@ -8,6 +8,95 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-11-03 — F-251 Palette Studio is mockup 10, and building a palette is mockup 16
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** `/atlas/palettes` is rebuilt to `10` and its draft state is `16`:
+
+- **10:** its own bar — back, the title with its Japanese run (配色工房) below it, *Create New
+  Palette*; the *Curated Systems / My Custom Palettes* choice; form-1 cards (title, FR-23's description,
+  provenance, the band at the record's weights, four columns a row, *WCAG ‹threshold› ‹ratio›:1* and
+  *CVD ‹n›% Separation (Machado 2009)*, *Apply to Outfit Lab* and *Export Tokens*) and form-2 cards for
+  kasanes (layers drawn apart, the hex on each, *Kasane-inspired Layering* and the classification);
+  the leaves; the export bar filled in `border.strong`, *Export Selected* choosing in 03's sheet.
+- **16:** the name field with its label inside; three type chips; four slots by role (Locked or
+  Replace); the *Live Scientific Harmony & Contrast Engine Matrix* (slot 1 vs 2, the warm–cool
+  relation, the floored separation); FR-35's block under it for a hard pair; the corpus tray, seven a
+  page with peeking tiles and chevrons, names set top to bottom; *Save Palette* and *Create & Save
+  Palette →*, both through the schema.
+- 10.screen and 16.screen are the seventh and eighth whole screens in the inventory sweep. Increments
+  `bdf9475` to `b6b3432`.
+
+**Measured first (increment 1).** Every box, type, corner, fill and ink re-read: every corner on both
+is `sm` (F-220 had `md` for 10's cards, band, layers and buttons and 16's matrix); small type is
+`caption`; 10's chosen segment, badges and tags are level 3; 16's chosen type chip is level 3 (found in
+increment 2); the tray's tiles are drawn whole; 16's lower right art is a basket weave `sashiko` stands
+for; 16's cut card is not design.
+
+**Decided under the delegation of 2026-10-05:** ADR-0162 (OQ-45 for 10 and 16 — a catalogue shows a
+palette, a pair is judged: the band and slots are drawn at their heights, the floor kept where a
+difference is judged), ADR-0163 (OQ-23 closed — brackets are notation), ADR-0164 (figures and words),
+ADR-0165 (controls, routes, what leaves the old Studio), ADR-0166 (composition, art, the tray). The
+person is asked to confirm or flip ADR-0162 and ADR-0165's lock model at the capture.
+
+**Additive in `@irodora/ui`:** `Strip judged`; `Button` tonal `strong` with `border.strong`'s declared
+pairings (`foreground` dark, `accent.foreground` Washi); `ChoiceGroup` pills `sm` and per-option ids;
+`TextField` label inside and a drawn form; `Swatch hint`; new `Tategaki`.
+
+**Review (once): FAIL as delivered**, 3 S, 7 M, 9 L. Every one fixed or recorded (`b6b3432`):
+
+- **S1, fixed — the one that mattered.** After a save, Back showed a stale catalogue: 16 navigated to
+  its own route, which expo-router answers by reusing the screen on top, and the catalogue had read the
+  store once at mount. 16 now goes back; the catalogue re-reads on focus and shows a new palette under
+  My Custom Palettes. Every test had passed: route tests are string matches.
+- **S2, S3, fixed:** the slot's name line gains its romaji; *Locked* gains its on-state dot.
+- **M1–M4, M6, M7, fixed:** 08's pair fills slots 1 and 2; the slot in hand shows by its framed tile,
+  and reads *Choosing* once *Replace* is pressed; tray names clip at large text; Edit refuses a palette
+  built against another corpus version; a test that could not fail now reads the Screen's padding.
+- **M5, recorded:** the harness does not capture 16 — **F-358**; the attestation names the hand steps.
+- **L1–L9:** fixed, or recorded on F-357, F-265 and the capture.
+
+**Also filed:** **F-357** (07's separation is rounded, so it can print 100 for 99.5–99.9).
+
+**Gates run on the final tree (`b6b3432`), each exit 0:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The CI mirror's gate 4, `pnpm test` over every package, and every mutation proof (claims, contrast,
+  a11y, content, token reach, spacing scale), all passed on the same tree.
+- Tier 2 before the review (`94e621e`): `pnpm turbo run test --force` passed 35 of 35.
+
+**Not green, and why:**
+
+- `pnpm turbo run test --force` on `b6b3432` stopped on ui's conformance suite: a cleanup hook passed
+  jest's 5 s under the parallel load (`ChoiceGroup (pills, 09)` on Slate and Obsidian). Alone it passed
+  636/636 in 59 s, and the mirror's test gate passed on the same tree. Noted on **F-350**.
+- `pnpm security` exits 1 on gate 15: F-322's advisories, six of them published since F-250
+  (node-forge <=1.4.0, decode-uri-component <=0.5.0), added to F-322's note. F-251 changed no
+  dependency.
+- `node scripts/verify-ci.mjs --all` exits 1 on the two recorded reds: the iOS config half on win32, and
+  gate 15.
+
+**Not run:** e2e and the fidelity capture — no Maestro or JDK here. The attestations are the person's:
+
+- a release Android build with a stored profile; `pnpm fidelity:capture -- --erase-app-data`;
+- `/atlas/palettes` compared with `10`, and 16 reached by hand (F-358) compared with `16`, in Sumi and
+  Washi × en and ja; confirm or flip ADR-0162 and ADR-0165's lock model;
+- the device checks F-251's third attestation lists, TalkBack and 200 % text included.
+
+### Lessons
+
+[[navigating-to-the-route-you-are-on-reuses-the-screen-on-top]] ·
+[[an-app-test-reads-a-packages-build-not-its-source]] ·
+[[replacing-a-range-of-a-file-deletes-what-lies-between-the-anchors]] ·
+[[an-undrawn-state-starts-from-an-action-never-from-opening]]
+
+### Next
+
+F-252 — mockup 19.
+
+---
+
 ## 2026-10-28 — F-250 Finder is mockup 09
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device

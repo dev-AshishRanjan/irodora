@@ -8741,7 +8741,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-221",
         "F-232",
@@ -11716,7 +11716,7 @@
         "test"
       ],
       "openQuestions": [],
-      "notes": "FROM F-248 (2026-10-26): F-317 records this for one ui suite; F-248's runs saw it in five more. Increment 8's Tier 1 (turbo test --filter='...[HEAD]' --concurrency=4) failed ui sample-family, atlas-forms and conformance (TabBar (lens active)) and mobile export-screen on 'Exceeded timeout of 5000 ms for a hook' — conformance took 428 s against its usual ~224; re-run at concurrency 2, the one failure was screens.test's CVD preview over screens/Preferences, the suite at 407 s against ~260. Every suite passed alone on the same tree (ui 1484/1484, mobile 1708/1708, screens.test 393/393). The registry grows with every rebuilt screen, so the margin shrinks with each. Package untouched by the cause in F-248's scope, so recorded rather than fixed there. Same class as F-306, F-317 and F-348."
+      "notes": "FROM F-248 (2026-10-26): F-317 records this for one ui suite; F-248's runs saw it in five more. Increment 8's Tier 1 (turbo test --filter='...[HEAD]' --concurrency=4) failed ui sample-family, atlas-forms and conformance (TabBar (lens active)) and mobile export-screen on 'Exceeded timeout of 5000 ms for a hook' — conformance took 428 s against its usual ~224; re-run at concurrency 2, the one failure was screens.test's CVD preview over screens/Preferences, the suite at 407 s against ~260. Every suite passed alone on the same tree (ui 1484/1484, mobile 1708/1708, screens.test 393/393). The registry grows with every rebuilt screen, so the margin shrinks with each. Package untouched by the cause in F-248's scope, so recorded rather than fixed there. Same class as F-306, F-317 and F-348. FROM F-251's Tier 2 (2026-11-03): ui's conformance suite timed out in a cleanup hook (5 s) on 'ChoiceGroup (pills, 09), on Slate and Obsidian' under the full parallel run; alone it passed 636/636 in 59 s."
     },
     {
       "id": "F-351",
