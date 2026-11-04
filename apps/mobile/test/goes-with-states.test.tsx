@@ -139,22 +139,30 @@ describe('no sample content from 19 reaches the page (§4 E1, E2; ADR-0167)', ()
     ['en-GB', 'light'],
     ['ja-JP', 'dark'],
     ['ja-JP', 'light'],
-  ] as const)('in %s, %s, in every state', (tag, theme) => {
-    for (const props of [
-      {},
-      { slug: CURATED_LEAD },
-      { initialFilter: 'analogous' as FilterChoice },
-      { initialSheet: true },
-      { slug: NEAR_GREY.entry.slug },
-      { slug: 'no-such-colour' },
-      { slug: OUTSIDE.entry.slug },
-      { slug: HOLDS_OUTSIDE.entry.slug },
-    ])
-      expect({ props, leaks: leaks(words(drawPage(props, { tag, theme }))) }).toStrictEqual({
-        props,
-        leaks: [],
-      });
-  });
+  ] as const)(
+    'in %s, %s, in every state',
+    (tag, theme) => {
+      for (const props of [
+        {},
+        { slug: CURATED_LEAD },
+        { initialFilter: 'analogous' as FilterChoice },
+        { initialSheet: true },
+        { slug: NEAR_GREY.entry.slug },
+        { slug: 'no-such-colour' },
+        { slug: OUTSIDE.entry.slug },
+        { slug: HOLDS_OUTSIDE.entry.slug },
+      ]) {
+        const tree = drawPage(props, { tag, theme });
+        const read = words(tree);
+        // Unmounted here, one page at a time: eight pages left for the cleanup hook outran its 5 s
+        // under the CI mirror's load (F-252's Tier 2; F-350's class).
+        tree.unmount();
+        expect({ props, leaks: leaks(read) }).toStrictEqual({ props, leaks: [] });
+      }
+    },
+    // Eight whole pages a case; the rendering, not the check, is the time.
+    60_000,
+  );
 
   it('DECOY: a planted sample name and a planted label are found', () => {
     expect(leaks(`${words(drawPage())}\u0000Amber Ochre\u0000Action: Wear`)).toStrictEqual([
