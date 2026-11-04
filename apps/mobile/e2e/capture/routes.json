@@ -215,7 +215,7 @@
           "colour": "aki-batake"
         }
       },
-      "anchor": "combos.title"
+      "anchor": "with.anchorHeading"
     },
     {
       "route": "/atlas/with/reading/[id]",

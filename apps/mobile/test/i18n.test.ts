@@ -420,6 +420,15 @@ describe('the two combination-shaped answers are distinguishable', () => {
     expect(ja['contemporary.title']).not.toBe(ja['combos.title']);
   });
 
+  it('19’s title and its Wear are told apart from the contemporary ones too (F-252)', () => {
+    for (const catalogue of [en, ja] as const) {
+      expect(catalogue['with.title']).not.toBe(catalogue['contemporary.title']);
+      expect(catalogue['with.wear']).not.toBe(catalogue['contemporary.open']);
+      expect(catalogue['with.title']).toBeTruthy();
+      expect(catalogue['with.wear']).toBeTruthy();
+    }
+  });
+
   it('and different labels on the controls that open them', () => {
     // The titles could differ while both buttons said the same thing, which is what a person
     // actually chooses between.

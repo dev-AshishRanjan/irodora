@@ -1,69 +1,47 @@
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Combinations } from '../../../../src/screens/Combinations';
-import { activeProfile, toWorking } from '../../../../src/profile/store';
-import { engineProfile } from '../../../../src/outfit/builder';
-import { deviceRepository } from '../../../../src/store/repository';
-import { ruleSet } from '../../../../src/rules';
-import { useTarget } from '../../../../src/target';
-import { displayFromOklch } from '../../../../src/engine';
+import { GoesWith } from '../../../../src/screens/GoesWith';
+import { buildHref, wearHref } from '../../../../src/goes-with';
 
 /**
- * What goes with a colour. Navigation options and the parameter, and nothing else.
+ * What goes with a colour — `19` (F-252, ADR-0171). Navigation options and the parameter.
  *
- * `/atlas/with/<slug>` reads as what it is: *what goes with this one*. It sits under `atlas`
- * because the colour it is about is a corpus colour — F-197 adds the reading and the garment,
- * and those arrive from elsewhere.
+ * `/atlas/with/<slug>` reads as what it is: *what goes with this one*. It sits under `atlas` because
+ * the colour it is about is a corpus colour.
+ *
+ * - **The screen draws its own app bar** (`19.header`), so the stack's header is off, as 06's and
+ *   07's are.
+ * - **It reads no profile and no store**: 19 lists nothing a person writes, and orders nothing by a
+ *   person (ADR-0168 D6), so nothing is re-read on focus.
+ * - **Back** goes to the Atlas with `navigate`, as 06 and 09 do (ADR-0147's amendment): it returns
+ *   where the Atlas is in the stack and opens it where it is not (Home and the Lens push this route).
+ * - **Wear** opens 07 with the anchor as the top and the row in the trousers; **Build** opens 07 for
+ *   the anchor (ADR-0171 D3, D4).
  *
  * `slug` arrives as `string | string[]` for the reason `[slug].tsx` gives: a route parameter can
- * repeat, and taking the first element means a malformed URL reaches the screen as a slug that
- * does not resolve rather than throwing before anything is drawn.
+ * repeat, and taking the first element means a malformed URL reaches the screen as a slug that does
+ * not resolve rather than throwing before anything is drawn.
  */
-export default function CombinationsRoute(): React.JSX.Element {
+export default function GoesWithRoute(): React.JSX.Element {
   const router = useRouter();
-  const repo = deviceRepository();
-  const { arm } = useTarget();
-  const stored = activeProfile(repo);
-  // Narrowed once per stored profile: `engineProfile` is a pure narrowing of an immutable row.
-  const profile = useMemo(
-    () => (stored === null ? null : engineProfile(toWorking(stored))),
-    [stored],
-  );
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const slug = Array.isArray(params.slug) ? (params.slug[0] ?? '') : (params.slug ?? '');
+  const onBack = useCallback(() => {
+    router.navigate('/atlas');
+  }, [router]);
+  const onWear = useCallback(
+    (row: string) => {
+      router.push(wearHref(slug, row));
+    },
+    [router, slug],
+  );
+  const onBuild = useCallback(() => {
+    router.push(buildHref(slug));
+  }, [router, slug]);
   return (
     <>
-      <Stack.Screen options={{ title: 'Irodora' }} />
-      <Combinations
-        subject={{ kind: 'entry', slug }}
-        // F-198: the ranking is weighted where there is somebody to weight it by.
-        profile={profile}
-        rules={ruleSet()}
-        onOpenColour={(s) => {
-          router.push(`/atlas/${s}`);
-        }}
-        // The other question: a slot, and a ranking for the rest (F-195).
-        /*
-          A GENERATED COLOUR CAN BE A TARGET, and it carries no slug because it has none. The
-          Color comes from `displayFromOklch` — the same helper the swatch was drawn with — so
-          the target's provenance is the one the engine actually produced.
-        */
-        onArmCompanion={(colour) => {
-          const shown = displayFromOklch([colour.oklch[0], colour.oklch[1], colour.oklch[2]]);
-          arm({
-            hex: shown.hex,
-            oklch: colour.oklch,
-            color: shown.color,
-            // Named by its value, because it has no other name — the rule this screen already
-            // follows for every generated companion.
-            label: shown.hex,
-            slug: null,
-          });
-        }}
-        onWearIt={(s) => {
-          router.push(`/atlas/wear/${s}`);
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      <GoesWith slug={slug} onBack={onBack} onWear={onWear} onBuild={onBuild} />
     </>
   );
 }

@@ -13,7 +13,13 @@ import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { Platform, Text as RNText } from 'react-native';
 import { wcagContrast } from '@irodora/color-difference';
-import { nativeColors, nativeRadius, themeMode, type Theme } from '@irodora/design-tokens';
+import {
+  nativeColors,
+  nativeNumericFeature,
+  nativeRadius,
+  themeMode,
+  type Theme,
+} from '@irodora/design-tokens';
 import {
   Button,
   BUTTON_HEIGHT,
@@ -28,7 +34,12 @@ import {
   Text,
   ThemeProvider,
 } from '../src/index.js';
-import { flattenStyle, tapTargetReach } from '../src/testing/index.js';
+import {
+  flattenStyle,
+  raggedFigures,
+  tapTargetReach,
+  type TestNode,
+} from '../src/testing/index.js';
 
 const INVENTORY = join(__dirname, '..', '..', '..', 'mockups', 'inventory');
 
@@ -496,5 +507,31 @@ describe('the chrome’s forms (F-234)', () => {
       <Button key="c" label="x" variant="secondary" ink="foreground.2" />,
     ];
     expect(wrong).toHaveLength(3);
+  });
+});
+
+describe('a label that carries a figure (F-252)', () => {
+  const drawn = (numeric?: boolean): TestNode => {
+    render(
+      <ThemeProvider theme="dark">
+        <Button
+          label="Build Complete 4-Piece Outfit"
+          variant="tonal"
+          level={3}
+          {...(numeric === undefined ? {} : { numeric })}
+        />
+      </ThemeProvider>,
+    );
+    return screen.toJSON() as TestNode;
+  };
+
+  it('is set in tabular digits when it says so (FR-48, C9)', () => {
+    expect(raggedFigures(drawn(true), nativeNumericFeature)).toStrictEqual([]);
+  });
+
+  it('DECOY — without it, the figure is ragged, and the sweep says so', () => {
+    expect(raggedFigures(drawn(), nativeNumericFeature)).toStrictEqual([
+      'Build Complete 4-Piece Outfit',
+    ]);
   });
 });

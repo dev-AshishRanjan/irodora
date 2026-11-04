@@ -196,6 +196,11 @@ type LabelledBase = Shared & {
    */
   readonly glyphTint?: 'glyph.lock';
   /**
+   * The label carries a figure, set in tabular digits (FR-48, C9): `19`'s *Build Complete 4-Piece
+   * Outfit* (F-252). Without it the label is set as words.
+   */
+  readonly numeric?: boolean;
+  /**
    * A toggle's state (F-248, `07`'s *Lock*): announced as selected. It draws nothing of its own; the
    * caller says the state in the words too (*Lock* / *Locked*), so it is never colour or a state
    * flag alone (golden rule 13).
@@ -407,6 +412,7 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
     step = 'body',
     inset = 'md',
     glyphTint,
+    numeric = false,
     selected,
     on,
     weight,
@@ -494,11 +500,25 @@ function LabelledButton(props: LabelledProps): React.JSX.Element {
         draws — body at 500 on the primary, 400 on the others.
       */}
       {on === undefined ? (
-        <Text size={step} weight={paint.weight} color={paint.ink} script={script} numberOfLines={1}>
+        <Text
+          size={step}
+          weight={paint.weight}
+          color={paint.ink}
+          script={script}
+          numeric={numeric}
+          numberOfLines={1}
+        >
           {loading ? `${label}…` : label}
         </Text>
       ) : (
-        <Text size={step} weight={paint.weight} on={on} script={script} numberOfLines={1}>
+        <Text
+          size={step}
+          weight={paint.weight}
+          on={on}
+          script={script}
+          numeric={numeric}
+          numberOfLines={1}
+        >
           {loading ? `${label}…` : label}
         </Text>
       )}

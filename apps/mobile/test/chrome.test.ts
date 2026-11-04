@@ -116,7 +116,6 @@ describe('one tab bar (F-234, ADR-0117)', () => {
 const PLATFORM_HEADER: Readonly<Record<string, string>> = {
   'atlas/card/[slug]': 'F-253 (20)',
   'atlas/nearby/[slug]': 'F-254 (21)',
-  'atlas/with/[slug]': 'F-252 (19)',
   'atlas/with/reading/[id]': 'F-259 (24)',
   'profile/export': 'F-263 (18)',
   'profile/measure': 'F-261, no mockup (OQ-7)',

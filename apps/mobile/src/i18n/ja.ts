@@ -698,6 +698,13 @@ export const ja: Record<MessageKey, string> = {
   'combos.personal': '似合い度',
   'combos.personalNone': 'プロフィールが未作成のため、似合うかではなく色の関係だけで並べています。',
   // F-252 — see en.ts. The relationship terms are common Japanese design usage (unreviewed, F-265).
+  'with.title': '調和色',
+  'with.filter': '関係で絞り込む',
+  'with.filterTitle': '関係',
+  'with.anchorHeading': '基準色',
+  'with.rowsHeading': '調和の関係・順位順',
+  'with.build': '4点のコーディネートを組む',
+  'with.emptyHint': '「4点のコーディネートを組む」で、合う色を順位づけます。',
   'with.relationship.complementary': '補色',
   'with.relationship.analogous': '類似色',
   'with.relationship.split': '分割補色',

@@ -828,6 +828,13 @@ export const en = {
    * only generates; a curated row reads `combos.curated` and its intent (ADR-0169). Each word claims a
    * hue angle within ±9° and nothing more (ADR-0168).
    */
+  'with.title': 'What Goes With This',
+  'with.filter': 'Filter relationships',
+  'with.filterTitle': 'Relationship',
+  'with.anchorHeading': 'Anchor Colour',
+  'with.rowsHeading': 'Ranked Harmonic Relationships',
+  'with.build': 'Build Complete 4-Piece Outfit',
+  'with.emptyHint': 'Build Complete 4-Piece Outfit ranks what goes with it.',
   'with.relationship.complementary': 'Complementary',
   'with.relationship.analogous': 'Analogous',
   'with.relationship.split': 'Split-Complementary',

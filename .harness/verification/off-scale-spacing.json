@@ -1,7 +1,7 @@
 {
   "$comment": "Padding, margin and gap values that are deliberately NOT a step of docs/design/design-system.manifest.json `spacing.scale`. `scripts/verify-spacing-scale.mjs` fails on any off-scale value that is not listed here, AND on any entry here that no longer matches anything in the source — both directions, because a dead exemption is how a live one gets waved through later. Same shape as unreached-tokens.json. Every entry carries a `why`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. See F-095 and ADR-0074.",
   "version": 1,
-  "updated": "2026-10-28",
+  "updated": "2026-11-04",
   "$sizeComment": "This list is meant to stay very short. Four values were moved onto the scale and two were added to it rather than exempted, precisely so that this file would not become the place the scale goes to die. An entry that reads like 'this one is special too' is the signal that the SCALE is wrong, not that the list needs another row.",
   "exempt": [
     {
@@ -17,6 +17,13 @@
       "value": 0,
       "cites": "F-250, ADR-0161 D3",
       "why": "NOT SPACING. 09 draws its search field bare: the words start at the card’s own inset, which is the spacing (md, on the card). Zero removes the inset Android’s EditText draws by default, which no mockup draws; any step here would set the words a step in from the chips beneath them."
+    },
+    {
+      "file": "apps/mobile/src/goes-with.ts",
+      "property": "gap",
+      "value": 3.8,
+      "cites": "F-233, F-252, ADR-0172 D3",
+      "why": "NOT SPACING. The gap between 19’s anchor ring and its sample: a drawn figure of the anchor form, as the ring’s 2.3 is, which Swatch documents (19 draws 3.8, 21 3.1) and lays out as the ring’s own padding. goes-with-fidelity recomputes it from 19.json’s gapPx (6.2 px at 0.6124 dp a pixel). A step would move the ring off 19’s drawing: xs draws it 5 % wider, and the next step twice as wide. It is named gap only because SwatchAnchor names it so."
     }
   ]
 }

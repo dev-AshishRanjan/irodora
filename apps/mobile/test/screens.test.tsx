@@ -119,6 +119,8 @@ import {
 import { Compare, STATES as COMPARE_STATES } from '../src/screens/Compare';
 import { Combinations, STATES as COMBINATIONS_STATES } from '../src/screens/Combinations';
 import { Wear, STATES as WEAR_STATES } from '../src/screens/Wear';
+import { GoesWith, STATES as GOES_WITH_STATES } from '../src/screens/GoesWith';
+import { goesWith } from '../src/goes-with';
 import { TargetBar } from '../src/TargetBar';
 import { VisionStrip } from '../src/VisionStrip';
 import type { PersonalProfile } from '@irodora/recommendation';
@@ -332,6 +334,21 @@ const COMPARE_HANDLERS = {
 } as const;
 
 /** Every handler `07` takes (F-248): an absent handler is an absent control, so all are supplied. */
+/** Every handler `19` takes (F-252): every control drawn. */
+const GOES_WITH_HANDLERS = {
+  onBack: () => undefined,
+  onWear: () => undefined,
+  onBuild: () => undefined,
+};
+/** 19's fixture and capture anchor: seven rows, opening as 19 draws (ADR-0168's census). */
+const WITH_ANCHOR = 'aki-batake';
+/** An anchor under the lexicon's floor: no row in a hue relationship (ADR-0171 D6). */
+const NEAR_GREY = allEntries().find((e) => !goesWith(e).chromatic)?.entry.slug ?? '';
+/** An anchor whose rows hold the record outside sRGB (`OUTSIDE_SRGB`, below, is the record). */
+const HOLDS_OUTSIDE_SRGB =
+  allEntries().find((e) => goesWith(e).rows.some((r) => !r.entry.derived.inSrgbGamut))?.entry
+    .slug ?? '';
+
 const WEAR_HANDLERS = {
   onBack: () => undefined,
   onSaveToLab: () => undefined,
@@ -1924,6 +1941,85 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * WHAT GOES WITH THIS, `19` AS DRAWN (F-252): the anchor card, seven rows in their relationships,
+     * Build in the action bar — every handler supplied, so every control is drawn.
+     */
+    name: 'screens/GoesWith',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<GoesWith slug={WITH_ANCHOR} {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /* A COLOUR IN A CURATED COMBINATION: its members as rows first, read *Curated ‹intent›* (ADR-0169). */
+    name: 'screens/GoesWith (curated)',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<GoesWith slug={CURATED_LEAD} {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /* ONE RELATIONSHIP CHOSEN: *Showing n / N* and *Clear* on the rows heading's line (ADR-0171 D5). */
+    name: 'screens/GoesWith (filtered)',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <GoesWith slug={WITH_ANCHOR} initialFilter="analogous" {...GOES_WITH_HANDLERS} />,
+        theme,
+      ),
+  },
+  {
+    /* THE FILTER'S SHEET OPEN: 03's floating sheet, one choice in 05's pills. */
+    name: 'screens/GoesWith (the filter sheet open)',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<GoesWith slug={WITH_ANCHOR} initialSheet {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /*
+     * A COLOUR CLOSE TO GREY (ADR-0171 D6): the anchor card stands, and 00's caption takes the rows'
+     * place with Build as its hint — the absent witness the page can reach with a colour in hand.
+     */
+    name: 'screens/GoesWith (near grey)',
+    shows: showing(GOES_WITH_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<GoesWith slug={NEAR_GREY} {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /* THE SLUG THAT RESOLVES TO NOTHING: the back above 00's caption (ADR-0128 §6). */
+    name: 'screens/GoesWith (not in this corpus)',
+    shows: showing(GOES_WITH_STATES, 'empty'),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<GoesWith slug="no-such-colour" {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /* THE RECORD OUTSIDE sRGB as the anchor: its gamut note after the OKLCh line (rule 11, ADR-0169). */
+    name: 'screens/GoesWith (outside sRGB, the anchor)',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<GoesWith slug={OUTSIDE_SRGB.entry.slug} {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /* ...and as a row: the note after that row's figure. */
+    name: 'screens/GoesWith (outside sRGB, a row)',
+    shows: showing(GOES_WITH_STATES),
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<GoesWith slug={HOLDS_OUTSIDE_SRGB} {...GOES_WITH_HANDLERS} />, theme),
+  },
+  {
+    /*
      * WEAR IT, `07` AS DRAWN (F-248): Office, slot 2 in hand with its Swap and Lock, the compact Swap
      * on slots 3 and 4, the card's four figures with a profile, the pills, and both actions — every
      * handler supplied, so every control is drawn.
@@ -3435,6 +3531,7 @@ describe('every screen declares its data conditions', () => {
     Compare: COMPARE_STATES,
     Combinations: COMBINATIONS_STATES,
     Wear: WEAR_STATES,
+    GoesWith: GOES_WITH_STATES,
     Contemporary: CONTEMPORARY_STATES,
     PaletteStudio: PALETTE_STUDIO_STATES,
     PaletteBuilder: PALETTE_BUILDER_STATES,
@@ -7257,7 +7354,7 @@ describe('every list surface arrives once (F-266)', () => {
       mockup: '09',
       records: ['09.results.result-1', '09.results.result-4'],
     },
-    { subject: 'screens/Combinations', mockup: '19', records: ['19.rows.row-1', '19.rows.row-5'] },
+    { subject: 'screens/GoesWith', mockup: '19', records: ['19.rows.row-1', '19.rows.row-5'] },
     {
       subject: 'screens/Combinations (a colour, not an entry)',
       mockup: '24',

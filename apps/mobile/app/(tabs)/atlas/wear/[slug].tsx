@@ -8,6 +8,7 @@ import { offerCorpusColour } from '../../../../src/lens/handoff';
 import { entryBySlug } from '../../../../src/corpus';
 import { COLOURS_SEPARATOR } from '../../../../src/export/subject';
 import { deviceRepository } from '../../../../src/store/repository';
+import { startWith } from '../../../../src/wear';
 
 /**
  * Wear It (`07`). Navigation options, and the wires the screen cannot make itself.
@@ -36,8 +37,14 @@ export default function WearRoute(): React.JSX.Element {
   const router = useRouter();
   const repo = deviceRepository();
   const stored = activeProfile(repo);
-  const params = useLocalSearchParams<{ slug?: string | string[] }>();
+  const params = useLocalSearchParams<{ slug?: string | string[]; with?: string | string[] }>();
   const slug = Array.isArray(params.slug) ? (params.slug[0] ?? '') : (params.slug ?? '');
+  /*
+    FROM A ROW OF 19 (F-252, ADR-0171 D3): `with` puts that row's colour in the trousers, locked, the
+    anchor as the top. An unknown slug, or the anchor's own, is ignored and 07 opens as drawn.
+  */
+  const withSlug = Array.isArray(params.with) ? params.with[0] : params.with;
+  const initial = useMemo(() => startWith(withSlug, slug), [withSlug, slug]);
 
   // Narrowed once per stored profile rather than per render: `engineProfile` is a pure narrowing
   // of an immutable row, so repeating it would be work with an identical answer.
@@ -52,6 +59,7 @@ export default function WearRoute(): React.JSX.Element {
       <Wear
         slug={slug}
         profile={profile}
+        {...(initial === undefined ? {} : { initial })}
         /*
           BACK TO THE COLOUR (ADR-0152 D6), or to the Atlas for a colour this corpus does not hold —
           there is no colour page to go back to. `navigate`, so a colour opened from here and backed

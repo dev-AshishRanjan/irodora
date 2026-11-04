@@ -10,6 +10,6 @@ appId: com.irodora.app
 - launchApp:
     clearState: false
 - openLink: 'irodora://atlas/with/aki-batake'
-- assertVisible: 'What goes with this'
+- assertVisible: 'Anchor Colour'
 - waitForAnimationToEnd
 - takeScreenshot: capture
