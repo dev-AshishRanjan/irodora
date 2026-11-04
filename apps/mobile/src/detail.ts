@@ -134,8 +134,8 @@ export function nameLine(entry: PublishedEntry): string {
   return `${capitalised(entry.entry.name.romaji)} • ${entry.entry.name.en}`;
 }
 
-/** A label and its value, joined as each script joins them. */
-const labelled = (label: string, value: string, script: Script): string =>
+/** A label and its value, joined as each script joins them (`19`'s slot line reads it too, F-252). */
+export const labelled = (label: string, value: string, script: Script): string =>
   `${label}${script === 'japanese' ? '：' : ': '}${value}`;
 
 /**
@@ -182,6 +182,18 @@ const bytesOf = (hex: string): Triple => [
 ];
 
 /**
+ * The one entry outside sRGB says its hex is the nearest rendering, and by how much (E2, rule 11);
+ * `null` for every entry in sRGB. One helper, so `06`'s readout and `19`'s anchor and rows cannot
+ * word a record's gamut cost two ways (F-252, ADR-0169 D3, E-241).
+ */
+export function renderNote(entry: PublishedEntry, t: T): string | null {
+  const { derived } = entry;
+  return derived.inSrgbGamut
+    ? null
+    : `${t('detail.nearestSrgb')}, ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`;
+}
+
+/**
  * `06.readout.table`: Hex, OKLCh, CIELAB, and sRGB with Display P3 after the bar (ADR-0146 D4). Each
  * value names its space (FR-61). The one entry outside sRGB says its hex is the nearest rendering,
  * and by how much (E2, rule 11). `p3` is the engine's conversion of the record's XYZ.
@@ -190,11 +202,8 @@ export function readoutRows(entry: PublishedEntry, t: T, p3: Triple): readonly T
   const { derived } = entry;
   const hex = derived.hex;
   // In the row's own script, after its value: never inside the hex's code run (E2, F-152's faces).
-  const note = derived.inSrgbGamut
-    ? {}
-    : {
-        note: `${t('detail.nearestSrgb')}, ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`,
-      };
+  const rendered = renderNote(entry, t);
+  const note = rendered === null ? {} : { note: rendered };
   const [r, g, b] = bytesOf(hex);
   return [
     {

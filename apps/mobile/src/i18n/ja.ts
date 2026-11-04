@@ -697,6 +697,18 @@ export const ja: Record<MessageKey, string> = {
   'combos.severity': '重症度',
   'combos.personal': '似合い度',
   'combos.personalNone': 'プロフィールが未作成のため、似合うかではなく色の関係だけで並べています。',
+  // F-252 — see en.ts. The relationship terms are common Japanese design usage (unreviewed, F-265).
+  'with.relationship.complementary': '補色',
+  'with.relationship.analogous': '類似色',
+  'with.relationship.split': '分割補色',
+  'with.relationship.triadic': 'トライアド',
+  'with.relationship.tetradic': 'テトラード',
+  'with.anchorSlot': '基準の衣服',
+  'with.wear': '合わせて着る',
+  'with.wearWith': 'と',
+  'with.all': 'すべて',
+  'with.empty.nearGrey': 'この色は灰色に近いため、色相の関係に立つ色はありません。',
+  'with.empty.none': 'このコーパスには、この色と色相の関係にある色がありません。',
   'wardrobe.fromChoice': '選んだ色を使う',
   // F-199 — see en.ts: three named controls rather than one invisible target.
   'wear.shopFor': 'この色を探す',

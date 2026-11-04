@@ -35,12 +35,14 @@ import {
   toggleLock,
   WEAR_OCCASIONS,
   wearCombination,
+  startWith,
   wearWith,
   type WearOccasion,
   type WearCombination,
   type WearState,
 } from '../src/wear';
-import { allEntries, colorFor } from '../src/corpus';
+import { allEntries, colorFor, entryBySlug } from '../src/corpus';
+import { goesWith } from '../src/goes-with';
 import { compare } from '../src/compare';
 import { en } from '../src/i18n/en';
 import { ja } from '../src/i18n/ja';
@@ -599,5 +601,41 @@ describe('07’s words', () => {
       expect(keys.filter((k) => BANNED.test(catalogue[k]))).toStrictEqual([]);
     // DECOY: the drawn words the catalogue replaced are caught.
     expect(BANNED.test('94% Match (Cool-Muted profile)')).toBe(true); // claims-ok: quotes the drawn construction this line resolves
+  });
+});
+
+/* ================================================================== 19's Wear (F-252) */
+
+describe('startWith — 07 opened from a row of 19 (ADR-0171 D3)', () => {
+  it('for every anchor and each of its rows: the row is in the trousers, locked and in hand', () => {
+    let pairs = 0;
+    for (const anchor of allEntries())
+      for (const row of goesWith(anchor).rows) {
+        const initial = startWith(row.entry.entry.slug, anchor.entry.slug);
+        expect(initial?.inHand).toBe('trouser');
+        expect(initial?.shown?.trouser).toBe(row.entry.entry.slug);
+        expect(initial?.locked).toStrictEqual({ trouser: true, shoe: false, outer: false });
+        pairs += 1;
+      }
+    expect(pairs).toBeGreaterThan(0);
+  }, 120_000);
+
+  it('07 shows the row in the trousers, and no occasion moves it', () => {
+    const anchor = 'aki-batake';
+    const rows = goesWith(entryBySlug(anchor)!).rows.map((r) => r.entry.entry.slug);
+    // A row the resting ranking does not put in the trousers, so the test can see the hand-off.
+    const row = rows.find((s) => combination(anchor).placed.trouser !== s)!;
+    const state: WearState = { ...RESTING_WEAR, ...startWith(row, anchor) };
+    expect(combination(anchor, state).placed.trouser).toBe(row);
+    for (const occasion of WEAR_OCCASIONS)
+      expect(combination(anchor, chooseOccasion(state, occasion)).placed.trouser).toBe(row);
+    // DECOY: at rest the trousers hold another colour.
+    expect(combination(anchor).placed.trouser).not.toBe(row);
+  });
+
+  it('DECOY — an unknown slug, the anchor’s own, or none opens 07 as drawn', () => {
+    expect(startWith('no-such-colour', 'aki-batake')).toBeUndefined();
+    expect(startWith('aki-batake', 'aki-batake')).toBeUndefined();
+    expect(startWith(undefined, 'aki-batake')).toBeUndefined();
   });
 });

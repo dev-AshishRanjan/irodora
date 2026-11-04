@@ -207,6 +207,26 @@ export interface Combination {
 export type Oklch = readonly [number, number, number];
 
 /**
+ * A relationship's colours other than the source, in the engine's order (`19` reads it too, F-252).
+ *
+ * THE SOURCE IS DROPPED BY VALUE, not by index. Every generator includes the source somewhere in its
+ * output and they do not agree on where — `monochromatic` puts it in the middle of a ramp,
+ * `complementary` puts it first. Filtering on the coordinates is the only reading that holds for all
+ * twelve, and it is exact rather than approximate: the source passes through the generator unmapped,
+ * so it comes back bit-identical when it was in gamut to begin with.
+ */
+export function companionsOf(harmony: Harmony, source: Oklch): readonly HarmonyColor[] {
+  return harmony.colors.filter(
+    (c) =>
+      !(
+        c.requested[0] === source[0] &&
+        c.requested[1] === source[1] &&
+        c.requested[2] === source[2]
+      ),
+  );
+}
+
+/**
  * Every relationship for a colour, ranked.
  *
  * Pure, and it throws nothing a caller has to catch: `generateHarmony` validates its input and
@@ -218,24 +238,7 @@ export function combinationsFor(
 ): readonly Combination[] {
   const shown = COMBINATION_ORDER.map((kind) => {
     const harmony = generateHarmony(source, kind);
-
-    /*
-     * THE SOURCE IS DROPPED BY VALUE, not by index.
-     *
-     * Every generator includes the source somewhere in its output and they do not agree on
-     * where — `monochromatic` puts it in the middle of a ramp, `complementary` puts it first.
-     * Filtering on the coordinates is the only reading that holds for all twelve, and it is
-     * exact rather than approximate: the source passes through the generator unmapped, so it
-     * comes back bit-identical when it was in gamut to begin with.
-     */
-    const companions = harmony.colors.filter(
-      (c) =>
-        !(
-          c.requested[0] === source[0] &&
-          c.requested[1] === source[1] &&
-          c.requested[2] === source[2]
-        ),
-    );
+    const companions = companionsOf(harmony, source);
 
     const gamutCost = companions.reduce((worst, c) => Math.max(worst, c.gamutDeltaE00), 0);
 

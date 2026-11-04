@@ -823,6 +823,23 @@ export const en = {
   'combos.personal': 'Suits you',
   'combos.personalNone':
     'No profile yet, so these are ordered by the colour relationship alone rather than by how they suit you.',
+  /*
+   * F-252 — WHAT GOES WITH THIS (19). A geometric row names an FR-6 relationship, which the product
+   * only generates; a curated row reads `combos.curated` and its intent (ADR-0169). Each word claims a
+   * hue angle within ±9° and nothing more (ADR-0168).
+   */
+  'with.relationship.complementary': 'Complementary',
+  'with.relationship.analogous': 'Analogous',
+  'with.relationship.split': 'Split-Complementary',
+  'with.relationship.triadic': 'Triadic',
+  'with.relationship.tetradic': 'Tetradic',
+  'with.anchorSlot': 'Anchor Garment',
+  'with.wear': 'Wear',
+  'with.wearWith': 'with',
+  'with.all': 'All',
+  'with.empty.nearGrey':
+    'This colour is close to grey, so no hue stands in a relationship with it.',
+  'with.empty.none': 'No colour in this corpus lies in these hue relationships to it.',
   'wardrobe.fromChoice': 'Use the colour you chose',
   /*
    * F-199 — WHERE A RANKED COLOUR CAN GO.

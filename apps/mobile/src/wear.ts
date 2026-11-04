@@ -288,6 +288,25 @@ export const RESTING_WEAR: WearState = {
   locked: { trouser: false, shoe: false, outer: false },
 };
 
+/**
+ * `07` opened from a row of `19` (F-252, ADR-0171 D3): the anchor is the top, and the row's colour is
+ * in the trousers — the slot in hand at rest — locked, so an occasion cannot move it. `placeSlots`
+ * keeps a locked colour its ranking does not hold. An unknown slug, or the anchor's own, is ignored:
+ * `07` opens as drawn.
+ */
+export function startWith(
+  withSlug: string | undefined,
+  anchorSlug: string,
+): Partial<WearState> | undefined {
+  if (withSlug === undefined || withSlug === anchorSlug || entryBySlug(withSlug) === null)
+    return undefined;
+  return {
+    inHand: 'trouser',
+    shown: { ...RESTING_WEAR.shown, trouser: withSlug },
+    locked: { ...RESTING_WEAR.locked, trouser: true },
+  };
+}
+
 /** A slot's ranking, as far as placement and the reducers need it. */
 type Ranking = readonly { readonly id: string }[];
 
