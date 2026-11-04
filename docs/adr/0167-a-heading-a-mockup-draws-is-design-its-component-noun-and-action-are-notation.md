@@ -18,7 +18,8 @@ Results List*. F-252's note, written before the delegation, read both of 19's he
   name a UI component — *Hero Card*, *Rows*, *List* — are notation, as R9 §2 already reads *Card* at the
   end of 07's and 08's card titles. The parenthetical and *100px* stay not design, as recorded.
 - **D2. The words that ship:**
-  - 19: *Anchor Colour* (基準色) and *Ranked Harmonic Relationships* (調和の関係・順位順).
+  - 19: *Anchor Colour* (基準色) and *Harmonic Relationships* (調和の関係). *Ranked* is not notation
+    but a claim no computation supports, so it leaves under E2 (ADR-0170 D6, F-252's review).
   - 21: *Anchor Colour* and *Ranked Nearest Corpus Results*. F-252 rebinds 21's two headings to their
     keys, so its record waits on no closed question; F-254 boxes the nouns and builds the words.
 - **D3.** *Action:* before a button's word names the control's type, which its outline already says. It

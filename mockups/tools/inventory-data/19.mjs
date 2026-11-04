@@ -338,6 +338,11 @@ export default {
       why: 'Analogous Cool and Analogous Soft: no computation produces the qualifier, so the line reads Analogous; two analogous rows are told apart by their names and samples (ADR-0170, ADR-0151 D4’s precedent)',
     })),
     {
+      rule: 'E2',
+      element: '19.rows.heading',
+      why: 'Ranked: the rows are in ADR-0168’s fixed order of relationships, curated first, and nothing ranks them, so the heading reads Harmonic Relationships (ADR-0170 D6; F-252’s review, M2)',
+    },
+    {
       rule: 'E4',
       element: '19.filter',
       why: '19 draws the glyph and nothing behind it: it opens 03’s sheet with one choice in 05’s pills, and while a relationship is chosen Showing n / N and Clear sit on the rows heading’s line (ADR-0171 D4)',

@@ -14,7 +14,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeFamilies, nativeNumericFeature, nativeSpacing } from '@irodora/design-tokens';
+import {
+  nativeFamilies,
+  nativeNumericFeature,
+  nativeSpacing,
+  nativeType,
+} from '@irodora/design-tokens';
 import {
   BADGE_HEIGHT,
   FACTOR_COLUMNS,
@@ -24,6 +29,7 @@ import {
   FACTOR_RULE,
   FactorRows,
   FIELDS_ROW,
+  HARMONY_LINES_GAP,
   HARMONY_ROW,
   METRIC_TILE_HEIGHT,
   METRIC_TILE_INSET,
@@ -446,6 +452,29 @@ describe('the ranked row as each screen draws it', () => {
       expect(wear).not.toBe(
         flattenStyle(screen.getByTestId('row.name').props['style'])['fontSize'],
       );
+    });
+
+    it('the name and the detail are the scale’s floor apart, as 19 draws them under it (review, S1)', () => {
+      // 19's ink gap, less each line's own inset (body, then label), is under half the floor: xs (§2).
+      const at = finder(inventory('19'));
+      const inset = (step: 'body' | 'label'): number =>
+        (nativeType.latin[step].lineHeight - nativeType.latin[step].fontSize) / 2;
+      const gaps = range(5).map((n) => {
+        const row = `19.rows.row-${String(n)}`;
+        return at(`${row}.detail`).y - bottom(at(`${row}.name`)) - inset('body') - inset('label');
+      });
+      expect(median(gaps)).toBeLessThan(nativeSpacing.xs / 2);
+      expect(HARMONY_LINES_GAP).toBe(nativeSpacing.xs);
+      // The built column holds the two lines that far apart.
+      draw(HARMONY);
+      // The nearest box above the name that sets a gap: the column, or — were it missing — the row's
+      // own (sample → words), which is the decoy below.
+      let box = screen.getByTestId('row.name').parent;
+      while (box !== null && flattenStyle(box.props['style'])['gap'] === undefined)
+        box = box.parent;
+      expect(flattenStyle(box?.props['style'])['gap']).toBe(HARMONY_LINES_GAP);
+      // DECOY: the row's own gap, sample → words, is another number.
+      expect(HARMONY_ROW.nameGap).not.toBe(HARMONY_LINES_GAP);
     });
 
     it('the sample’s corner is sm, as 19 draws it (F-252)', () => {

@@ -33,6 +33,11 @@ is). This record says what each element binds to instead, and the words each con
   their names and samples.
 - **D5. The controls' words:** *Wear* (合わせて着る), *Build Complete 4-Piece Outfit* (4点のコーディネートを組む),
   and the filter glyph named *Filter relationships* (関係で絞り込む).
+- **D6. E2: *Ranked*.** 19 heads its rows *Ranked Harmonic Relationship Rows*. The rows are in
+  ADR-0168's fixed order of relationships, curated first; nothing ranks them, and ADR-0168 D6 removed the
+  one ranking the old screen had. So the heading reads *Harmonic Relationships* (調和の関係): a reader
+  would otherwise take the first row as the best pick. 21's *Ranked* stays: 21's rows are ranked by ΔE00
+  (F-254). Found by F-252's review (M2).
 
 ## Alternatives, and what each costs
 | Alternative | Cost |

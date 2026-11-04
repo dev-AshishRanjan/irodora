@@ -112,6 +112,7 @@ export { RefusedState, type RefusedStateProps } from './RefusedState.js';
 export { DeniedState, type DeniedStateProps } from './DeniedState.js';
 export {
   FIELDS_ROW,
+  HARMONY_LINES_GAP,
   HARMONY_ROW,
   NEAREST_ROW,
   RankedRow,

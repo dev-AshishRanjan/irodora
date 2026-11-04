@@ -24,6 +24,7 @@ import {
   APP_BAR_INSET,
   Appear,
   Arrival,
+  BILINGUAL_SEPARATOR,
   Button,
   Card,
   ChoiceGroup,
@@ -347,7 +348,7 @@ const AnchorCard = memo(function AnchorCard({
         </View>
         {/* name → OKLCh → slot at `xs`: tighter than the scale, named (ADR-0172 D1). */}
         <View style={{ flex: 1, gap: nativeSpacing.xs }}>
-          <Text size="body" weight={500} color="foreground" numeric testID="with.anchor.name">
+          <Text size="body" weight={500} color="foreground" testID="with.anchor.name">
             <Text size="body" weight={500} color="foreground" script="japanese">
               {anchor.entry.name.kanji}
             </Text>
@@ -358,7 +359,7 @@ const AnchorCard = memo(function AnchorCard({
             {/* The note in the locale's own face: in Japanese it is Japanese words (F-152). */}
             {note === null ? null : (
               <Text size="label" color="foreground.2" script={script} numeric>
-                {` • ${note}`}
+                {`${BILINGUAL_SEPARATOR}${note}`}
               </Text>
             )}
           </Text>

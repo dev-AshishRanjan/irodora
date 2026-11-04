@@ -43,6 +43,12 @@ export const HARMONY_ROW = {
   action: { height: 26.5, inset: 10.5 },
 } as const;
 
+/**
+ * Between `19`'s name and its detail line: the scale's floor. 19 draws the two 8 dp apart in ink, less
+ * the two lines' own insets (9.05 dp), so the drawn interval is under the scale (§2, ADR-0172 D1).
+ */
+export const HARMONY_LINES_GAP = nativeSpacing.xs;
+
 /** `21`'s nearest row, in dp: the medians of its five. */
 export const NEAREST_ROW = {
   height: 79,
@@ -209,7 +215,11 @@ function Harmony({
           script={script}
           {...part('swatch')}
         />
-        <View style={{ flex: 1 }}>
+        {/*
+          name → detail at `xs`: 19 draws them tighter than the scale, so the floor (§2, ADR-0172 D1;
+          F-252's review, S1).
+        */}
+        <View style={{ flex: 1, gap: HARMONY_LINES_GAP }}>
           {/* The name wraps, never clips (E3): a long name or 200 % text takes a second line. */}
           <Bilingual
             text={name}

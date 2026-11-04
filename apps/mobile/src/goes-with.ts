@@ -245,11 +245,14 @@ export type FilterChoice = 'all' | 'curated' | HueRelationship;
 const choiceOf = (row: GoesWithRow): Exclude<FilterChoice, 'all'> =>
   row.source === 'curated' ? 'curated' : row.kind;
 
-/** *All*, then each relationship the list holds, in the list's order: no choice empties the list. */
+/**
+ * *All*, then each relationship the list holds, in the list's order. No choice empties the list, and
+ * none is offered that would not narrow it: a list of one kind offers *All* alone (F-252's review, L4).
+ */
 export function filterOptions(rows: readonly GoesWithRow[]): readonly FilterChoice[] {
-  const out: FilterChoice[] = ['all'];
-  for (const row of rows) if (!out.includes(choiceOf(row))) out.push(choiceOf(row));
-  return out;
+  const kinds: Exclude<FilterChoice, 'all'>[] = [];
+  for (const row of rows) if (!kinds.includes(choiceOf(row))) kinds.push(choiceOf(row));
+  return ['all', ...(kinds.length > 1 ? kinds : [])];
 }
 
 export function filterRows(

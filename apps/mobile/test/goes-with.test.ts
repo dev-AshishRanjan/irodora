@@ -39,6 +39,7 @@ import {
   RELATIONSHIP_KEYS,
   relationshipWords,
   wearHref,
+  wearName,
   type GeometricRow,
   type GoesWithRow,
   type HueRelationship,
@@ -135,6 +136,8 @@ describe('the rule (ADR-0168)', () => {
         expect(row).toBeDefined();
         expect(row?.kind).toBe(kind);
         expect(slugOf(row!.entry)).toBe(slugOf(eligible[0]!.e));
+        // No tie at the pick, so the index's own tie order never decides a row (ADR-0168).
+        if (eligible[1] !== undefined) expect(eligible[1].d - eligible[0]!.d).toBeGreaterThan(1e-9);
         taken.add(slugOf(row!.entry));
         realised += 1;
       }
@@ -332,14 +335,43 @@ describe('the filter and the hand-offs (ADR-0171)', () => {
       expect(filterRows(rows, 'all')).toBe(rows);
       for (const choice of options.slice(1)) {
         const shown = filterRows(rows, choice);
+        // Narrows, never empties.
         expect(shown.length).toBeGreaterThan(0);
+        expect(shown.length).toBeLessThan(rows.length);
         expect(shown.every((r) => (r.source === 'curated' ? 'curated' : r.kind) === choice)).toBe(
           true,
         );
       }
       const kinds = rows.map((r) => (r.source === 'curated' ? 'curated' : r.kind));
-      expect(options.slice(1)).toStrictEqual(kinds.filter((k, i) => kinds.indexOf(k) === i));
+      const distinct = kinds.filter((k, i) => kinds.indexOf(k) === i);
+      expect(options.slice(1)).toStrictEqual(distinct.length > 1 ? distinct : []);
     }
+  });
+
+  it('8 — a list of one kind offers All alone: no choice that would not narrow it (review, L4)', () => {
+    const analogous = goesWith(ANCHORS.find((a) => slugOf(a) === 'aki-batake')!).rows.filter(
+      (r) => r.source === 'geometric' && r.kind === 'analogous',
+    );
+    expect(analogous.length).toBeGreaterThan(1);
+    expect(filterOptions(analogous)).toStrictEqual(['all']);
+    expect(filterOptions([])).toStrictEqual(['all']);
+    // DECOY: two kinds offer both.
+    const two = goesWith(ANCHORS.find((a) => slugOf(a) === 'aki-batake')!).rows.slice(0, 2);
+    expect(filterOptions(two)).toStrictEqual(['all', 'complementary', 'analogous']);
+  });
+
+  it('Wear’s name, in each language, as ADR-0170 words it (review, L3)', () => {
+    const anchor = ANCHORS.find((a) => slugOf(a) === 'aki-batake')!;
+    const row = goesWith(anchor).rows[0]!.entry;
+    expect(wearName(row, anchor, tEn, 'latin')).toBe(
+      `Wear ${row.entry.name.en} with ${anchor.entry.name.en}`,
+    );
+    expect(wearName(row, anchor, tJa, 'japanese')).toBe(
+      `${row.entry.name.kanji}を${anchor.entry.name.kanji}と合わせて着る`,
+    );
+    // Each name holds the word drawn on the control (WCAG 2.5.3).
+    expect(wearName(row, anchor, tEn, 'latin')).toContain(en['with.wear']);
+    expect(wearName(row, anchor, tJa, 'japanese')).toContain(ja['with.wear']);
   });
 
   it('Wear carries the anchor first and the row as `with`; Build the anchor alone', () => {

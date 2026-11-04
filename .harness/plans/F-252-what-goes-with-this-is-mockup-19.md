@@ -383,6 +383,15 @@ All seven stay reachable on 24's routes until F-259.
 - **19's `Wear` is a required handler**: a row without one would draw an action that does nothing, and the route always wires it.
 - **The ring is found by a wrapper's id** (`with.anchor.ring`): its box is the swatch's outermost.
 
+**2026-11-04, the review (once): FAIL, 1 S, 4 M, 10 L.**
+
+- **S1, fixed.** `RankedRow`'s harmony name sat on its detail line with no gap, where ADR-0172 D1 says `xs` was built; the test compared the scale with itself. Now `HARMONY_LINES_GAP` (`xs`), held by `rows.test` against 19.json and read off the built tree by the fidelity test.
+- **M1, fixed.** The fidelity test now reads weight, ink and every interval it recomputes off the built tree.
+- **M2, decided (ADR-0170 D6).** *Ranked* leaves the rows heading under E2: nothing ranks the rows.
+- **M3, recorded (F-360).** Back's `navigate('/atlas')` may push a second Atlas; 06, 09 and 19 share it. ADR-0171 D2 no longer claims the return.
+- **M4, recorded (F-361).** *Clear*'s target on Android, with 05's.
+- **L1, L3, L4, L5, L6, fixed:** no tie at any pick is asserted; *Wear*'s name in both languages; the filter offers no choice that would not narrow; the anchor's name is not set as a figure; the note joins with `BILINGUAL_SEPARATOR`. **L2, L7** go to the attestations; **L8** corrects E-240's guard; **L10** is a note on F-254; **L9** stands, as 07's `initial` does.
+
 ---
 
 ## Approach

@@ -832,7 +832,12 @@ export const en = {
   'with.filter': 'Filter relationships',
   'with.filterTitle': 'Relationship',
   'with.anchorHeading': 'Anchor Colour',
-  'with.rowsHeading': 'Ranked Harmonic Relationships',
+  /*
+   * 19 heads its rows *Ranked Harmonic Relationship Rows*. *Rows* is notation (ADR-0167) and *Ranked* a
+   * claim: the rows are in ADR-0168's fixed order of relationships, and nothing ranks them (E2,
+   * ADR-0170 D6; F-252's review, M2).
+   */
+  'with.rowsHeading': 'Harmonic Relationships',
   'with.build': 'Build Complete 4-Piece Outfit',
   'with.emptyHint': 'Build Complete 4-Piece Outfit ranks what goes with it.',
   'with.relationship.complementary': 'Complementary',

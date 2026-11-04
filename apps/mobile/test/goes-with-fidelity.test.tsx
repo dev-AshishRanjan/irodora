@@ -33,7 +33,9 @@ import {
   AppBar,
   APP_BAR_DIVIDER_TEST_ID,
   APP_BAR_INSET,
+  Bilingual,
   Card,
+  HARMONY_LINES_GAP,
   HARMONY_ROW,
   RankedRow,
   Screen,
@@ -485,5 +487,88 @@ describe('proportion: every size recomputed from 19.json', () => {
     }
     // DECOY: the headings are not body, as F-220 had them.
     expect(el('19.anchor.heading').type?.size).not.toBe('body');
+  });
+});
+
+/* ----------------------------------------------------------------------------- weight, ink, built intervals */
+
+/** The ink each text token names, as `Text` takes it. */
+const INK: Readonly<Record<string, string>> = {
+  'text.primary': 'foreground',
+  'text.secondary': 'foreground.2',
+};
+
+describe('weight, ink and every interval, read off the built tree (F-252’s review, M1)', () => {
+  /** The component that sets a text's words: the id's own `Text` or `Bilingual`, else the first inside it. */
+  const setter = (root: Instance, id: string): Instance => {
+    const at = root.findAll((n) => n.props['testID'] === id)[0];
+    if (at === undefined) throw new Error(`no ${id}`);
+    if (at.type === Text || at.type === Bilingual) return at;
+    const inner = at.findAll((n) => n.type === Text)[0];
+    if (inner === undefined) throw new Error(`no text in ${id}`);
+    return inner;
+  };
+
+  it('every text at the weight and ink 19 records', () => {
+    const { root } = setup();
+    const texts: readonly (readonly [string, string])[] = [
+      ['with.anchor.heading', '19.anchor.heading'],
+      ['with.anchor.name', '19.anchor.name'],
+      ['with.anchor.oklch', '19.anchor.oklch'],
+      ['with.anchor.slot', '19.anchor.garment'],
+      ['with.rows.heading', '19.rows.heading'],
+      ...ROWS.flatMap((_, i): (readonly [string, string])[] => [
+        [`with.row.${String(i)}.name`, `19.rows.row-${String(Math.min(i, 4) + 1)}.name`],
+        [`with.row.${String(i)}.detail`, `19.rows.row-${String(Math.min(i, 4) + 1)}.detail`],
+      ]),
+    ];
+    for (const [id, record] of texts) {
+      const props = setter(root, id).props as Readonly<Record<string, unknown>>;
+      const drawn = el(record);
+      expect({ [id]: [props['weight'] ?? 400, props['color']] }).toStrictEqual({
+        [id]: [drawn.type?.weight, INK[drawn.tokens['fg'] ?? '']],
+      });
+    }
+    // DECOY: the headings are not the names' ink.
+    expect(INK[el('19.rows.heading').tokens['fg'] ?? '']).not.toBe(
+      INK[el('19.rows.row-1.name').tokens['fg'] ?? ''],
+    );
+  });
+
+  it('the anchor: ring → words md; name → OKLCh → slot at the floor, as built', () => {
+    const { byId } = setup();
+    const row = sharedRow(byId('with.anchor.ring'), byId('with.anchor.name'));
+    expect(flat(row?.props['style'])['gap']).toBe(
+      px(snap(el('19.anchor.name').dp.x - right(el('19.anchor.ring')))),
+    );
+    const nameToOklch =
+      el('19.anchor.oklch').dp.y -
+      bottom(el('19.anchor.name')) -
+      lineInset('body') -
+      lineInset('label');
+    expect(styled(byId('with.anchor.oklch'), 'gap')['gap']).toBe(px(belowTheScale(nameToOklch)));
+  });
+
+  it('the rows: heading → row 1, row → row and name → detail, as built', () => {
+    const { byId } = setup();
+    const label = lineInset('label');
+    // Heading → row 1: the rows block's top margin.
+    expect(styled(byId('with.row.0'), 'marginTop')['marginTop']).toBe(
+      px(snap(el('19.rows.row-1').dp.y - bottom(el('19.rows.heading')) - label)),
+    );
+    // Row → row: siblings.
+    const gaps = [1, 2, 3, 4].map(
+      (n) => el(`19.rows.row-${String(n + 1)}`).dp.y - bottom(el(`19.rows.row-${String(n)}`)),
+    );
+    expect(styled(byId('with.row.1'), 'gap')['gap']).toBe(px(snapSiblings(gaps)));
+    // A row's name → its detail: under the scale, so the floor, between the two lines.
+    const nameToDetail =
+      el('19.rows.row-1.detail').dp.y -
+      bottom(el('19.rows.row-1.name')) -
+      lineInset('body') -
+      lineInset('label');
+    expect(HARMONY_LINES_GAP).toBe(px(belowTheScale(nameToDetail)));
+    for (let i = 0; i < ROWS.length; i += 1)
+      expect(styled(byId(`with.row.${String(i)}.detail`), 'gap')['gap']).toBe(HARMONY_LINES_GAP);
   });
 });

@@ -702,7 +702,7 @@ export const ja: Record<MessageKey, string> = {
   'with.filter': '関係で絞り込む',
   'with.filterTitle': '関係',
   'with.anchorHeading': '基準色',
-  'with.rowsHeading': '調和の関係・順位順',
+  'with.rowsHeading': '調和の関係',
   'with.build': '4点のコーディネートを組む',
   'with.emptyHint': '「4点のコーディネートを組む」で、合う色を順位づけます。',
   'with.relationship.complementary': '補色',

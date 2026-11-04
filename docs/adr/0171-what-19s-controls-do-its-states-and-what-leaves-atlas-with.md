@@ -16,8 +16,10 @@ Its `19.json` once recorded Build as going to the wardrobe's outfit route. The o
 - **D1. Route.** `/atlas/with/[slug]` renders a new screen, `GoesWith`, with `headerShown: false`. It
   reads no profile and no store: 19 lists nothing a person writes, so nothing is re-read on focus.
   `Combinations.tsx` keeps 24's two routes, unchanged.
-- **D2. Back** → `router.navigate('/atlas')`, as 06 and 09 do (ADR-0147's amendment). It returns to the
-  Atlas where it is in the stack, and opens it where it is not.
+- **D2. Back** → `router.navigate('/atlas')`, as 06 and 09 do (ADR-0147's amendment). It opens the Atlas.
+  Whether it returns to the Atlas already in the stack is not established: F-252's review read
+  expo-router's stack as pushing a second one when the Atlas is not on top. 06, 09 and 19 share the
+  question, so it is one feature's, **F-360**.
 - **D3. A row's Wear** → `/atlas/wear/‹anchor›?with=‹row›`.
   - 07 opens with the anchor as the top (*Anchor Garment: Top*) and the row's colour in the trousers,
     07's slot in hand at rest. It is locked, so an occasion change cannot move it.
@@ -31,7 +33,8 @@ Its `19.json` once recorded Build as going to the wardrobe's outfit route. The o
 - **D5. The filter (E4: 19 draws the glyph and nothing behind it).**
   - It opens 03's floating sheet holding one choice in 05's pill form (ADR-0143's *More filters*): *All*,
     then each relationship the list holds, in the list's order; *Curated* where curated rows exist.
-  - No choice that would empty the list is offered. The chosen pill carries its leading dot (ADR-0141).
+  - No choice that would empty the list is offered, and none that would not narrow it: a list of one
+    kind offers *All* alone (F-252's review, L4). The chosen pill carries its leading dot (ADR-0141).
   - While a relationship is chosen, *Showing n / N* and *Clear* sit at the trailing end of the rows
     heading's line (05's line, ADR-0143). The state is said in words, never only by colour (rule 13).
   - The screen opens in the drawn state: every row, no filter.
@@ -67,4 +70,8 @@ Its `19.json` once recorded Build as going to the wardrobe's outfit route. The o
 
 ## Evidence, and its limits
 Device behaviour — the `with` push, back from a route pushed over Home, TalkBack — is unverified here and
-is attested by the person at the capture.
+is attested by the person at the capture. 07 opened from a row goes back to the colour's page (06), as
+ADR-0152 D6 decides, not to 19: the person judges that return path at the capture.
+
+*Showing n / N*'s *Clear* is a plain button 32 dp tall in a row as tall as it, so on Android its hit
+area beyond the row is lost — as on 05: **F-361**.

@@ -102,7 +102,16 @@ const SAMPLE = {
     '樺色',
   ],
   figures: ['0.490', '0.035', '240.2', '48.2', '12.4', '11.8', '42.1', '44.6'],
-  words: ['Hero Card', 'HeroUI', '100px', 'Rows', 'Action:', 'Analogous Cool', 'Analogous Soft'],
+  words: [
+    'Hero Card',
+    'HeroUI',
+    '100px',
+    'Rows',
+    'Ranked',
+    'Action:',
+    'Analogous Cool',
+    'Analogous Soft',
+  ],
 } as const;
 const leaks = (text: string): string[] => {
   const found: string[] = [];
