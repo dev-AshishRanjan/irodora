@@ -159,7 +159,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-26",
+      "binding": "static:nearby.anchorHeading",
       "action": null,
       "copy": {
         "shape": "heading",
@@ -393,7 +393,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "oq:OQ-26",
+      "binding": "static:nearby.resultsHeading",
       "action": null,
       "copy": {
         "shape": "heading",

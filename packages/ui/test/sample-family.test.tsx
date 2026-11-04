@@ -74,7 +74,8 @@ describe('the defaults are the inventories’, recomputed', () => {
     const md = samples.filter((e) => e.tokens?.['radius'] === 'md').length;
     // F-247 measured 06's hero: sm, 44 → 45. F-249 measured 08's two samples: sm, 45 → 47.
     // F-251 measured 10's four kasane layers: sm, 47 → 51.
-    expect([sm, md]).toStrictEqual([51, 23]);
+    // F-252 measured 19's anchor and five row samples: sm, 51 → 57.
+    expect([sm, md]).toStrictEqual([57, 17]);
     const tree = draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={COLOR} />);
     expect(sampleNode(tree)['borderRadius']).toBe(swatchCorner(SWATCH_SIZE, 'sm').sample);
   });

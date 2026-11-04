@@ -182,6 +182,12 @@ Two rules that matter more than the format:
 | [0164](0164-10s-and-16s-figures-and-words-say-what-the-corpus-the-store-and-the-engine-hold.md) | 10's and 16's figures and words say what the corpus, the store and the engine hold | Accepted |
 | [0165](0165-what-10s-and-16s-controls-do-the-routes-states-and-what-leaves-the-studio.md) | What 10's and 16's controls do, the route's states, and what leaves the Studio | Accepted |
 | [0166](0166-10s-and-16s-composition-their-art-and-the-tray.md) | 10's and 16's composition, their art and the tray | Accepted |
+| [0167](0167-a-heading-a-mockup-draws-is-design-its-component-noun-and-action-are-notation.md) | A heading slot a mockup draws is design; the component noun inside it, and "Action:" before a button's word, are notation | Accepted |
+| [0168](0168-what-goes-with-a-colour-is-corpus-colours-in-a-hue-relationship-to-a-stated-tolerance.md) | What goes with a colour on 19 — corpus colours that stand in a hue relationship to it, to a stated tolerance | Accepted |
+| [0169](0169-fr-73s-relationship-family-curated-mark-and-gamut-cost-on-19.md) | FR-73's relationship, family, generated-or-curated mark and gamut cost on 19 | Accepted |
+| [0170](0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md) | 19's figures and words say what the corpus and the engine hold | Accepted |
+| [0171](0171-what-19s-controls-do-its-states-and-what-leaves-atlas-with.md) | What 19's controls do, its states, and what leaves `/atlas/with/[slug]` | Accepted |
+| [0172](0172-19s-composition.md) | 19's composition | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

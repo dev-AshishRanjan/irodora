@@ -360,7 +360,16 @@ All seven stay reachable on 24's routes until F-259.
 
 ## Implementing session's decisions on this design
 
-*(Placeholder. The implementing session records here, dated, each place where measurement, the census or the review moved this plan — as F-250 and F-251 did. It does not rewrite the sections above silently.)*
+**2026-11-04, increment 1 (measurement and census).**
+
+- **The header is 78 px = 47.8 dp, filled level 1 (#1E2128)**, read at its half-height crossings, not derived. The action bar is filled level 1 too (#1D2027), so `ActionBar` takes a level-1 fill.
+- **Type moved:** both headings, the OKLCh and slot lines, the details and *Wear* are `label`; the names, title, back and Build stay `body`. Row 2's 19.7 was a kanji's height; all five names read 15.9–17.6 dp — `body`, so **`RankedRow` needs no `nameSize`**. *Wear* is `label`, so the harmony row's button takes step `label` (increment 2).
+- **Corners moved:** Build, *Wear*, the row samples (median 6.4 dp; R9 §5's 11.5 was unscaled px) and the anchor's sample (about 4 px) are `sm`; the cards, rows and ring stay `md`. `HARMONY_ROW`'s sample corner becomes `sm` (increment 2); `sample-family.test`'s census moves 51 → 57.
+- **Glyph inks:** back 27 × 24, filter 33 × 28, Build's arrow 20 × 19.
+- **The divider** inks brighter than `border.subtle` (peak #585A65). Recorded only: it is the shared `AppBar` divider, read the same on 07.
+- **Row boxes are kept** as F-235 read them (`HARMONY_ROW`'s medians do not move).
+- **The census** is in ADR-0168 to ADR-0170. The fixture and the capture param are both **aki-batake** (seven geometric rows, opening complementary, analogous, analogous, split, split). 45 of 120 anchors are under the floor — **F-359 filed**. Ties at the pick are not counted here: `goes-with.test` holds that none occurs (increment 3).
+- **No E3 departure is recorded in `19.mjs`.** A wrap and a hit area change nothing the drawn state draws.
 
 ---
 

@@ -2,7 +2,8 @@
 // wide (x 77–690, y 107–1296), so 384 / 614 = 0.6254 dp per px (§2). Boxes are pixel readings
 // (measure.ps1, corner.ps1). Derived, and saying so: row 5 runs on under the tab bar, so its box stops
 // at the bar's top rule; the route string's box is its scan blob, which takes in leaf line-art beside
-// it. The two section headings read like prompt text — OQ-26 — so they bind to the question. The
+// it. The two section headings are design and their component nouns notation (OQ-26, closed by
+// ADR-0167 in F-252): they read Anchor Colour and Ranked Nearest Corpus Results; F-254 boxes the nouns. The
 // generator orders elements by the reading rule. Type size as in 02.mjs, the em converted at 0.6254
 // dp per px.
 const B = (x, y, w, h) => ({ x, y, w, h });
@@ -112,7 +113,7 @@ export default {
     // ---- the anchor
     el('21.anchor.heading', 'ui:Text', B(103, 223, 239, 20), {
       tokens: { fg: 'text.secondary' },
-      binding: 'oq:OQ-26',
+      binding: 'static:nearby.anchorHeading',
       type: text('sans', 'body', 500),
       copy: { shape: 'heading', script: 'latin' },
     }),
@@ -151,7 +152,7 @@ export default {
     // ---- the ranked results (row 5 runs on under the tab bar)
     el('21.results.heading', 'ui:Text', B(103, 472, 359, 25), {
       tokens: { fg: 'text.secondary' },
-      binding: 'oq:OQ-26',
+      binding: 'static:nearby.resultsHeading',
       type: text('sans', 'body', 500),
       copy: { shape: 'heading', script: 'latin' },
     }),

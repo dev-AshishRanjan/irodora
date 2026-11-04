@@ -53,7 +53,10 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
   Grid"*, *"100px"*, *"72px"*, *"Tab Bar"*, *"Top Navigation"*, *"Sticky action bar"*, *"Search &
   Faceted Filter Section"*, *"Category segmented choice"*, *"Material choice chips"*, *"Formality &
   season pills"*, *"Interactive 4-slott canvas"*, *"HeroUI smooth sliders"* (`09`), route strings printed under titles; *Card* at the end of
-  `07`'s and `08`'s card titles (`F-248`, `F-249`);
+  `07`'s and `08`'s card titles (`F-248`, `F-249`); a component's noun inside a section heading — `19`'s
+  *Hero Card* and *Rows*, `21`'s *List* — and *Action:* before a button's word, `19`'s *Action: Wear*:
+  the heading's other words ship, and the button reads its word (`F-252`, [ADR-0167](../adr/0167-a-heading-a-mockup-draws-is-design-its-component-noun-and-action-are-notation.md), OQ-26 closed;
+  `F-254` applies it to `21`);
 - misspellings and garbled text (*"Toggle Switche"*, *"Sutions"*, *"Formall"*, *"palalettes"*,
   *"coliurs"*, *"Teaser for iur typography"*, the unreadable lines in `18`'s report preview);
 - line-art drawn **outside** a device frame. Line-art **inside** the screen is design;
@@ -68,7 +71,7 @@ bound to the elements drawn at it, at their median em; `type-scale.test` holds t
   `10`'s column roles and `16`'s slot headings, roles, *Locked* and *Replace* (`F-251`, [ADR-0163](../adr/0163-square-brackets-around-a-label-heading-role-or-button-are-notation.md), OQ-23
   closed); `F-257`, `F-260` and `F-263` apply it to `13 17 18`;
 - *"Color"* on a screen that spells *"Colour"* twice (`05`'s family label), in `16`'s *Color Harmony*
-  (`F-251`), and in `06`'s *Scientific
+  (`F-251`), in `19`'s *Anchor Color* (`F-252`), and in `06`'s *Scientific
   Color Space Readout Table*: the catalogue is en-GB (`F-246`, ADR-0142 D4; `F-247`, ADR-0146).
 
 **Pixels and tokens agree.** The README token table is the declared value; the rendered pixels
@@ -149,6 +152,11 @@ rule 3 make this non-negotiable, and the mockups show why:
   Irome:*, the name field's text and the tray's tiles are sample content; the band is every member at the
   record's weights, its columns four a row; and a tray tile is the colour whole — `16` darkens each tile's
   lower half to hold its kanji, and a darkened part of a sample is not the colour, as `12`'s woven texture.
+- **`19`'s anchor and rows** (`F-252`, [ADR-0168](../adr/0168-what-goes-with-a-colour-is-corpus-colours-in-a-hue-relationship-to-a-stated-tolerance.md), [ADR-0170](../adr/0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md)): the anchor is the corpus entry for the route's slug
+  (*Ai-nezumi* is not in the corpus, and its OKLCh is `#5B6B78`'s unchecked one); the rows are the curated
+  combinations holding it, then each hue relationship's companion realised as the nearest corpus colour within
+  ±9° of its hue, chroma at or above the lexicon's floor. Every name, relationship and ΔE00 is that record's and
+  the engine's, and how many rows there are, and their order, are the engine's.
 - **Texture drawn inside a sample**: `12`'s fabric sample carries a woven texture. The sample is the
   colour (or the stored photograph where the binding is a photo), so `FabricSwatch` draws the colour
   and its pinked edge, not the weave (`F-233`).
@@ -165,6 +173,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | `07` `13` | *"94% Match (Cool-Muted profile)"*, *"92% (Cool-Muted Match)"* beside the personal-fit score | the FR-32 figure stays; "Match" and the seasonal type do not. The note names whose profile the figure was computed against — *(your profile)* — and with no stored profile there is no figure (C12; OQ-32 closed by [ADR-0150](../adr/0150-the-personal-fit-note-names-the-profile-the-figure-was-computed-against-never-a-type.md)) (claims-ok: quotes the drawn construction this row resolves) |
 | `07` | *Minimalist Office*, *Japanese Classic*, *Evening* as occasions | FR-34's published weightings, each by its own word: *Office*, *Japanese-inspired*, *Formal* — no minimalist office, classic or evening weighting is published, and FR-23 never presents inspired as classic (`F-248`, [ADR-0151](../adr/0151-07s-occasions-slots-and-figures-say-what-the-engine-computes.md) D1) |
 | `07` | *"Analogous Tonal Kasane"* as the outfit's harmony | the warm–cool relation the outfit's harmony component measures, in words; no engine names a geometric relationship for a set (`F-349`), and *Kasane* claims a tradition (ADR-0151 D4) |
+| `19` | *"Analogous Cool"*, *"Analogous Soft"* as relationships | *Analogous*: no computation produces the qualifier; two analogous rows are told apart by their names and samples (`F-252`, [ADR-0170](../adr/0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md) D4) |
 | `07` | *"Monochrome: + …"* as a substitution | the engine's four axes — warmer, cooler, lighter, higher contrast; no monochrome axis exists (ADR-0152 D3) |
 | `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — the band is ADR-0125's table |
 | `02` | *"Excellent Exposure"* | the capture-conditions assessment the engine produces (FR-17), in its own words |
@@ -325,6 +334,7 @@ overlap is `F-305`'s (`F-247`).
 Preserved, built from the mockup's own components, and listed here so it is visible:
 
 - **FR-49, FR-35 and FR-51 on `10` and `16`** — the empty draft and its empty slots (*Choose a colour below*), the edit state's title and action (*Edit Custom Palette*, *Save & Return to Palettes*), the slot in hand's *Choosing*, a tile's spoken target, Edit's two refusals, *Nothing in this view to export.*, *Export Selected*'s chooser in `03`'s sheet, a personal card's overflow (Edit, Delete), *Apply to Outfit Lab* disabled with its reason without a profile, the matrix's *Choose two colours*, FR-35's block under the matrix, the save note, `00`'s caption with no palettes of one's own, and `01`'s tab bar under both (`F-251`, [ADR-0165](../adr/0165-what-10s-and-16s-controls-do-the-routes-states-and-what-leaves-the-studio.md)).
+- **FR-73 and ADR-0128 on `19`** — the filter glyph opens `03`'s floating sheet with one choice in `05`'s pills (*All*, then each relationship the list holds; the chosen one dotted), and while one is chosen *Showing n / N* and *Clear* sit on the rows heading's line; the curated members of a combination holding the colour come first, in `19`'s row form; the one record outside sRGB carries `06`'s gamut note (rule 11); `00`'s caption takes the rows' place when no corpus colour stands in a hue relationship (a near-grey colour, ADR-0168 D4), and a colour this corpus does not hold shows the app bar's back above `00`'s caption. `19` draws the glyph and nothing behind it (`F-252`, [ADR-0171](../adr/0171-what-19s-controls-do-its-states-and-what-leaves-atlas-with.md)).
 - **FR-47 on `09`** — the empty field (the corpus medoid's point and its nearest eight, the field's clear hidden), `00`'s caption with the kind's hint when a set is empty, and a reading forced on text it cannot read (*That is not a hex*, *Not every word is in the vocabulary*): `09` draws a filled field and four results (`F-250`, [ADR-0160](../adr/0160-what-09s-controls-do-and-what-leaves-the-finder.md)).
 - **FR-47 and ADR-0128 on `08`** — *Change A* and *Change B* open `03`'s floating sheet: `05`'s search field read through the Finder's own query (a name, a phrase or a hex), every entry while it is empty, the other slot's colour left out and the slot's own marked and announced as chosen, `00`'s caption when nothing matches; choosing changes one slot. A colour this corpus does not hold shows the app bar's back above `00`'s caption (`F-249`, [ADR-0156](../adr/0156-what-08s-controls-do-and-what-leaves-compare.md)).
 - **FR-31, FR-11, F-195, F-199 on `07`** — each slot's candidate, its rank and its reasons, with *Open this colour · Shop for this · Add to wardrobe*: `07` draws a slot's colour and nothing behind it. They live in a slot's floating sheet (`03`'s form), opened from the slot; a locked slot out of hand shows `13`'s *Locked* badge; and without a stored profile *Save to Outfit Lab* is disabled, with its reason on a line in the bar, because the Lab draws nothing without one. Reaching the shopping check from a slot takes two interactions here — the tile, then *Shop for this* — where F-199 asked for one, because `07` draws no control for it. A slot whose ranking had nothing left to give would show its title and `wear.none` on the page's own ground; the published corpus gives every slot a colour under every occasion, which `wear.test` asserts (`F-248`, [ADR-0152](../adr/0152-what-07s-controls-do-and-what-it-keeps-that-it-does-not-draw.md)).
@@ -340,8 +350,8 @@ Preserved, built from the mockup's own components, and listed here so it is visi
   treatment (F-176) was painted on the padded well; with no well (`F-233`) it is drawn as a frame
   just outside the sample (`SelectionFrame`), costing no layout, and on a sample bled into its card
   as its edge drawn over it.
-- **FR-71** — the tab bar on a screen that draws an action bar. `16`, `22` and `24` draw the OS home
-  indicator where the tab bar would be, and no mockup draws the two together. FR-71 and F-145's
+- **FR-71** — the tab bar on a screen that draws an action bar. `16`, `19`, `22` and `24` draw the OS home
+  indicator or nothing where the tab bar would be, and no mockup draws the two together. FR-71 and F-145's
   first criterion give every route a tab that owns it, and F-234's third criterion puts the action
   bar *above the tab bar*, so the tab bar stays: it is laid out below the scene, and the action bar
   sits above it in flow (`F-234`,
@@ -692,7 +702,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C15** | The README routes `17` to `/profile/setup`, which does not exist | `17` is the in-progress state of `profile/index`; `23` is its finished state |
 | **C16** | `24` is routed to `wardrobe/with/[id]` only | it also governs `atlas/with/reading/[id]` — its *"Estimated from a capture"* chip is that route's case |
 | **C17** ⇄ | `14` draws the splash dark only | light appearance: `14`'s composition in `25`'s palette — so a light-mode launch does not flash dark then light. **Built by `F-231`** (ADR-0127): every element takes its role's Washi token, the glow included — the mark's own ink, so on Washi it is a soft dark halo, which `F-267` compares by eye |
-| **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn. Settled by `F-220` against FR-73's acceptance text: it also requires each proposed colour's gamut cost and each combination's family and generated-or-curated mark, none of which `19` draws — **OQ-27** |
+| **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn, floored to one place ([ADR-0170](../adr/0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md)). FR-73's relationship, family and generated-or-curated mark are the row's relationship words — a geometric relationship, which the product only generates, or *Curated ‹intent›*; its gamut cost is each record's own, the one record outside sRGB noted (`F-252`, [ADR-0169](../adr/0169-fr-73s-relationship-family-curated-mark-and-gamut-cost-on-19.md); OQ-27 closed) |
 | **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row, fitted to the screen with the other lower regions (`F-247`, [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md)) |
 | **C20** | The line around a sample is drawn light grey on `01` (#AF–#C0, 2.5 dp), `06` (#BE–#C9, 6.9 dp), `03` (#A0A5AB, 1 dp) and `20` (#717B84, 1 dp); the README's keyline is `#FFFFFF22`, which over the card reads `#3E4046` | **P4** for the value: the README keyline, moved per sample where it fails 3:1 (§4 E3, ADR-0116). **P1** for the width: each screen's, recorded as `raw.keylinePx` and drawn with `keylineWidth` (`F-233`). Found by `F-233`'s review. `08`'s samples draw none: their edge reads only the sharpening halo every edge in `08` carries, so they bind no keyline and carry the line a sample that binds none carries (`F-249`, ADR-0157 D3) |
 
@@ -786,7 +796,8 @@ tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 | `23` | seasonal label — a season and a modifier | `summariseSeason` over the published seasonal-summary rule ([ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)) | `F-223` |
 | `23` | the label's second half, *"Kasane Harmony"* | — | **OQ-31** |
 | `23` | *"Garment Calibration History · 94% concordance"* | `profileConcordance` — the owned garments FR-29 scores at or above 66, floored; *Calibration* becomes *Profile* (ADR-0124) | `F-222` |
-| `19` `21` `24` | ΔE00 per row; *"5 matches"*, *"120 colors"* | color-difference; counts | exists |
+| `19` | the anchor's name, OKLCh and slot; each row's colour, name, relationship and ΔE00 | the record (kanji, romaji, English; OKLCh at 3, 3, 1); `DEFAULT_SLOT`; the curated combinations holding the anchor, then each hue relationship's companion realised as the nearest corpus colour within ±9° of its hue, chroma at or above the lexicon's floor ([ADR-0168](../adr/0168-what-goes-with-a-colour-is-corpus-colours-in-a-hue-relationship-to-a-stated-tolerance.md)); the relationship's name or *Curated ‹intent›* ([ADR-0169](../adr/0169-fr-73s-relationship-family-curated-mark-and-gamut-cost-on-19.md)); `compare()`'s ΔE00 from the anchor, floored to one place ([ADR-0170](../adr/0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md)); the record's gamut note where it has one | `F-252` |
+| `21` `24` | ΔE00 per row; *"5 matches"*, *"120 colors"* | color-difference; counts | exists |
 | `22` | outfits unlocked; duplicates and their threshold | `shoppingCheck` | exists |
 | `22` | *"Gaps Addressed"* | `gapsAddressedBy` — the regions `gaps()` reports before the candidate and not after, by region (ADR-0124) | `F-222` |
 | `22` | *"Wardrobe Pairings"* | `wardrobePairings` — the owned garments forming a valid outfit with the candidate (ADR-0124) | `F-222` |
@@ -826,6 +837,8 @@ Each needs its ADR, written by the feature named, before that feature is done
 - `F-021`'s region card and vocabulary line on the Finder's screen, `F-151`'s *answered* line and its thumbnail decoy (`F-250`, [ADR-0160](../adr/0160-what-09s-controls-do-and-what-leaves-the-finder.md)); [ADR-0158](../adr/0158-the-finder-answers-a-query-as-a-set-ranked-from-a-point-and-the-sliders-are-the-point.md) records the Finder's search model, [ADR-0159](../adr/0159-09s-figures-and-words-say-what-the-corpus-and-the-lexicon-hold.md) `09`'s figures and words, and [ADR-0161](../adr/0161-09s-composition-its-art-and-its-result-cards.md) `09`'s composition
 - `F-151`'s first criterion for `10` and `16` — a catalogue's band and a builder's slots are drawn at their drawn heights, the floor kept wherever a pair is judged (`F-251`, [ADR-0162](../adr/0162-a-catalogue-shows-a-palette-and-a-pair-is-judged.md)); and the old Studio's role chips, *Move up* / *Move down*, *Remove*, search, *Open* and *Start new* ([ADR-0165](../adr/0165-what-10s-and-16s-controls-do-the-routes-states-and-what-leaves-the-studio.md)); [ADR-0164](../adr/0164-10s-and-16s-figures-and-words-say-what-the-corpus-the-store-and-the-engine-hold.md) records `10`'s and `16`'s figures and words, and [ADR-0166](../adr/0166-10s-and-16s-composition-their-art-and-the-tray.md) their composition
 
+- `F-194` c1–c3, `F-196`'s card form, `F-195`'s *Wear it* button, `F-198` c1–c2 and `F-200`'s companion path, **on `/atlas/with/[slug]` only** — `19` lists corpus colours in five hue relationships, curated first, each with its relationship and ΔE00, and *Wear* and *Build* go to `07`; every one of them stands on `24`'s routes until `F-259` (`F-252`, [ADR-0168](../adr/0168-what-goes-with-a-colour-is-corpus-colours-in-a-hue-relationship-to-a-stated-tolerance.md), [ADR-0169](../adr/0169-fr-73s-relationship-family-curated-mark-and-gamut-cost-on-19.md), [ADR-0171](../adr/0171-what-19s-controls-do-its-states-and-what-leaves-atlas-with.md)); [ADR-0170](../adr/0170-19s-figures-and-words-say-what-the-corpus-and-the-engine-hold.md) records `19`'s figures and words, and [ADR-0172](../adr/0172-19s-composition.md) its composition
+
 **No golden rule is superseded.** E1 – E3 exist because they cannot be.
 
 ---
@@ -847,8 +860,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
 | **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? F-235 measured more: the vertices take two inks — blue at Temperature and Depth (#94B5E0, #89ADE0), grey at Muted Tolerance and Chroma (#C2C1C5, #CDCDD1) — and the edge blends between them, over a #5E6675 fill. | `F-260` |
 | **OQ-25** | `17`'s radar axes and its ranges name different dimensions. Which four, and what does *Muted Tolerance* plot? | `F-260` |
-| **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
-| **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |
 | **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
 | **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
 | **OQ-31** | `23`'s seasonal pill ends in *Kasane Harmony*, which nothing defines. Define it, or the summary alone? | `F-260` |
@@ -868,6 +879,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 
 | | answer | ADR |
 |---|---|---|
+| **OQ-26** | A heading slot a mockup draws is design; a component's noun inside it (`19`'s *Hero Card* and *Rows*, `21`'s *List*) and *Action:* before a button's word are notation (`F-252`; `F-254` applies it to `21`) | [ADR-0167](../adr/0167-a-heading-a-mockup-draws-is-design-its-component-noun-and-action-are-notation.md) |
+| **OQ-27** | FR-73's family and generated-or-curated mark are one axis, stated by each row's relationship words; its gamut cost is each record's own, the one record outside sRGB noted after its figure (`F-252`) | [ADR-0169](../adr/0169-fr-73s-relationship-family-curated-mark-and-gamut-cost-on-19.md) |
 | **OQ-23** | Square brackets around a label, heading, role or button's words are the wireframe's notation, not copy — as `05`'s, `06`'s, `08`'s and `09`'s are read; `16`'s *Slot n [Anchor / Dark Base]* reads *Slot n: Anchor / Dark Base* (`F-251`) | [ADR-0163](../adr/0163-square-brackets-around-a-label-heading-role-or-button-are-notation.md) |
 | **OQ-19** | `06`'s screen is its upper panel; the cards and the action bar drawn wider are fitted to it, the art beside the provenance text at its drawn height (amended by F-247’s review: behind it, the words read under 4.5:1) | [ADR-0145](../adr/0145-06s-screen-is-its-upper-panel-and-what-it-draws-wider-is-fitted-to-it.md) |
 | **OQ-32** | Beside a personal-fit figure the note names the profile it was computed against — *(your profile)* — never a seasonal type; no figure without a profile | [ADR-0150](../adr/0150-the-personal-fit-note-names-the-profile-the-figure-was-computed-against-never-a-type.md) |
