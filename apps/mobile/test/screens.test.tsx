@@ -1234,6 +1234,42 @@ function finderLocators(): Readonly<Record<string, Locator>> {
   return out;
 }
 
+/**
+ * 19's locators (F-252): the anchor's card, ring, sample and three lines, and each row's parts, by the
+ * screen's own ids (a row's parts take `.swatch`, `.name`, `.detail` and `.action` after its id); the
+ * title by its words in each locale. What 19.json binds to a real catalogue key (the headings, Build),
+ * the filter's glyph and the bars are found from the record itself.
+ */
+function goesWithLocators(): Readonly<Record<string, Locator>> {
+  const out: Record<string, Locator> = {
+    '19.back': { by: 'text', key: 'tab.atlas' },
+    '19.header-divider': { by: 'testID', id: APP_BAR_DIVIDER_TEST_ID },
+    '19.title': {
+      by: 'value',
+      text: (locale) =>
+        locale === 'ja'
+          ? message('ja', 'with.title')
+          : `${message('en', 'with.title')}${BILINGUAL_SEPARATOR}${japaneseRun('with.title')}`,
+    },
+    '19.filter': { by: 'testID', id: 'with.filter' },
+    '19.anchor': { by: 'testID', id: 'with.anchor' },
+    '19.anchor.ring': { by: 'testID', id: 'with.anchor.ring' },
+    '19.anchor.swatch': { by: 'testID', id: 'with.anchor.swatch' },
+    '19.anchor.name': { by: 'testID', id: 'with.anchor.name' },
+    '19.anchor.oklch': { by: 'testID', id: 'with.anchor.oklch' },
+    '19.anchor.garment': { by: 'testID', id: 'with.anchor.slot' },
+  };
+  for (let n = 1; n <= 5; n += 1) {
+    const id = `with.row.${String(n - 1)}`;
+    out[`19.rows.row-${String(n)}`] = { by: 'testID', id };
+    out[`19.rows.row-${String(n)}.swatch`] = { by: 'testID', id: `${id}.swatch` };
+    out[`19.rows.row-${String(n)}.name`] = { by: 'testID', id: `${id}.name` };
+    out[`19.rows.row-${String(n)}.detail`] = { by: 'testID', id: `${id}.detail` };
+    out[`19.rows.row-${String(n)}.wear`] = { by: 'testID', id: `${id}.action` };
+  }
+  return out;
+}
+
 /** 10's first form-1 card and its first kasane, in the catalogue's order (ADR-0164 D1). */
 const STUDIO_BAND = 'studio.palette.curated:earth-and-clay';
 const STUDIO_LAYERS = 'studio.palette.curated:kasane-aki-no-tsuyu';
@@ -6569,6 +6605,29 @@ const ENROLLED: readonly Enrolled[] = [
     locators: builderLocators(),
   },
   {
+    /*
+     * 19, WHAT GOES WITH THIS (F-252), drawn as it is drawn: the fixture anchor, whose rows open
+     * complementary, analogous, analogous, split, split as 19's do (ADR-0168's census), every handler
+     * wired, under 01's tab bar (E4, FR-71). Its names, figures and rows are E1; 19 draws no tab bar,
+     * so nothing is superseded.
+     */
+    surface: '19.screen',
+    root: 'with.surface',
+    render: (theme) =>
+      draw(
+        <View testID="with.surface">
+          <GoesWith slug={WITH_ANCHOR} {...GOES_WITH_HANDLERS} />
+          <AppTabBar
+            state={{ index: 1, routes: TABS.map((tab) => ({ key: tab.name, name: tab.name })) }}
+            navigation={{ emit: () => ({ type: 'tabPress' }), navigate: () => undefined }}
+            insets={{ bottom: 0 }}
+          />
+        </View>,
+        theme,
+      ),
+    locators: goesWithLocators(),
+  },
+  {
     surface: '27.wardrobe-empty',
     root: STATE_TEST_IDS.empty,
     render: fromSubject('screens/Wardrobe (nothing in it)'),
@@ -6771,6 +6830,7 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         '09.screen',
         '10.screen',
         '16.screen',
+        '19.screen',
         '14.splash',
         '27.lens-working',
         '27.lens-refused',
@@ -7058,6 +7118,31 @@ describe('every element an enrolled surface records is drawn (F-221)', () => {
         findingsFor('16.screen', without(json, 'builder.matrix.separation.value'), live),
         '16.matrix.separation.value',
       );
+    });
+
+    it('19: the divider, the anchor’s OKLCh, row 3’s detail, row 5’s Wear and the rows heading are each found as themselves (F-252)', () => {
+      const { json, live } = drawnAs('19.screen');
+      expectOnly(
+        findingsFor('19.screen', without(json, APP_BAR_DIVIDER_TEST_ID), live),
+        '19.header-divider',
+      );
+      expectOnly(
+        findingsFor('19.screen', without(json, 'with.anchor.oklch'), live),
+        '19.anchor.oklch',
+      );
+      expectOnly(
+        findingsFor('19.screen', without(json, 'with.row.2.detail'), live),
+        '19.rows.row-3.detail',
+      );
+      expectOnly(
+        findingsFor('19.screen', without(json, 'with.row.4.action'), live),
+        '19.rows.row-5.wear',
+      );
+      expectOnly(
+        findingsFor('19.screen', withoutText(json, message('en', 'with.rowsHeading')), live),
+        '19.rows.heading',
+      );
+      // 19 draws no art inside its frame (its leaves lie outside it), so there is no art decoy.
     });
 
     it('07: three Swaps are located by one word, so one fewer is reported (F-248’s review, M5)', () => {

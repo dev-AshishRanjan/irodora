@@ -331,17 +331,20 @@ const AnchorCard = memo(function AnchorCard({
   return (
     <Card level="1" padding="md" radius="md" testID="with.anchor">
       <Row gap="md" align="center">
-        <Swatch
-          anchor={ANCHOR_RING}
-          width={ANCHOR_SAMPLE.width}
-          height={ANCHOR_SAMPLE.height}
-          corner="sm"
-          keyline={false}
-          name={name}
-          hex={anchor.derived.hex}
-          color={colorFor(anchor.entry)}
-          testID="with.anchor.swatch"
-        />
+        {/* `19.anchor.ring`: the swatch's outermost box is its ring, found by this id. */}
+        <View testID="with.anchor.ring">
+          <Swatch
+            anchor={ANCHOR_RING}
+            width={ANCHOR_SAMPLE.width}
+            height={ANCHOR_SAMPLE.height}
+            corner="sm"
+            keyline={false}
+            name={name}
+            hex={anchor.derived.hex}
+            color={colorFor(anchor.entry)}
+            testID="with.anchor.swatch"
+          />
+        </View>
         {/* name → OKLCh → slot at `xs`: tighter than the scale, named (ADR-0172 D1). */}
         <View style={{ flex: 1, gap: nativeSpacing.xs }}>
           <Text size="body" weight={500} color="foreground" numeric testID="with.anchor.name">
