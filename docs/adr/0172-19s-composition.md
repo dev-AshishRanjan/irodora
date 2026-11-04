@@ -9,10 +9,16 @@
 ## Decision
 - **D1. Intervals.** F-252's plan's table, snapped at 0.6124 dp per px. Three intervals are named because
   the line insets make them tighter than the scale's smallest step:
-  - name → OKLCh, `xs`, +8.3 dp over the drawing;
-  - OKLCh → slot line, `xs`, +6.4 dp;
-  - a row's name → detail, `xs`, +5.05 dp a row.
+  - name → OKLCh, `xs`, +6.9 dp over the drawing;
+  - OKLCh → slot line, `xs`, +3.7 dp;
+  - a row's name → detail, `xs`, +5.1 dp a row.
+
+  (The plan estimated +8.3 and +6.4 with the anchor's lines at body; increment 1 read them at label.)
 - **D2. Insets.** The page `sm`; the headings `md` from the screen's edge; the ring `md` inside its card.
+  The card → the rows heading is `lg`: 24.5 dp less the label's line inset, 20.65 dp.
+- **D2a. The ring's corner** is concentric with the sample's (6 + 3.8 + 2.3 = 12.1 dp, where 19 draws
+  about 9.8): the sample's drawn 2.4 dp is under `sm`, the smallest step. The ring's 3.8 dp gap is a
+  drawn figure, declared off the spacing scale, not spacing.
 - **D3. The anchor card.** The ring at `ANCHOR_RING` (F-233's ring and gap); the sample at
   `ANCHOR_SAMPLE`, no keyline, its corner `sm`; the three lines centred on the ring.
 - **D4. The rows.** `RankedRow form="harmony"` at `HARMONY_ROW`. The name wraps. The sample's corner is

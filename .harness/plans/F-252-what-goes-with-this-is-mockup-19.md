@@ -371,6 +371,18 @@ All seven stay reachable on 24's routes until F-259.
 - **The census** is in ADR-0168 to ADR-0170. The fixture and the capture param are both **aki-batake** (seven geometric rows, opening complementary, analogous, analogous, split, split). 45 of 120 anchors are under the floor — **F-359 filed**. Ties at the pick are not counted here: `goes-with.test` holds that none occurs (increment 3).
 - **No E3 departure is recorded in `19.mjs`.** A wrap and a hit area change nothing the drawn state draws.
 
+**2026-11-04, increments 2–5.**
+
+- **The companion is ranked from its REQUESTED colour**, not the gamut-mapped one: D2's rationale (*the in-window colour nearest the anchor's own lightness and chroma*) holds only for the requested colour, which keeps the anchor's L and C. The census at ±9° and ±15° is unchanged by it (`goes-with.test`).
+- **The figure is floored as `compare-readout.ts` floors APCA**: `Math.floor(x × 10) / 10`, the printed value never above the computed one beyond a double's last place.
+- **`Button` gains `numeric`** (`@irodora/ui`, additive): *Build Complete 4-Piece Outfit* carries a figure, and the sweep refuses one in proportional digits.
+- **The gamut note on the anchor's OKLCh line is set in the locale's face**: in Japanese it is Japanese words, which the platform font would draw (the sweep's F-152 check found it).
+- **The card → rows heading interval is `lg`**, not the plan table's `md`: the heading is `label` now (increment 1), so its line inset is 3.85, and 24.5 − 3.85 = 20.65 dp lies nearer `lg`.
+- **The ring's corner is concentric with the sample's**: Swatch draws it at the sample's corner plus the gap and the ring, 6 + 3.8 + 2.3 = 12.1 dp, where 19 draws about 9.8 dp, because the sample's own drawn 2.4 dp is under `sm`, the smallest step. An expected difference at the capture.
+- **The ring's 3.8 dp gap is declared off the spacing scale** (`off-scale-spacing.json`): a drawn figure of the anchor form, as `SwatchAnchor` documents, not spacing.
+- **19's `Wear` is a required handler**: a row without one would draw an action that does nothing, and the route always wires it.
+- **The ring is found by a wrapper's id** (`with.anchor.ring`): its box is the swatch's outermost.
+
 ---
 
 ## Approach
