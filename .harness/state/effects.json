@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-11-02",
+  "updated": "2026-11-04",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3998,7 +3998,7 @@
         "packages/color-harmony"
       ],
       "severity": "high",
-      "guard": "THE KIND LIST IS NOW A UI CONTRACT, AND `i18n.test.ts` PINS IT IN BOTH DIRECTIONS. `COMBINATION_MESSAGE_KEYS` is derived from `COMBINATION_ORDER`, which is derived from `HARMONY_KINDS` — so adding a generator to the engine makes the catalogues fail for the missing name, and removing one makes them fail for the name nobody emits. That two-way pin is the ONLY thing standing between the engine and a screen that renders a raw key: the screen builds the key from the kind, so the unused-key scan is a source-literal scan that cannot see the consumer, and the keys had to be excluded from it. An exclusion pinned one way is a hole. WHAT IS NOT GUARDED: whether a name is a GOOD name. The catalogue can carry twelve keys, both directions green, and read as a colour-theory lecture in either language — and the Japanese half of it is unreviewed (OQ-5). That is judgement, and it is attested, not gated. ALSO NOT GUARDED: the ranking. Hue-first is a product decision with no measurement behind it, stated in the module so somebody can disagree with it.",
+      "guard": "THE KIND LIST IS NOW A UI CONTRACT, AND `i18n.test.ts` PINS IT IN BOTH DIRECTIONS. `COMBINATION_MESSAGE_KEYS` is derived from `COMBINATION_ORDER`, which is derived from `HARMONY_KINDS` — so adding a generator to the engine makes the catalogues fail for the missing name, and removing one makes them fail for the name nobody emits. That two-way pin is the ONLY thing standing between the engine and a screen that renders a raw key: the screen builds the key from the kind, so the unused-key scan is a source-literal scan that cannot see the consumer, and the keys had to be excluded from it. An exclusion pinned one way is a hole. WHAT IS NOT GUARDED: whether a name is a GOOD name. The catalogue can carry twelve keys, both directions green, and read as a colour-theory lecture in either language — and the Japanese half of it is unreviewed (OQ-5). That is judgement, and it is attested, not gated. ALSO NOT GUARDED: the ranking. Hue-first is a product decision with no measurement behind it, stated in the module so somebody can disagree with it. FROM F-252: a second reader — goes-with.ts reads generateHarmony and hueDistance for 19’s rows, and companionsOf is extracted from combinationsFor with no behaviour change (combinations.test unchanged and green); goes-with.test holds the angles by its own table (E-239).",
       "memory": "memory/effects/an-engine-with-no-caller-is-not-a-finished-feature.md",
       "rationale": "THE HARMONY ENGINE SHIPPED COMPLETE IN F-014 AND WAS IMPORTED BY ZERO APPLICATION FILES FOR THE ELEVEN RELEASES SINCE. Twelve generators, every returned colour gamut-mapped, every one carrying its ΔE00, covered by gate 5 and by property tests — and `packages/color-core` declared a dependency on it that no source backed, which is why a manifest-based check would have called that edge a use. F-183 built the gate that says so; this is the feature that answers it. THE SECOND-ORDER EFFECT IS THE ONE WORTH RECORDING: reaching the engine made twelve engine-defined names into user-visible copy in two languages, which is a class of coupling this app already had twice (F-052 `explain.*`, F-124 `outfit.*`) and solved the same way both times. Following the existing shape rather than inventing a third was the whole of the work; finding that the shape existed took longer than using it. THIRD ORDER: the conformance suite refused the screen, correctly — a generated colour resolves to no token by construction, and `sampleValues` is how a subject declares that the colour IS the subject matter. Those hexes are derived from the engine rather than pasted, because a literal list would go on being measured while the engine drifted underneath it.",
       "confidence": 0.9,
@@ -4164,7 +4164,7 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE SUBJECT IS A DISCRIMINATED UNION, so a caller cannot pass a colour and then read a corpus name off it — the compiler is what stops the two subject kinds being confused, and both kinds are registered conformance subjects so both trees are measured in both themes. THE COLOUR SUBJECT HAS ITS OWN DECOY: two different garment colours must produce different relationships, because an implementation that ignored the colour — resolving to a nearest entry, or falling back to a default — would satisfy every other assertion and return the same answer for every garment. THE EXIT TABLE IS NOW ENUMERATED BY CONSTRUCTION: the handler run-list is a Record keyed by `LensExitHandlers`, so adding a door without covering it is a compile error, and the href-shape check reads `Object.values(LENS_EXITS)` rather than a hand-written list of four. WHAT IS NOT GUARDED: that the two questions stay legible as two questions. The i18n test asserts the titles and the button labels differ in both languages, which catches a collapse into synonyms; it cannot tell whether either phrase is a good one.",
+      "guard": "THE SUBJECT IS A DISCRIMINATED UNION, so a caller cannot pass a colour and then read a corpus name off it — the compiler is what stops the two subject kinds being confused, and both kinds are registered conformance subjects so both trees are measured in both themes. THE COLOUR SUBJECT HAS ITS OWN DECOY: two different garment colours must produce different relationships, because an implementation that ignored the colour — resolving to a nearest entry, or falling back to a default — would satisfy every other assertion and return the same answer for every garment. THE EXIT TABLE IS NOW ENUMERATED BY CONSTRUCTION: the handler run-list is a Record keyed by `LensExitHandlers`, so adding a door without covering it is a compile error, and the href-shape check reads `Object.values(LENS_EXITS)` rather than a hand-written list of four. WHAT IS NOT GUARDED: that the two questions stay legible as two questions. The i18n test asserts the titles and the button labels differ in both languages, which catches a collapse into synonyms; it cannot tell whether either phrase is a good one. FROM F-252 (ADR-0171): Combinations.tsx no longer serves /atlas/with/[slug] — GoesWith does — and its entry branch is reached only as 24’s miss state; the Lens’s and Home’s hrefs are unchanged (lens-exits.test) and now land on 19. F-259 decides what of the old screen stays.",
       "memory": "memory/effects/a-screen-shaped-around-its-first-caller-excludes-the-second.md",
       "rationale": "F-194 BUILT THE COMBINATIONS SCREEN AROUND A CORPUS SLUG BECAUSE IT HAD EXACTLY ONE CALLER. The harmony engine takes an OKLCh and never needed an entry — the slug was an accident of the first caller having one, and it is what made a GARMENT unable to ask the question at all. A garment's colour is a hex somebody captured or typed. THE OBVIOUS BRIDGE WAS REJECTED FOR A REASON THE REPOSITORY ALREADY WROTE DOWN: resolving a garment to its nearest published colour needs a distance printed, and `Wardrobe`'s own docblock forbids exactly that — *\"printing ΔE00 4.2 from ai-iro beside a jumper would present a measurement as a property of the garment\"*. So the honest version needs a number that screen may not print, and the dishonest version quietly answers about a different colour than the one asked about. Widening the subject removed the dilemma instead of choosing a side of it. THE CONSEQUENCE IS CORRECT AND IS SAID OUT LOUD: curated combinations are keyed by slug because an editor chose published colours, so a free colour has none — and the screen says why, rather than leaving a section silently missing, which would leave a person unable to tell \"nobody curated one\" from \"this product does not do that\".",
       "confidence": 0.9,
@@ -4212,7 +4212,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "THE SEPARATION IS REPORTED ON EVERY COMBINATION, NOT ONLY THE POOR ONES, and the decoy is what makes the flag a measurement: `close` must come back BOTH true and false across the corpus, so a field hard-wired either way fails. The source is asserted to be inside the pairs, because a companion that vanishes against the colour in hand is the pair that matters most and the one a check over companions alone cannot see. Nothing here computes a separation: `worstSeparation` is FR-5’s, the same definition the design system and the recommendation engine read (E-005). WHAT IS NOT GUARDED: whether HARD_TO_SEPARATE is the right convention for GENERATED colours. It was set for outfit pairs drawn from the corpus, and it is reused here rather than re-tuned — 53% of generated relationships fall below it, which is the check telling the truth rather than a threshold to nudge, but nobody has measured whether 20 is where a person would draw the line on this screen.",
+      "guard": "THE SEPARATION IS REPORTED ON EVERY COMBINATION, NOT ONLY THE POOR ONES, and the decoy is what makes the flag a measurement: `close` must come back BOTH true and false across the corpus, so a field hard-wired either way fails. The source is asserted to be inside the pairs, because a companion that vanishes against the colour in hand is the pair that matters most and the one a check over companions alone cannot see. Nothing here computes a separation: `worstSeparation` is FR-5’s, the same definition the design system and the recommendation engine read (E-005). WHAT IS NOT GUARDED: whether HARD_TO_SEPARATE is the right convention for GENERATED colours. It was set for outfit pairs drawn from the corpus, and it is reused here rather than re-tuned — 53% of generated relationships fall below it, which is the check telling the truth rather than a threshold to nudge, but nobody has measured whether 20 is where a person would draw the line on this screen. FROM F-252: companionsOf extracted, no behaviour change; combinations.test and curated-combinations.test unchanged and green.",
       "memory": "memory/effects/a-measurement-that-fires-half-the-time-is-not-a-warning.md",
       "rationale": "THE COMBINATIONS SCREEN PROPOSES COLOURS TO PUT BESIDE ONE ANOTHER AND SAID NOTHING ABOUT WHETHER THEY CAN BE TOLD APART. Measured over the shipped corpus, 53% of generated relationships fall below the existing convention — `warm-cool` at 96%, `analogous` at 95% — and that rate is CORRECT rather than noisy: warm against cool at similar lightness is precisely the axis a red-green deficiency loses, so a high rate there is the check being right about the relationship. THE THRESHOLD WAS NOT NUDGED. Instead the figure is shown on every card and the ones below the convention are marked, which is the treatment this same screen already gives the gamut cost one feature earlier — *\"Zero is a value, not an absence\"*. A mark that appears half the time reads as an alarm; a number that is always there is data, and this product does not warn people about their own eyes. THE PROFILE HALF REORDERS AND NEVER REMOVES, and `personalFit` is null rather than a midpoint without one — F-195 found the trap next door, where a no-evidence profile scores 50 on every axis and a caller that cannot tell that from a real 50 presents the engine’s midpoint as an opinion.",
       "confidence": 0.9,
@@ -6670,7 +6670,7 @@
         "packages/ui"
       ],
       "severity": "medium",
-      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart). F-242: texture-badge.test (TEXTURE_BADGE 14, the median of the ten sides of 01’s five badges, and TEXTURE_BADGE_CELLS from each badge’s raw.cells). F-246: the Atlas’s drawn sizes (ATLAS_SAMPLE, the season, family, count and nav heights, the field, the bar) are constants in atlas.ts, each recomputed from 05.json by atlas-fidelity.test (the size most siblings are drawn at); Chip, Button and ChoiceGroup gained steps and forms whose defaults did not move (atlas-forms.test decoys). F-250: 09’s chips re-measured as md rounded rectangles in level 3 (pill-selection.test’s census 28 → 25) and its two cards sm (cards.test 66/24 → 64/26); SLIDER_TRACK/SLIDER_THUMB unchanged. APP_BAR_INSET kept: 09.back’s edge stays F-220’s reading (ADR-0161 D8, F-282).",
+      "guard": "The recompute tests derive each default from the inventories and fail on a mismatch: button-forms.test (BUTTON_HEIGHT, ICON_PLATE, GLYPH_IN_PLATE), pill-selection.test (CHIP_HEIGHT, SELECTION_DOT), badges.test (BADGE_HEIGHT, SAMPLE_DOT), segmented-choice.test (SEGMENTED_HEIGHT, SEGMENT_INSET), switch.test (SWITCH_TRACK, SWITCH_THUMB), slider.test (SLIDER_TRACK, SLIDER_THUMB, and 17's and 23's readout sizes). Each is mutation-checked or has a decoy. F-233: sample-family.test (SWATCH_SIZE 60 with 72 the decoy, SWATCH_KEYLINE, the sm corner, STRIP_CORNER, STRIP_KEYLINE), cards.test (CARD_RADIUS md with lg the decoy, the level-1 edge), fabric-swatch.test (FABRIC_SIZE, FABRIC_PITCH, FABRIC_TOOTH from 12's raw readings). SINCE F-234 the recompute pattern also covers TAB_* (tab-bar.test, against 56, 26 and 16 × 2), APP_BAR_HEIGHT/STACKED/INSET (app-bar.test, against 7.5 % of the frame and the page padding), ACTION_BAR_* (action-bar.test, against the spacing steps) and SHEET_HANDLE/SHEET_FORMS (sheet.test, against gorhom's 7.5 % handle). F-235 added the data displays: readout.test, delta.test, charts.test, rows.test and carousel.test recompute every READOUT_*, DELTA_*, HEADLINE_*, DIAL_*, RADAR_*, METRIC_TILE_*, FACTOR_*, HARMONY_ROW, NEAREST_ROW, FIELDS_ROW, STEP_PILL_HEIGHT, CAROUSEL_* and PAGE_DOT* value from its inventory, as a median over the drawn instances where a screen draws several, each with a decoy. F-230: brand.test recomputes every MARK field from 14.splash.mark (F-165's mark, four and six the decoys) and every LOCKUP_* ratio from 01's and 14's readings (F-226's lockup and the snapped intervals the decoys, where the instrument can tell them apart). F-242: texture-badge.test (TEXTURE_BADGE 14, the median of the ten sides of 01’s five badges, and TEXTURE_BADGE_CELLS from each badge’s raw.cells). F-246: the Atlas’s drawn sizes (ATLAS_SAMPLE, the season, family, count and nav heights, the field, the bar) are constants in atlas.ts, each recomputed from 05.json by atlas-fidelity.test (the size most siblings are drawn at); Chip, Button and ChoiceGroup gained steps and forms whose defaults did not move (atlas-forms.test decoys). F-250: 09’s chips re-measured as md rounded rectangles in level 3 (pill-selection.test’s census 28 → 25) and its two cards sm (cards.test 66/24 → 64/26); SLIDER_TRACK/SLIDER_THUMB unchanged. APP_BAR_INSET kept: 09.back’s edge stays F-220’s reading (ADR-0161 D8, F-282). FROM F-252: 19.mjs re-measured — every sample corner sm (sample-family.test’s census 51 → 57 sm, 23 → 17 md), the header read (48 dp, level 1), the action bar level 1; row boxes kept, so HARMONY_ROW is unchanged (rows.test).",
       "memory": "memory/effects/a-controls-default-size-is-a-median-of-the-drawings.md",
       "rationale": "F-232 (as ADR-0113 did for the caption): a control's default size is not typed in, it is a median of what the scaled screens draw — or, where no screen draws it, board 00's own ratio to the pill beside it. Re-record an element (a box, a dp, a raw reading) and a default can move; the tests say so instead of leaving a constant that agrees with a drawing nobody has any more. Surfaces pass their element's own dp, so a default is only what an unsized caller gets."
     },
@@ -6978,7 +6978,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways. F-249: atlas/compare leaves PLATFORM_HEADER — 08 draws its own bar; the decoy moved to atlas/find, still on the platform header. F-250: atlas/find leaves PLATFORM_HEADER — 09 draws its own bar; the decoy moved to atlas/palettes, still on the platform header. F-251: atlas/palettes left PLATFORM_HEADER (10 and 16 draw their own bars); the stale-entry decoy moved to profile/measure, the longest-lived row.",
+      "guard": "test:packages/ui/test/app-bar.test.tsx and action-bar.test.tsx hold the placement structurally — the app bar a sibling before the scroller with the status bar's inset moved into it and its fill on the same node (the in-content bar as the decoy), the action bar the next sibling after it and never absolute (an absolute bar as the decoy). apps/mobile/test/chrome.test.ts pins the 16 routes still on the platform header, each with the feature that moves it; a new route and a stale entry are both reported. The conformance sweep renders 11 app bars and 6 action bars in four palettes. F-246: the Atlas is the first bleeding screen; its grid and family row pad themselves (atlas-fidelity.test reads each inset it passes against 05.json). F-247 moved atlas/[slug] off the platform header (chrome.test’s PLATFORM_HEADER loses its row, and the route hides the header itself); AppBarIcon gains `selected` for a fillable glyph and AppBarBack a glyph `size`, each held by app-bar.test with its default as the decoy. F-248: atlas/wear/[slug] leaves PLATFORM_HEADER — 07 draws its own bar and the route turns the stack’s header off; chrome.test holds the table both ways. F-249: atlas/compare leaves PLATFORM_HEADER — 08 draws its own bar; the decoy moved to atlas/find, still on the platform header. F-250: atlas/find leaves PLATFORM_HEADER — 09 draws its own bar; the decoy moved to atlas/palettes, still on the platform header. F-251: atlas/palettes left PLATFORM_HEADER (10 and 16 draw their own bars); the stale-entry decoy moved to profile/measure, the longest-lived row. FROM F-252: atlas/with/[slug] leaves PLATFORM_HEADER (chrome.test), 19 drawing its own AppBar.",
       "memory": "memory/effects/a-route-moves-to-the-app-bar-with-its-screen-feature.md",
       "rationale": "Screen now places the chrome: appBar above the scroller with the inset moved into it, actionBar after it in flow. Every screen feature F-242–F-263 composes these slots, and a slot used wrongly is the F-159 shape again (content under the status bar, or the end of a scroll under a bar). The routes still on the platform header are a ratchet, not a backlog nobody reads: each screen feature removes its own entry when it moves, and the test refuses a route that joins it."
     },
@@ -9678,7 +9678,7 @@
           "ref": "apps/mobile/src/export/subject.ts#pairSubject"
         }
       ],
-      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint. F-248’s review (S1): the writers refuse a colour twice (assertSubject), so export-subject.test writes the combination every corpus colour shows, as the page builds it (shownColours), in all six formats, with the decoy that a colour twice is refused. F-249: the export route also reads `pair` (two different corpus colours and their ΔE00 row, ahead of colours, a slug and the palettes) and `format` (a writer’s own name); export-subject.test writes the pair for every colour in all six formats.",
+      "guard": "apps/mobile/test/wear-states.test.tsx fires every drawn control and reads its handler’s argument (an absent handler is an absent control), and reads each handler’s own body in the route — back navigates to the colour, the save offers before it opens the Lab, export carries the colours — with decoys for a back that only pops, swapped targets and the Lab opened before the offer. export-subject.test holds the colours parameter (decoy: an unknown colour falls back). verify-route-targets in lint. F-248’s review (S1): the writers refuse a colour twice (assertSubject), so export-subject.test writes the combination every corpus colour shows, as the page builds it (shownColours), in all six formats, with the decoy that a colour twice is refused. F-249: the export route also reads `pair` (two different corpus colours and their ΔE00 row, ahead of colours, a slug and the palettes) and `format` (a writer’s own name); export-subject.test writes the pair for every colour in all six formats. FROM F-252: 07’s route reads `with` into startWith (E-240); its handlers are unchanged (wear-states.test).",
       "memory": "memory/effects/07s-drawn-actions-open-routes-other-features-rebuild.md",
       "rationale": "07’s actions open screens that 13, 18, 22 and 12 rebuild. A rebuild that renames a route, or an export that stops reading colours, breaks 07’s actions without a failure on 07."
     },
@@ -10400,9 +10400,164 @@
           "ref": "test"
         }
       ],
-      "guard": "packages/ui/test/button-forms.test.tsx: the strong fill in all four palettes, its ink STRONG_INK’s and at or above 4.5:1 on it (decoy: in Washi the dark ink is the fill itself); the surface levels unchanged (decoy). The manifest declares border.strong’s pairings (foreground on the dark palettes, accent.foreground on Washi), which gate 9 measures and generate-design-tokens --check holds. text-field.test: inside draws no label row, the label is the placeholder and the name; the drawn form’s height, outline and target (decoy: without a height the filled field). tategaki.test: one accessible node holding the whole name, a character with its marks on one line, the ink the sample takes (decoy). pill-selection.test: sm corners, the chosen filled and edged, ids under the group’s.",
+      "guard": "packages/ui/test/button-forms.test.tsx: the strong fill in all four palettes, its ink STRONG_INK’s and at or above 4.5:1 on it (decoy: in Washi the dark ink is the fill itself); the surface levels unchanged (decoy). The manifest declares border.strong’s pairings (foreground on the dark palettes, accent.foreground on Washi), which gate 9 measures and generate-design-tokens --check holds. text-field.test: inside draws no label row, the label is the placeholder and the name; the drawn form’s height, outline and target (decoy: without a height the filled field). tategaki.test: one accessible node holding the whole name, a character with its marks on one line, the ink the sample takes (decoy). pill-selection.test: sm corners, the chosen filled and edged, ids under the group’s. FROM F-252: Button gains `numeric` for a label that carries a figure (19’s Build Complete 4-Piece Outfit), tabular as every figure (button-forms.test, with the decoy that without it the sweep reports it ragged); RankedRow’s harmony form wraps its name, takes a note after its figure, ids its parts, and sets Wear at label (rows.test).",
       "memory": "memory/effects/a-strong-fill-takes-the-ink-its-palette-declares.md",
       "rationale": "10 fills its export bar in border.strong, a token that was decorative; in Washi it is the ink colour, so the ink must turn. 16 needs a field labelled inside, sm chips and kanji set top to bottom. A refactor that dropped the pairing would leave words on a fill gate 9 never measures; a Tategaki that announced per character would read a name as noise."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-252",
+      "id": "E-239",
+      "severity": "high",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/goes-with.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/GoesWith.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/finder.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/corpus/index.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/color-harmony/src/generate.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "content/rules/phrase-lexicon.2026.08.1.json"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with-fidelity.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with-states.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/goes-with.test.ts over all 120 anchors: every geometric row stands in its relationship by an angle table written in the test and its own wrap arithmetic (decoy: 189.5° is not complementary); each companion takes the nearest eligible colour in its window by an oracle that computes ΔE00 from the requested colour to every entry, off nearestByOklch’s index, with both branches (a window realised, a window empty) seen; each colour once, curated first by combination slug and rank, then the relationships in ADR-0168’s order, the 180° once; the census at ±9° (0:45 5:3 6:30 7:42) and at ±15° (0:45 6:16 7:46 8:13), the decoy that they differ; the floor read from the lexicon and equal to every hue term’s chroma floor (0.039 for 2026.08.1), every anchor under it with no geometric row and every other with one (decoy: the least chromatic above it); the figure floored, never above the computed one, equal to nearestByLab’s by a second path (decoy: 48.29 prints 48.2); only the record outside sRGB noted (12 anchors hold it). The screen’s rows are goesWith’s (goes-with-states.test reads each detail’s name against relationshipWords and the floored figure). A note on F-349: when the engine names relationships, 19 reads it rather than a second definition.",
+      "memory": "memory/effects/a-relationship-word-claims-a-hue-angle-and-nothing-more.md",
+      "rationale": "19 lists corpus colours under a relationship’s name. Nothing in the engine classifies a given pair, so the rule lives here: a row labelled with a relationship its hue does not hold, a near-grey colour given a hue relationship, a figure rounded up or over the wrong pair, the order drifting, or a lexicon publish moving the floor would each print a claim the product cannot support (rule 11), and no other test would see it."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-252",
+      "id": "E-240",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/atlas/wear/[slug].tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/wear.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/with/[slug].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/GoesWith.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "apps/mobile/test/wear.test.ts: startWith for every anchor and each of its rows puts the row in the trousers, locked and in hand; 07 shows it there and no occasion moves it (decoy: at rest another colour); an unknown slug, the anchor’s own or none opens 07 as drawn. goes-with-states.test reads 07’s route for `with`, startWith(withSlug, slug) and { initial } (decoy: a rebuild that drops it fails), and 19’s route for wearHref(slug, row) with the anchor first (decoy: swapped).",
+      "memory": "memory/effects/a-hand-off-in-a-query-string-is-a-contract-no-type-holds.md",
+      "rationale": "19’s Wear opens 07 with the row’s colour already worn. The hand-off is a query parameter, so no type joins the two routes: a rebuild of 07 that stopped reading `with` would open 07 without the row, and nothing on 19 would fail."
+    },
+    {
+      "kind": "EFFECT_LINK",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-252",
+      "id": "E-241",
+      "severity": "medium",
+      "scope": [
+        "mobile"
+      ],
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/detail.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/GoesWith.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/RankedRow.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/detail.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/goes-with-states.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "guard": "renderNote is the one helper 06’s readout and 19’s anchor and rows word a record’s rendering cost through. goes-with.test: a note for every record outside sRGB and none for any in it, at renderDeltaE00’s two places (decoy: an in-gamut row has none); goes-with-states.test: the note after the anchor’s OKLCh and after a row’s figure, and none on an in-gamut anchor (decoy); detail.test unchanged and green. The conformance registry renders the record as the anchor and as a row, in both languages (the note in the locale’s face).",
+      "memory": "memory/effects/one-record-one-way-to-say-it-is-not-shown-exactly.md",
+      "rationale": "Rule 11: a colour shown at its nearest sRGB rendering says so. Two surfaces stating one record’s cost through two pieces of code would drift, and one of them would stop saying it."
     }
   ]
 }
