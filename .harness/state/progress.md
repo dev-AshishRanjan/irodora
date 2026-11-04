@@ -8,6 +8,110 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-11-04 — F-252 What goes with this is mockup 19
+
+**Done here, with three criteria owed (attested): the person's capture, comparison and device
+checks.** `/atlas/with/[slug]` is rebuilt to `19`:
+
+- **The bar:** back to the Atlas, the divider, *What Goes With This • 調和色*, the filter glyph; 48 dp,
+  filled level 1, no rule.
+- **The anchor card:** the ring, the sample, *kanji Romaji (English)*, `OKLCh: L • C • h°` at 3/3/1 (the
+  one record outside sRGB adds 06's note, in the locale's face), *Anchor Garment: Top*.
+- **The rows:** `RankedRow` harmony — curated members first, then complementary, analogous, split,
+  triadic and tetradic under *Harmonic Relationships*, each the nearest corpus colour within ±9° of the companion's requested hue,
+  chroma at or above the lexicon's floor; *English • 漢字*, and at the scale's floor below it the relationship (or *Curated ‹intent›*) and
+  ΔE00 from the anchor, floored to one place; *Wear*.
+- **The filter:** 03's sheet with 05's pills; *Showing n / N* and *Clear* on the rows heading's line.
+- **Build Complete 4-Piece Outfit →** in a level-1 action bar, tonal level 3; 01's tab bar beneath.
+- **Wear** opens 07 with the anchor as the top and the row locked in the trousers (07's route reads
+  `with`); **Build** opens 07; **Back** navigates to the Atlas.
+- **States:** a colour not in this corpus (back above 00's caption) and a colour close to grey (the
+  card, 00's caption, Build).
+- 19.screen is the ninth whole screen in the inventory sweep. Increments `042aa42` to `cde86aa`.
+
+**Measured first (increment 1).** The header is read (48 dp, level 1), not derived; the headings, the
+OKLCh and slot lines, the details and *Wear* are `label` (F-220 had body); every sample corner, Wear
+and Build are `sm`; the ring `md`; *Hero Card*, *Rows* and *Action:* are boxed as notation. The census:
+45 of 120 anchors are under the floor and have no geometric row (**F-359** filed); the rest have 5–7;
+the fixture and capture anchor *aki-batake* opens as 19 draws.
+
+**Decided under the delegation of 2026-10-05:** ADR-0167 (OQ-26 — a heading slot is design; a component
+noun inside it and *Action:* are notation; F-254 applies it to 21), ADR-0168 (what a row is; ±9° and the
+lexicon's floor), ADR-0169 (OQ-27 — FR-73's family and generated-or-curated are one axis, stated by the
+relationship words; the gamut cost is each record's own, the one non-zero noted), ADR-0170 (figures and
+words; ΔE00 at 19's one place, floored), ADR-0171 (controls, states, what leaves the route), ADR-0172
+(composition). The person is asked to confirm or flip ADR-0167 D1, ADR-0168's ±9° and floor, ADR-0169's
+not printing *Generated*, ADR-0170's one place and D6 (*Ranked* left under E2), and ADR-0171 D4 (Build → 07).
+
+**Additive in `@irodora/ui`:** `RankedRow` harmony (the name wraps, `note`, part ids, Wear at label, the
+sample `sm`, `HARMONY_LINES_GAP` between name and detail); `Button numeric`.
+
+**Review (once): FAIL as delivered**, 1 S, 4 M, 10 L. Every one fixed or recorded (`b13515e`, `cde86aa`):
+
+- **S1, fixed — the one that mattered.** Each row's name sat on its detail line with no gap, where
+  ADR-0172 D1 says the scale's floor was built; the test compared the scale with itself
+  (`belowTheScale` always returns `xs`). `RankedRow` now builds `HARMONY_LINES_GAP`, held against
+  19.json and the built column.
+- **M1, fixed:** the fidelity test reads weight, ink and every interval it recomputes off the built
+  tree, so a heading at weight 600 or a row gap at `md` now fails it.
+- **M2, decided (ADR-0170 D6):** *Ranked* leaves the rows heading under E2 — the rows are in a fixed
+  order of relationships and nothing ranks them; a reader would take the first row as the best.
+- **M3, recorded — F-360:** Back's `navigate('/atlas')` may push a second Atlas (expo-router's stack
+  reuses only the route on top); 06, 09 and 19 share it. ADR-0171 D2 no longer claims the return.
+- **M4, recorded — F-361:** *Clear*'s target lies outside its row on Android, as on 05.
+- **L1–L10:** no tie at a pick is now asserted; Wear's name is checked in both languages; the filter
+  offers no choice that would not narrow; two literals fixed; the attestations name the fixed-height
+  controls and 07's return path; E-240's guard says what is tested; a note on F-254 for 21's keys.
+
+**Also filed:** **F-359** (a near-grey colour's rows, a person's question).
+
+**Tier 2 on `8cbd9a4` (before the review), each exit 0 unless named:**
+
+- `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm build`
+- `pnpm turbo run test --force`: 35 of 35 tasks (ui 1593/1593, mobile 2237/2237).
+- `pnpm test:a11y` (ui 664, mobile 451) · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content`
+- The CI mirror's gates 0, 1, 2 (lint, claims, viewport, mockup index and the other proofs), 3, 5
+  (color-golden), 6, 8 (a11y, spacing scale) and 9 (contrast) and their mutation proofs, all green.
+
+**Not green, and why:**
+
+- `pnpm security` exits 1 on gate 15: F-322's advisories — 17 blocking lines, the 14 advisories F-322's
+  notes already list (some reported under two packages); none new. F-252 changed no dependency.
+- `node scripts/verify-ci.mjs --all` exits 1 on three: the iOS config half on win32 and gate 15 (both
+  recorded), and gate 4, where design-tokens' `on-sample` device-palette search passed its 120 s under
+  the mirror's load — **F-348**, noted there; `pnpm turbo run test --force` passed it on the same tree.
+
+**Tier 2 again, after the review's fixes (`b13515e`, then `cde86aa`):**
+
+- On `b13515e`: state, typecheck, lint, format, build, a11y, contrast, cvd and content exit 0; security and
+  the CI mirror's iOS half and gate 15 as above.
+- `pnpm turbo run test --force` stopped on **F-348** again (design-tokens' on-sample search past 120 s),
+  which left ui's and mobile's tasks unrun. The CI mirror's gate 4 reached them and found two of this
+  feature's own: `goes-with-states.test`'s leak cases left eight pages each to the cleanup hook, which
+  passed its 5 s under the load. Fixed in `cde86aa` (each page unmounted once read).
+- On `cde86aa`: `pnpm turbo run test --force --continue` passed **35 of 35 tasks** (ui 1594/1594, mobile
+  2242/2242), and design-tokens' `on-sample.test` alone passed 17/17 in 24 s.
+
+**Not run:** e2e and the fidelity capture — no Maestro or JDK here. The attestations are the person's:
+
+- a release Android build; `pnpm fidelity:capture -- --erase-app-data`;
+- `/atlas/with/aki-batake` compared with `19` in Sumi and Washi × en and ja; confirm or flip the five
+  decisions above;
+- the device checks F-252's third attestation lists: Wear landing on 07 with the row locked, Build,
+  the filter, a near-grey colour, TalkBack, 200 % text.
+
+### Lessons
+
+[[re-reading-a-texts-step-moves-every-interval-its-inset-touches]] ·
+[[a-word-with-a-digit-is-a-figure-to-the-sweep]] ·
+[[a-run-in-the-locales-words-inside-a-notation-line-takes-the-locales-face]]
+
+### Next
+
+F-253 — mockup 20.
+
+---
+
 ## 2026-11-03 — F-251 Palette Studio is mockup 10, and building a palette is mockup 16
 
 **Done here, with three criteria owed (attested): the person's capture, comparison and device

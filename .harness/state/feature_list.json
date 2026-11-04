@@ -8807,7 +8807,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-221",
         "F-232",
@@ -11684,7 +11684,7 @@
         "test"
       ],
       "openQuestions": [],
-      "notes": "FROM F-247 (2026-10-22): twice in one feature’s Tier 2 (on 6beb8be’s run and on b7bb832) pnpm turbo run test --force failed on this one test with “Test timed out in 120000ms”, while the CI mirror’s full test gate passed on the same tree and the package passes alone (445/445, the whole file in about 30 s). It is a CPU-bound search over device palettes for an answering ink, and the full run’s 35 parallel tasks slow it past 120 s. A gate that fails at random trains people to rerun it until it is green. Package untouched by F-247, so recorded rather than fixed in its scope. Same class as F-306 and F-317."
+      "notes": "FROM F-247 (2026-10-22): twice in one feature’s Tier 2 (on 6beb8be’s run and on b7bb832) pnpm turbo run test --force failed on this one test with “Test timed out in 120000ms”, while the CI mirror’s full test gate passed on the same tree and the package passes alone (445/445, the whole file in about 30 s). It is a CPU-bound search over device palettes for an answering ink, and the full run’s 35 parallel tasks slow it past 120 s. A gate that fails at random trains people to rerun it until it is green. Package untouched by F-247, so recorded rather than fixed in its scope. Same class as F-306 and F-317. FROM F-252’s Tier 2 (2026-11-04): the CI mirror’s gate 4 stopped on this test again (“Test timed out in 120000ms”, 428 s of tests in the package under the mirror’s load), while pnpm turbo run test --force passed 35 of 35 on the same tree. design-tokens untouched by F-252."
     },
     {
       "id": "F-349",
