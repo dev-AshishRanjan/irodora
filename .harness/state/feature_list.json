@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-10-28",
+  "updated": "2026-11-03",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -8807,7 +8807,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-221",
         "F-232",
@@ -8837,7 +8837,32 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 19 (spec-framed). ELEMENTS: app bar \"← Atlas | What Goes With This • 調和色\" with a filter action; the anchor card — 100 sample, kanji and name, OKLCh, the anchor slot; ranked relationship cards — 64 sample, English and kanji name, relationship and ΔE00 from the anchor (C18), outlined \"Action: Wear\"; sticky \"Build Complete 4-Piece Outfit →\". DEPARTURES: the leaked \"Anchor Color Hero Card (HeroUI Card level=\"2\")\", \"100px\" and \"Ranked Harmonic Relationship Rows\" labels are not design. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 19's anchor is `Swatch anchor={{ ring: 2.3, gap: 3.8 }}` at 87.5×81 md, no keyline; its rows 62 md. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ; the route atlas/with/[slug] is still on the platform header, and its entry in PLATFORM_HEADER (apps/mobile/test/chrome.test.ts) is deleted in the same change that moves it — the test fails until it is. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-266 (ADR-0133): the combinations keep one Arrival across curated, leading and the rest, indexed in reading order, and the registry entry (E-199). FROM F-221 (ADR-0134): enroll this surface in the inventory sweep — its id in .harness/verification/inventory-surfaces.json and its render and locators in screens.test's ENROLLED — in the same change; verify-mockups refuses closing this feature without it (E-203). Its capture is pnpm fidelity:capture's, read beside its mockup under compose/. FROM F-248: 19’s Wear opens the rebuilt 07 at /atlas/wear/[slug]."
+      "notes": "MOCKUP 19 (spec-framed). ELEMENTS: app bar \"← Atlas | What Goes With This • 調和色\" with a filter action; the anchor card — 100 sample, kanji and name, OKLCh, the anchor slot; ranked relationship cards — 64 sample, English and kanji name, relationship and ΔE00 from the anchor (C18), outlined \"Action: Wear\"; sticky \"Build Complete 4-Piece Outfit →\". DEPARTURES: the leaked \"Anchor Color Hero Card (HeroUI Card level=\"2\")\", \"100px\" and \"Ranked Harmonic Relationship Rows\" labels are not design. FROM F-233 (2026-09-29): the sample family is drawn as the mockups draw it. Pass each element's measured size (Swatch size, or width/height, width=\"fill\" for a hero), its corner and whether it binds `keyline`; `caption=\"name\"` only where the mockup prints the name; text ON a sample through `Text on={sample}` (ADR-0116), never a token. Card: `md` by default, the resting edge on level 1 only (edge={false} where a level-1 card is drawn without one), mediaInset/mediaRadius as drawn. 19's anchor is `Swatch anchor={{ ring: 2.3, gap: 3.8 }}` at 87.5×81 md, no keyline; its rows 62 md. FROM F-234 (2026-10-05): compose the governing mockup's header and action bar through `Screen appBar={…}` and `actionBar={…}` (`AppBar`, `ActionBar` in @irodora/ui; ADR-0118), passing each element's drawn height, glyph, corner and order rather than the defaults where they differ; the route atlas/with/[slug] is still on the platform header, and its entry in PLATFORM_HEADER (apps/mobile/test/chrome.test.ts) is deleted in the same change that moves it — the test fails until it is. FROM F-236 (ADR-0128, ADR-0129): compose `EmptyState`'s two forms — 27's card where the fix is elsewhere, 00's caption where it is on the screen — and never a bare absence; keep the screen's `STATES` and each subject's `shows` in step, with a witness subject per declared condition. `blank-panel` and `bare-zero` run on every subject. FROM F-266 (ADR-0133): the combinations keep one Arrival across curated, leading and the rest, indexed in reading order, and the registry entry (E-199). FROM F-221 (ADR-0134): enroll this surface in the inventory sweep — its id in .harness/verification/inventory-surfaces.json and its render and locators in screens.test's ENROLLED — in the same change; verify-mockups refuses closing this feature without it (E-203). Its capture is pnpm fidelity:capture's, read beside its mockup under compose/. FROM F-248: 19’s Wear opens the rebuilt 07 at /atlas/wear/[slug].",
+      "plan": "plans/F-252-what-goes-with-this-is-mockup-19.md",
+      "openQuestions": [
+        "OQ-26",
+        "OQ-27"
+      ],
+      "attested": [
+        {
+          "criterion": "The only departures from mockup 19 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+          "verifiedBy": "GATED FOR STRUCTURE, ATTESTED FOR APPEARANCE. goes-with-fidelity.test (order, grouping, every interval, size, corner, step, weight and ink, recomputed from 19.json through §2’s snap at 0.6124 dp/px, the intervals tighter than the scale named) and the 19.screen sweep in both themes and languages. The person’s comparison: each difference is a named departure (ADR-0167 to ADR-0172; R9 §4 E1/E2/E3/E4, §6), or is fixed and recaptured, or recorded as a feature. The person is asked specifically to confirm or flip ADR-0167 (heading words, against blank space), ADR-0168’s ±9° and its chroma floor, ADR-0169’s not printing Generated, ADR-0170’s one-place ΔE00, and ADR-0171 D4 (Build → 07, against the Lab).",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The fidelity harness captures the route beside mockup 19 in both themes and both locales, and a person has compared each pair and recorded the result",
+          "verifiedBy": "A person runs `pnpm fidelity:capture -- --erase-app-data` on an Android device or emulator at 384 dp with a non-debuggable build of the final commit. /atlas/with/[slug] is captured beside 19 in Sumi/Washi × en/ja (25’s palette for Washi). Recorded in progress.md under F-252. Expected and not defects are listed in the plan’s Attestations, item 1, as the review leaves them.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface",
+          "verifiedBy": "GATED except the device half: tsc + i18n.test, goes-with-states.test, test:a11y, test:contrast, test:cvd. ATTESTED on the capture’s device: Back returns to the Atlas; each Wear opens 07 with the row’s colour locked in the trousers; Build opens 07 for the anchor; the filter sheet chooses and Clear clears; a near-grey colour shows its caption and Build still works; TalkBack reads each row as name, relationship and ΔE00 …, CIEDE2000, and Wear as Wear ‹row› with ‹anchor›; at 200 % in en and ja nothing is cut except Wear’s fixed height (F-344); the generated flows pass.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-253",
