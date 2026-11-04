@@ -2200,6 +2200,34 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    // F-252: the one record outside sRGB says its sample is the nearest rendering (ADR-0169), and a
+    // long name wraps under the sample (E3).
+    name: 'RankedRow (harmony, with a note)',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <RankedRow
+          form="harmony"
+          sample={{ name: 'Ai-nezumi', hex: '#526A6B', color: SAMPLE }}
+          name="Ai-nezumi, a long name that takes a second line"
+          ja="藍鼠"
+          relationship="Split-Complementary"
+          distance={{
+            kind: 'measure',
+            value: 44.6,
+            places: 1,
+            quantity: 'ΔE00',
+            space: 'CIEDE2000',
+          }}
+          note="nearest sRGB rendering, ΔE00 0.31"
+          action={{ label: 'Wear', name: 'Wear Ai-nezumi', onPress: () => undefined }}
+          testID="with.row.0"
+        />,
+        theme,
+      ),
+  },
+  {
     name: 'RankedRow (nearest, 21)',
     kind: 'static',
     sampleValues: ['#526A6B'],

@@ -33,6 +33,7 @@ import {
   STEP_PILL_HEIGHT,
   StepPill,
   SWATCH_SIZE,
+  swatchCorner,
   ThemeProvider,
   type RankedRowProps,
 } from '../src/index.js';
@@ -357,6 +358,105 @@ describe('the ranked row as each screen draws it', () => {
     // The detail prints what 19 prints, and says the metric's space (FR-61).
     expect(screen.getByText('Complementary • ΔE00: 48.2')).toBeTruthy();
     expect(screen.getByLabelText('Complementary, ΔE00 48.2, CIEDE2000')).toBeTruthy();
+  });
+
+  describe('19 as F-252 re-measured it', () => {
+    const UNNAMED = {
+      form: 'harmony',
+      sample: { name: 'Amber Ochre', hex: '#A77344', color: SAMPLE },
+      name: 'Amber Ochre',
+      ja: '琥珀色',
+      relationship: 'Split-Complementary',
+      distance: { ...DISTANCE, value: 35.2, places: 1 },
+      action: { label: 'Wear', name: 'Wear Amber Ochre with Aki-batake', onPress: noop },
+    } as const satisfies RankedRowProps;
+    const HARMONY = { ...UNNAMED, testID: 'row' } as const satisfies RankedRowProps;
+    const all = (tree: TestNode): TestNode[] => {
+      const out: TestNode[] = [tree];
+      for (const child of tree.children ?? [])
+        if (typeof child !== 'string') out.push(...all(child));
+      return out;
+    };
+    const textOf = (tree: TestNode, words: string): TestNode => {
+      const found = all(tree).find(
+        (n) =>
+          n.type === 'Text' &&
+          (n.children ?? []).every((c) => typeof c === 'string') &&
+          (n.children ?? []).map((c) => (typeof c === 'string' ? c : '')).join('') === words,
+      );
+      if (found === undefined) throw new Error(`no text ${words}`);
+      return found;
+    };
+    const fontSize = (node: TestNode): unknown => flattenStyle(node.props['style'])['fontSize'];
+
+    it('the name wraps rather than clips (E3)', () => {
+      const tree = draw(HARMONY);
+      const name = screen.getByTestId('row.name');
+      expect(name.props['numberOfLines']).toBeUndefined();
+      // DECOY: the nearest form still holds its name to two lines.
+      draw({
+        form: 'nearest',
+        sample: HARMONY.sample,
+        name: 'Sabi-asagi (Rust Light Teal)',
+        ja: '錆浅葱',
+        distance: DISTANCE,
+        view: { label: 'View', onPress: noop },
+      });
+      expect(all(screen.toJSON() as TestNode).some((n) => n.props['numberOfLines'] === 2)).toBe(
+        true,
+      );
+      expect(tree).toBeTruthy();
+    });
+
+    it('a note follows the figure in the line, and is said after the figure', () => {
+      draw({ ...HARMONY, note: 'nearest sRGB rendering, ΔE00 0.31' });
+      expect(
+        screen.getByText('Split-Complementary • ΔE00: 35.2 • nearest sRGB rendering, ΔE00 0.31'),
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText(
+          'Split-Complementary, ΔE00 35.2, CIEDE2000, nearest sRGB rendering, ΔE00 0.31',
+        ),
+      ).toBeTruthy();
+    });
+
+    it('DECOY — without a note the line is the relationship and the figure, as before', () => {
+      draw(HARMONY);
+      expect(screen.getByText('Split-Complementary • ΔE00: 35.2')).toBeTruthy();
+      expect(screen.getByLabelText('Split-Complementary, ΔE00 35.2, CIEDE2000')).toBeTruthy();
+      expect(screen.queryByText(/nearest sRGB/u)).toBeNull();
+    });
+
+    it('each part carries the row’s id, so a sweep can find it', () => {
+      draw(HARMONY);
+      for (const part of ['swatch', 'name', 'detail', 'action'])
+        expect(
+          screen.getAllByTestId(`row.${part}`, { includeHiddenElements: true }),
+        ).not.toHaveLength(0);
+      // DECOY: without an id, no part claims one.
+      draw(UNNAMED);
+      expect(screen.queryAllByTestId(/\.(swatch|name|detail|action)$/u)).toHaveLength(0);
+    });
+
+    it('Wear’s word is the detail’s step, label — not the name’s body', () => {
+      const tree = draw(HARMONY);
+      const wear = fontSize(textOf(tree, 'Wear'));
+      expect(wear).toBe(fontSize(textOf(tree, 'Split-Complementary • ΔE00: 35.2')));
+      // The name's outer run is the Bilingual's own Text, its Japanese nested after it.
+      expect(wear).not.toBe(
+        flattenStyle(screen.getByTestId('row.name').props['style'])['fontSize'],
+      );
+    });
+
+    it('the sample’s corner is sm, as 19 draws it (F-252)', () => {
+      const tree = draw(HARMONY);
+      const painted = all(tree)
+        .map((n) => flattenStyle(n.props['style']))
+        .find((s) => s['backgroundColor'] === '#A77344');
+      expect(painted?.['borderRadius']).toBe(swatchCorner(HARMONY_ROW.swatch, 'sm').sample);
+      // DECOY: md would be another corner.
+      expect(swatchCorner(HARMONY_ROW.swatch, 'md').sample).not.toBe(painted?.['borderRadius']);
+    });
   });
 
   it('takes only what each drawing has, by type', () => {

@@ -4,7 +4,7 @@
  *
  * | form | screen | what it draws |
  * |---|---|---|
- * | `harmony` | `19` | a level-1 card: the sample, the name in English • 日本語, the relationship and the ΔE00 on one line, and an outlined action |
+ * | `harmony` | `19` | a level-1 card: the sample, the name in English • 日本語 (it wraps), the relationship and the ΔE00 on one line with a note after the figure where the colour has one (F-252), and an outlined action |
  * | `nearest` | `21` | a level-1 card: the sample, a two-line name led by its Japanese, the hex, a ΔE00 badge filled and outlined, and a plain *View →* |
  * | `fields` | `24` | inside its screen's card, under a rule: the rank, the relationship, a ΔE00 badge tinted by the sample, the sample with its keyline, and three labelled fields |
  *
@@ -111,9 +111,16 @@ interface HarmonyProps {
   readonly relationship: string;
   /** The distance to the anchor: printed `ΔE00: 48.2`, and said with its space (FR-61). */
   readonly distance: MeasureFigure;
+  /**
+   * What follows the figure in the same line, and is spoken after its name (F-252): the one corpus
+   * record outside sRGB says its sample is the nearest rendering, and by how much (rule 11, ADR-0169).
+   * Without it the line is the relationship and the figure alone.
+   */
+  readonly note?: string;
   readonly action: RankedAction;
   readonly rank?: never;
   readonly script?: Script;
+  /** The row's id; its parts take `.swatch`, `.name`, `.detail` and `.action` after it (F-252). */
   readonly testID?: string;
 }
 
@@ -170,11 +177,15 @@ function Harmony({
   ja,
   relationship,
   distance,
+  note,
   action,
   script = 'latin',
   testID,
 }: HarmonyProps): React.JSX.Element {
   const h = HARMONY_ROW;
+  const part = (name: string): { testID?: string } =>
+    testID === undefined ? {} : { testID: `${testID}.${name}` };
+  const line = `${relationship} • ${distance.quantity}: ${figureText(distance)}`;
   return (
     <Card level="1" padding="sm" {...(testID === undefined ? {} : { testID })}>
       <View
@@ -187,16 +198,19 @@ function Harmony({
           gap: h.nameGap,
         }}
       >
+        {/* 19's samples are cornered `sm` (F-252 re-measured them: 6.4 dp, where F-220 read md). */}
         <Swatch
           name={sample.name}
           hex={sample.hex}
           color={sample.color}
           size={h.swatch}
-          corner="md"
+          corner="sm"
           keyline={false}
           script={script}
+          {...part('swatch')}
         />
         <View style={{ flex: 1 }}>
+          {/* The name wraps, never clips (E3): a long name or 200 % text takes a second line. */}
           <Bilingual
             text={name}
             {...(ja === undefined ? {} : { ja })}
@@ -204,26 +218,35 @@ function Harmony({
             weight={500}
             color="foreground"
             script={script}
-            numberOfLines={1}
+            {...part('name')}
           />
           <View
             accessible
             accessibilityRole="text"
-            accessibilityLabel={`${relationship}, ${figureName(distance)}`}
+            accessibilityLabel={
+              note === undefined
+                ? `${relationship}, ${figureName(distance)}`
+                : `${relationship}, ${figureName(distance)}, ${note}`
+            }
+            {...part('detail')}
           >
             <Text size="label" color="foreground.2" script={script} numeric>
-              {`${relationship} • ${distance.quantity}: ${figureText(distance)}`}
+              {note === undefined ? line : `${line} • ${note}`}
             </Text>
           </View>
         </View>
+        {/* Wear's word is `label`, as 19 draws it (F-252: 12.6 dp an em). */}
         <Button
           variant="secondary"
           edge="border"
           radius="sm"
+          step="label"
           height={h.action.height}
           label={action.label}
           {...(action.name === undefined ? {} : { name: action.name })}
           onPress={action.onPress}
+          script={script}
+          {...part('action')}
         />
       </View>
     </Card>
